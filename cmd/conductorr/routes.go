@@ -40,14 +40,10 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 
 	ss := GenerateToken(user.UserId)
 
-	response := &schema.APIResponse{}
-	response.Status = 200
-	response.Action = "AUTH"
-	response.Response = ss
-
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		panic(err)
-	}
+	w.Write([]byte(ss))
+	// if err := json.NewEncoder(w).Encode(response); err != nil {
+	// 	panic(err)
+	// }
 }
 
 func GenerateToken(id int64) string {
@@ -92,14 +88,10 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	ss := GenerateToken(user.UserId)
 
-	response := &schema.APIResponse{}
-	response.Status = 200
-	response.Action = "AUTH"
-	response.Response = ss
-
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		panic(err)
-	}
+	w.Write([]byte(ss))
+	// if err := json.NewEncoder(w).Encode(response); err != nil {
+	// 	panic(err)
+	// }
 }
 
 func JWTRefreshHandler(w http.ResponseWriter, r *http.Request) {
@@ -107,14 +99,10 @@ func JWTRefreshHandler(w http.ResponseWriter, r *http.Request) {
 	id := GetUserIdFromToken(tokenVals)
 	ss := GenerateToken(id)
 
-	response := &schema.APIResponse{}
-	response.Status = 200
-	response.Action = "AUTH"
-	response.Response = ss
-
-	if err := json.NewEncoder(w).Encode(response); err != nil {
-		panic(err)
-	}
+	w.Write([]byte(ss))
+	// if err := json.NewEncoder(w).Encode(response); err != nil {
+	// 	panic(err)
+	// }
 }
 
 func GetUserIdFromToken(tokenVals interface{}) int64 {
@@ -131,8 +119,8 @@ func GetUserIdFromToken(tokenVals interface{}) int64 {
 }
 
 func ConfigurationHandler(w http.ResponseWriter, r *http.Request) {
-	configuration := schema.Configuration{}
-	configuration.ConfigurationId = 0
+	configuration := schema.FilebotConfiguration{}
+	configuration.FilebotConfigurationID = true
 
 	err := db.Select(&configuration)
 

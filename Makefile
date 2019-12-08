@@ -4,3 +4,6 @@ default:
 
 run: default
 	./conductorr
+
+migrations:
+	go build ./cmd/migrations

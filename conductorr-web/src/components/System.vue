@@ -83,8 +83,8 @@
                 </span>
             </div>
             <div class="tile is-child subsection">
-                <setting :setting="filebot_logs"></setting>
-                <setting :setting="plex_scanner_logs"></setting>
+                <setting :setting="fb_logs_enabled"></setting>
+                <setting :setting="plex_scanner_logs_enabled"></setting>
             </div>
         </div>
         <div class="btn-container">
@@ -119,14 +119,14 @@ export default {
                 filebot: true,
                 plex: true
             },
-            filebot_logs: {
+            fb_logs_enabled: {
                 datatype: "bool",
                 label: "Record Filebot Logs",
                 placeholder: "",
                 bool_value: true,
                 description: "Save filebot logs in database"
             },
-            plex_scanner_logs: {
+            plex_scanner_logs_enabled: {
                 datatype: "bool",
                 label: "Record Plex Scanner Logs",
                 placeholder: "",
