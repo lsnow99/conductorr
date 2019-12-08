@@ -7,12 +7,22 @@ import (
 
 func init() {
 	up := func(db orm.DB) error {
-		_, err := db.Exec("")
+		_, err := db.Exec(`
+			CREATE TABLE radarr_configuration (
+				radarr_configuration_id bool NOT NULL DEFAULT true,
+				radarr_url text,
+				radarr_api_key varchar(128),
+				radarr_category text,
+				CONSTRAINT radarr_config_pk PRIMARY KEY (radarr_configuration_id),
+				CONSTRAINT radarr_config_one_row CHECK (radarr_configuration_id)
+			
+			);
+		`)
 		return err
 	}
 
 	down := func(db orm.DB) error {
-		_, err := db.Exec("")
+		_, err := db.Exec("DROP TABLE radarr_configuration")
 		return err
 	}
 

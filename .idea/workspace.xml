@@ -2,15 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="dc58d548-176c-44fa-b51f-0e9b7cfb2d38" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/cmd/migrations/20191208083421_create_system_configuration_table.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmd/migrations/20191208083853_create_jobs_table.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cmd/migrations/main.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/conductorrdb.sql" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmd/migrations/20191208091019_create_sonarr_configuration_table.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/migrations/20191208091019_create_sonarr_configuration_table.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmd/migrations/20191208091050_create_radarr_configuration_table.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/migrations/20191208091050_create_radarr_configuration_table.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmd/migrations/20191208091055_create_plex_configuration_table.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/migrations/20191208091055_create_plex_configuration_table.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmd/migrations/20191208091100_create_system_configuration_table.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/migrations/20191208091100_create_system_configuration_table.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmd/migrations/20191208091109_create_jobs_table.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/migrations/20191208091109_create_jobs_table.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/conductorrdb.dbm" beforeDir="false" afterPath="$PROJECT_DIR$/conductorrdb.dbm" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/schema/schema.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/schema/schema.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/conductorrdb.sql" beforeDir="false" afterPath="$PROJECT_DIR$/conductorrdb.sql" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
