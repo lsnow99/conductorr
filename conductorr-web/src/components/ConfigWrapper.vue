@@ -41,6 +41,19 @@
     width: 50px;
     vertical-align: middle;
 }
+.subsection-title {
+    font-size:20px;
+}
+.subsection-subtitle {
+    font-size: 17px;
+}
+.header-title {
+    font-size: 24px;
+}
+.subsection {
+    margin-top: -10px;
+    padding-left: 10px;
+}
 </style>
 
 <script>

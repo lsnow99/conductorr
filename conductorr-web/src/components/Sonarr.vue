@@ -1,11 +1,14 @@
 <template>
-    <div>
-        Sonarr
-    </div>
+    <options service="sonarr"></options>
 </template>
 
 <script>
+import Options from '@/components/Options.vue'
+
 export default {
-    name: 'sonarr'
+    name: 'sonarr',
+    components: {
+        Options
+    },
 }
 </script>

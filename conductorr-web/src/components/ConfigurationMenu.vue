@@ -12,10 +12,10 @@
             </b-menu-item> -->
         </b-menu-list>
         <b-menu-list label="Connections">
-            <b-menu-item icon="play" label="Plex" v-on:click="navigate('plex')"></b-menu-item>
-            <b-menu-item icon="film" label="Radarr" v-on:click="navigate('radarr')"></b-menu-item>
             <b-menu-item icon="tv" label="Sonarr" v-on:click="navigate('sonarr')"></b-menu-item>
+            <b-menu-item icon="film" label="Radarr" v-on:click="navigate('radarr')"></b-menu-item>
             <b-menu-item icon="robot" label="Filebot" v-on:click="navigate('filebot')"></b-menu-item>
+            <b-menu-item icon="play" label="Plex" v-on:click="navigate('plex')"></b-menu-item>
         </b-menu-list>
     </b-menu>
 </template>

@@ -65,6 +65,10 @@ type Configuration struct {
 	FbUnsorted           bool     `pg:"fb_unsorted"`
 	FbHomeDir            bool     `pg:"fb_home_dir"`
 	FbExtras             bool     `pg:"fb_extras"`
+	PlexNamespace		string		`pg:"plex_namespace"`
+	PlexDeploymentName	string `pg:"plex_deployment_name"`
+	PlexAuthToken		string `pg:"plex_auth_token"`
+	PlexBaseUrl			string `pg:"plex_base_url"`
 }
 
 type Configurator struct {

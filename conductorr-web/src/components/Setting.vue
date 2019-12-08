@@ -9,7 +9,10 @@
                     {{setting.label}}
                 </b-switch>
             </div>
-            <b-field v-if="setting.datatype == 'int'">
+            <b-field :label="setting.label" v-if="setting.datatype == 'password'">
+                <b-input v-bind:value="setting.string_value" type="password" maxlength="30"></b-input>
+            </b-field>
+            <b-field :label="setting.label" v-if="setting.datatype == 'int'">
                 <b-numberinput v-model="setting.int_value"></b-numberinput>
             </b-field>
         </div>
