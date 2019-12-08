@@ -5,6 +5,7 @@ RUN cd /src && go build ./cmd/migrations
 
 FROM node:lts-alpine AS vue-build-env
 COPY conductorr-web/ .
+RUN npm install
 RUN npm run build
 
 FROM alpine
