@@ -2,28 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="dc58d548-176c-44fa-b51f-0e9b7cfb2d38" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/conductorr-web/src/assets/conductorr.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/conductorr-web/src/assets/filebot.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/conductorr-web/src/assets/plex.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/conductorr-web/src/assets/radarr.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/conductorr-web/src/assets/sonarr.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/conductorr-web/src/components/Options.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/conductorr-web/src/App.vue" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/src/App.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conductorr-web/src/assets/filebot.logo.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/conductorr-web/src/components/ConfigWrapper.vue" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/src/components/ConfigWrapper.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conductorr-web/src/components/ConfigurationMenu.vue" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/src/components/ConfigurationMenu.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conductorr-web/src/components/Filebot.vue" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/src/components/Filebot.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conductorr-web/src/components/Plex.vue" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/src/components/Plex.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conductorr-web/src/components/Radarr.vue" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/src/components/Radarr.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conductorr-web/src/components/Security.vue" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/src/components/Security.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conductorr-web/src/components/Setting.vue" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/src/components/Setting.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conductorr-web/src/components/Sonarr.vue" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/src/components/Sonarr.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conductorr-web/src/components/System.vue" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/src/components/System.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conductorr-web/src/views/Configuration.vue" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/src/views/Configuration.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/constants/constants.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/constants/constants.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/schema/schema.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/schema/schema.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/conductorr-web/src/router/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/src/router/index.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
