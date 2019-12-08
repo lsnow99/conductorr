@@ -21,7 +21,8 @@ func main() {
 	db := pg.Connect(&pg.Options{
 		Addr:     os.Getenv("DB_HOST") + ":" + os.Getenv("DB_PORT"),
 		User:     os.Getenv("DB_USER"),
-		Database: os.Getenv(("DB_DATABASE")),
+		Database: os.Getenv("DB_DATABASE"),
+		Password: os.Getenv("DB_PASSWORD"),
 	})
 
 	err = migrations.Run(db, directory, os.Args)
