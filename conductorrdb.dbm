@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.9.2-beta2" last-position="0,0" last-zoom="1.15" max-obj-count="4"
+<dbmodel pgmodeler-ver="0.9.2-beta2" last-position="479,0" last-zoom="1.15" max-obj-count="7"
 	 default-owner="postgres">
 <role name="conductorr"
       createdb="true"
@@ -30,15 +30,15 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<enumeration values="GRABBED,FILEBOT_RUNNING,PLEX_SCANNING,COMPLETED"/>
 </usertype>
 
-<table name="Downloads" layer="0" collapse-mode="2" max-obj-count="19">
+<table name="Jobs" layer="0" collapse-mode="2" max-obj-count="24">
 	<schema name="public"/>
 	<role name="conductorr"/>
-	<position x="560" y="140"/>
+	<position x="620" y="160"/>
 	<column name="grabber_internal_id" not-null="true">
 		<type name="integer" length="0"/>
 		<comment><![CDATA[ID corresponding to the sonarr/radarr id]]></comment>
 	</column>
-	<column name="download_id" not-null="true">
+	<column name="job_id" not-null="true">
 		<type name="serial" length="0"/>
 	</column>
 	<column name="torrent_linker_id" not-null="true">
@@ -49,10 +49,10 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		<type name="text" length="0"/>
 		<comment><![CDATA[ID corresponding to nzbget identifier]]></comment>
 	</column>
-	<column name="date_created" default-value="now()">
+	<column name="time_grabbed" default-value="now()">
 		<type name="timestamptz" length="0"/>
 	</column>
-	<column name="grabber_title" not-null="true">
+	<column name="title" not-null="true">
 		<type name="text" length="0"/>
 	</column>
 	<column name="imdb_id" not-null="true">
@@ -85,8 +85,218 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="grabbed_size" not-null="true">
 		<type name="text" length="0"/>
 	</column>
-	<constraint name="Downloads_pk" type="pk-constr" table="public.&quot;Downloads&quot;">
-		<columns names="download_id" ref-type="src-columns"/>
+	<column name="time_filebot_started">
+		<type name="timestamptz" length="0"/>
+	</column>
+	<column name="time_filebot_done">
+		<type name="timestamptz" length="0"/>
+	</column>
+	<column name="time_scan_started">
+		<type name="timestamptz" length="0"/>
+	</column>
+	<column name="time_scan_done">
+		<type name="timestamptz" length="0"/>
+	</column>
+	<constraint name="Jobs_pk" type="pk-constr" table="public.&quot;Jobs&quot;">
+		<columns names="job_id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="SystemConfiguration" layer="0" collapse-mode="2" max-obj-count="6">
+	<schema name="public"/>
+	<role name="conductorr"/>
+	<position x="920" y="200"/>
+	<column name="system_configuration_id" not-null="true" default-value="true">
+		<type name="bool" length="0"/>
+	</column>
+	<column name="username">
+		<type name="varchar" length="32"/>
+	</column>
+	<column name="password">
+		<type name="bytea" length="0"/>
+	</column>
+	<column name="filebot_logs_enabled" default-value="true">
+		<type name="bool" length="0"/>
+	</column>
+	<column name="plex_scanner_logs_enabled" default-value="true">
+		<type name="bool" length="0"/>
+	</column>
+	<constraint name="system_config_pk" type="pk-constr" table="public.&quot;SystemConfiguration&quot;">
+		<columns names="system_configuration_id" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="system_config_one_row" type="ck-constr" table="public.&quot;SystemConfiguration&quot;">
+			<expression><![CDATA[system_configuration_id]]></expression>
+	</constraint>
+</table>
+
+<table name="SonarrConfiguration" layer="0" collapse-mode="2" max-obj-count="4">
+	<schema name="public"/>
+	<role name="conductorr"/>
+	<position x="920" y="440"/>
+	<column name="sonarr_configuration_id" not-null="true" default-value="true">
+		<type name="bool" length="0"/>
+	</column>
+	<column name="sonarr_url">
+		<type name="text" length="2"/>
+	</column>
+	<column name="sonarr_api_key">
+		<type name="varchar" length="128"/>
+	</column>
+	<column name="sonarr_category">
+		<type name="text" length="0"/>
+	</column>
+	<constraint name="sonarr_config_pk" type="pk-constr" table="public.&quot;SonarrConfiguration&quot;">
+		<columns names="sonarr_configuration_id" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="sonarr_config_one_row" type="ck-constr" table="public.&quot;SonarrConfiguration&quot;">
+			<expression><![CDATA[sonarr_configuration_id]]></expression>
+	</constraint>
+</table>
+
+<table name="RadarrConfiguration" layer="0" collapse-mode="2" max-obj-count="4">
+	<schema name="public"/>
+	<role name="conductorr"/>
+	<position x="1200" y="440"/>
+	<column name="radarr_configuration_id" not-null="true" default-value="true">
+		<type name="bool" length="0"/>
+	</column>
+	<column name="radarr_url">
+		<type name="text" length="0"/>
+	</column>
+	<column name="radarr_api_key">
+		<type name="varchar" length="128"/>
+	</column>
+	<column name="radarr_category">
+		<type name="text" length="0"/>
+	</column>
+	<constraint name="radarr_config_pk" type="pk-constr" table="public.&quot;RadarrConfiguration&quot;">
+		<columns names="radarr_configuration_id" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="radarr_config_one_row" type="ck-constr" table="public.&quot;RadarrConfiguration&quot;">
+			<expression><![CDATA[radarr_configuration_id]]></expression>
+	</constraint>
+</table>
+
+<table name="FilebotConfiguration" layer="0" collapse-mode="2" max-obj-count="33">
+	<schema name="public"/>
+	<role name="conductorr"/>
+	<position x="340" y="160"/>
+	<column name="filebot_configuration_id" not-null="true" default-value="true">
+		<type name="bool" length="0"/>
+	</column>
+	<column name="fb_output_dir">
+		<type name="text" length="0"/>
+	</column>
+	<column name="fb_subtitles_locale">
+		<type name="varchar" length="16"/>
+	</column>
+	<column name="fb_action">
+		<type name="varchar" length="16"/>
+	</column>
+	<column name="fb_exclude_list">
+		<type name="text" length="0"/>
+	</column>
+	<column name="fb_amc_log">
+		<type name="text" length="0"/>
+	</column>
+	<column name="fb_kodi">
+		<type name="text" length="0"/>
+	</column>
+	<column name="fb_plex">
+		<type name="text" length="0"/>
+	</column>
+	<column name="fb_emby">
+		<type name="text" length="0"/>
+	</column>
+	<column name="fb_pushover">
+		<type name="text" length="0"/>
+	</column>
+	<column name="fb_discord">
+		<type name="text" length="0"/>
+	</column>
+	<column name="fb_gmail">
+		<type name="text" length="0"/>
+	</column>
+	<column name="fb_mail">
+		<type name="text" length="0"/>
+	</column>
+	<column name="fb_mailto">
+		<type name="text" length="0"/>
+	</column>
+	<column name="fb_report_error" default-value="true">
+		<type name="bool" length="0"/>
+	</column>
+	<column name="fb_store_report" default-value="true">
+		<type name="bool" length="0"/>
+	</column>
+	<column name="fb_extract_folder">
+		<type name="text" length="0"/>
+	</column>
+	<column name="fb_exec">
+		<type name="text" length="0"/>
+	</column>
+	<column name="fb_ignore">
+		<type name="text" length="0"/>
+	</column>
+	<column name="fb_artwork" default-value="true">
+		<type name="bool" length="0"/>
+	</column>
+	<column name="fb_skip_extract" default-value="true">
+		<type name="bool" length="0"/>
+	</column>
+	<column name="fb_delete_after_extract" default-value="true">
+		<type name="bool" length="0"/>
+	</column>
+	<column name="fb_clean" default-value="true">
+		<type name="bool" length="0"/>
+	</column>
+	<column name="fb_unsorted" default-value="true">
+		<type name="bool" length="0"/>
+	</column>
+	<column name="fb_home_dir">
+		<type name="text" length="0"/>
+	</column>
+	<column name="fb_extras" default-value="true">
+		<type name="bool" length="0"/>
+	</column>
+	<column name="fb_deployment_name">
+		<type name="text" length="0"/>
+	</column>
+	<column name="fb_namespace">
+		<type name="text" length="0"/>
+	</column>
+	<constraint name="filebot_config_pk" type="pk-constr" table="public.&quot;FilebotConfiguration&quot;">
+		<columns names="filebot_configuration_id" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="filebot_config_one_row" type="ck-constr" table="public.&quot;FilebotConfiguration&quot;">
+			<expression><![CDATA[filebot_configuration_id]]></expression>
+	</constraint>
+</table>
+
+<table name="PlexConfiguration" layer="0" collapse-mode="2" max-obj-count="6">
+	<schema name="public"/>
+	<role name="conductorr"/>
+	<position x="1220" y="200"/>
+	<column name="plex_configuration_id" not-null="true" default-value="true">
+		<type name="bool" length="0"/>
+	</column>
+	<column name="plex_namespace">
+		<type name="text" length="0"/>
+	</column>
+	<column name="plex_deployment_name">
+		<type name="text" length="0"/>
+	</column>
+	<column name="plex_auth_token">
+		<type name="text" length="0"/>
+	</column>
+	<column name="plex_base_url">
+		<type name="text" length="0"/>
+	</column>
+	<constraint name="plex_config_pk" type="pk-constr" table="public.&quot;PlexConfiguration&quot;">
+		<columns names="plex_configuration_id" ref-type="src-columns"/>
+	</constraint>
+	<constraint name="plex_config_one_row" type="ck-constr" table="public.&quot;PlexConfiguration&quot;">
+			<expression><![CDATA[plex_configuration_id]]></expression>
 	</constraint>
 </table>
 

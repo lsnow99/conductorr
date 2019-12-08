@@ -2,22 +2,15 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="dc58d548-176c-44fa-b51f-0e9b7cfb2d38" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/conductorr-web/src/components/CodeViewer.vue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/conductorr-web/src/components/ExtendedData.vue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/conductorr-web/src/views/Overview.vue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/conductorrdb.dbm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmd/migrations/20191208083421_create_system_configuration_table.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmd/migrations/20191208083853_create_jobs_table.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmd/migrations/main.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/conductorrdb.sql" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conductorr-web/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conductorr-web/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conductorr-web/src/App.vue" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/src/App.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conductorr-web/src/components/ConfigWrapper.vue" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/src/components/ConfigWrapper.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conductorr-web/src/components/Options.vue" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/src/components/Options.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conductorr-web/src/components/Security.vue" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/src/components/Security.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conductorr-web/src/components/Setting.vue" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/src/components/Setting.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conductorr-web/src/components/System.vue" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/src/components/System.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conductorr-web/src/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/src/main.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conductorr-web/src/router/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/src/router/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conductorr-web/src/views/Main.vue" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/conductorrdb.dbm" beforeDir="false" afterPath="$PROJECT_DIR$/conductorrdb.dbm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/internal/schema/schema.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/schema/schema.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -39,7 +32,9 @@
     <option name="indexEntireGoPath" value="false" />
   </component>
   <component name="ProjectId" id="1UdTvs1yEuyULXooYD2CEayalp3" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showExcludedFiles" value="true" />
@@ -55,6 +50,12 @@
     <property name="go.tried.to.enable.integration.vgo.integrator" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/cmd/conductorr/main.go" />
     <property name="settings.editor.selected.configurable" value="preferences.keymap" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/cmd/migrations" />
+      <recent name="$PROJECT_DIR$" />
+    </key>
   </component>
   <component name="RunManager">
     <configuration name="go build github.com/lsnow2017/conductorr/cmd/conductorr" type="GoApplicationRunConfiguration" factoryName="Go Application" nameIsGenerated="true">
@@ -108,26 +109,30 @@
       <screen x="0" y="0" width="1920" height="1022" />
     </state>
     <state x="746" y="272" key="FileChooserDialogImpl/0.0.1920.1022@0.0.1920.1022" timestamp="1575685858766" />
-    <state width="1874" height="270" key="GridCell.Tab.0.bottom" timestamp="1575758030208">
+    <state width="1874" height="270" key="GridCell.Tab.0.bottom" timestamp="1575793769647">
       <screen x="0" y="0" width="1920" height="1022" />
     </state>
-    <state width="1874" height="270" key="GridCell.Tab.0.bottom/0.0.1920.1022@0.0.1920.1022" timestamp="1575758030208" />
-    <state width="1874" height="270" key="GridCell.Tab.0.center" timestamp="1575758030207">
+    <state width="1874" height="270" key="GridCell.Tab.0.bottom/0.0.1920.1022@0.0.1920.1022" timestamp="1575793769647" />
+    <state width="1874" height="270" key="GridCell.Tab.0.center" timestamp="1575793769645">
       <screen x="0" y="0" width="1920" height="1022" />
     </state>
-    <state width="1874" height="270" key="GridCell.Tab.0.center/0.0.1920.1022@0.0.1920.1022" timestamp="1575758030207" />
-    <state width="1874" height="270" key="GridCell.Tab.0.left" timestamp="1575758030207">
+    <state width="1874" height="270" key="GridCell.Tab.0.center/0.0.1920.1022@0.0.1920.1022" timestamp="1575793769645" />
+    <state width="1874" height="270" key="GridCell.Tab.0.left" timestamp="1575793769643">
       <screen x="0" y="0" width="1920" height="1022" />
     </state>
-    <state width="1874" height="270" key="GridCell.Tab.0.left/0.0.1920.1022@0.0.1920.1022" timestamp="1575758030207" />
-    <state width="1874" height="270" key="GridCell.Tab.0.right" timestamp="1575758030208">
+    <state width="1874" height="270" key="GridCell.Tab.0.left/0.0.1920.1022@0.0.1920.1022" timestamp="1575793769643" />
+    <state width="1874" height="270" key="GridCell.Tab.0.right" timestamp="1575793769646">
       <screen x="0" y="0" width="1920" height="1022" />
     </state>
-    <state width="1874" height="270" key="GridCell.Tab.0.right/0.0.1920.1022@0.0.1920.1022" timestamp="1575758030208" />
+    <state width="1874" height="270" key="GridCell.Tab.0.right/0.0.1920.1022@0.0.1920.1022" timestamp="1575793769646" />
     <state x="468" y="149" key="SettingsEditor" timestamp="1575686246603">
       <screen x="0" y="0" width="1920" height="1022" />
     </state>
     <state x="468" y="149" key="SettingsEditor/0.0.1920.1022@0.0.1920.1022" timestamp="1575686246603" />
+    <state x="559" y="250" key="Vcs.Push.Dialog.v2" timestamp="1575794692026">
+      <screen x="0" y="0" width="1920" height="1022" />
+    </state>
+    <state x="559" y="250" key="Vcs.Push.Dialog.v2/0.0.1920.1022@0.0.1920.1022" timestamp="1575794692026" />
     <state x="623" y="224" width="672" height="678" key="search.everywhere.popup" timestamp="1575752575594">
       <screen x="0" y="0" width="1920" height="1022" />
     </state>

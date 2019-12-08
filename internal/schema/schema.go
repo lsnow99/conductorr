@@ -50,8 +50,8 @@ type Configuration struct {
 	FbGmail              string   `pg:"fb_gmail"`
 	FbMail               string   `pg:"fb_mail"`
 	FbMailto             string   `pg:"fb_mailto"`
-	FbReportError        string   `pg:"fb_report_error"`
-	FbStoreReport        string   `pg:"fb_store_report"`
+	FbReportError        bool   `pg:"fb_report_error"`
+	FbStoreReport        bool   `pg:"fb_store_report"`
 	FbExtractFolder      string   `pg:"fb_extract_folder"`
 	FbExec               string   `pg:"fb_exec"`
 	FbIgnore             string   `pg:"fb_ignore"`
@@ -63,12 +63,14 @@ type Configuration struct {
 	FbDeleteAfterExtract bool     `pg:"fb_delete_after_extract"`
 	FbClean              bool     `pg:"fb_clean"`
 	FbUnsorted           bool     `pg:"fb_unsorted"`
-	FbHomeDir            bool     `pg:"fb_home_dir"`
+	FbHomeDir            string     `pg:"fb_home_dir"`
 	FbExtras             bool     `pg:"fb_extras"`
 	PlexNamespace		string		`pg:"plex_namespace"`
 	PlexDeploymentName	string `pg:"plex_deployment_name"`
 	PlexAuthToken		string `pg:"plex_auth_token"`
 	PlexBaseUrl			string `pg:"plex_base_url"`
+	FbNamespace			string `pg:"fb_namespace"`
+	FbDeploymentName	string `pg:"fb_deployment_name"`
 }
 
 type Configurator struct {
