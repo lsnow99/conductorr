@@ -1,11 +1,15 @@
-FROM golang:alpine AS build-env
+FROM golang:alpine AS go-build-env
 ADD . /src
 RUN cd /src && go build ./cmd/conductorr
 RUN cd /src && go build ./cmd/migrations
 
+FROM node:lts-alpine AS vue-build-env
+COPY conductorr-web/ .
+RUN npm run build
+
 FROM alpine
 WORKDIR /app
-COPY --from=build-env /src/conductorr /app/
-COPY --from=build-env /src/migrations /app/
-COPY conductorr-web/dist/ static/
+COPY --from=go-build-env /src/conductorr /app/
+COPY --from=go-build-env /src/migrations /app/
+COPY --from=vue-build-env dist/ static/
 ENTRYPOINT ./conductorr

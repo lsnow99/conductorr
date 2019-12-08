@@ -1,6 +1,8 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/go-pg/pg/v9"
 	"github.com/joho/godotenv"
 
@@ -46,6 +48,7 @@ func initRoutes() *negroni.Negroni {
 	r.HandleFunc("/signup", SignupHandler).Methods("POST")
 	r.HandleFunc("/login", LoginHandler).Methods("POST")
 	r.HandleFunc("/backend/config/{service}", GetConfigHandler).Methods("GET")
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./static/")))
 
 	ar.HandleFunc("/api/refreshToken", JWTRefreshHandler).Methods("GET")
 	ar.HandleFunc("/api/settings", ConfigurationHandler).Methods("GET")
@@ -65,7 +68,7 @@ func runMigrations() {
 	if err != nil {
 		panic(err)
 	}
-	out, err := exec.Command(path + "/migrations", "migrate").CombinedOutput()
+	out, err := exec.Command(path+"/migrations", "migrate").CombinedOutput()
 	if err != nil {
 		log.Fatalf("Failed to run migration, output:\n%s", out)
 		panic(err)
