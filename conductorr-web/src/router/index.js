@@ -3,7 +3,7 @@ import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
 import About from '@/views/About.vue'
 import Configuration from '@/views/Configuration.vue'
-import Main from '@/views/Main.vue'
+import Overview from '@/views/Overview.vue'
 
 Vue.use(VueRouter)
 
@@ -24,9 +24,9 @@ const routes = [
     component: Configuration
   },
   {
-    path: '/main',
-    name: 'main',
-    component: Main
+    path: '/overview',
+    name: 'overview',
+    component: Overview
   }
 ]
 

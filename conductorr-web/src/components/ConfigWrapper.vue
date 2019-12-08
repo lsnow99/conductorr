@@ -54,6 +54,11 @@
     margin-top: -10px;
     padding-left: 10px;
 }
+.btn-container {
+    display: flex;
+    width: 100%;
+    justify-content: right;
+}
 </style>
 
 <script>

@@ -30,6 +30,6 @@ export default {
     name: 'setting',
     props: [
         'setting'
-    ]
+    ],
 }
 </script>

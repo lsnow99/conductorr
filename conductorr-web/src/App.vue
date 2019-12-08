@@ -4,7 +4,7 @@
       <router-link to="/">Home</router-link> |
       <router-link to="/about">About</router-link> |
       <router-link to="/configuration">Settings</router-link> |
-      <router-link to="/main">Main</router-link>
+      <router-link to="/overview">Overview</router-link>
     </div>
     <router-view/>
   </div>

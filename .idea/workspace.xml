@@ -2,9 +2,22 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="dc58d548-176c-44fa-b51f-0e9b7cfb2d38" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/conductorr-web/src/components/CodeViewer.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/conductorr-web/src/components/ExtendedData.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/conductorr-web/src/views/Overview.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/conductorrdb.dbm" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/conductorr-web/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/conductorr-web/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/conductorr-web/src/App.vue" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/src/App.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/conductorr-web/src/components/ConfigWrapper.vue" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/src/components/ConfigWrapper.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/conductorr-web/src/components/Options.vue" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/src/components/Options.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/conductorr-web/src/components/Security.vue" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/src/components/Security.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/conductorr-web/src/components/Setting.vue" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/src/components/Setting.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/conductorr-web/src/components/System.vue" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/src/components/System.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/conductorr-web/src/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/src/main.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/conductorr-web/src/router/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/src/router/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/conductorr-web/src/views/Main.vue" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

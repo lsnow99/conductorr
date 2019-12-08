@@ -13,14 +13,6 @@
     </div>
 </template>
 
-<style scoped>
-.btn-container {
-    display: flex;
-    width: 100%;
-    justify-content: right;
-}
-</style>
-
 <script>
 import axios from 'axios'
 import Setting from '@/components/Setting.vue'
@@ -62,7 +54,7 @@ export default {
             })
             .catch(() => {
                 Snackbar.open({
-                    message: 'Error saving settings!',
+                    message: 'Error saving settings',
                     type: 'is-danger',
                     indefinite: false,
                     duration: 10000,
