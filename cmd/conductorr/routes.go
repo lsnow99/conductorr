@@ -117,13 +117,15 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	sysConfig.Username = creds.Username
 	err = db.Model(sysConfig).Where("username = ?", creds.Username).Select()
 	if err != nil {
-		panic(err)
+		w.WriteHeader(http.StatusUnauthorized)
+		fmt.Fprint(w, "Username unrecognized")
+		return
 	}
 
 	err = bcrypt.CompareHashAndPassword(sysConfig.Password, []byte(creds.Password))
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
-		fmt.Fprintf(w, "Incorrect password")
+		fmt.Fprint(w, "Incorrect password")
 		return
 	}
 
