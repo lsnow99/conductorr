@@ -4,27 +4,45 @@ import (
 	"time"
 )
 
-// User database and JSON schema
-type User struct {
-	tableName    struct{}  `pg:"public.\"Users\""`
-	UserId       int64     `json:"user_id" pg:",pk"`
-	FirstName    string    `json:"first_name" pg:"first_name"`
-	LastName     string    `json:"last_name" pg:"last_name"`
-	Email        string    `json:"email" pg:"email"`
-	Birthday     time.Time `json:"birthday" pg:"birthday"`
-	Password     string    `pg:"-" json:"password"`
-	PasswordHash []byte    `json:"password_hash" pg:"password_hash"`
-}
-
+// Credentials receive credentials from login page
 type Credentials struct {
-	Email        string `json:"email" pg:"email"`
+	Username        string `json:"username" pg:"username"`
 	Password     string `pg:"-" json:"password"`
 	PasswordHash []byte `json:"password_hash" pg:"password_hash"`
 }
 
+// SystemConfiguration database + json model
 type SystemConfiguration struct {
-	FbLogsEnabled	bool `pg:"fb_logs_enabled" json:"fb_logs_enabled"`
+	tableName	struct{} `pg:"system_configuration"`
+	FbLogsEnabled	bool `pg:"filebot_logs_enabled" json:"filebot_logs_enabled"`
 	PlexScannerLogsEnabled	bool `pg:"plex_scanner_logs_enabled" json:"plex_scanner_logs_enabled"`
+	Username		string `pg:"username" json:"username"`
+	Password		[]byte `pg:"password"`
+	SystemConfigurationID bool `pg:"system_configuration_id, pk" json:"system_configuration_id"`
+}
+
+// Jobs database + json model
+type Jobs struct {
+	GrabberInternalID int64 `pg:"grabber_internal_id"`
+	JobID int64 `pg:"job_id"`
+	TorrentLinkerID string `pg:"torrent_linker_id"`
+	NZBLinkerID string `pg:"nzb_linker_id"`
+	TimeGrabbed time.Time `pg:"time_grabbed"`
+	Title string `pg:"title"`
+	ImdbID string `pg:"imdb_id"`
+	ReleaseTitle string `pg:"release_title"`
+	ContentType string `pg:"content_type"`
+	DownloadClient string `pg:"download_client"`
+	DownloadDirectory string `pg:"download_directory"`
+	Status string `pg:"status"`
+	FilebotLogs string `pg:"filebot_logs"`
+	ScannerLogs string `pg:"scanner_logs"`
+	GrabbedQuality string `pg:"grabbed_quality"`
+	GrabbedSize string `pg:"grabbed_size"`
+	TimeFilebotStarted time.Time `pg:"time_filebot_started"`
+	TimeFilebotDone time.Time `pg:"time_filebot_done"`
+	TimeScanStarted time.Time `pg:"time_scan_started"`
+	TimeScanDone time.Time `pg:"time_scan_done"`
 }
 
 // FilebotConfiguration database + json model
@@ -62,20 +80,30 @@ type FilebotConfiguration struct {
 	FilebotConfigurationID    bool   `pg:"filebot_configuration_id"`
 }
 
-type Configuration struct {
-	tableName            struct{} `pg:"public.\"Configuration\""`
-	SonarrApiKey         string   `pg:"sonarr_api_key"`
-	RadarrApiKey         string   `pg:"radarr_api_key"`
-	RadarrCategory       string   `pg:"radarr_category"`
-	RadarrUrl            string   `pg:"radarr_url"`
-	SonarrCategory       string   `pg:"sonarr_category"`
-	SonarrUrl            string   `pg:"sonarr_url"`
-	PlexNamespace		string		`pg:"plex_namespace"`
-	PlexDeploymentName	string `pg:"plex_deployment_name"`
-	PlexAuthToken		string `pg:"plex_auth_token"`
-	PlexBaseUrl			string `pg:"plex_base_url"`
+// PlexConfiguration database + json model
+type PlexConfiguration struct {
+	PlexNamespace		string `pg:"plex_namespace" json:"plex_namespace"`
+	PlexDeploymentName	string `pg:"plex_deployment_name" json:"plex_deployment_name"`
+	PlexAuthToken		string `pg:"plex_auth_token" json:"plex_auth_token"`
+	PlexBaseURL			string `pg:"plex_base_url" json:"plex_base_url"`
 }
 
+// SonarrConfiguration database + json model
+type SonarrConfiguration struct {
+	SonarrAPIKey         string   `pg:"sonarr_api_key" json:"sonarr_api_key"`
+	SonarrCategory       string   `pg:"sonarr_category" json:"sonarr_category"`
+	SonarrURL            string   `pg:"sonarr_url" json:"sonarr_url"`
+}
+
+// RadarrConfiguration database + json model
+type RadarrConfiguration struct {
+	tableName            struct{} `pg:"radarr_configuration"`
+	RadarrAPIKey         string   `pg:"radarr_api_key" json:"radarr_api_key"`
+	RadarrCategory       string   `pg:"radarr_category" json:"radarr_category"`
+	RadarrURL            string   `pg:"radarr_url" json:"radarr_url"`
+}
+
+// Configurator json model to transfer configuration fields to ui
 type Configurator struct {
 	Label string `json:"label"`
 	Placeholder string `json:"placeholder"`

@@ -4,6 +4,7 @@ import Home from '../views/Home.vue'
 import About from '@/views/About.vue'
 import Configuration from '@/views/Configuration.vue'
 import Overview from '@/views/Overview.vue'
+import Authenticate from '@/views/Authenticate.vue'
 
 Vue.use(VueRouter)
 
@@ -27,6 +28,11 @@ const routes = [
     path: '/overview',
     name: 'overview',
     component: Overview
+  },
+  {
+    path: '/auth',
+    name: 'auth',
+    component: Authenticate
   }
 ]
 

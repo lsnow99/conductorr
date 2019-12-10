@@ -22,12 +22,20 @@ var db *pg.DB
 func main() {
 	log.Printf("Starting Conductorr v1\n")
 
-	runMigrations()
-
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Printf("Could not load .env file: %s", err.Error())
 	}
+
+	db = pg.Connect(&pg.Options{
+		User:     os.Getenv("DB_USER"),
+		Password: os.Getenv("DB_PASSWORD"),
+		Database: os.Getenv("DB_DATABASE"),
+		Addr: os.Getenv("DB_HOST") + ":" + os.Getenv("DB_PORT"),
+	})
+	defer db.Close()
+
+	runMigrations()
 
 	n := initRoutes()
 	n.Run(":" + os.Getenv("PORT"))
@@ -44,10 +52,11 @@ func initRoutes() *negroni.Negroni {
 		SigningMethod: jwt.SigningMethodHS256,
 	})
 
-	r.HandleFunc("/", HomeHandler).Methods("GET")
-	r.HandleFunc("/signup", SignupHandler).Methods("POST")
-	r.HandleFunc("/login", LoginHandler).Methods("POST")
+	r.HandleFunc("/auth/firstRun", FirstRunHandler).Methods("GET")
+	r.HandleFunc("/auth/signup", SignupHandler).Methods("POST")
+	r.HandleFunc("/auth/login", LoginHandler).Methods("POST")
 	r.HandleFunc("/backend/config/{service}", GetConfigHandler).Methods("GET")
+	r.HandleFunc("/backend/config/{service}", GetConfigHandler).Methods("POST")
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./static/")))
 
 	ar.HandleFunc("/api/refreshToken", JWTRefreshHandler).Methods("GET")

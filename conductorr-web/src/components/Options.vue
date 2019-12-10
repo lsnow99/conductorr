@@ -35,7 +35,7 @@ export default {
         'service'
     ],
     mounted: function() {
-        axios.get("/backend/config/" + this.service).then(response => {
+        axios.get("/api/config/" + this.service).then(response => {
             this.configObj = response.data
             this.isLoading = false
         })
@@ -43,7 +43,7 @@ export default {
     methods: {
         save: function() {
             this.isSaving = true
-            axios.post("/backend/config/" + this.service, this.configObj)
+            axios.post("/backend/api/" + this.service, this.configObj)
             .then(() => {
                 Snackbar.open({
                     message: 'Successfully saved settings!',
@@ -66,7 +66,7 @@ export default {
         },
         testConnection: function() {
             this.isTesting = true
-            axios.post("/backend/testConfig/" + this.service, this.configObj)
+            axios.post("/api/testConfig/" + this.service, this.configObj)
             .then(() => {
                 Snackbar.open({
                     message: 'Successfully connected!',

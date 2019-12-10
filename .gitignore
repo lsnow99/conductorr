@@ -3,3 +3,5 @@
 /conductorr
 /migrations
 dist/
+/static/
+__debug_bin

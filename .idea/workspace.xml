@@ -4,10 +4,8 @@
     <list default="true" id="dc58d548-176c-44fa-b51f-0e9b7cfb2d38" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Makefile" beforeDir="false" afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmd/conductorr/main.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/conductorr/main.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/cmd/conductorr/routes.go" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/conductorr/routes.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/conductorr-web/src/components/System.vue" beforeDir="false" afterPath="$PROJECT_DIR$/conductorr-web/src/components/System.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/internal/schema/schema.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/schema/schema.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -107,22 +105,22 @@
       <screen x="0" y="0" width="1920" height="1022" />
     </state>
     <state x="746" y="272" key="FileChooserDialogImpl/0.0.1920.1022@0.0.1920.1022" timestamp="1575685858766" />
-    <state width="1874" height="270" key="GridCell.Tab.0.bottom" timestamp="1575799506885">
+    <state width="1874" height="270" key="GridCell.Tab.0.bottom" timestamp="1575838561875">
       <screen x="0" y="0" width="1920" height="1022" />
     </state>
-    <state width="1874" height="270" key="GridCell.Tab.0.bottom/0.0.1920.1022@0.0.1920.1022" timestamp="1575799506885" />
-    <state width="1874" height="270" key="GridCell.Tab.0.center" timestamp="1575799506885">
+    <state width="1874" height="270" key="GridCell.Tab.0.bottom/0.0.1920.1022@0.0.1920.1022" timestamp="1575838561875" />
+    <state width="1874" height="270" key="GridCell.Tab.0.center" timestamp="1575838561874">
       <screen x="0" y="0" width="1920" height="1022" />
     </state>
-    <state width="1874" height="270" key="GridCell.Tab.0.center/0.0.1920.1022@0.0.1920.1022" timestamp="1575799506885" />
-    <state width="1874" height="270" key="GridCell.Tab.0.left" timestamp="1575799506885">
+    <state width="1874" height="270" key="GridCell.Tab.0.center/0.0.1920.1022@0.0.1920.1022" timestamp="1575838561874" />
+    <state width="1874" height="270" key="GridCell.Tab.0.left" timestamp="1575838561874">
       <screen x="0" y="0" width="1920" height="1022" />
     </state>
-    <state width="1874" height="270" key="GridCell.Tab.0.left/0.0.1920.1022@0.0.1920.1022" timestamp="1575799506885" />
-    <state width="1874" height="270" key="GridCell.Tab.0.right" timestamp="1575799506885">
+    <state width="1874" height="270" key="GridCell.Tab.0.left/0.0.1920.1022@0.0.1920.1022" timestamp="1575838561874" />
+    <state width="1874" height="270" key="GridCell.Tab.0.right" timestamp="1575838561874">
       <screen x="0" y="0" width="1920" height="1022" />
     </state>
-    <state width="1874" height="270" key="GridCell.Tab.0.right/0.0.1920.1022@0.0.1920.1022" timestamp="1575799506885" />
+    <state width="1874" height="270" key="GridCell.Tab.0.right/0.0.1920.1022@0.0.1920.1022" timestamp="1575838561874" />
     <state x="468" y="149" key="SettingsEditor" timestamp="1575686246603">
       <screen x="0" y="0" width="1920" height="1022" />
     </state>
