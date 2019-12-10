@@ -55,15 +55,15 @@ func initRoutes() *negroni.Negroni {
 	r.HandleFunc("/auth/firstRun", FirstRunHandler).Methods("GET")
 	r.HandleFunc("/auth/signup", SignupHandler).Methods("POST")
 	r.HandleFunc("/auth/login", LoginHandler).Methods("POST")
-	r.HandleFunc("/backend/config/{service}", GetConfigHandler).Methods("GET")
-	r.HandleFunc("/backend/config/{service}", GetConfigHandler).Methods("POST")
-	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./static/")))
 
 	ar.HandleFunc("/api/refreshToken", JWTRefreshHandler).Methods("GET")
 	ar.HandleFunc("/api/settings", ConfigurationHandler).Methods("GET")
+	ar.HandleFunc("/api/config/{service}", GetConfigHandler).Methods("GET")
+	ar.HandleFunc("/api/config/{service}", SetConfigHandler).Methods("POST")
 
 	an := negroni.New(negroni.HandlerFunc(mw.HandlerWithNext), negroni.Wrap(ar))
 	r.PathPrefix("/api").Handler(an)
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./static/")))
 
 	n := negroni.Classic()
 	n.UseHandler(r)

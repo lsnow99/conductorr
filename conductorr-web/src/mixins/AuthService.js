@@ -1,4 +1,5 @@
 import router from "@/router";
+import { SnackbarProgrammatic as Snackbar } from "buefy";
 
 /*
     AuthService
@@ -35,7 +36,13 @@ export const AuthService = {
             if (error.response && error.response.status == 401) {
                 this.removeJWT();
                 if (redirect) {
-                    router.push({ path: "/auth", params: { expired: true } });
+                    router.push({ path: "/auth"});
+                    Snackbar.open({
+                        message: "Session expired",
+                        type: "is-danger",
+                        indefinite: false,
+                        duration: 10000
+                    });
                 }
                 return true;
             }
@@ -48,8 +55,24 @@ export const AuthService = {
         logout(redirect = true) {
             this.removeJWT();
             if (redirect) {
-                router.push({ path: "/" });
+                router.push({ path: "/auth" });
             }
-        }
+        },
+        /*
+            Get axios configuration with authorization header
+        */
+        axiosAuthConfig() {
+            return {
+                headers: {
+                   Authorization: "bearer " + localStorage.getItem("jwt")
+                }
+             }
+        },
+        /*
+            Utility to check if there is a currently logged-in session
+        */
+       loggedIn() {
+           return localStorage.getItem("jwt") != null
+       }
     }
 };

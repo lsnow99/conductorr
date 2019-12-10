@@ -166,7 +166,7 @@ func ConfigurationHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // PostConfigHandler update config in database
-func PostConfigHandler(w http.ResponseWriter, r *http.Request) {
+func SetConfigHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
 	switch vars["service"] {

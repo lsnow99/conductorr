@@ -33,11 +33,6 @@ const routes = [
     path: '/auth',
     name: 'auth',
     component: Authenticate
-  },
-  {
-    path: '/auth/:expired',
-    name: 'auth-expired',
-    component: Authenticate
   }
 ]
 
