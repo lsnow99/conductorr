@@ -23,8 +23,9 @@ type SystemConfiguration struct {
 
 // Jobs database + json model
 type Jobs struct {
+	tableName	struct{} `pg:"jobs"`
 	GrabberInternalID int64 `pg:"grabber_internal_id"`
-	JobID int64 `pg:"job_id"`
+	JobID int64 `pg:"job_id, pk"`
 	TorrentLinkerID string `pg:"torrent_linker_id"`
 	NZBLinkerID string `pg:"nzb_linker_id"`
 	TimeGrabbed time.Time `pg:"time_grabbed"`
@@ -47,6 +48,7 @@ type Jobs struct {
 
 // FilebotConfiguration database + json model
 type FilebotConfiguration struct {
+	tableName	struct{} `pg:"filebot_configuration"`
 	FbOutputDir          string   `pg:"fb_output_dir" json:"fb_output_dir"`
 	FbSubtitlesLocale    string   `pg:"fb_subtitles_locale" json:"fb_subtitles_locale"`
 	FbAction             string   `pg:"fb_action" json:"fb_action"`
@@ -77,22 +79,26 @@ type FilebotConfiguration struct {
 	FbReportError        bool     `pg:"fb_report_error" json:"fb_report_error"`
 	FbStoreReport        bool     `pg:"fb_store_report" json:"fb_store_report"`
 	FbExtras             bool	  `pg:"fb_extras" json:"fb_extras"`
-	FilebotConfigurationID    bool   `pg:"filebot_configuration_id"`
+	FilebotConfigurationID    bool   `pg:"filebot_configuration_id, pk"`
 }
 
 // PlexConfiguration database + json model
 type PlexConfiguration struct {
+	tableName	struct{} `pg:"plex_configuration"`
 	PlexNamespace		string `pg:"plex_namespace" json:"plex_namespace"`
 	PlexDeploymentName	string `pg:"plex_deployment_name" json:"plex_deployment_name"`
 	PlexAuthToken		string `pg:"plex_auth_token" json:"plex_auth_token"`
 	PlexBaseURL			string `pg:"plex_base_url" json:"plex_base_url"`
+	PlexConfigurationID bool `pg:"plex_configuration_id, pk"`
 }
 
 // SonarrConfiguration database + json model
 type SonarrConfiguration struct {
+	tableName	struct{} `pg:"sonarr_configuration"`
 	SonarrAPIKey         string   `pg:"sonarr_api_key" json:"sonarr_api_key"`
 	SonarrCategory       string   `pg:"sonarr_category" json:"sonarr_category"`
 	SonarrURL            string   `pg:"sonarr_url" json:"sonarr_url"`
+	SonarrConfigurationID bool `pg:"sonarr_configuration_id, pk"`
 }
 
 // RadarrConfiguration database + json model
@@ -101,6 +107,7 @@ type RadarrConfiguration struct {
 	RadarrAPIKey         string   `pg:"radarr_api_key" json:"radarr_api_key"`
 	RadarrCategory       string   `pg:"radarr_category" json:"radarr_category"`
 	RadarrURL            string   `pg:"radarr_url" json:"radarr_url"`
+	RadarrConfigurationID bool `pg:"radarr_configuration_id, pk"`
 }
 
 // Configurator json model to transfer configuration fields to ui

@@ -5,7 +5,7 @@
                 <b-input :placeholder="setting.placeholder" v-model="setting.string_value"></b-input>
             </b-field>
             <div class="field" v-if="setting.datatype == 'bool'">
-                <b-switch size="is-medium" :value="setting.bool_value" type="is-success" controls-position="compact">
+                <b-switch size="is-medium" v-model="setting.bool_value" type="is-success" controls-position="compact">
                     {{setting.label}}
                 </b-switch>
             </div>

@@ -8,7 +8,7 @@ import (
 func init() {
 	up := func(db orm.DB) error {
 		_, err := db.Exec(`
-			CREATE TABLE filbot_configuration (
+			CREATE TABLE filebot_configuration (
 				filebot_configuration_id bool NOT NULL DEFAULT true,
 				fb_output_dir text,
 				fb_subtitles_locale varchar(16),

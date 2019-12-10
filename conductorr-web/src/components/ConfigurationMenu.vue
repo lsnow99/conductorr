@@ -43,9 +43,14 @@ export default {
 </style>
 
 <style scoped>
+.menu{
+    margin-top:25px;
+    margin-left: 13px;
+}
 @media screen and (min-width: 775px) {
     .menu {
         position: fixed;
+        top: 80px;
     }
 }
 </style>

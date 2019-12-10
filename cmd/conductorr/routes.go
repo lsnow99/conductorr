@@ -3,12 +3,14 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
+	"reflect"
 	"time"
 
-	"github.com/gorilla/mux"
 	"github.com/go-pg/pg/v9"
+	"github.com/gorilla/mux"
 	"github.com/lsnow2017/conductorr/internal/constants"
 	"github.com/lsnow2017/conductorr/internal/schema"
 
@@ -148,24 +150,7 @@ func JWTRefreshHandler(w http.ResponseWriter, r *http.Request) {
 	// }
 }
 
-func ConfigurationHandler(w http.ResponseWriter, r *http.Request) {
-	configuration := schema.FilebotConfiguration{}
-	configuration.FilebotConfigurationID = true
-
-	err := db.Select(&configuration)
-
-	if err != nil {
-		panic(err)
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(configuration); err != nil {
-		panic(err)
-	}
-}
-
-// PostConfigHandler update config in database
+// SetConfigHandler update config in database
 func SetConfigHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
@@ -173,33 +158,178 @@ func SetConfigHandler(w http.ResponseWriter, r *http.Request) {
 	case "filebot":
 		config := &schema.FilebotConfiguration{}
 		config.FilebotConfigurationID = true
+		_, err := db.Model(config).SelectOrInsert()
+		if err != nil {
+			panic(err)
+		}
+
+		newConfig := &schema.FilebotConfiguration{}
+		newConfig.FilebotConfigurationID = true
+		err = json.NewDecoder(r.Body).Decode(newConfig)
+		if err != nil {
+			panic(err)
+		}
+		err = db.Update(newConfig)
+		if err != nil {
+			panic(err)
+		}
+		w.WriteHeader(http.StatusOK)
+		break
 
 	case "sonarr":
+		config := &schema.SonarrConfiguration{}
+		config.SonarrConfigurationID = true
+		_, err := db.Model(config).SelectOrInsert()
+		if err != nil {
+			panic(err)
+		}
+
+		newConfig := &schema.SonarrConfiguration{}
+		newConfig.SonarrConfigurationID = true
+		err = json.NewDecoder(r.Body).Decode(newConfig)
+		if err != nil {
+			panic(err)
+		}
+		err = db.Update(newConfig)
+		if err != nil {
+			panic(err)
+		}
+		w.WriteHeader(http.StatusOK)
+		break
 
 	case "radarr":
+		config := &schema.RadarrConfiguration{}
+		config.RadarrConfigurationID = true
+		_, err := db.Model(config).SelectOrInsert()
+		if err != nil {
+			panic(err)
+		}
+
+		newConfig := &schema.RadarrConfiguration{}
+		newConfig.RadarrConfigurationID = true
+		err = json.NewDecoder(r.Body).Decode(newConfig)
+		if err != nil {
+			panic(err)
+		}
+		err = db.Update(newConfig)
+		if err != nil {
+			panic(err)
+		}
+		w.WriteHeader(http.StatusOK)
+		break
 
 	case "plex":
+		config := &schema.PlexConfiguration{}
+		config.PlexConfigurationID = true
+		_, err := db.Model(config).SelectOrInsert()
+		if err != nil {
+			panic(err)
+		}
+
+		newConfig := &schema.PlexConfiguration{}
+		newConfig.PlexConfigurationID = true
+		err = json.NewDecoder(r.Body).Decode(newConfig)
+		if err != nil {
+			panic(err)
+		}
+		err = db.Update(newConfig)
+		if err != nil {
+			panic(err)
+		}
+		w.WriteHeader(http.StatusOK)
+		break
 
 	default:
-
+		w.Header().Set("Content-Type", "text")
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Error: %s", "Invalid service")
+		return
 	}
+}
+
+func populateConfigs(defaults []schema.Configurator, saved interface{}) []schema.Configurator {
+	reflection := reflect.TypeOf(saved)
+	v := reflect.ValueOf(saved)
+
+	for i := 0; i < len(defaults); i++ {
+		tagName := defaults[i].Property
+		fieldNum := -1
+		for j := 0; j < v.Type().NumField(); j++ {
+			candidateName, _ := reflection.Field(j).Tag.Lookup("pg")
+			if candidateName == tagName {
+				fieldNum = j
+			}
+		}
+		if fieldNum == -1 {
+			log.Printf("Error matching config: %s", tagName)
+			continue
+		}
+		switch defaults[i].Datatype {
+		case "bool":
+			defaults[i].BoolValue = reflect.ValueOf(saved).Field(fieldNum).Bool()
+			break
+		case "integer":
+			defaults[i].IntValue = reflect.ValueOf(saved).Field(fieldNum).Int()
+			break
+		case "string":
+			defaults[i].StringValue = reflect.ValueOf(saved).Field(fieldNum).String()
+			break
+		}
+	}
+	return defaults
 }
 
 // GetConfigHandler return config form data
 func GetConfigHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	var configObj interface{}
+	var configObj []schema.Configurator
 
 	switch vars["service"] {
 	case "filebot":
 		configObj = constants.FilebotConfig
+		fbConfig := &schema.FilebotConfiguration{}
+		fbConfig.FilebotConfigurationID = true
+		err := db.Select(fbConfig)
+		if err != nil && err != pg.ErrNoRows {
+			panic(err)
+		} else if err == nil {
+			configObj = populateConfigs(configObj, *fbConfig)
+		}
+		break
 	case "sonarr":
 		configObj = constants.SonarrConfig
+		sonConfig := &schema.SonarrConfiguration{}
+		sonConfig.SonarrConfigurationID = true
+		err := db.Select(sonConfig)
+		if err != nil && err != pg.ErrNoRows {
+			panic(err)
+		} else if err == nil {
+			configObj = populateConfigs(configObj, *sonConfig)
+		}
+		break
 	case "radarr":
 		configObj = constants.RadarrConfig
+		radConfig := &schema.RadarrConfiguration{}
+		radConfig.RadarrConfigurationID = true
+		err := db.Select(radConfig)
+		if err != nil && err != pg.ErrNoRows {
+			panic(err)
+		} else if err == nil {
+			configObj = populateConfigs(configObj, *radConfig)
+		}
+		break
 	case "plex":
 		configObj = constants.PlexConfig
+		plexConfig := &schema.PlexConfiguration{}
+		plexConfig.PlexConfigurationID = true
+		err := db.Select(plexConfig)
+		if err != nil && err != pg.ErrNoRows {
+			panic(err)
+		} else if err == nil {
+			configObj = populateConfigs(configObj, *plexConfig)
+		}
+		break
 	default:
 		w.Header().Set("Content-Type", "text")
 		w.WriteHeader(http.StatusBadRequest)

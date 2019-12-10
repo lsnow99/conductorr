@@ -57,7 +57,6 @@ func initRoutes() *negroni.Negroni {
 	r.HandleFunc("/auth/login", LoginHandler).Methods("POST")
 
 	ar.HandleFunc("/api/refreshToken", JWTRefreshHandler).Methods("GET")
-	ar.HandleFunc("/api/settings", ConfigurationHandler).Methods("GET")
 	ar.HandleFunc("/api/config/{service}", GetConfigHandler).Methods("GET")
 	ar.HandleFunc("/api/config/{service}", SetConfigHandler).Methods("POST")
 

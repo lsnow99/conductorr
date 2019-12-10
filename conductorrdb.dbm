@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.9.2-beta2" last-position="168,134" last-zoom="1.15" max-obj-count="7"
+<dbmodel pgmodeler-ver="0.9.2-beta2" last-position="290,131" last-zoom="1.15" max-obj-count="7"
 	 default-owner="postgres">
 <role name="conductorr"
       createdb="true"
@@ -177,7 +177,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</constraint>
 </table>
 
-<table name="filbot_configuration" layer="0" collapse-mode="2" max-obj-count="33">
+<table name="filebot_configuration" layer="0" collapse-mode="2" max-obj-count="37">
 	<schema name="public"/>
 	<role name="conductorr"/>
 	<position x="340" y="160"/>
@@ -265,10 +265,19 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<column name="fb_namespace">
 		<type name="text" length="0"/>
 	</column>
-	<constraint name="filebot_config_pk" type="pk-constr" table="public.filbot_configuration">
+	<column name="fb_pushbullet">
+		<type name="text" length="0"/>
+	</column>
+	<column name="fb_min_file_size" default-value="-1">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="fb_min_length_ms" default-value="-1">
+		<type name="integer" length="0"/>
+	</column>
+	<constraint name="filebot_config_pk" type="pk-constr" table="public.filebot_configuration">
 		<columns names="filebot_configuration_id" ref-type="src-columns"/>
 	</constraint>
-	<constraint name="filebot_config_one_row" type="ck-constr" table="public.filbot_configuration">
+	<constraint name="filebot_config_one_row" type="ck-constr" table="public.filebot_configuration">
 			<expression><![CDATA[filebot_configuration_id]]></expression>
 	</constraint>
 </table>

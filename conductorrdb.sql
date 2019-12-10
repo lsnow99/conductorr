@@ -113,9 +113,9 @@ CREATE TABLE public.radarr_configuration (
 ALTER TABLE public.radarr_configuration OWNER TO conductorr;
 -- ddl-end --
 
--- object: public.filbot_configuration | type: TABLE --
--- DROP TABLE IF EXISTS public.filbot_configuration CASCADE;
-CREATE TABLE public.filbot_configuration (
+-- object: public.filebot_configuration | type: TABLE --
+-- DROP TABLE IF EXISTS public.filebot_configuration CASCADE;
+CREATE TABLE public.filebot_configuration (
 	filebot_configuration_id bool NOT NULL DEFAULT true,
 	fb_output_dir text,
 	fb_subtitles_locale varchar(16),
@@ -144,12 +144,15 @@ CREATE TABLE public.filbot_configuration (
 	fb_extras bool DEFAULT true,
 	fb_deployment_name text,
 	fb_namespace text,
+	fb_pushbullet text,
+	fb_min_file_size integer DEFAULT -1,
+	fb_min_length_ms integer DEFAULT -1,
 	CONSTRAINT filebot_config_pk PRIMARY KEY (filebot_configuration_id),
 	CONSTRAINT filebot_config_one_row CHECK (filebot_configuration_id)
 
 );
 -- ddl-end --
-ALTER TABLE public.filbot_configuration OWNER TO conductorr;
+ALTER TABLE public.filebot_configuration OWNER TO conductorr;
 -- ddl-end --
 
 -- object: public.plex_configuration | type: TABLE --

@@ -62,19 +62,39 @@ export default {
     },
     props: ["service"],
     mounted: function() {
-        axios.get("/api/config/" + this.service, this.axiosAuthConfig()).then(response => {
-            this.configObj = response.data;
-            this.isLoading = false;
-        })
-        .catch((error) => {
-            this.checkUnauthorizedToken(error)
-        });
+        axios
+            .get("/api/config/" + this.service, this.axiosAuthConfig())
+            .then(response => {
+                this.configObj = response.data;
+                this.isLoading = false;
+            })
+            .catch(error => {
+                this.checkUnauthorizedToken(error);
+            });
     },
     methods: {
         save: function() {
             this.isSaving = true;
+            let configurationData = {}
+            for(let setting of this.configObj) {
+                switch (setting.datatype) {
+                    case "bool":
+                        configurationData[setting.property] = setting.bool_value
+                        break;
+                    case "string":
+                        configurationData[setting.property] = setting.string_value
+                        break;
+                    case "int":
+                        configurationData[setting.property] = setting.int_value   
+                        break;
+                }
+            }
             axios
-                .post("/api/config/" + this.service, this.configObj)
+                .post(
+                    "/api/config/" + this.service,
+                    configurationData,
+                    this.axiosAuthConfig()
+                )
                 .then(() => {
                     Snackbar.open({
                         message: "Successfully saved settings!",
@@ -83,8 +103,8 @@ export default {
                         duration: 3000
                     });
                 })
-                .catch((error) => {
-                    this.checkUnauthorizedToken(error)
+                .catch(error => {
+                    this.checkUnauthorizedToken(error);
                     Snackbar.open({
                         message: "Error saving settings",
                         type: "is-danger",
