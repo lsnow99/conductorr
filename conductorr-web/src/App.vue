@@ -33,11 +33,17 @@
                 </b-navbar-item>
             </template>
         </b-navbar>
-        <router-view />
+        <div id="mainView">
+            <router-view />
+        </div>
     </div>
 </template>
 
 <style>
+#mainView {
+    margin-top: 20px;
+}
+
 #app {
     font-family: "Avenir", Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;

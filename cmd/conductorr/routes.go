@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"reflect"
+	"strconv"
 	"time"
 
 	"github.com/go-pg/pg/v9"
@@ -69,7 +70,7 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// If there is something wrong with the request body, return a 400 status
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Println(err)
+		fmt.Println(err.Error())
 		return
 	}
 	// Salt and hash the password using the bcrypt algorithm
@@ -134,9 +135,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	ss := GenerateToken()
 
 	fmt.Fprint(w, ss)
-	// if err := json.NewEncoder(w).Encode(response); err != nil {
-	// 	panic(err)
-	// }
 }
 
 // JWTRefreshHandler refresh JWT if authenticated
@@ -145,9 +143,35 @@ func JWTRefreshHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(ss))
-	// if err := json.NewEncoder(w).Encode(response); err != nil {
-	// 	panic(err)
-	// }
+}
+
+// LinkHandler handle OnGrabbed linking events from sonarr/radarr
+func LinkHandler(w http.ResponseWriter, r *http.Request) {
+	lr := &schema.LinkRequest{}
+	err := json.NewDecoder(r.Body).Decode(lr)
+	if err != nil {
+		// If there is something wrong with the request body, return a 400 status
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Println(err.Error())
+		return
+	}
+	job := &schema.Jobs{}
+
+	if lr.DownloadClientIdentifier == "NZBGet" {
+		job.NZBLinkerID = lr.DownloadClientIdentifier
+	} else if lr.DownloadClientIdentifier == "rTorrent" {
+		job.TorrentLinkerID = lr.DownloadClientIdentifier
+	}
+	id, err := strconv.Atoi(lr.ContentIdentifier)
+	job.GrabberInternalID = int64(id)
+	if err != nil {
+		panic(err)
+	}
+
+	err = db.Insert(job)
+	if err != nil {
+		panic(err)
+	}
 }
 
 // SetConfigHandler update config in database
@@ -268,7 +292,7 @@ func populateConfigs(defaults []schema.Configurator, saved interface{}) []schema
 		case "bool":
 			defaults[i].BoolValue = reflect.ValueOf(saved).Field(fieldNum).Bool()
 			break
-		case "integer":
+		case "int":
 			defaults[i].IntValue = reflect.ValueOf(saved).Field(fieldNum).Int()
 			break
 		case "string":

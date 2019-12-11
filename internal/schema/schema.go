@@ -121,3 +121,12 @@ type Configurator struct {
 	StringValue string `json:"string_value"`
 	Datatype string `json:"datatype"`
 }
+
+// LinkRequest json model for receiving a request to link a newly grabbed item
+type LinkRequest struct {
+	DownloadDirectory 			string 	`json:"dl_dir"`
+	ContentIdentifier 			string 	`json:"content_id"`
+	ContentCategory 			string 	`json:"content_category"`
+	ContentName 				string 	`json:"content_name"`
+	DownloadClientIdentifier 	string 	`json:"dl_client_id"`
+}
