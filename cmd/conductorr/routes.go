@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"reflect"
-	"strconv"
 	"time"
 
 	"github.com/go-pg/pg/v9"
@@ -158,19 +157,68 @@ func LinkHandler(w http.ResponseWriter, r *http.Request) {
 	job := &schema.Jobs{}
 
 	if lr.DownloadClientIdentifier == "NZBGet" {
-		job.NZBLinkerID = lr.DownloadClientIdentifier
+		job.NZBLinkerID = lr.NZBLinkerID
 	} else if lr.DownloadClientIdentifier == "rTorrent" {
-		job.TorrentLinkerID = lr.DownloadClientIdentifier
+		job.TorrentLinkerID = lr.TorrentLinkerID
 	}
-	id, err := strconv.Atoi(lr.ContentIdentifier)
-	job.GrabberInternalID = int64(id)
-	if err != nil {
-		panic(err)
-	}
+	job.GrabberInternalID = lr.ContentIdentifier
+	job.ContentType = lr.ContentCategory
+	job.Title = lr.ContentName
+	job.ReleaseTitle = lr.ReleaseTitle
 
 	err = db.Insert(job)
 	if err != nil {
 		panic(err)
+	}
+}
+
+// ImportHandler run the filebot command
+func ImportHandler(w http.ResponseWriter, r *http.Request) {
+	ir := &schema.ImportRequest{}
+	err := json.NewDecoder(r.Body).Decode(ir)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Println(err.Error())
+		return
+	}
+	job := &schema.Jobs{}
+
+	if ir.DownloadClientIdentifier == "NZBGet" {
+		job.NZBLinkerID = ir.DownloadContentID
+	} else if ir.DownloadClientIdentifier == "rTorrent" {
+		job.TorrentLinkerID = ir.DownloadContentID
+	}
+	job.DownloadDirectory = ir.DownloadDirectory
+
+	err = db.Select(job)
+	if err == pg.ErrNoRows {
+		w.WriteHeader(http.StatusNotFound)
+		fmt.Println("Could not find a match for this job ID")
+		return
+	} else if err != nil {
+		panic(err)
+	}
+
+	fbConfig := schema.FilebotConfiguration{}
+	fbConfig.FilebotConfigurationID = true
+	err = db.Select(fbConfig)
+	if err == pg.ErrNoRows {
+		w.WriteHeader(http.StatusNotFound)
+		fmt.Println("Please set filebot connection options in Conductorr settings!")
+		return
+	}
+	filebot.RunFilebot(job.DownloadDirectory)
+	newPath, _ := filebot.GetNewDirectory(job.DownloadDirectory)
+	sonarr.NotifyNewPath(newPath, job.GrabberInternalID)
+
+	if job.DownloadClient == os.Getenv("NZB_CLIENT") {
+		err = os.RemoveAll(job.DownloadDirectory)
+		if err != nil {
+			// util.LogAllError("Error deleting original file after Filebot copy"+
+			// err.Error(), w)
+		} else {
+			// util.LogAllInfo("Successfully deleted: "+job.DownloadDirectory, w)
+		}
 	}
 }
 
@@ -201,23 +249,12 @@ func SetConfigHandler(w http.ResponseWriter, r *http.Request) {
 		break
 
 	case "sonarr":
-		config := &schema.SonarrConfiguration{}
-		config.SonarrConfigurationID = true
-		_, err := db.Model(config).SelectOrInsert()
-		if err != nil {
-			panic(err)
-		}
-
 		newConfig := &schema.SonarrConfiguration{}
-		newConfig.SonarrConfigurationID = true
-		err = json.NewDecoder(r.Body).Decode(newConfig)
+		err := json.NewDecoder(r.Body).Decode(newConfig)
 		if err != nil {
 			panic(err)
-		}
-		err = db.Update(newConfig)
-		if err != nil {
-			panic(err)
-		}
+        }
+        sonarr.SaveConfiguration(*newConfig)
 		w.WriteHeader(http.StatusOK)
 		break
 

@@ -1,0 +1,236 @@
+package main
+
+import (
+	"encoding/xml"
+	"io/ioutil"
+	"os"
+	"strings"
+
+	"github.com/go-pg/pg/v9"
+	"github.com/lsnow2017/conductorr/internal/schema"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/remotecommand"
+)
+
+// Filebot struct to communicate with Filebot
+type Filebot struct {
+	config schema.FilebotConfiguration
+}
+
+/*
+RunFilebot attempts to exec into the filebot pod and run the filebot
+*/
+func (f Filebot) RunFilebot(DownloadDirectory string) {
+	config, err := rest.InClusterConfig()
+
+	// create the clientset
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	pods, err := clientset.CoreV1().Pods(f.config.FbNamespace).List(metav1.ListOptions{})
+
+	var podName string
+
+	for _, pod := range pods.Items {
+		if strings.HasPrefix(pod.GetName(), f.config.FbDeploymentName) {
+			podName = pod.GetName()
+		}
+	}
+
+	cmd := []string{
+		"filebot",
+		"-script", "fn:amc",
+		"--output", f.config.FbOutputDir,
+		"--action", f.config.FbAction,
+		"--conflict", "override", "-non-strict",
+		"--log-file", f.config.FbAmcLog,
+		"--def",
+		"unsorted=" + boolToYorN(f.config.FbUnsorted),
+		"music=n",
+		"subtitles=" + f.config.FbSubtitlesLocale,
+		"artwork=" + boolToYorN(f.config.FbArtwork),
+		"extras=" + boolToYorN(f.config.FbExtras),
+		"kodi=" + f.config.FbKodi,
+		"plex=" + f.config.FbPlex,
+		"emby=" + f.config.FbEmby,
+		"pushover=" + f.config.FbPushover,
+		"pushbullet=" + f.config.FbPushbullet,
+		"discord=" + f.config.FbDiscord,
+		"gmail=" + f.config.FbGmail,
+		"mail=" + f.config.FbMail,
+		"mailto=" + f.config.FbMailto,
+		"reportError=" + boolToYorN(f.config.FbReportError),
+		"storeReport=" + boolToYorN(f.config.FbStoreReport),
+		"extractFolder=" + f.config.FbExtractFolder,
+		"skipExtract=" + boolToYorN(f.config.FbSkipExtract),
+		"deleteAfterExtract=" + boolToYorN(f.config.FbDeleteAfterExtract),
+		"clean=" + boolToYorN(f.config.FbClean),
+		"exec=" + f.config.FbExec,
+		"ignore=" + f.config.FbIgnore,
+		// "minFileSize=" + string(f.config.FbMinFileSize),
+		// "minLengthMS=" + string(f.config.FbMinLengthMs),
+		// "excludeList=" + f.config.FbExcludeList,
+		DownloadDirectory,
+	}
+
+	req := clientset.CoreV1().RESTClient().Post().Resource("pods").Name(podName).Namespace(f.config.FbNamespace).SubResource("exec")
+	option := &v1.PodExecOptions{
+		Command: cmd,
+		TTY:     true,
+		Stderr:  true,
+		Stdout:  true,
+		Stdin:   true,
+	}
+	req.VersionedParams(
+		option,
+		scheme.ParameterCodec,
+	)
+	exec, err := remotecommand.NewSPDYExecutor(config, "POST", req.URL())
+	if err != nil {
+		return
+	}
+	err = exec.Stream(remotecommand.StreamOptions{
+		Stdin:  os.Stdin,
+		Stdout: os.Stdout,
+		Stderr: os.Stderr,
+	})
+	if err != nil {
+		return
+	}
+}
+
+/*
+SaveConfiguration save a sonarr configuration to the database
+*/
+func (f Filebot) SaveConfiguration(config schema.FilebotConfiguration) {
+	config.FilebotConfigurationID = true
+	inserted, err := db.Model(&config).SelectOrInsert()
+	if err != nil {
+		panic(err)
+	}
+
+	if !inserted {
+		err = db.Update(&config)
+		if err != nil {
+			panic(err)
+		}
+	}
+	f.config = config
+}
+
+/*
+LoadConfiguration load a configuration from cache and optionally refresh cache
+*/
+func (f Filebot) LoadConfiguration(refreshCache bool) schema.FilebotConfiguration {
+	if refreshCache {
+		f.config.FilebotConfigurationID = true
+		err := db.Select(&f.config)
+		if err == pg.ErrNoRows {
+			db.Insert(&f.config)
+		} else if err != nil {
+			panic(err)
+		}
+	}
+	return f.config
+}
+
+/*
+GetNewDirectory searches Filebot's history.xml file to find the new location for
+the media it processed by matching the original location to the record
+*/
+func (f Filebot) GetNewDirectory(DownloadDirectory string) (string, schema.Sequence) {
+	DownloadDirectory = strings.TrimRight(DownloadDirectory, "/")
+	oRoot := ""
+	var ourSeq schema.Sequence
+
+	historyFile, err := os.Open(os.Getenv("FB_DIRECTORY") + "history.xml")
+	// if we os.Open returns an error then handle it
+	if err != nil {
+		return "", ourSeq
+	}
+
+	// defer the closing of our historyFile so that we can parse it later on
+	defer historyFile.Close()
+
+	byteValue, _ := ioutil.ReadAll(historyFile)
+
+	// we initialize our History array
+	var history schema.History
+	// we unmarshal our byteArray which contains our
+	// historyFile content into 'history' which we defined above
+	xml.Unmarshal(byteValue, &history)
+
+	for i := 0; i < len(history.Sequences); i++ {
+		seq := history.Sequences[i]
+		for j := 0; j < len(seq.Renames); j++ {
+			ren := seq.Renames[j]
+			switch getPathInfo(DownloadDirectory) {
+			case FILE:
+				if ren.Dir+"/"+ren.From == DownloadDirectory {
+					ourSeq = history.Sequences[i]
+					oRoot = upDir(upDir(ren.To))
+				}
+			case DIRECTORY:
+				if strings.HasPrefix(ren.Dir, DownloadDirectory) {
+					ourSeq = history.Sequences[i]
+					oRoot = upDir(upDir(ren.To))
+				}
+			default:
+				return "", ourSeq
+			}
+		}
+	}
+
+	return oRoot, ourSeq
+}
+
+func upDir(path string) string {
+	path = strings.TrimRight(path, "/")
+	upDir := path[:strings.LastIndex(path, "/")]
+	return upDir
+}
+
+// PathInfo enum for filsystem object type
+type PathInfo int
+
+const (
+	// FILE type file
+	FILE PathInfo = iota
+	// DIRECTORY type directory
+	DIRECTORY
+	// NEITHER type neither
+	NEITHER
+)
+
+// getPathInfo utility to get the type of a filesystem object
+func getPathInfo(path string) PathInfo {
+	fi, err := os.Stat(path)
+	switch {
+	case err != nil:
+		// handle the error and return
+		return NEITHER
+	case fi.IsDir():
+		// it's a directory
+		return DIRECTORY
+	default:
+		// it's not a directory
+		return FILE
+	}
+}
+
+// boolToYorN quick utility to turn a bool into a "y" or "n" string
+func boolToYorN(test bool) string {
+	var ans string
+	if test {
+		ans = "y"
+	} else {
+		ans = "y"
+	}
+	return ans
+}

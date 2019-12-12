@@ -6,7 +6,6 @@ import (
 	"github.com/go-pg/pg/v9"
 	"github.com/joho/godotenv"
 
-	// "github.com/go-pg/pg/v9/orm"
 	"log"
 	"os"
 	"os/exec"
@@ -18,6 +17,9 @@ import (
 )
 
 var db *pg.DB
+var sonarr Sonarr
+var filebot Filebot
+var plex Plex
 
 func main() {
 	log.Printf("Starting Conductorr v1\n")
@@ -31,7 +33,7 @@ func main() {
 		User:     os.Getenv("DB_USER"),
 		Password: os.Getenv("DB_PASSWORD"),
 		Database: os.Getenv("DB_DATABASE"),
-		Addr: os.Getenv("DB_HOST") + ":" + os.Getenv("DB_PORT"),
+		Addr:     os.Getenv("DB_HOST") + ":" + os.Getenv("DB_PORT"),
 	})
 	defer db.Close()
 
@@ -56,6 +58,7 @@ func initRoutes() *negroni.Negroni {
 	r.HandleFunc("/auth/signup", SignupHandler).Methods("POST")
 	r.HandleFunc("/auth/login", LoginHandler).Methods("POST")
 	r.HandleFunc("/_link", LinkHandler).Methods("POST")
+	r.HandleFunc("/_import", ImportHandler).Methods("POST")
 
 	ar.HandleFunc("/api/refreshToken", JWTRefreshHandler).Methods("GET")
 	ar.HandleFunc("/api/config/{service}", GetConfigHandler).Methods("GET")
@@ -84,4 +87,10 @@ func runMigrations() {
 	}
 	log.Printf(string(out))
 	log.Printf("Migrations completed")
+}
+
+func initConfigs() {
+	sonarr.LoadConfiguration(true)
+	filebot.LoadConfiguration(true)
+	plex.LoadConfiguration(true)
 }
