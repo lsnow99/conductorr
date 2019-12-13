@@ -3,32 +3,32 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/lsnow2017/conductorr/internal/schema"
-	"github.com/go-pg/pg/v9"
 	"net/http"
 	"strconv"
+
+	"github.com/go-pg/pg/v9"
+	"github.com/lsnow2017/conductorr/internal/schema"
 )
 
 // Radarr struct for communicating with radarr
 type Radarr struct {
-	config schema.RadarrConfiguration
+	config *schema.RadarrConfiguration
 }
 
 /*
 SaveConfiguration save a radarr configuration to the database
 */
-func (r Radarr) SaveConfiguration(config schema.RadarrConfiguration) {
-	config.RadarrConfigurationID = true
-	inserted, err := db.Model(&config).SelectOrInsert()
+func (r Radarr) SaveConfiguration(config *schema.RadarrConfiguration) {
+	defaultConfig := schema.RadarrConfiguration{}
+	defaultConfig.RadarrConfigurationID = true
+	_, err := db.Model(&defaultConfig).SelectOrInsert()
 	if err != nil {
 		panic(err)
 	}
 
-	if !inserted {
-		err = db.Update(&config)
-		if err != nil {
-			panic(err)
-		}
+	err = db.Update(config)
+	if err != nil {
+		panic(err)
 	}
 	r.config = config
 }
@@ -36,12 +36,12 @@ func (r Radarr) SaveConfiguration(config schema.RadarrConfiguration) {
 /*
 LoadConfiguration load a configuration from cache and optionally refresh cache
 */
-func (r Radarr) LoadConfiguration(refreshCache bool) schema.RadarrConfiguration {
+func (r Radarr) LoadConfiguration(refreshCache bool) *schema.RadarrConfiguration {
 	if refreshCache {
 		r.config.RadarrConfigurationID = true
-		err := db.Select(&r.config)
+		err := db.Select(r.config)
 		if err == pg.ErrNoRows {
-			db.Insert(&r.config)
+			db.Insert(r.config)
 		} else if err != nil {
 			panic(err)
 		}
@@ -50,15 +50,33 @@ func (r Radarr) LoadConfiguration(refreshCache bool) schema.RadarrConfiguration 
 }
 
 /*
-NotifyNewPath update Sonarr with the new path for the content
+TestRadarrConnection test the connection given a Radarr configuration
+*/
+func TestRadarrConnection(config *schema.RadarrConfiguration) bool {
+	resp, err := http.Get(config.RadarrURL + "system/status?apikey=" + config.RadarrAPIKey)
+	if err != nil {
+		return false
+	}
+	decoder := json.NewDecoder(resp.Body)
+	var respJSON map[string]interface{}
+	err = decoder.Decode(&respJSON)
+	if err != nil {
+		return false
+	}
+
+	return respJSON["version"] != nil
+}
+
+/*
+NotifyNewPath update Radarr with the new path for the content
 */
 func (r Radarr) NotifyNewPath(newPath string, contentID int64) {
 	/*
 	 * API Request #1 - Get existing data
 	 */
-	//// util.LogAllInfo("Performing API request #1 (get old data):", w)
+	// util.LogAllInfo("Performing API request #1 (get old data):", w)
 	req1URL := r.config.RadarrURL + "movie" + "/" + strconv.Itoa(int(contentID)) + "?apikey="
-	//// util.LogAllInfo(req1URL+"(api key hidden)", w)
+	// util.LogAllInfo(req1URL+"(api key hidden)", w)
 	req1URL += r.config.RadarrAPIKey
 	resp1, err := http.Get(req1URL)
 	if err != nil {

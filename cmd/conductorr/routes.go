@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/go-pg/pg/v9"
@@ -228,23 +229,13 @@ func SetConfigHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch vars["service"] {
 	case "filebot":
-		config := &schema.FilebotConfiguration{}
-		config.FilebotConfigurationID = true
-		_, err := db.Model(config).SelectOrInsert()
-		if err != nil {
-			panic(err)
-		}
-
 		newConfig := &schema.FilebotConfiguration{}
 		newConfig.FilebotConfigurationID = true
-		err = json.NewDecoder(r.Body).Decode(newConfig)
+		err := json.NewDecoder(r.Body).Decode(newConfig)
 		if err != nil {
 			panic(err)
 		}
-		err = db.Update(newConfig)
-		if err != nil {
-			panic(err)
-		}
+		filebot.SaveConfiguration(newConfig)
 		w.WriteHeader(http.StatusOK)
 		break
 
@@ -253,50 +244,33 @@ func SetConfigHandler(w http.ResponseWriter, r *http.Request) {
 		err := json.NewDecoder(r.Body).Decode(newConfig)
 		if err != nil {
 			panic(err)
-        }
-        sonarr.SaveConfiguration(*newConfig)
+		}
+		newConfig.SonarrURL = endWithSlash(newConfig.SonarrURL)
+		sonarr.SaveConfiguration(newConfig)
 		w.WriteHeader(http.StatusOK)
 		break
 
 	case "radarr":
-		config := &schema.RadarrConfiguration{}
-		config.RadarrConfigurationID = true
-		_, err := db.Model(config).SelectOrInsert()
-		if err != nil {
-			panic(err)
-		}
-
 		newConfig := &schema.RadarrConfiguration{}
 		newConfig.RadarrConfigurationID = true
-		err = json.NewDecoder(r.Body).Decode(newConfig)
+		err := json.NewDecoder(r.Body).Decode(newConfig)
 		if err != nil {
 			panic(err)
 		}
-		err = db.Update(newConfig)
-		if err != nil {
-			panic(err)
-		}
+		newConfig.RadarrURL = endWithSlash(newConfig.RadarrURL)
+		radarr.SaveConfiguration(newConfig)
 		w.WriteHeader(http.StatusOK)
 		break
 
 	case "plex":
-		config := &schema.PlexConfiguration{}
-		config.PlexConfigurationID = true
-		_, err := db.Model(config).SelectOrInsert()
-		if err != nil {
-			panic(err)
-		}
-
 		newConfig := &schema.PlexConfiguration{}
 		newConfig.PlexConfigurationID = true
-		err = json.NewDecoder(r.Body).Decode(newConfig)
+		err := json.NewDecoder(r.Body).Decode(newConfig)
 		if err != nil {
 			panic(err)
 		}
-		err = db.Update(newConfig)
-		if err != nil {
-			panic(err)
-		}
+		newConfig.PlexBaseURL = endWithSlash(newConfig.PlexBaseURL)
+		plex.SaveConfiguration(newConfig)
 		w.WriteHeader(http.StatusOK)
 		break
 
@@ -306,6 +280,13 @@ func SetConfigHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Error: %s", "Invalid service")
 		return
 	}
+}
+
+func endWithSlash(url string) string {
+	if strings.HasSuffix(url, "/") {
+		return url
+	}
+	return url + "/"
 }
 
 func populateConfigs(defaults []schema.Configurator, saved interface{}) []schema.Configurator {
@@ -338,6 +319,50 @@ func populateConfigs(defaults []schema.Configurator, saved interface{}) []schema
 		}
 	}
 	return defaults
+}
+
+// TestConfigHandler test the connection to the service
+func TestConfigHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+
+	var success bool
+
+	switch vars["service"] {
+	case "sonarr":
+		config := &schema.SonarrConfiguration{}
+		config.SonarrConfigurationID = true
+		err := json.NewDecoder(r.Body).Decode(config)
+		if err != nil {
+			panic(err)
+		}
+		config.SonarrURL = endWithSlash(config.SonarrURL)
+
+		success = TestSonarrConnection(config)
+	case "radarr":
+		config := &schema.RadarrConfiguration{}
+		config.RadarrConfigurationID = true
+		err := json.NewDecoder(r.Body).Decode(config)
+		if err != nil {
+			panic(err)
+		}
+		config.RadarrURL = endWithSlash(config.RadarrURL)
+
+		success = TestRadarrConnection(config)
+	}
+
+	responseObj := map[string]bool{"test_success": success}
+	responseJSON, err := json.Marshal(responseObj)
+	if err != nil {
+		panic(err)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if success {
+		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(http.StatusFailedDependency)
+	}
+	fmt.Fprint(w, string(responseJSON))
 }
 
 // GetConfigHandler return config form data

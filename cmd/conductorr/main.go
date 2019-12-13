@@ -18,6 +18,7 @@ import (
 
 var db *pg.DB
 var sonarr Sonarr
+var radarr Radarr
 var filebot Filebot
 var plex Plex
 
@@ -63,6 +64,7 @@ func initRoutes() *negroni.Negroni {
 	ar.HandleFunc("/api/refreshToken", JWTRefreshHandler).Methods("GET")
 	ar.HandleFunc("/api/config/{service}", GetConfigHandler).Methods("GET")
 	ar.HandleFunc("/api/config/{service}", SetConfigHandler).Methods("POST")
+	ar.HandleFunc("/api/testConfig/{service}", TestConfigHandler).Methods("POST")
 
 	an := negroni.New(negroni.HandlerFunc(mw.HandlerWithNext), negroni.Wrap(ar))
 	r.PathPrefix("/api").Handler(an)
@@ -91,6 +93,7 @@ func runMigrations() {
 
 func initConfigs() {
 	sonarr.LoadConfiguration(true)
+	radarr.LoadConfiguration(true)
 	filebot.LoadConfiguration(true)
 	plex.LoadConfiguration(true)
 }

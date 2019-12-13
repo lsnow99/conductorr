@@ -11,24 +11,23 @@ import (
 
 // Sonarr struct for communicating with sonarr
 type Sonarr struct {
-	config schema.SonarrConfiguration
+	config *schema.SonarrConfiguration
 }
 
 /*
 SaveConfiguration save a sonarr configuration to the database
 */
-func (s Sonarr) SaveConfiguration(config schema.SonarrConfiguration) {
-	config.SonarrConfigurationID = true
-	inserted, err := db.Model(&config).SelectOrInsert()
+func (s Sonarr) SaveConfiguration(config *schema.SonarrConfiguration) {
+	defaultConfig := schema.SonarrConfiguration{}
+	defaultConfig.SonarrConfigurationID = true
+	_, err := db.Model(&defaultConfig).SelectOrInsert()
 	if err != nil {
 		panic(err)
 	}
 
-	if !inserted {
-		err = db.Update(&config)
-		if err != nil {
-			panic(err)
-		}
+	err = db.Update(config)
+	if err != nil {
+		panic(err)
 	}
 	s.config = config
 }
@@ -36,17 +35,35 @@ func (s Sonarr) SaveConfiguration(config schema.SonarrConfiguration) {
 /*
 LoadConfiguration load a configuration from cache and optionally refresh cache
 */
-func (s Sonarr) LoadConfiguration(refreshCache bool) schema.SonarrConfiguration {
+func (s Sonarr) LoadConfiguration(refreshCache bool) *schema.SonarrConfiguration {
 	if refreshCache {
 		s.config.SonarrConfigurationID = true
-		err := db.Select(&s.config)
+		err := db.Select(s.config)
 		if err == pg.ErrNoRows {
-			db.Insert(&s.config)
+			db.Insert(s.config)
 		} else if err != nil {
 			panic(err)
 		}
 	}
 	return s.config
+}
+
+/*
+TestSonarrConnection test the connection given a Sonarr configuration
+*/
+func TestSonarrConnection(config *schema.SonarrConfiguration) bool {
+	resp, err := http.Get(config.SonarrURL + "system/status?apikey=" + config.SonarrAPIKey)
+	if err != nil {
+		return false
+	}
+	decoder := json.NewDecoder(resp.Body)
+	var respJSON map[string]interface{}
+	err = decoder.Decode(&respJSON)
+	if err != nil {
+		return false
+	}
+
+	return respJSON["version"] != nil
 }
 
 /*

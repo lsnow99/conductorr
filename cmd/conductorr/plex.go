@@ -20,24 +20,23 @@ import (
 
 // Plex struct for communicating with sonarr
 type Plex struct {
-	config schema.PlexConfiguration
+	config *schema.PlexConfiguration
 }
 
 /*
 SaveConfiguration save a sonarr configuration to the database
 */
-func (p Plex) SaveConfiguration(config schema.PlexConfiguration) {
-	config.PlexConfigurationID = true
-	inserted, err := db.Model(&config).SelectOrInsert()
+func (p Plex) SaveConfiguration(config *schema.PlexConfiguration) {
+	defaultConfig := schema.PlexConfiguration{}
+	defaultConfig.PlexConfigurationID = true
+	_, err := db.Model(&defaultConfig).SelectOrInsert()
 	if err != nil {
 		panic(err)
 	}
 
-	if !inserted {
-		err = db.Update(&config)
-		if err != nil {
-			panic(err)
-		}
+	err = db.Update(config)
+	if err != nil {
+		panic(err)
 	}
 	p.config = config
 }
@@ -45,12 +44,12 @@ func (p Plex) SaveConfiguration(config schema.PlexConfiguration) {
 /*
 LoadConfiguration load a configuration from cache and optionally refresh cache
 */
-func (p Plex) LoadConfiguration(refreshCache bool) schema.PlexConfiguration {
+func (p Plex) LoadConfiguration(refreshCache bool) *schema.PlexConfiguration {
 	if refreshCache {
 		p.config.PlexConfigurationID = true
-		err := db.Select(&p.config)
+		err := db.Select(p.config)
 		if err == pg.ErrNoRows {
-			db.Insert(&p.config)
+			db.Insert(p.config)
 		} else if err != nil {
 			panic(err)
 		}

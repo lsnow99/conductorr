@@ -18,7 +18,7 @@ import (
 
 // Filebot struct to communicate with Filebot
 type Filebot struct {
-	config schema.FilebotConfiguration
+	config *schema.FilebotConfiguration
 }
 
 /*
@@ -108,18 +108,17 @@ func (f Filebot) RunFilebot(DownloadDirectory string) {
 /*
 SaveConfiguration save a sonarr configuration to the database
 */
-func (f Filebot) SaveConfiguration(config schema.FilebotConfiguration) {
-	config.FilebotConfigurationID = true
-	inserted, err := db.Model(&config).SelectOrInsert()
+func (f Filebot) SaveConfiguration(config *schema.FilebotConfiguration) {
+	defaultConfig := schema.FilebotConfiguration{}
+	defaultConfig.FilebotConfigurationID = true
+	_, err := db.Model(&defaultConfig).SelectOrInsert()
 	if err != nil {
 		panic(err)
 	}
 
-	if !inserted {
-		err = db.Update(&config)
-		if err != nil {
-			panic(err)
-		}
+	err = db.Update(config)
+	if err != nil {
+		panic(err)
 	}
 	f.config = config
 }
@@ -127,12 +126,12 @@ func (f Filebot) SaveConfiguration(config schema.FilebotConfiguration) {
 /*
 LoadConfiguration load a configuration from cache and optionally refresh cache
 */
-func (f Filebot) LoadConfiguration(refreshCache bool) schema.FilebotConfiguration {
+func (f Filebot) LoadConfiguration(refreshCache bool) *schema.FilebotConfiguration {
 	if refreshCache {
 		f.config.FilebotConfigurationID = true
-		err := db.Select(&f.config)
+		err := db.Select(f.config)
 		if err == pg.ErrNoRows {
-			db.Insert(&f.config)
+			db.Insert(f.config)
 		} else if err != nil {
 			panic(err)
 		}
@@ -144,8 +143,8 @@ func (f Filebot) LoadConfiguration(refreshCache bool) schema.FilebotConfiguratio
 GetNewDirectory searches Filebot's history.xml file to find the new location for
 the media it processed by matching the original location to the record
 */
-func (f Filebot) GetNewDirectory(DownloadDirectory string) (string, schema.Sequence) {
-	DownloadDirectory = strings.TrimRight(DownloadDirectory, "/")
+func (f Filebot) GetNewDirectory(downloadDir string) (string, schema.Sequence) {
+	downloadDir = strings.TrimRight(downloadDir, "/")
 	oRoot := ""
 	var ourSeq schema.Sequence
 
@@ -170,14 +169,14 @@ func (f Filebot) GetNewDirectory(DownloadDirectory string) (string, schema.Seque
 		seq := history.Sequences[i]
 		for j := 0; j < len(seq.Renames); j++ {
 			ren := seq.Renames[j]
-			switch getPathInfo(DownloadDirectory) {
+			switch getPathInfo(downloadDir) {
 			case FILE:
-				if ren.Dir+"/"+ren.From == DownloadDirectory {
+				if ren.Dir+"/"+ren.From == downloadDir {
 					ourSeq = history.Sequences[i]
 					oRoot = upDir(upDir(ren.To))
 				}
 			case DIRECTORY:
-				if strings.HasPrefix(ren.Dir, DownloadDirectory) {
+				if strings.HasPrefix(ren.Dir, downloadDir) {
 					ourSeq = history.Sequences[i]
 					oRoot = upDir(upDir(ren.To))
 				}

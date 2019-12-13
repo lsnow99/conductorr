@@ -82,7 +82,7 @@ export default {
                         message: "Error logging in",
                         type: "is-danger",
                         indefinite: false,
-                        duration: 10000
+                        duration: 3000
                     });
                 })
                 .finally(() => {
@@ -101,7 +101,7 @@ export default {
                     message: "Error communicating with API",
                     type: "is-danger",
                     indefinite: false,
-                    duration: 10000
+                    duration: 3000
                 });
             })
             .finally(() => {
