@@ -111,6 +111,7 @@ SaveConfiguration save a sonarr configuration to the database
 func (f Filebot) SaveConfiguration(config *schema.FilebotConfiguration) {
 	defaultConfig := schema.FilebotConfiguration{}
 	defaultConfig.FilebotConfigurationID = true
+	config.FilebotConfigurationID = true
 	_, err := db.Model(&defaultConfig).SelectOrInsert()
 	if err != nil {
 		panic(err)

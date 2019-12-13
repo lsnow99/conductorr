@@ -21,6 +21,7 @@ SaveConfiguration save a radarr configuration to the database
 func (r Radarr) SaveConfiguration(config *schema.RadarrConfiguration) {
 	defaultConfig := schema.RadarrConfiguration{}
 	defaultConfig.RadarrConfigurationID = true
+	config.RadarrConfigurationID = true
 	_, err := db.Model(&defaultConfig).SelectOrInsert()
 	if err != nil {
 		panic(err)

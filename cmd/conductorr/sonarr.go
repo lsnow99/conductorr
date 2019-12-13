@@ -20,6 +20,7 @@ SaveConfiguration save a sonarr configuration to the database
 func (s Sonarr) SaveConfiguration(config *schema.SonarrConfiguration) {
 	defaultConfig := schema.SonarrConfiguration{}
 	defaultConfig.SonarrConfigurationID = true
+	config.SonarrConfigurationID = true
 	_, err := db.Model(&defaultConfig).SelectOrInsert()
 	if err != nil {
 		panic(err)

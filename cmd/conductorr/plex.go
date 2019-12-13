@@ -29,6 +29,7 @@ SaveConfiguration save a sonarr configuration to the database
 func (p Plex) SaveConfiguration(config *schema.PlexConfiguration) {
 	defaultConfig := schema.PlexConfiguration{}
 	defaultConfig.PlexConfigurationID = true
+	config.PlexConfigurationID = true
 	_, err := db.Model(&defaultConfig).SelectOrInsert()
 	if err != nil {
 		panic(err)
