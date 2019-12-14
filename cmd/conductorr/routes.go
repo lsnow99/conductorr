@@ -165,6 +165,7 @@ func LinkHandler(w http.ResponseWriter, r *http.Request) {
 	job.GrabberInternalID = lr.ContentIdentifier
 	job.ContentType = lr.ContentCategory
 	job.Title = lr.ContentName
+	job.ImdbID = lr.ImdbID
 	job.ReleaseTitle = lr.ReleaseTitle
 
 	err = db.Insert(job)
