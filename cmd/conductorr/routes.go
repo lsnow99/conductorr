@@ -157,11 +157,11 @@ func LinkHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	job := &schema.Jobs{}
 
-	if lr.DownloadClientIdentifier == "NZBGet" {
-		job.NZBLinkerID = lr.NZBLinkerID
-	} else if lr.DownloadClientIdentifier == "rTorrent" {
-		job.TorrentLinkerID = lr.TorrentLinkerID
-	}
+	// if lr.DownloadClientIdentifier == "NZBGet" {
+	job.NZBLinkerID = lr.NZBLinkerID
+	// } else if lr.DownloadClientIdentifier == "rTorrent" {
+	job.TorrentLinkerID = lr.TorrentLinkerID
+	// }
 	job.GrabberInternalID = lr.ContentIdentifier
 	job.ContentType = lr.ContentCategory
 	job.Title = lr.ContentName
