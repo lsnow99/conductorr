@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/go-pg/pg/v9"
 	"github.com/joho/godotenv"
@@ -29,6 +30,10 @@ func main() {
 	if err != nil {
 		log.Printf("Could not load .env file: %s", err.Error())
 	}
+	if len(os.Getenv("JWT_SIGNING_KEY")) < 32 {
+		log.Fatal("Please set env var JWT_SIGNING_KEY to a random string at least 32 characters in length!")
+		os.Exit(1)
+	}
 
 	db = pg.Connect(&pg.Options{
 		User:     os.Getenv("DB_USER"),
@@ -41,7 +46,11 @@ func main() {
 	runMigrations()
 
 	n := initRoutes()
-	n.Run(":" + os.Getenv("PORT"))
+	port, err := strconv.Atoi(os.Getenv("PORT"))
+	if err != nil {
+		port = 80
+	}
+	n.Run(":" + strconv.Itoa(port))
 }
 
 func initRoutes() *negroni.Negroni {

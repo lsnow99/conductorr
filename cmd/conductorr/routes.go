@@ -212,7 +212,7 @@ func ImportHandler(w http.ResponseWriter, r *http.Request) {
 	newPath, _ := filebot.GetNewDirectory(job.DownloadDirectory)
 	sonarr.NotifyNewPath(newPath, job.GrabberInternalID)
 
-	if job.DownloadClient == os.Getenv("NZB_CLIENT") {
+	if job.DownloadClient == "NZBGet" {
 		err = os.RemoveAll(job.DownloadDirectory)
 		if err != nil {
 			// util.LogAllError("Error deleting original file after Filebot copy"+

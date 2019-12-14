@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/xml"
 	"io/ioutil"
+	"log"
 	"os"
 	"strings"
 
@@ -44,40 +45,45 @@ func (f Filebot) RunFilebot(DownloadDirectory string) {
 	}
 
 	cmd := []string{
-		"filebot",
-		"-script", "fn:amc",
-		"--output", f.config.FbOutputDir,
-		"--action", f.config.FbAction,
-		"--conflict", "override", "-non-strict",
-		"--log-file", f.config.FbAmcLog,
-		"--def",
-		"unsorted=" + boolToYorN(f.config.FbUnsorted),
-		"music=n",
-		"subtitles=" + f.config.FbSubtitlesLocale,
-		"artwork=" + boolToYorN(f.config.FbArtwork),
-		"extras=" + boolToYorN(f.config.FbExtras),
-		"kodi=" + f.config.FbKodi,
-		"plex=" + f.config.FbPlex,
-		"emby=" + f.config.FbEmby,
-		"pushover=" + f.config.FbPushover,
-		"pushbullet=" + f.config.FbPushbullet,
-		"discord=" + f.config.FbDiscord,
-		"gmail=" + f.config.FbGmail,
-		"mail=" + f.config.FbMail,
-		"mailto=" + f.config.FbMailto,
-		"reportError=" + boolToYorN(f.config.FbReportError),
-		"storeReport=" + boolToYorN(f.config.FbStoreReport),
-		"extractFolder=" + f.config.FbExtractFolder,
-		"skipExtract=" + boolToYorN(f.config.FbSkipExtract),
-		"deleteAfterExtract=" + boolToYorN(f.config.FbDeleteAfterExtract),
-		"clean=" + boolToYorN(f.config.FbClean),
-		"exec=" + f.config.FbExec,
-		"ignore=" + f.config.FbIgnore,
-		// "minFileSize=" + string(f.config.FbMinFileSize),
-		// "minLengthMS=" + string(f.config.FbMinLengthMs),
-		// "excludeList=" + f.config.FbExcludeList,
-		DownloadDirectory,
+		"/bin/bash",
+		"-c",
+		"\"" +
+			"-Dapplication.dir=/valinor/plex " +
+			"filebot " +
+			"-script " + "fn:amc " +
+			"--output " + f.config.FbOutputDir,
+		" --action ", f.config.FbAction,
+		" --conflict ", "override ", "-non-strict",
+		" --log-file ", f.config.FbAmcLog,
+		" --def",
+		" unsorted=" + boolToYorN(f.config.FbUnsorted),
+		" music=n" + " " +
+			"subtitles=" + f.config.FbSubtitlesLocale + " " +
+			"artwork=" + boolToYorN(f.config.FbArtwork) + " " +
+			"extras=" + boolToYorN(f.config.FbExtras) + " " +
+			"kodi=" + f.config.FbKodi + " " +
+			"plex=" + f.config.FbPlex + " " +
+			"emby=" + f.config.FbEmby + " " +
+			"pushover=" + f.config.FbPushover + " " +
+			"pushbullet=" + f.config.FbPushbullet + " " +
+			"discord=" + f.config.FbDiscord + " " +
+			"gmail=" + f.config.FbGmail + " " +
+			"mail=" + f.config.FbMail + " " +
+			"mailto=" + f.config.FbMailto + " " +
+			"reportError=" + boolToYorN(f.config.FbReportError) + " " +
+			"storeReport=" + boolToYorN(f.config.FbStoreReport) + " " +
+			"extractFolder=" + f.config.FbExtractFolder + " " +
+			"skipExtract=" + boolToYorN(f.config.FbSkipExtract) + " " +
+			"deleteAfterExtract=" + boolToYorN(f.config.FbDeleteAfterExtract) + " " +
+			"clean=" + boolToYorN(f.config.FbClean) + " " +
+			"exec=" + f.config.FbExec + " " +
+			"ignore=" + f.config.FbIgnore + " " +
+			// "minFileSize=" + string(f.config.FbMinFileSize),
+			// "minLengthMS=" + string(f.config.FbMinLengthMs),
+			// "excludeList=" + f.config.FbExcludeList,
+			DownloadDirectory + "\"",
 	}
+	log.Printf("Running filebot with cmd: %s", strings.Join(cmd, "|"))
 
 	req := clientset.CoreV1().RESTClient().Post().Resource("pods").Name(podName).Namespace(f.config.FbNamespace).SubResource("exec")
 	option := &v1.PodExecOptions{
