@@ -190,7 +190,6 @@ func ImportHandler(w http.ResponseWriter, r *http.Request) {
 	} else if ir.DownloadClientIdentifier == "rTorrent" {
 		job.TorrentLinkerID = ir.DownloadContentID
 	}
-	job.DownloadDirectory = ir.DownloadDirectory
 
 	err = db.Select(job)
 	if err == pg.ErrNoRows {
@@ -200,6 +199,7 @@ func ImportHandler(w http.ResponseWriter, r *http.Request) {
 	} else if err != nil {
 		panic(err)
 	}
+	job.DownloadDirectory = ir.DownloadDirectory
 
 	fbConfig := schema.FilebotConfiguration{}
 	fbConfig.FilebotConfigurationID = true
