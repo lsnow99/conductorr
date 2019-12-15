@@ -190,7 +190,7 @@ func ImportHandler(w http.ResponseWriter, r *http.Request) {
 	} else if ir.DownloadClientIdentifier == "rTorrent" {
 		job.TorrentLinkerID = ir.DownloadContentID
 	}
-
+	fmt.Println(job)
 	err = db.Select(job)
 	if err == pg.ErrNoRows {
 		w.WriteHeader(http.StatusNotFound)
