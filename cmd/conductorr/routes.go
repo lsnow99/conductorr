@@ -195,7 +195,7 @@ func ImportHandler(w http.ResponseWriter, r *http.Request) {
 	err = db.Select(job)
 	if err == pg.ErrNoRows {
 		w.WriteHeader(http.StatusNotFound)
-		fmt.Println("Could not find a match for this job ID")
+		log.Printf("Could not find a match for this job ID: (nzb: %s), (tor: %s)", job.NZBLinkerID, job.TorrentLinkerID)
 		return
 	} else if err != nil {
 		panic(err)
