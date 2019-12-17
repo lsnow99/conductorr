@@ -39,6 +39,7 @@ LoadConfiguration load a configuration from cache and optionally refresh cache
 */
 func (r Radarr) LoadConfiguration(refreshCache bool) *schema.RadarrConfiguration {
 	if refreshCache {
+		r.config = &schema.RadarrConfiguration{}
 		r.config.RadarrConfigurationID = true
 		err := db.Select(r.config)
 		if err == pg.ErrNoRows {

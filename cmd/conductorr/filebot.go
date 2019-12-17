@@ -26,7 +26,6 @@ type Filebot struct {
 RunFilebot attempts to exec into the filebot pod and run the filebot
 */
 func (f Filebot) RunFilebot(DownloadDirectory string) {
-	log.Println(filebot.config)
 
 	config, err := rest.InClusterConfig()
 
@@ -137,6 +136,7 @@ LoadConfiguration load a configuration from cache and optionally refresh cache
 */
 func (f Filebot) LoadConfiguration(refreshCache bool) *schema.FilebotConfiguration {
 	if refreshCache {
+		f.config = &schema.FilebotConfiguration{}
 		f.config.FilebotConfigurationID = true
 		err := db.Select(f.config)
 		if err == pg.ErrNoRows {

@@ -45,6 +45,8 @@ func main() {
 
 	runMigrations()
 
+	initConfigs()
+
 	n := initRoutes()
 	port, err := strconv.Atoi(os.Getenv("PORT"))
 	if err != nil {

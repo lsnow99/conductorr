@@ -38,6 +38,7 @@ LoadConfiguration load a configuration from cache and optionally refresh cache
 */
 func (s Sonarr) LoadConfiguration(refreshCache bool) *schema.SonarrConfiguration {
 	if refreshCache {
+		s.config = &schema.SonarrConfiguration{}
 		s.config.SonarrConfigurationID = true
 		err := db.Select(s.config)
 		if err == pg.ErrNoRows {

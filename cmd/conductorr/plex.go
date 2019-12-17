@@ -47,6 +47,7 @@ LoadConfiguration load a configuration from cache and optionally refresh cache
 */
 func (p Plex) LoadConfiguration(refreshCache bool) *schema.PlexConfiguration {
 	if refreshCache {
+		p.config = &schema.PlexConfiguration{}
 		p.config.PlexConfigurationID = true
 		err := db.Select(p.config)
 		if err == pg.ErrNoRows {
