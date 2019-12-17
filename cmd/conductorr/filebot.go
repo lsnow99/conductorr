@@ -26,6 +26,8 @@ type Filebot struct {
 RunFilebot attempts to exec into the filebot pod and run the filebot
 */
 func (f Filebot) RunFilebot(DownloadDirectory string) {
+	log.Println(filebot.config)
+
 	config, err := rest.InClusterConfig()
 
 	// create the clientset
