@@ -41,6 +41,7 @@ func (f *Filebot) RunFilebot(DownloadDirectory string) {
 	var podName string
 
 	for _, pod := range pods.Items {
+		log.Printf("Found pod: %s", pod.GetName())
 		if strings.HasPrefix(pod.GetName(), f.config.FbDeploymentName) {
 			podName = pod.GetName()
 		}
