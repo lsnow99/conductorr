@@ -38,6 +38,10 @@ func (f *Filebot) RunFilebot(DownloadDirectory string) {
 
 	pods, err := clientset.CoreV1().Pods(f.config.FbNamespace).List(metav1.ListOptions{})
 
+	if err != nil {
+		panic(err)
+	}
+
 	var podName string
 
 	for _, pod := range pods.Items {
