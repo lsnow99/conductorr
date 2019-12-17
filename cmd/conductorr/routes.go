@@ -368,47 +368,23 @@ func GetConfigHandler(w http.ResponseWriter, r *http.Request) {
 	switch vars["service"] {
 	case "filebot":
 		configObj = constants.FilebotConfig
-		fbConfig := &schema.FilebotConfiguration{}
-		fbConfig.FilebotConfigurationID = true
-		err := db.Select(fbConfig)
-		if err != nil && err != pg.ErrNoRows {
-			panic(err)
-		} else if err == nil {
-			configObj = populateConfigs(configObj, *fbConfig)
-		}
+		filebotConfig := filebot.LoadConfiguration(false)
+		configObj = populateConfigs(configObj, *filebotConfig)
 		break
 	case "sonarr":
 		configObj = constants.SonarrConfig
-		sonConfig := &schema.SonarrConfiguration{}
-		sonConfig.SonarrConfigurationID = true
-		err := db.Select(sonConfig)
-		if err != nil && err != pg.ErrNoRows {
-			panic(err)
-		} else if err == nil {
-			configObj = populateConfigs(configObj, *sonConfig)
-		}
+		sonConfig := sonarr.LoadConfiguration(false)
+		configObj = populateConfigs(configObj, *sonConfig)
 		break
 	case "radarr":
 		configObj = constants.RadarrConfig
-		radConfig := &schema.RadarrConfiguration{}
-		radConfig.RadarrConfigurationID = true
-		err := db.Select(radConfig)
-		if err != nil && err != pg.ErrNoRows {
-			panic(err)
-		} else if err == nil {
-			configObj = populateConfigs(configObj, *radConfig)
-		}
+		radConfig := radarr.LoadConfiguration(false)
+		configObj = populateConfigs(configObj, *radConfig)
 		break
 	case "plex":
 		configObj = constants.PlexConfig
-		plexConfig := &schema.PlexConfiguration{}
-		plexConfig.PlexConfigurationID = true
-		err := db.Select(plexConfig)
-		if err != nil && err != pg.ErrNoRows {
-			panic(err)
-		} else if err == nil {
-			configObj = populateConfigs(configObj, *plexConfig)
-		}
+		plexConfig := plex.LoadConfiguration(false)
+		configObj = populateConfigs(configObj, *plexConfig)
 		break
 	default:
 		w.Header().Set("Content-Type", "text")

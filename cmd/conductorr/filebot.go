@@ -25,7 +25,8 @@ type Filebot struct {
 /*
 RunFilebot attempts to exec into the filebot pod and run the filebot
 */
-func (f Filebot) RunFilebot(DownloadDirectory string) {
+func (f *Filebot) RunFilebot(DownloadDirectory string) {
+	
 
 	config, err := rest.InClusterConfig()
 
@@ -115,7 +116,7 @@ func (f Filebot) RunFilebot(DownloadDirectory string) {
 /*
 SaveConfiguration save a sonarr configuration to the database
 */
-func (f Filebot) SaveConfiguration(config *schema.FilebotConfiguration) {
+func (f *Filebot) SaveConfiguration(config *schema.FilebotConfiguration) {
 	defaultConfig := schema.FilebotConfiguration{}
 	defaultConfig.FilebotConfigurationID = true
 	config.FilebotConfigurationID = true
@@ -134,7 +135,7 @@ func (f Filebot) SaveConfiguration(config *schema.FilebotConfiguration) {
 /*
 LoadConfiguration load a configuration from cache and optionally refresh cache
 */
-func (f Filebot) LoadConfiguration(refreshCache bool) *schema.FilebotConfiguration {
+func (f *Filebot) LoadConfiguration(refreshCache bool) *schema.FilebotConfiguration {
 	if refreshCache {
 		f.config = &schema.FilebotConfiguration{}
 		f.config.FilebotConfigurationID = true
@@ -145,6 +146,7 @@ func (f Filebot) LoadConfiguration(refreshCache bool) *schema.FilebotConfigurati
 			panic(err)
 		}
 	}
+	log.Println(f.config)
 	return f.config
 }
 
@@ -152,7 +154,7 @@ func (f Filebot) LoadConfiguration(refreshCache bool) *schema.FilebotConfigurati
 GetNewDirectory searches Filebot's history.xml file to find the new location for
 the media it processed by matching the original location to the record
 */
-func (f Filebot) GetNewDirectory(downloadDir string) (string, schema.Sequence) {
+func (f *Filebot) GetNewDirectory(downloadDir string) (string, schema.Sequence) {
 	downloadDir = strings.TrimRight(downloadDir, "/")
 	oRoot := ""
 	var ourSeq schema.Sequence

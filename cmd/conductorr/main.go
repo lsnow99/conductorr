@@ -18,10 +18,10 @@ import (
 )
 
 var db *pg.DB
-var sonarr Sonarr
-var radarr Radarr
-var filebot Filebot
-var plex Plex
+var sonarr *Sonarr
+var radarr *Radarr
+var filebot *Filebot
+var plex *Plex
 
 func main() {
 	log.Printf("Starting Conductorr v1\n")
@@ -103,6 +103,10 @@ func runMigrations() {
 }
 
 func initConfigs() {
+	filebot = new(Filebot)
+	sonarr = new(Sonarr)
+	plex = new(Plex)
+	radarr = new(Radarr)
 	sonarr.LoadConfiguration(true)
 	radarr.LoadConfiguration(true)
 	filebot.LoadConfiguration(true)

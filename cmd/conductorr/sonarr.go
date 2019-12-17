@@ -17,7 +17,7 @@ type Sonarr struct {
 /*
 SaveConfiguration save a sonarr configuration to the database
 */
-func (s Sonarr) SaveConfiguration(config *schema.SonarrConfiguration) {
+func (s *Sonarr) SaveConfiguration(config *schema.SonarrConfiguration) {
 	defaultConfig := schema.SonarrConfiguration{}
 	defaultConfig.SonarrConfigurationID = true
 	config.SonarrConfigurationID = true
@@ -36,7 +36,7 @@ func (s Sonarr) SaveConfiguration(config *schema.SonarrConfiguration) {
 /*
 LoadConfiguration load a configuration from cache and optionally refresh cache
 */
-func (s Sonarr) LoadConfiguration(refreshCache bool) *schema.SonarrConfiguration {
+func (s *Sonarr) LoadConfiguration(refreshCache bool) *schema.SonarrConfiguration {
 	if refreshCache {
 		s.config = &schema.SonarrConfiguration{}
 		s.config.SonarrConfigurationID = true
@@ -71,7 +71,7 @@ func TestSonarrConnection(config *schema.SonarrConfiguration) bool {
 /*
 NotifyNewPath update Sonarr with the new path for the content
 */
-func (s Sonarr) NotifyNewPath(newPath string, contentID int64) {
+func (s *Sonarr) NotifyNewPath(newPath string, contentID int64) {
 	/*
 	 * API Request #1 - Get existing data
 	 */

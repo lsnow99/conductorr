@@ -18,7 +18,7 @@ type Radarr struct {
 /*
 SaveConfiguration save a radarr configuration to the database
 */
-func (r Radarr) SaveConfiguration(config *schema.RadarrConfiguration) {
+func (r *Radarr) SaveConfiguration(config *schema.RadarrConfiguration) {
 	defaultConfig := schema.RadarrConfiguration{}
 	defaultConfig.RadarrConfigurationID = true
 	config.RadarrConfigurationID = true
@@ -37,7 +37,7 @@ func (r Radarr) SaveConfiguration(config *schema.RadarrConfiguration) {
 /*
 LoadConfiguration load a configuration from cache and optionally refresh cache
 */
-func (r Radarr) LoadConfiguration(refreshCache bool) *schema.RadarrConfiguration {
+func (r *Radarr) LoadConfiguration(refreshCache bool) *schema.RadarrConfiguration {
 	if refreshCache {
 		r.config = &schema.RadarrConfiguration{}
 		r.config.RadarrConfigurationID = true
@@ -72,7 +72,7 @@ func TestRadarrConnection(config *schema.RadarrConfiguration) bool {
 /*
 NotifyNewPath update Radarr with the new path for the content
 */
-func (r Radarr) NotifyNewPath(newPath string, contentID int64) {
+func (r *Radarr) NotifyNewPath(newPath string, contentID int64) {
 	/*
 	 * API Request #1 - Get existing data
 	 */

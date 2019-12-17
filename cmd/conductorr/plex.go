@@ -26,7 +26,7 @@ type Plex struct {
 /*
 SaveConfiguration save a sonarr configuration to the database
 */
-func (p Plex) SaveConfiguration(config *schema.PlexConfiguration) {
+func (p *Plex) SaveConfiguration(config *schema.PlexConfiguration) {
 	defaultConfig := schema.PlexConfiguration{}
 	defaultConfig.PlexConfigurationID = true
 	config.PlexConfigurationID = true
@@ -45,8 +45,8 @@ func (p Plex) SaveConfiguration(config *schema.PlexConfiguration) {
 /*
 LoadConfiguration load a configuration from cache and optionally refresh cache
 */
-func (p Plex) LoadConfiguration(refreshCache bool) *schema.PlexConfiguration {
-	if refreshCache {
+func (p *Plex) LoadConfiguration(refreshCache bool) *schema.PlexConfiguration {
+	if refreshCache || true {
 		p.config = &schema.PlexConfiguration{}
 		p.config.PlexConfigurationID = true
 		err := db.Select(p.config)
@@ -62,7 +62,7 @@ func (p Plex) LoadConfiguration(refreshCache bool) *schema.PlexConfiguration {
 /*
 ScanPlex run the Plex scanning command on the newly downloaded media
 */
-func (p Plex) ScanPlex(scanDir string, libID int) {
+func (p *Plex) ScanPlex(scanDir string, libID int) {
 	config, err := rest.InClusterConfig()
 
 	// create the clientset
@@ -127,7 +127,7 @@ func (p Plex) ScanPlex(scanDir string, libID int) {
 /*
 GetLibraryID given a path to some media, get the corresponding library
 */
-func (p Plex) GetLibraryID(path string) int {
+func (p *Plex) GetLibraryID(path string) int {
 	// util.LogAllInfo("Performing Plex API request to list libraries:", w)
 	reqURL := p.config.PlexBaseURL + "/library/sections?X-Plex-token="
 	// util.LogAllInfo(reqURL+"(auth token here)", w)
