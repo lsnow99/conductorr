@@ -184,14 +184,7 @@ func ImportHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	job := &schema.Jobs{}
-
-	if ir.DownloadClientIdentifier == "NZBGet" {
-		job.NZBLinkerID = ir.DownloadContentID
-	} else if ir.DownloadClientIdentifier == "rTorrent" {
-		job.TorrentLinkerID = ir.DownloadContentID
-	}
-	fmt.Println(job)
-	err = db.Select(job)
+	err = db.Model(job).Where("nzb_linker_id = ?", ir.DownloadContentID).WhereOr("torrent_linker_id = ?", ir.DownloadContentID).Limit(1).Select()
 	if err == pg.ErrNoRows {
 		w.WriteHeader(http.StatusNotFound)
 		log.Printf("Could not find a match for this job ID: (nzb: %s), (tor: %s)", job.NZBLinkerID, job.TorrentLinkerID)
