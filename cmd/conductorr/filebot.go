@@ -59,27 +59,27 @@ func (f *Filebot) RunFilebot(DownloadDirectory string) {
 		" --log-file ", f.config.FbAmcLog,
 		" --def",
 		" unsorted=" + boolToYorN(f.config.FbUnsorted),
-		" music=n" + " " +
-			"subtitles=" + f.config.FbSubtitlesLocale + " " +
+		" music=n" + spaceOrArg("subtitles", f.config.FbSubtitlesLocale) +
 			"artwork=" + boolToYorN(f.config.FbArtwork) + " " +
-			"extras=" + boolToYorN(f.config.FbExtras) + " " +
-			"kodi=" + f.config.FbKodi + " " +
-			"plex=" + f.config.FbPlex + " " +
-			"emby=" + f.config.FbEmby + " " +
-			"pushover=" + f.config.FbPushover + " " +
-			"pushbullet=" + f.config.FbPushbullet + " " +
-			"discord=" + f.config.FbDiscord + " " +
-			"gmail=" + f.config.FbGmail + " " +
-			"mail=" + f.config.FbMail + " " +
-			"mailto=" + f.config.FbMailto + " " +
+			"extras=" + boolToYorN(f.config.FbExtras) +
+			spaceOrArg("kodi", f.config.FbKodi) + 
+			spaceOrArg("plex", f.config.FbPlex) +
+			spaceOrArg("emby", f.config.FbEmby) +
+			spaceOrArg("emby", f.config.FbEmby) +
+			spaceOrArg("pushover", f.config.FbPushover) +
+			spaceOrArg("pushbullet", f.config.FbPushbullet) +
+			spaceOrArg("discord", f.config.FbDiscord) +
+			spaceOrArg("gmail", f.config.FbGmail) +
+			spaceOrArg("mail", f.config.FbMail) +
+			spaceOrArg("mailto", f.config.FbMailto) +
 			"reportError=" + boolToYorN(f.config.FbReportError) + " " +
 			"storeReport=" + boolToYorN(f.config.FbStoreReport) + " " +
-			"extractFolder=" + f.config.FbExtractFolder + " " +
+			spaceOrArg("extractFolder", f.config.FbExtractFolder) +
 			"skipExtract=" + boolToYorN(f.config.FbSkipExtract) + " " +
 			"deleteAfterExtract=" + boolToYorN(f.config.FbDeleteAfterExtract) + " " +
 			"clean=" + boolToYorN(f.config.FbClean) + " " +
-			"exec=" + f.config.FbExec + " " +
-			"ignore=" + f.config.FbIgnore + " " +
+			spaceOrArg("exec", f.config.FbExec) +
+			spaceOrArg("ignore", f.config.FbIgnore) + 
 			// "minFileSize=" + string(f.config.FbMinFileSize),
 			// "minLengthMS=" + string(f.config.FbMinLengthMs),
 			// "excludeList=" + f.config.FbExcludeList,
@@ -101,7 +101,7 @@ func (f *Filebot) RunFilebot(DownloadDirectory string) {
 	)
 	exec, err := remotecommand.NewSPDYExecutor(config, "POST", req.URL())
 	if err != nil {
-		return
+		panic(err)
 	}
 	err = exec.Stream(remotecommand.StreamOptions{
 		Stdin:  os.Stdin,
@@ -109,7 +109,7 @@ func (f *Filebot) RunFilebot(DownloadDirectory string) {
 		Stderr: os.Stderr,
 	})
 	if err != nil {
-		return
+		panic(err)
 	}
 }
 
@@ -240,7 +240,15 @@ func boolToYorN(test bool) string {
 	if test {
 		ans = "y"
 	} else {
-		ans = "y"
+		ans = "n"
 	}
 	return ans
+}
+
+func spaceOrArg(option string, value string) (string) {
+	str := " "
+	if value != "" {
+		str = option + "=" + value
+	}
+	return str + " "
 }
