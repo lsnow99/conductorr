@@ -247,7 +247,7 @@ func boolToYorN(test bool) string {
 
 func spaceOrArg(option string, value string) (string) {
 	str := " "
-	if value != "" {
+	if len(value) > 0 {
 		str = option + "=" + value
 	}
 	return str + " "
