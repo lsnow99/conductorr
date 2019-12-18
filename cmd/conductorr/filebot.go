@@ -151,7 +151,6 @@ func (f *Filebot) LoadConfiguration(refreshCache bool) *schema.FilebotConfigurat
 			panic(err)
 		}
 	}
-	log.Println(f.config)
 	return f.config
 }
 
