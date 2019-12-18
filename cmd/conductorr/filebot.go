@@ -59,13 +59,13 @@ func (f *Filebot) RunFilebot(DownloadDirectory string) {
 			"filebot " +
 			"-script " + "fn:amc " +
 			"--output " + f.config.FbOutputDir +
-		" --action ", f.config.FbAction +
-		" --conflict ", "override ", "-non-strict" +
-		" --log-file ", f.config.FbAmcLog + 
+		" --action " + f.config.FbAction +
+		" --conflict " + "override ", "-non-strict" +
+		" --log-file " + f.config.FbAmcLog + 
 		" --def" + 
-		" unsorted=" + boolToYorN(f.config.FbUnsorted),
+		" unsorted=" + boolToYorN(f.config.FbUnsorted) +
 		" music=n " + spaceOrArg("subtitles", f.config.FbSubtitlesLocale) +
-			"artwork=" + boolToYorN(f.config.FbArtwork) + " " +
+			" artwork=" + boolToYorN(f.config.FbArtwork) + " " +
 			"extras=" + boolToYorN(f.config.FbExtras) +
 			spaceOrArg("kodi", f.config.FbKodi) + 
 			spaceOrArg("plex", f.config.FbPlex) +
