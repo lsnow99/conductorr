@@ -98,6 +98,8 @@ func (p *Plex) ScanPlex(scanDir string, libID int) {
 		}, " "),
 	}
 
+	log.Printf("Running on plex container: %s", strings.Join(cmd, " "))
+
 	req := clientset.CoreV1().RESTClient().Post().Resource("pods").Name(podName).Namespace(p.config.PlexNamespace).SubResource("exec")
 	option := &v1.PodExecOptions{
 		Command: cmd,
