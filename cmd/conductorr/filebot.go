@@ -52,8 +52,8 @@ func (f *Filebot) RunFilebot(DownloadDirectory string) {
 	}
 
 	cmd := []string{
-		"/bin/sh",
-		"-c",
+		"/bin/sh " +
+		"-c " +
 		"\"" +
 			"FILEBOT_OPTS=-Dapplication.dir=/valinor/plex " +
 			"/opt/filebot/filebot " +
