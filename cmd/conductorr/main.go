@@ -28,7 +28,7 @@ func main() {
 
 	err := godotenv.Load(".env")
 	if err != nil {
-		log.Printf("Could not load .env file: %s", err.Error())
+		log.Printf("Did not load .env file: %s. Using given environment variables", err.Error())
 	}
 	if len(os.Getenv("JWT_SIGNING_KEY")) < 32 {
 		log.Fatal("Please set env var JWT_SIGNING_KEY to a random string at least 32 characters in length!")
