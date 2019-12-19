@@ -55,8 +55,8 @@ func (f *Filebot) RunFilebot(DownloadDirectory string) {
 		"/bin/sh",
 		"-c",
 		"\"" +
-			"-Dapplication.dir=/valinor/plex " +
-			"filebot " +
+			"FILEBOT_OPTS=-Dapplication.dir=/valinor/plex " +
+			"/opt/filebot/filebot " +
 			"-script " + "fn:amc " +
 			"--output " + f.config.FbOutputDir +
 		" --action " + f.config.FbAction +
