@@ -29,7 +29,9 @@
             sortable
           >
             <template v-if="showDetailIcon">
-              {{ props.row.title }}
+              <a target="_blank" :href="'https://www.imdb.com/title/' + props.row.imdb_id">
+                {{ props.row.title }}
+              </a>
             </template>
             <template v-else>
               <a @click="toggle(props.row)">
