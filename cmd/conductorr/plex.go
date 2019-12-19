@@ -94,7 +94,7 @@ func (p *Plex) ScanPlex(scanDir string, libID int) {
 			"--section",
 			strconv.Itoa(libID),
 			"--directory",
-			scanDir,
+			"\"" + scanDir + "\"",
 		}, " "),
 	}
 
