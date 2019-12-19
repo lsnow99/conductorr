@@ -54,7 +54,7 @@ func (f *Filebot) RunFilebot(DownloadDirectory string) {
 	cmd := []string{
 		"/bin/sh " +
 		"-c " +
-			"FILEBOT_OPTS=-Dapplication.dir=/valinor/plex " +
+			`"` + "FILEBOT_OPTS=-Dapplication.dir=/valinor/plex " +
 			"/opt/filebot/filebot " +
 			"-script " + "fn:amc " +
 			"--output " + f.config.FbOutputDir +
@@ -87,7 +87,7 @@ func (f *Filebot) RunFilebot(DownloadDirectory string) {
 			// "minFileSize=" + string(f.config.FbMinFileSize),
 			// "minLengthMS=" + string(f.config.FbMinLengthMs),
 			// "excludeList=" + f.config.FbExcludeList,
-			DownloadDirectory,
+			DownloadDirectory + `"`,
 	}
 	log.Printf("Running filebot with cmd: %s", strings.Join(cmd, "|"))
 
