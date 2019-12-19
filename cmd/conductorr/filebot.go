@@ -237,7 +237,9 @@ func getPathInfo(path string) PathInfo {
 	switch {
 	case err != nil:
 		// handle the error and return
-		return NEITHER
+		log.Printf("Broken Path: %s", path)
+		panic(err)
+		// return NEITHER
 	case fi.IsDir():
 		// it's a directory
 		return DIRECTORY
