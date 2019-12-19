@@ -12,3 +12,8 @@ web:
 	cd conductorr-web && npm run build
 	rm -rf static/
 	mv conductorr-web/dist static/
+
+web-dependencies:
+	cd conductorr-web && npm install
+
+web-update: web-dependencies web

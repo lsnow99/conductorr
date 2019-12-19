@@ -205,11 +205,12 @@ func ImportHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	job.Status = "FILEBOT"
+	job.TimeFilebotStarted = time.Now()
 	updateJob(job)
 	filebot.RunFilebot(job.DownloadDirectory)
 	newPath, _ := filebot.GetNewDirectory(job.DownloadDirectory)
 	log.Printf("New path identified as: %s", newPath)
-	
+
 	if job.ContentType == sonarr.LoadConfiguration(false).SonarrCategory {
 		sonarr.NotifyNewPath(newPath, job.GrabberInternalID)
 	} else if job.ContentType == radarr.LoadConfiguration(false).RadarrCategory {
@@ -229,10 +230,12 @@ func ImportHandler(w http.ResponseWriter, r *http.Request) {
 	id := plex.GetLibraryID(newPath)
 	log.Printf("Library ID: %d", id)
 	job.Status = "PLEX"
+	job.TimeScanStarted = time.Now()
 	updateJob(job)
 	plex.ScanPlex(newPath, id)
 	log.Println("Done scanning Plex")
 	job.Status = "DONE"
+	job.TimeScanDone = time.Now()
 	updateJob(job)
 
 	w.WriteHeader(http.StatusOK)
@@ -241,6 +244,28 @@ func ImportHandler(w http.ResponseWriter, r *http.Request) {
 func updateJob(job *schema.Jobs) {
 	err := db.Update(job)
 	if err != nil {
+		panic(err)
+	}
+}
+
+// GetJobsHandler get all jobs
+func GetJobsHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	jobs := []schema.Jobs{}
+	
+	err := db.Model(&jobs).
+		Column("title", "job_id", "imdb_id", "release_title", "content_type", "status").
+		Where("title ILIKE ?", "%"+vars["filter"]+"%").
+		Order(vars["sort_column"] + " " + vars["sort_order"]).
+		Select()
+
+	if err != nil {
+		panic(err)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(jobs); err != nil {
 		panic(err)
 	}
 }

@@ -76,6 +76,11 @@ func initRoutes() *negroni.Negroni {
 	ar.HandleFunc("/api/config/{service}", GetConfigHandler).Methods("GET")
 	ar.HandleFunc("/api/config/{service}", SetConfigHandler).Methods("POST")
 	ar.HandleFunc("/api/testConfig/{service}", TestConfigHandler).Methods("POST")
+	ar.HandleFunc("/api/jobs", GetJobsHandler).
+		Queries("sort_column", "{sort_column}", 
+				"sort_order", "{sort_order}", 
+				"filter", "{filter}").
+		Methods("GET")
 
 	an := negroni.New(negroni.HandlerFunc(mw.HandlerWithNext), negroni.Wrap(ar))
 	r.PathPrefix("/api").Handler(an)
