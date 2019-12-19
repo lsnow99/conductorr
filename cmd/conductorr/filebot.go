@@ -53,41 +53,42 @@ func (f *Filebot) RunFilebot(DownloadDirectory string) {
 
 	cmd := []string{
 		"/bin/sh",
-		"-c ",
-			"FILEBOT_OPTS=-Dapplication.dir=/valinor/plex ",
-			"/opt/filebot/filebot ",
-			"-script ", "fn:amc ",
-			"--output ", f.config.FbOutputDir,
-		" --action ", f.config.FbAction,
-		" --conflict ", "override ", "-non-strict",
-		" --log-file ", f.config.FbAmcLog, 
-		" --def", 
-		" unsorted=" + boolToYorN(f.config.FbUnsorted),
-		" music=n", spaceOrArg("subtitles", f.config.FbSubtitlesLocale),
-			" artwork=" + boolToYorN(f.config.FbArtwork),
-			"extras=" + boolToYorN(f.config.FbExtras),
-			spaceOrArg("kodi", f.config.FbKodi), 
-			spaceOrArg("plex", f.config.FbPlex),
-			spaceOrArg("emby", f.config.FbEmby),
-			spaceOrArg("emby", f.config.FbEmby),
-			spaceOrArg("pushover", f.config.FbPushover),
-			spaceOrArg("pushbullet", f.config.FbPushbullet),
-			spaceOrArg("discord", f.config.FbDiscord),
-			spaceOrArg("gmail", f.config.FbGmail),
-			spaceOrArg("mail", f.config.FbMail),
-			spaceOrArg("mailto", f.config.FbMailto),
-			"reportError=" + boolToYorN(f.config.FbReportError),
-			"storeReport=" + boolToYorN(f.config.FbStoreReport),
-			spaceOrArg("extractFolder", f.config.FbExtractFolder),
-			"skipExtract=" + boolToYorN(f.config.FbSkipExtract),
-			"deleteAfterExtract=" + boolToYorN(f.config.FbDeleteAfterExtract),
-			"clean=" + boolToYorN(f.config.FbClean),
-			spaceOrArg("exec", f.config.FbExec),
-			spaceOrArg("ignore", f.config.FbIgnore), 
+		"-c",
+		"FILEBOT_OPTS=-Dapplication.dir=/valinor/plex",
+		"/opt/filebot/filebot",
+		"-script", "fn:amc",
+		"--output", f.config.FbOutputDir,
+		"--action", f.config.FbAction,
+		"--conflict", "override", "-non-strict",
+		"--log-file", f.config.FbAmcLog, 
+		"--def", 
+		boolArg("unsorted", f.config.FbUnsorted),
+		boolArg("music", false),
+		stringArg("subtitles", f.config.FbSubtitlesLocale),
+		boolArg("artwork", f.config.FbArtwork),
+		boolArg("extras", f.config.FbExtras),
+		stringArg("kodi", f.config.FbKodi), 
+		stringArg("plex", f.config.FbPlex),
+		stringArg("emby", f.config.FbEmby),
+		stringArg("emby", f.config.FbEmby),
+		stringArg("pushover", f.config.FbPushover),
+		stringArg("pushbullet", f.config.FbPushbullet),
+		stringArg("discord", f.config.FbDiscord),
+		stringArg("gmail", f.config.FbGmail),
+		stringArg("mail", f.config.FbMail),
+		stringArg("mailto", f.config.FbMailto),
+		boolArg("reportError", f.config.FbReportError),
+		boolArg("storeReport", f.config.FbStoreReport),
+		stringArg("extractFolder", f.config.FbExtractFolder),
+		boolArg("skipExtract", f.config.FbSkipExtract),
+		boolArg("deleteAfterExtract", f.config.FbDeleteAfterExtract),
+		boolArg("clean", f.config.FbClean),
+		stringArg("exec", f.config.FbExec),
+		stringArg("ignore", f.config.FbIgnore), 
 			// "minFileSize=" + string(f.config.FbMinFileSize),
 			// "minLengthMS=" + string(f.config.FbMinLengthMs),
 			// "excludeList=" + f.config.FbExcludeList,
-			DownloadDirectory,
+		DownloadDirectory,
 	}
 	log.Printf("Running filebot with cmd: %s", strings.Join(cmd, " "))
 
@@ -236,21 +237,21 @@ func getPathInfo(path string) PathInfo {
 	}
 }
 
-// boolToYorN quick utility to turn a bool into a "y" or "n" string
-func boolToYorN(test bool) string {
-	var ans string
+// boolArg quick utility to turn a bool into a "y" or "n" string
+func boolArg(option string, test bool) string {
+	ans := option + "="
 	if test {
-		ans = "y"
+		ans += "y"
 	} else {
-		ans = "n"
+		ans += "n"
 	}
 	return ans
 }
 
-func spaceOrArg(option string, value string) (string) {
-	str := " "
+func stringArg(option string, value string) (string) {
+	str := ""
 	if len(value) > 0 {
 		str = option + "=" + value
 	}
-	return str + " "
+	return str
 }
