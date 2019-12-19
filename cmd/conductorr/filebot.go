@@ -169,15 +169,19 @@ func (f *Filebot) GetNewDirectory(downloadDir string) (string, schema.Sequence) 
 	var ourSeq schema.Sequence
 
 	historyFile, err := os.Open(EndWithSlash(os.Getenv("FB_DIRECTORY")) + "history.xml")
-	// if we os.Open returns an error then handle it
+	// if os.Open returns an error then handle it
 	if err != nil {
-		return "", ourSeq
+		panic(err)
 	}
 
 	// defer the closing of our historyFile so that we can parse it later on
 	defer historyFile.Close()
 
-	byteValue, _ := ioutil.ReadAll(historyFile)
+	byteValue, err := ioutil.ReadAll(historyFile)
+
+	if err != nil {
+		panic(err)
+	}
 
 	// we initialize our History array
 	var history schema.History
@@ -201,7 +205,7 @@ func (f *Filebot) GetNewDirectory(downloadDir string) (string, schema.Sequence) 
 					oRoot = upDir(upDir(ren.To))
 				}
 			default:
-				return "", ourSeq
+				return "no path found", ourSeq
 			}
 		}
 	}
