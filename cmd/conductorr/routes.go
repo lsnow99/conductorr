@@ -205,6 +205,7 @@ func ImportHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	filebot.RunFilebot(job.DownloadDirectory)
 	newPath, _ := filebot.GetNewDirectory(job.DownloadDirectory)
+	log.Printf("New path identified as: %s", newPath)
 	sonarr.NotifyNewPath(newPath, job.GrabberInternalID)
 
 	if job.DownloadClient == "NZBGet" {
@@ -241,7 +242,7 @@ func SetConfigHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err)
 		}
-		newConfig.SonarrURL = endWithSlash(newConfig.SonarrURL)
+		newConfig.SonarrURL = EndWithSlash(newConfig.SonarrURL)
 		sonarr.SaveConfiguration(newConfig)
 		w.WriteHeader(http.StatusOK)
 		break
@@ -253,7 +254,7 @@ func SetConfigHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err)
 		}
-		newConfig.RadarrURL = endWithSlash(newConfig.RadarrURL)
+		newConfig.RadarrURL = EndWithSlash(newConfig.RadarrURL)
 		radarr.SaveConfiguration(newConfig)
 		w.WriteHeader(http.StatusOK)
 		break
@@ -265,7 +266,7 @@ func SetConfigHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err)
 		}
-		newConfig.PlexBaseURL = endWithSlash(newConfig.PlexBaseURL)
+		newConfig.PlexBaseURL = EndWithSlash(newConfig.PlexBaseURL)
 		plex.SaveConfiguration(newConfig)
 		w.WriteHeader(http.StatusOK)
 		break
@@ -278,7 +279,8 @@ func SetConfigHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func endWithSlash(url string) string {
+// EndWithSlash utility function to make sure a url/path ends in a '/'
+func EndWithSlash(url string) string {
 	if strings.HasSuffix(url, "/") {
 		return url
 	}
@@ -331,7 +333,7 @@ func TestConfigHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err)
 		}
-		config.SonarrURL = endWithSlash(config.SonarrURL)
+		config.SonarrURL = EndWithSlash(config.SonarrURL)
 
 		success = TestSonarrConnection(config)
 	case "radarr":
@@ -341,7 +343,7 @@ func TestConfigHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err)
 		}
-		config.RadarrURL = endWithSlash(config.RadarrURL)
+		config.RadarrURL = EndWithSlash(config.RadarrURL)
 
 		success = TestRadarrConnection(config)
 	}
