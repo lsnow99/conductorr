@@ -105,6 +105,8 @@ func (p *Plex) ScanPlex(scanDir string, libID int) {
 		Stderr:  true,
 		Stdout:  true,
 		Stdin:   true,
+		// TODO check if this should be a setting
+		Container: "plex",
 	}
 	req.VersionedParams(
 		option,

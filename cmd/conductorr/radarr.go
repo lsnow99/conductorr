@@ -156,7 +156,7 @@ func (r *Radarr) NotifyNewPath(newPath string, contentID int64) {
 	req3URL := r.config.RadarrURL + "command?apikey=(api key here)&name=refreshMovie" +
 		"&" + "movieId" + "=" + strconv.Itoa(int(contentID))
 	//util.LogAllInfo(req3URL, w)
-	req3URL = r.config.RadarrURL + "command?apikey=" + r.config.RadarrURL + "&name=refreshMovie" +
+	req3URL = r.config.RadarrURL + "command?apikey=" + r.config.RadarrAPIKey + "&name=refreshMovie" +
 		"&" + "movieId" + "=" + strconv.Itoa(int(contentID))
 	reqJSON := make(map[string]interface{})
 	reqJSON["name"] = "refreshMovie"

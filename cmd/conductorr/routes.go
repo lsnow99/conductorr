@@ -206,7 +206,12 @@ func ImportHandler(w http.ResponseWriter, r *http.Request) {
 	filebot.RunFilebot(job.DownloadDirectory)
 	newPath, _ := filebot.GetNewDirectory(job.DownloadDirectory)
 	log.Printf("New path identified as: %s", newPath)
-	sonarr.NotifyNewPath(newPath, job.GrabberInternalID)
+	
+	if job.ContentType == sonarr.LoadConfiguration(false).SonarrCategory {
+		sonarr.NotifyNewPath(newPath, job.GrabberInternalID)
+	} else if job.ContentType == radarr.LoadConfiguration(false).RadarrCategory {
+		radarr.NotifyNewPath(newPath, job.GrabberInternalID)
+	}
 
 	if job.DownloadClient == "NZBGet" {
 		err = os.RemoveAll(job.DownloadDirectory)
