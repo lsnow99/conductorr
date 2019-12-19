@@ -19,13 +19,13 @@ import (
 	"k8s.io/client-go/tools/remotecommand"
 )
 
-// Plex struct for communicating with sonarr
+// Plex struct for communicating with plex
 type Plex struct {
 	config *schema.PlexConfiguration
 }
 
 /*
-SaveConfiguration save a sonarr configuration to the database
+SaveConfiguration save a plex configuration to the database
 */
 func (p *Plex) SaveConfiguration(config *schema.PlexConfiguration) {
 	defaultConfig := schema.PlexConfiguration{}
