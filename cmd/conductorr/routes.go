@@ -162,6 +162,7 @@ func LinkHandler(w http.ResponseWriter, r *http.Request) {
 	// } else if lr.DownloadClientIdentifier == "rTorrent" {
 	job.TorrentLinkerID = lr.TorrentLinkerID
 	// }
+	job.Status = "DOWNLOADING"
 	job.GrabberInternalID = lr.ContentIdentifier
 	job.ContentType = lr.ContentCategory
 	job.Title = lr.ContentName
@@ -203,6 +204,8 @@ func ImportHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Please set filebot connection options in Conductorr settings!")
 		return
 	}
+	job.Status = "FILEBOT"
+	updateJob(job)
 	filebot.RunFilebot(job.DownloadDirectory)
 	newPath, _ := filebot.GetNewDirectory(job.DownloadDirectory)
 	log.Printf("New path identified as: %s", newPath)
@@ -225,10 +228,21 @@ func ImportHandler(w http.ResponseWriter, r *http.Request) {
 
 	id := plex.GetLibraryID(newPath)
 	log.Printf("Library ID: %d", id)
+	job.Status = "PLEX"
+	updateJob(job)
 	plex.ScanPlex(newPath, id)
 	log.Println("Done scanning Plex")
+	job.Status = "DONE"
+	updateJob(job)
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func updateJob(job *schema.Jobs) {
+	err := db.Update(job)
+	if err != nil {
+		panic(err)
+	}
 }
 
 // SetConfigHandler update config in database
