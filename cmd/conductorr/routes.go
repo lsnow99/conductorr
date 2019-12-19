@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 
@@ -251,21 +252,33 @@ func updateJob(job *schema.Jobs) {
 // GetJobsHandler get all jobs
 func GetJobsHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	jobs := []schema.Jobs{}
-	
-	err := db.Model(&jobs).
-		Column("title", "job_id", "imdb_id", "release_title", "content_type", "status").
-		Where("title ILIKE ?", "%"+vars["filter"]+"%").
-		Order(vars["sort_column"] + " " + vars["sort_order"]).
-		Select()
-
+	pageNum, err := strconv.Atoi(vars["page"])
 	if err != nil {
 		panic(err)
 	}
 
+	type JobData struct {
+		Jobs []schema.Jobs	`json:"data"`
+		Total int			`json:"total"`
+	}
+
+	jobData := JobData{}
+
+	baseQuery := db.Model(&jobData.Jobs).
+		Column("title", "job_id", "imdb_id", "release_title", "content_type", "status").
+		Where("title ILIKE ?", "%"+vars["filter"]+"%").
+		Order(vars["sort_column"] + " " + vars["sort_order"])
+
+	count, err := baseQuery.Limit(20).Offset(pageNum - 1).SelectAndCount()
+	if err != nil {
+		panic(err)
+	}
+	
+	jobData.Total = count
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(jobs); err != nil {
+	if err := json.NewEncoder(w).Encode(jobData); err != nil {
 		panic(err)
 	}
 }

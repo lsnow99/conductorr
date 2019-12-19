@@ -79,7 +79,8 @@ func initRoutes() *negroni.Negroni {
 	ar.HandleFunc("/api/jobs", GetJobsHandler).
 		Queries("sort_column", "{sort_column}", 
 				"sort_order", "{sort_order}", 
-				"filter", "{filter}").
+				"filter", "{filter}",
+				"page", "{page:[0-9]+}").
 		Methods("GET")
 
 	an := negroni.New(negroni.HandlerFunc(mw.HandlerWithNext), negroni.Wrap(ar))

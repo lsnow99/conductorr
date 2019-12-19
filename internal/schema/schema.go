@@ -25,26 +25,26 @@ type SystemConfiguration struct {
 // Jobs database + json model
 type Jobs struct {
 	tableName          struct{}  `pg:"jobs"`
-	GrabberInternalID  int64     `pg:"grabber_internal_id" json:",omitempty"`
-	JobID              int64     `pg:"job_id, pk" json:",omitempty"`
-	TorrentLinkerID    string    `pg:"torrent_linker_id" json:",omitempty"`
-	NZBLinkerID        string    `pg:"nzb_linker_id" json:",omitempty"`
-	TimeGrabbed        time.Time `pg:"time_grabbed" json:",omitempty"`
-	Title              string    `pg:"title" json:",omitempty"`
-	ImdbID             string    `pg:"imdb_id" json:",omitempty"`
-	ReleaseTitle       string    `pg:"release_title" json:",omitempty"`
-	ContentType        string    `pg:"content_type" json:",omitempty"`
-	DownloadClient     string    `pg:"download_client" json:",omitempty"`
-	DownloadDirectory  string    `pg:"download_directory" json:",omitempty"`
-	Status             string    `pg:"status" json:",omitempty"`
-	FilebotLogs        string    `pg:"filebot_logs" json:",omitempty"`
-	ScannerLogs        string    `pg:"scanner_logs" json:",omitempty"`
-	GrabbedQuality     string    `pg:"grabbed_quality" json:",omitempty"`
-	GrabbedSize        string    `pg:"grabbed_size" json:",omitempty"`
-	TimeFilebotStarted time.Time `pg:"time_filebot_started" json:",omitempty"`
-	TimeFilebotDone    time.Time `pg:"time_filebot_done" json:",omitempty"`
-	TimeScanStarted    time.Time `pg:"time_scan_started" json:",omitempty"`
-	TimeScanDone       time.Time `pg:"time_scan_done" json:",omitempty"`
+	GrabberInternalID  int64     `pg:"grabber_internal_id" json:"grabber_internal_id,omitempty"`
+	JobID              int64     `pg:"job_id, pk" json:"job_id,omitempty"`
+	TorrentLinkerID    string    `pg:"torrent_linker_id" json:"torrent_linker_id,omitempty"`
+	NZBLinkerID        string    `pg:"nzb_linker_id" json:"nzb_linker_id,omitempty"`
+	TimeGrabbed        time.Time `pg:"time_grabbed" json:"time_grabbed,omitempty"`
+	Title              string    `pg:"title" json:"title,omitempty"`
+	ImdbID             string    `pg:"imdb_id" json:"imdb_id,omitempty"`
+	ReleaseTitle       string    `pg:"release_title" json:"release_title,omitempty"`
+	ContentType        string    `pg:"content_type" json:"content_type,omitempty"`
+	DownloadClient     string    `pg:"download_client" json:"download_client,omitempty"`
+	DownloadDirectory  string    `pg:"download_directory" json:"download_directory,omitempty"`
+	Status             string    `pg:"status" json:"status,omitempty"`
+	FilebotLogs        string    `pg:"filebot_logs" json:"filebot_logs,omitempty"`
+	ScannerLogs        string    `pg:"scanner_logs" json:"scanner_logs,omitempty"`
+	GrabbedQuality     string    `pg:"grabbed_quality" json:"grabbed_quality,omitempty"`
+	GrabbedSize        string    `pg:"grabbed_size" json:"grabbed_size,omitempty"`
+	TimeFilebotStarted time.Time `pg:"time_filebot_started" json:"time_filebot_started,omitempty"`
+	TimeFilebotDone    time.Time `pg:"time_filebot_done" json:"time_filebot_done,omitempty"`
+	TimeScanStarted    time.Time `pg:"time_scan_started" json:"time_scan_started,omitempty"`
+	TimeScanDone       time.Time `pg:"time_scan_done" json:"time_scan_done,omitempty"`
 }
 
 // FilebotConfiguration database + json model

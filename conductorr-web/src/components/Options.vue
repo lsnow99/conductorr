@@ -120,7 +120,8 @@ export default {
             duration: 2000
           });
         })
-        .catch(() => {
+        .catch((error) => {
+          this.checkUnauthorizedToken(error);
           Snackbar.open({
             message: "Test unsuccessful",
             type: "is-danger",
