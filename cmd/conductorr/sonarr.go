@@ -3,10 +3,12 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/lsnow2017/conductorr/internal/schema"
-	"github.com/go-pg/pg/v9"
+	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/go-pg/pg/v9"
+	"github.com/lsnow2017/conductorr/internal/schema"
 )
 
 // Sonarr struct for communicating with sonarr
@@ -79,6 +81,7 @@ func (s *Sonarr) NotifyNewPath(newPath string, contentID int64) {
 	req1URL := s.config.SonarrURL + "series" + "/" + strconv.Itoa(int(contentID)) + "?apikey="
 	//// util.LogAllInfo(req1URL+"(api key hidden)", w)
 	req1URL += s.config.SonarrAPIKey
+	log.Printf("Req1: %s", req1URL)
 	resp1, err := http.Get(req1URL)
 	if err != nil {
 		//// util.LogAllError("Received error during call: "+err.Error(), w)
@@ -115,6 +118,7 @@ func (s *Sonarr) NotifyNewPath(newPath string, contentID int64) {
 	req2URL := s.config.SonarrURL + "series" + "/" + strconv.Itoa(int(contentID)) + "?apikey="
 	//util.LogAllInfo(req2URL, w)
 	req2URL += s.config.SonarrAPIKey
+	log.Printf("Req2: %s", req2URL)
 	respJSONStr, err := json.Marshal(respJSON)
 	if err != nil {
 		//util.LogAllError("Error marshaling JSON: "+err.Error(), w)
@@ -157,6 +161,7 @@ func (s *Sonarr) NotifyNewPath(newPath string, contentID int64) {
 	//util.LogAllInfo(req3URL, w)
 	req3URL = s.config.SonarrURL + "command?apikey=" + s.config.SonarrURL + "&name=refreshSeries" +
 		"&" + "seriesId" + "=" + strconv.Itoa(int(contentID))
+	log.Printf("Req3: %s", req3URL)
 	reqJSON := make(map[string]interface{})
 	reqJSON["name"] = "refreshSeries"
 	reqJSON["seriesId"] = int(contentID)
