@@ -92,6 +92,8 @@ func (f *Filebot) RunFilebot(DownloadDirectory string) {
 	}
 	log.Printf("Running filebot with cmd: %s", strings.Join(cmd, " "))
 
+	
+
 	req := clientset.CoreV1().RESTClient().Post().Resource("pods").Name(podName).Namespace(f.config.FbNamespace).SubResource("exec")
 	option := &v1.PodExecOptions{
 		Command: cmd,
@@ -109,8 +111,8 @@ func (f *Filebot) RunFilebot(DownloadDirectory string) {
 		panic(err)
 	}
 	err = exec.Stream(remotecommand.StreamOptions{
-		Stdout: os.Stdout,
-		Stderr: os.Stderr,
+		Stdout: log.Writer(),
+		Stderr: log.Writer(),
 	})
 	if err != nil {
 		panic(err)
