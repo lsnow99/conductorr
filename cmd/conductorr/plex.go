@@ -126,7 +126,7 @@ func (p *Plex) ScanPlex(scanDir string, libID int) {
 }
 
 func TestPlexConnection(config *schema.PlexConfiguration) bool {
-	reqURL := config.PlexBaseURL + "/library/sections?X-Plex-token="
+	reqURL := config.PlexBaseURL + "library/sections?X-Plex-token="
 	reqURL += config.PlexAuthToken
 	resp, err := http.Get(reqURL)
 	if err != nil {
@@ -143,7 +143,7 @@ GetLibraryID given a path to some media, get the corresponding library
 */
 func (p *Plex) GetLibraryID(path string) int {
 	// util.LogAllInfo("Performing Plex API request to list libraries:", w)
-	reqURL := p.config.PlexBaseURL + "/library/sections?X-Plex-token="
+	reqURL := p.config.PlexBaseURL + "library/sections?X-Plex-token="
 	// util.LogAllInfo(reqURL+"(auth token here)", w)
 	reqURL += p.config.PlexAuthToken
 	resp, err := http.Get(reqURL)
