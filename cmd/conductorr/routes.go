@@ -217,6 +217,12 @@ func ImportHandler(w http.ResponseWriter, r *http.Request) {
 			// util.LogAllInfo("Successfully deleted: "+job.DownloadDirectory, w)
 		}
 	}
+
+	id := plex.GetLibraryID(newPath)
+	log.Printf("Library ID: %d", id)
+	plex.ScanPlex(newPath, id)
+	log.Println("Done scanning Plex")
+
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -323,7 +329,7 @@ func populateConfigs(defaults []schema.Configurator, saved interface{}) []schema
 func TestConfigHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	var success bool
+	success := false
 
 	switch vars["service"] {
 	case "sonarr":
@@ -346,6 +352,16 @@ func TestConfigHandler(w http.ResponseWriter, r *http.Request) {
 		config.RadarrURL = EndWithSlash(config.RadarrURL)
 
 		success = TestRadarrConnection(config)
+	case "plex":
+		config := &schema.PlexConfiguration{}
+		config.PlexConfigurationID = true
+		err := json.NewDecoder(r.Body).Decode(config)
+		if err != nil {
+			panic(err)
+		}
+		config.PlexBaseURL = EndWithSlash(config.PlexBaseURL)
+
+		success = TestPlexConnection(config)
 	}
 
 	responseObj := map[string]bool{"test_success": success}

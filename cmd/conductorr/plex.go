@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/xml"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -84,17 +85,17 @@ func (p *Plex) ScanPlex(scanDir string, libID int) {
 	cmd := []string{
 		"/bin/bash",
 		"-c",
-		"\"" +
-			"LD_LIBRARY_PATH=/usr/lib/plexmediaserver" +
-			"/usr/lib/plexmediaserver/Plex Media Scanner " +
-			"--scan " +
-			"--refresh " +
-			"--force " +
-			"--section " +
-			strconv.Itoa(libID) +
-			"--directory " +
-			scanDir +
-			"\"",
+		strings.Join([]string{
+			"LD_LIBRARY_PATH=/usr/lib/plexmediaserver",
+			"/usr/lib/plexmediaserver/Plex Media Scanner",
+			"--scan",
+			"--refresh",
+			"--force",
+			"--section",
+			strconv.Itoa(libID),
+			"--directory",
+			scanDir,
+		}, " "),
 	}
 
 	req := clientset.CoreV1().RESTClient().Post().Resource("pods").Name(podName).Namespace(p.config.PlexNamespace).SubResource("exec")
@@ -122,6 +123,19 @@ func (p *Plex) ScanPlex(scanDir string, libID int) {
 		panic(err)
 	}
 
+}
+
+func TestPlexConnection(config *schema.PlexConfiguration) bool {
+	reqURL := config.PlexBaseURL + "/library/sections?X-Plex-token="
+	reqURL += config.PlexAuthToken
+	resp, err := http.Get(reqURL)
+	if err != nil {
+		return false
+	}
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return false
+	}
+	return true
 }
 
 /*
@@ -162,6 +176,7 @@ func (p *Plex) GetLibraryID(path string) int {
 		}
 	}
 
+	log.Println("Could not find a matching library!")
 	// util.LogAllError("Could not find a matching library!", w)
 	return -1
 }
