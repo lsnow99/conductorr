@@ -52,39 +52,38 @@ func (f *Filebot) RunFilebot(DownloadDirectory string) {
 	}
 
 	cmd := []string{
-		"/bin/sh " +
-		"-c " +
-		"\"" +
-			"FILEBOT_OPTS=-Dapplication.dir=/valinor/plex " +
-			"/opt/filebot/filebot " +
-			"-script " + "fn:amc " +
-			"--output " + f.config.FbOutputDir +
-		" --action " + f.config.FbAction +
-		" --conflict " + "override " + "-non-strict" +
-		" --log-file " + f.config.FbAmcLog + 
-		" --def" + 
+		"/bin/sh",
+		"-c",
+		"\"FILEBOT_OPTS=-Dapplication.dir=/valinor/plex",
+			"/opt/filebot/filebot ",
+			"-script ", "fn:amc ",
+			"--output ", f.config.FbOutputDir,
+		" --action ", f.config.FbAction,
+		" --conflict ", "override ", "-non-strict",
+		" --log-file ", f.config.FbAmcLog, 
+		" --def", 
 		" unsorted=" + boolToYorN(f.config.FbUnsorted) +
-		" music=n " + spaceOrArg("subtitles", f.config.FbSubtitlesLocale) +
-			" artwork=" + boolToYorN(f.config.FbArtwork) + " " +
-			"extras=" + boolToYorN(f.config.FbExtras) +
-			spaceOrArg("kodi", f.config.FbKodi) + 
-			spaceOrArg("plex", f.config.FbPlex) +
-			spaceOrArg("emby", f.config.FbEmby) +
-			spaceOrArg("emby", f.config.FbEmby) +
-			spaceOrArg("pushover", f.config.FbPushover) +
-			spaceOrArg("pushbullet", f.config.FbPushbullet) +
-			spaceOrArg("discord", f.config.FbDiscord) +
-			spaceOrArg("gmail", f.config.FbGmail) +
-			spaceOrArg("mail", f.config.FbMail) +
-			spaceOrArg("mailto", f.config.FbMailto) +
-			"reportError=" + boolToYorN(f.config.FbReportError) + " " +
-			"storeReport=" + boolToYorN(f.config.FbStoreReport) + " " +
-			spaceOrArg("extractFolder", f.config.FbExtractFolder) +
-			"skipExtract=" + boolToYorN(f.config.FbSkipExtract) + " " +
-			"deleteAfterExtract=" + boolToYorN(f.config.FbDeleteAfterExtract) + " " +
-			"clean=" + boolToYorN(f.config.FbClean) + " " +
-			spaceOrArg("exec", f.config.FbExec) +
-			spaceOrArg("ignore", f.config.FbIgnore) + 
+		" music=n ", spaceOrArg("subtitles", f.config.FbSubtitlesLocale),
+			" artwork=" + boolToYorN(f.config.FbArtwork),
+			"extras=" + boolToYorN(f.config.FbExtras),
+			spaceOrArg("kodi", f.config.FbKodi), 
+			spaceOrArg("plex", f.config.FbPlex),
+			spaceOrArg("emby", f.config.FbEmby),
+			spaceOrArg("emby", f.config.FbEmby),
+			spaceOrArg("pushover", f.config.FbPushover),
+			spaceOrArg("pushbullet", f.config.FbPushbullet),
+			spaceOrArg("discord", f.config.FbDiscord),
+			spaceOrArg("gmail", f.config.FbGmail),
+			spaceOrArg("mail", f.config.FbMail),
+			spaceOrArg("mailto", f.config.FbMailto),
+			"reportError=" + boolToYorN(f.config.FbReportError),
+			"storeReport=" + boolToYorN(f.config.FbStoreReport),
+			spaceOrArg("extractFolder", f.config.FbExtractFolder),
+			"skipExtract=" + boolToYorN(f.config.FbSkipExtract),
+			"deleteAfterExtract=" + boolToYorN(f.config.FbDeleteAfterExtract),
+			"clean=" + boolToYorN(f.config.FbClean),
+			spaceOrArg("exec", f.config.FbExec),
+			spaceOrArg("ignore", f.config.FbIgnore), 
 			// "minFileSize=" + string(f.config.FbMinFileSize),
 			// "minLengthMS=" + string(f.config.FbMinLengthMs),
 			// "excludeList=" + f.config.FbExcludeList,
@@ -98,7 +97,7 @@ func (f *Filebot) RunFilebot(DownloadDirectory string) {
 		TTY:     true,
 		Stderr:  true,
 		Stdout:  true,
-		Stdin:   true,
+		Stdin:   false,
 	}
 	req.VersionedParams(
 		option,
@@ -109,7 +108,6 @@ func (f *Filebot) RunFilebot(DownloadDirectory string) {
 		panic(err)
 	}
 	err = exec.Stream(remotecommand.StreamOptions{
-		Stdin:  os.Stdin,
 		Stdout: os.Stdout,
 		Stderr: os.Stderr,
 	})
