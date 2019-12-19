@@ -94,7 +94,7 @@ func (f *Filebot) RunFilebot(DownloadDirectory string) {
 	req := clientset.CoreV1().RESTClient().Post().Resource("pods").Name(podName).Namespace(f.config.FbNamespace).SubResource("exec")
 	option := &v1.PodExecOptions{
 		Command: cmd,
-		TTY:     true,
+		TTY:     false,
 		Stderr:  true,
 		Stdout:  true,
 		Stdin:   false,
