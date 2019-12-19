@@ -159,7 +159,7 @@ func (s *Sonarr) NotifyNewPath(newPath string, contentID int64) {
 	req3URL := s.config.SonarrURL + "command?apikey=(api key here)&name=refreshSeries" +
 		"&" + "seriesId" + "=" + strconv.Itoa(int(contentID))
 	//util.LogAllInfo(req3URL, w)
-	req3URL = s.config.SonarrURL + "command?apikey=" + s.config.SonarrURL + "&name=refreshSeries" +
+	req3URL = s.config.SonarrURL + "command?apikey=" + s.config.SonarrAPIKey + "&name=refreshSeries" +
 		"&" + "seriesId" + "=" + strconv.Itoa(int(contentID))
 	log.Printf("Req3: %s", req3URL)
 	reqJSON := make(map[string]interface{})
