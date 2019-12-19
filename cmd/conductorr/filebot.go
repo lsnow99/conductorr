@@ -60,7 +60,7 @@ func (f *Filebot) RunFilebot(DownloadDirectory string) {
 			"-script " + "fn:amc " +
 			"--output " + f.config.FbOutputDir +
 		" --action " + f.config.FbAction +
-		" --conflict " + "override ", "-non-strict" +
+		" --conflict " + "override " + "-non-strict" +
 		" --log-file " + f.config.FbAmcLog + 
 		" --def" + 
 		" unsorted=" + boolToYorN(f.config.FbUnsorted) +
