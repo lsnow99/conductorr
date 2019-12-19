@@ -87,7 +87,7 @@ func (p *Plex) ScanPlex(scanDir string, libID int) {
 		"-c",
 		strings.Join([]string{
 			"LD_LIBRARY_PATH=/usr/lib/plexmediaserver",
-			"/usr/lib/plexmediaserver/Plex Media Scanner",
+			"\"/usr/lib/plexmediaserver/Plex Media Scanner\"",
 			"--scan",
 			"--refresh",
 			"--force",
