@@ -108,8 +108,8 @@ func (f *Filebot) RunFilebot(DownloadDirectory string) {
 	if err != nil {
 		panic(err)
 	}
-	stdBuf := new(bytes.Buffer)
-	errBuf := new(bytes.Buffer)
+	stdBuf := &bytes.Buffer{}
+	errBuf := &bytes.Buffer{}
 	err = exec.Stream(remotecommand.StreamOptions{
 		Stdout: stdBuf,
 		Stderr: errBuf,
