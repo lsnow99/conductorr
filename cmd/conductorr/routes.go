@@ -172,6 +172,7 @@ func LinkHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
+	w.WriteHeader(http.StatusOK)
 }
 
 // ImportHandler run the filebot command
@@ -215,6 +216,7 @@ func ImportHandler(w http.ResponseWriter, r *http.Request) {
 			// util.LogAllInfo("Successfully deleted: "+job.DownloadDirectory, w)
 		}
 	}
+	w.WriteHeader(http.StatusOK)
 }
 
 // SetConfigHandler update config in database

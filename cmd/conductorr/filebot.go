@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/xml"
 	"io/ioutil"
 	"log"
@@ -26,7 +27,6 @@ type Filebot struct {
 RunFilebot attempts to exec into the filebot pod and run the filebot
 */
 func (f *Filebot) RunFilebot(DownloadDirectory string) {
-	
 
 	config, err := rest.InClusterConfig()
 
@@ -60,14 +60,14 @@ func (f *Filebot) RunFilebot(DownloadDirectory string) {
 		"--output", f.config.FbOutputDir,
 		"--action", f.config.FbAction,
 		"--conflict", "override", "-non-strict",
-		"--log-file", f.config.FbAmcLog, 
-		"--def", 
+		"--log-file", f.config.FbAmcLog,
+		"--def",
 		boolArg("unsorted", f.config.FbUnsorted),
 		boolArg("music", false),
 		stringArg("subtitles", f.config.FbSubtitlesLocale),
 		boolArg("artwork", f.config.FbArtwork),
 		boolArg("extras", f.config.FbExtras),
-		stringArg("kodi", f.config.FbKodi), 
+		stringArg("kodi", f.config.FbKodi),
 		stringArg("plex", f.config.FbPlex),
 		stringArg("emby", f.config.FbEmby),
 		stringArg("emby", f.config.FbEmby),
@@ -84,15 +84,13 @@ func (f *Filebot) RunFilebot(DownloadDirectory string) {
 		boolArg("deleteAfterExtract", f.config.FbDeleteAfterExtract),
 		boolArg("clean", f.config.FbClean),
 		stringArg("exec", f.config.FbExec),
-		stringArg("ignore", f.config.FbIgnore), 
-			// "minFileSize=" + string(f.config.FbMinFileSize),
-			// "minLengthMS=" + string(f.config.FbMinLengthMs),
-			// "excludeList=" + f.config.FbExcludeList,
+		stringArg("ignore", f.config.FbIgnore),
+		// "minFileSize=" + string(f.config.FbMinFileSize),
+		// "minLengthMS=" + string(f.config.FbMinLengthMs),
+		// "excludeList=" + f.config.FbExcludeList,
 		DownloadDirectory,
 	}
 	log.Printf("Running filebot with cmd: %s", strings.Join(cmd, " "))
-
-	
 
 	req := clientset.CoreV1().RESTClient().Post().Resource("pods").Name(podName).Namespace(f.config.FbNamespace).SubResource("exec")
 	option := &v1.PodExecOptions{
@@ -110,13 +108,17 @@ func (f *Filebot) RunFilebot(DownloadDirectory string) {
 	if err != nil {
 		panic(err)
 	}
+	stdBuf := new(bytes.Buffer)
+	errBuf := new(bytes.Buffer)
 	err = exec.Stream(remotecommand.StreamOptions{
-		Stdout: log.Writer(),
-		Stderr: log.Writer(),
+		Stdout: stdBuf,
+		Stderr: errBuf,
 	})
 	if err != nil {
 		panic(err)
 	}
+	log.Println(stdBuf.String())
+	log.Println(errBuf.String())
 }
 
 /*
@@ -250,7 +252,7 @@ func boolArg(option string, test bool) string {
 	return ans
 }
 
-func stringArg(option string, value string) (string) {
+func stringArg(option string, value string) string {
 	str := ""
 	if len(value) > 0 {
 		str = option + "=" + value
