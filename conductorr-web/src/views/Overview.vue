@@ -12,7 +12,7 @@
       <b-table
         :opened-detailed="defaultOpenedDetails"
         detailed
-        detail-key="id"
+        detail-key="job_id"
         :show-detail-icon="showDetailIcon"
 
               :data="data"
@@ -33,7 +33,7 @@
             :default-sort="[sortField, sortOrder]"
       >
         <template slot-scope="props">
-          <b-table-column field="id" label="Job ID" width="80" numeric>
+          <b-table-column field="job_id" label="Job ID" width="80" numeric>
             {{ props.row.job_id }}
           </b-table-column>
 

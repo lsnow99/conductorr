@@ -269,7 +269,7 @@ func GetJobsHandler(w http.ResponseWriter, r *http.Request) {
 		Where("title ILIKE ?", "%"+vars["filter"]+"%").
 		Order(vars["sort_column"] + " " + vars["sort_order"])
 
-	count, err := baseQuery.Limit(20).Offset(pageNum - 1).SelectAndCount()
+	count, err := baseQuery.Limit(20).Offset((pageNum - 1)*20).SelectAndCount()
 	if err != nil {
 		panic(err)
 	}
