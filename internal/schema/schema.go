@@ -133,6 +133,8 @@ type LinkRequest struct {
 	ReleaseTitle             string `json:"release_title"`
 	DownloadClientIdentifier string `json:"dl_client_id"`
 	ImdbID					string `json:"imdb_id"`
+	GrabbedQuality			string `json:"grabbed_quality"`
+	GrabbedSize				string `json:"grabbed_size"`
 }
 
 // ImportRequest json model for receiving a request to run filebot on a download

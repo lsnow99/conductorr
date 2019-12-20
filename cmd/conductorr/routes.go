@@ -169,6 +169,8 @@ func LinkHandler(w http.ResponseWriter, r *http.Request) {
 	job.Title = lr.ContentName
 	job.ImdbID = lr.ImdbID
 	job.ReleaseTitle = lr.ReleaseTitle
+	job.GrabbedQuality = lr.GrabbedQuality
+	job.GrabbedSize = lr.GrabbedSize
 
 	err = db.Insert(job)
 	if err != nil {
