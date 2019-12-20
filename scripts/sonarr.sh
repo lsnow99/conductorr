@@ -14,5 +14,5 @@ fi
 
 curl --header "Content-Type: application/json" \
   --request POST \
-  --data "{\"content_id\":$xarr_id,\"content_name\":\"$content_name\",\"content_category\":\"Series\",\"torrent_linker_id\":\"$torrent_linker_id\",\"nzb_linker_id\":\"$nzb_linker_id\",\"grabbed_quality\":\"$grabbed_quality\",\"grabbed_size\":\"$grabbed_size\"}" \
+  --data "{\"content_id\":$xarr_id,\"content_name\":\"$content_name\",\"content_category\":\"Series\",\"torrent_linker_id\":\"$torrent_linker_id\",\"nzb_linker_id\":\"$nzb_linker_id\",\"grabbed_quality\":\"$grabbed_quality\",\"grabbed_size\":\"$grabbed_size\",\"imdb_id\":\"$imdb_id\"}" \
   http://conductorr.plex.svc.cluster.local/_link
