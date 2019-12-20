@@ -7,7 +7,7 @@
 # completion of all media grabbed from 
 # Sonarr/Radarr
 #
-# The script calls /import
+# The script calls /_import
 
 ################################
 ### OPTIONS                  ###
