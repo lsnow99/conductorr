@@ -265,7 +265,7 @@ func GetJobsHandler(w http.ResponseWriter, r *http.Request) {
 	jobData := JobData{}
 
 	baseQuery := db.Model(&jobData.Jobs).
-		Column("title", "job_id", "imdb_id", "release_title",
+		Column("title", "job_id", "imdb_id", "release_title", "time_grabbed",
 			"content_type", "status", "grabbed_size", "grabbed_quality").
 		Where("title ILIKE ?", "%"+vars["filter"]+"%").
 		Order(vars["sort_column"] + " " + vars["sort_order"])
