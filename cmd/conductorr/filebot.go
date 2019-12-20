@@ -26,7 +26,7 @@ type Filebot struct {
 /*
 RunFilebot attempts to exec into the filebot pod and run the filebot
 */
-func (f *Filebot) RunFilebot(DownloadDirectory string) {
+func (f *Filebot) RunFilebot(DownloadDirectory string) string {
 
 	config, err := rest.InClusterConfig()
 
@@ -116,11 +116,11 @@ func (f *Filebot) RunFilebot(DownloadDirectory string) {
 		Stdout: stdBuf,
 		Stderr: errBuf,
 	})
+	output := stdBuf.String() + errBuf.String()
 	if err != nil {
-		panic(err)
+		output += err.Error()
 	}
-	log.Println(stdBuf.String())
-	log.Println(errBuf.String())
+	return output
 }
 
 /*

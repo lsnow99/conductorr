@@ -210,7 +210,10 @@ func ImportHandler(w http.ResponseWriter, r *http.Request) {
 	job.Status = "FILEBOT"
 	job.TimeFilebotStarted = time.Now()
 	updateJob(job)
-	filebot.RunFilebot(job.DownloadDirectory)
+	fbOutput := filebot.RunFilebot(job.DownloadDirectory)
+	log.Println(fbOutput)
+	job.FilebotLogs = fbOutput
+	updateJob(job)
 	newPath, _ := filebot.GetNewDirectory(job.DownloadDirectory)
 	log.Printf("New path identified as: %s", newPath)
 
