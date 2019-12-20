@@ -82,6 +82,7 @@ func initRoutes() *negroni.Negroni {
 				"filter", "{filter}",
 				"page", "{page:[0-9]+}").
 		Methods("GET")
+	ar.HandleFunc("/api/job/{job_id}", GetJobHandler).Methods("GET")
 
 	an := negroni.New(negroni.HandlerFunc(mw.HandlerWithNext), negroni.Wrap(ar))
 	r.PathPrefix("/api").Handler(an)

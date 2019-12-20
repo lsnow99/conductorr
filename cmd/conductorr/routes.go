@@ -283,6 +283,27 @@ func GetJobsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetJobHandler get job by ID
+func GetJobHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	jobID, err := strconv.Atoi(vars["job_id"])
+	if err != nil {
+		panic(err)
+	}
+
+	job := schema.Jobs{}
+	job.JobID = int64(jobID)
+	err = db.Select(job)
+	if err != nil {
+		panic(err)
+	}
+
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(job); err != nil {
+		panic(err)
+	}
+}
+
 // SetConfigHandler update config in database
 func SetConfigHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
