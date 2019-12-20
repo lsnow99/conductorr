@@ -64,7 +64,7 @@
           </b-table-column>
 
           <b-table-column
-            field="date"
+            field="time_grabbed"
             label="Created"
             sortable
             centered
