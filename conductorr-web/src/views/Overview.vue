@@ -136,7 +136,6 @@ export default {
             // Process data if necessary
             this.data.push(element)
           });
-          this.loading = false
         })
         .catch((error) => {
           this.checkUnauthorizedToken(error);
@@ -148,11 +147,10 @@ export default {
           });
           this.data = []
           this.total = 0
-          this.loading = false
           throw error
         })
         .finally(() => {
-          this.isTesting = false;
+          this.loading = false
         });
     },
     onPageChange(page) {

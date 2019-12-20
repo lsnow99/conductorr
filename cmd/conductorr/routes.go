@@ -258,22 +258,23 @@ func GetJobsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type JobData struct {
-		Jobs []schema.Jobs	`json:"data"`
-		Total int			`json:"total"`
+		Jobs  []schema.Jobs `json:"data"`
+		Total int           `json:"total"`
 	}
 
 	jobData := JobData{}
 
 	baseQuery := db.Model(&jobData.Jobs).
-		Column("title", "job_id", "imdb_id", "release_title", "content_type", "status").
+		Column("title", "job_id", "imdb_id", "release_title",
+			"content_type", "status", "grabbed_size", "grabbed_quality").
 		Where("title ILIKE ?", "%"+vars["filter"]+"%").
 		Order(vars["sort_column"] + " " + vars["sort_order"])
 
-	count, err := baseQuery.Limit(20).Offset((pageNum - 1)*20).SelectAndCount()
+	count, err := baseQuery.Limit(20).Offset((pageNum - 1) * 20).SelectAndCount()
 	if err != nil {
 		panic(err)
 	}
-	
+
 	jobData.Total = count
 
 	w.Header().Set("Content-Type", "application/json")
@@ -293,7 +294,7 @@ func GetJobHandler(w http.ResponseWriter, r *http.Request) {
 
 	job := schema.Jobs{}
 	job.JobID = int64(jobID)
-	err = db.Select(job)
+	err = db.Select(&job)
 	if err != nil {
 		panic(err)
 	}
