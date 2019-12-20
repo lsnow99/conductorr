@@ -2,21 +2,35 @@
   <div class="container">
     <section>
 
+      <b-field label="Search..." label-position="on-border">
+          <b-input @keyup.enter.native="loadAsyncData" placeholder="Search..." v-model="filter" type="search"></b-input>
+          <p class="control">
+              <b-button @click="loadAsyncData" class="button is-primary">Search</b-button>
+          </p>
+      </b-field>
+
       <b-table
-        :data="data"
-        ref="table"
-        paginated
-        per-page="5"
         :opened-detailed="defaultOpenedDetails"
         detailed
-        backend-pagination
-        backend-sorting
         detail-key="id"
         :show-detail-icon="showDetailIcon"
-        aria-next-label="Next page"
-        aria-previous-label="Previous page"
-        aria-page-label="Page"
-        aria-current-label="Current page"
+
+              :data="data"
+            :loading="loading"
+
+            paginated
+            backend-pagination
+            :total="total"
+            :per-page="perPage"
+            @page-change="onPageChange"
+            aria-next-label="Next page"
+            aria-previous-label="Previous page"
+            aria-page-label="Page"
+            aria-current-label="Current page"
+
+            backend-sorting
+            :default-sort-direction="defaultSortOrder"
+            :default-sort="[sortField, sortOrder]"
       >
         <template slot-scope="props">
           <b-table-column field="id" label="Job ID" width="80" numeric>
@@ -118,8 +132,6 @@ export default {
         .then((response) => {
           this.data = []
           this.total = response.data.total
-    /* eslint-disable */
-          console.log(response)
           response.data.data.forEach(element => {
             // Process data if necessary
             this.data.push(element)
