@@ -132,6 +132,7 @@ func (p *Plex) ScanPlex(scanDir string, libID int) {
 
 }
 
+// TestPlexConnection verify the connection to Plex
 func TestPlexConnection(config *schema.PlexConfiguration) bool {
 	reqURL := config.PlexBaseURL + "library/sections?X-Plex-token="
 	reqURL += config.PlexAuthToken
