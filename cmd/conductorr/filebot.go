@@ -89,7 +89,7 @@ func (f *Filebot) RunFilebot(DownloadDirectory string) string {
 			// "minFileSize=" + string(f.config.FbMinFileSize),
 			// "minLengthMS=" + string(f.config.FbMinLengthMs),
 			// "excludeList=" + f.config.FbExcludeList,
-			DownloadDirectory,
+			`"` + DownloadDirectory + `"`,
 		}, " "),
 	}
 	log.Printf("Running filebot with cmd: %s", strings.Join(cmd, " "))
