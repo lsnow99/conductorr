@@ -1,6 +1,6 @@
 #!/bin/bash
 
-torrent_linker_id="$sonarr_download_id$lidarr"
+torrent_linker_id="$sonarr_download_id"
 nzb_linker_id="$sonarr_release_title"
 xarr_id="$sonarr_series_id"
 imdb_id="$sonarr_imdbid"
