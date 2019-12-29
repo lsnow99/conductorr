@@ -204,6 +204,7 @@ func ImportHandler(w http.ResponseWriter, r *http.Request) {
 	fbOutput := filebot.RunFilebot(job.DownloadDirectory)
 	log.Println(fbOutput)
 	job.FilebotLogs = fbOutput
+	job.TimeFilebotDone = time.Now()
 	updateJob(job)
 	newPath, _ := filebot.GetNewDirectory(job.DownloadDirectory)
 	log.Printf("New path identified as: %s", newPath)
@@ -215,7 +216,7 @@ func ImportHandler(w http.ResponseWriter, r *http.Request) {
 		radarr.NotifyNewPath(newPath, job.GrabberInternalID)
 	}
 
-	if job.DownloadClient == "NZBGet" {
+	if job.DownloadClient == "NZBGet" && newPath != "no path found" {
 		err = os.RemoveAll(job.DownloadDirectory)
 		if err != nil {
 			log.Printf("Error deleting original file after filebot copy: %s", err.Error())
@@ -278,6 +279,68 @@ func GetJobsHandler(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(jobData); err != nil {
 		panic(err)
 	}
+}
+
+// ManualImportHandler submit a manually-downloaded job by its completed path
+func ManualImportHandler(w http.ResponseWriter, r *http.Request) {
+	mir := &schema.ManualImportRequest{}
+	err := json.NewDecoder(r.Body).Decode(mir)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Println(err.Error())
+		return
+	}
+
+	job := &schema.Jobs{}
+
+	job.NZBLinkerID = ""
+	job.TorrentLinkerID = ""
+	job.GrabberInternalID = -1
+	job.ContentType = ""
+	job.ReleaseTitle = ""
+	job.GrabbedQuality = ""
+	job.GrabbedSize = ""
+	job.Status = "FILEBOT"
+	job.ImdbID = ""
+	job.TimeFilebotStarted = time.Now()
+
+	job.DownloadDirectory = mir.Path
+	job.Title = mir.Path
+
+	err = db.Insert(job)
+	if err != nil {
+		panic(err)
+	}
+	
+	fbOutput := filebot.RunFilebot(job.DownloadDirectory)
+	log.Println(fbOutput)
+	job.FilebotLogs = fbOutput
+	job.TimeFilebotDone = time.Now()
+	updateJob(job)
+	newPath, _ := filebot.GetNewDirectory(job.DownloadDirectory)
+	log.Printf("New path identified as: %s", newPath)
+
+	if newPath != "no path found" {
+		err = os.RemoveAll(job.DownloadDirectory)
+		if err != nil {
+			log.Printf("Error deleting original file after filebot copy: %s", err.Error())
+		} else {
+			log.Printf("Successfully deleted: %s", job.DownloadDirectory)
+		}
+	}
+
+	id := plex.GetLibraryID(newPath)
+	log.Printf("Library ID: %d", id)
+	job.Status = "PLEX"
+	job.TimeScanStarted = time.Now()
+	updateJob(job)
+	plex.ScanPlex(newPath, id)
+	log.Println("Done scanning Plex")
+	job.Status = "DONE"
+	job.TimeScanDone = time.Now()
+	updateJob(job)
+
+	w.WriteHeader(http.StatusOK)
 }
 
 // GetJobHandler get job by ID

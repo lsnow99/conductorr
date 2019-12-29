@@ -1,18 +1,38 @@
 <template>
   <div class="container">
     <section>
-      <b-field label="Search..." label-position="on-border">
-        <b-input
-          @keyup.enter.native="loadAsyncData"
-          placeholder="Search..."
-          v-model="filter"
-          type="search"
-        ></b-input>
-        <p class="control">
-          <b-button @click="loadAsyncData" class="button is-primary">Search</b-button>
-        </p>
-      </b-field>
+      <div class="tile is-parent">
+        <div class="tile is-child is-3">
+          <b-field label="Search..." label-position="on-border">
+            <b-input
+              @keyup.enter.native="loadAsyncData"
+              placeholder="Search..."
+              v-model="filter"
+              type="search"
+            ></b-input>
+            <p class="control">
+              <b-button @click="loadAsyncData" class="button is-primary">Search</b-button>
+            </p>
+          </b-field>
+        </div>
+        
+        <div class="tile is-child is-3">
+          <b-field label="Manual Filebot Import" label-position="on-border">
+            <b-input
+              @keyup.enter.native="manualImport"
+              placeholder="download path"
+              v-model="manualPath"
+              type="text"
+            ></b-input>
+            <p class="control">
+              <b-button @click="manualImport" class="button is-primary">Import</b-button>
+            </p>
+          </b-field>
+        </div>
+      </div>
+    </section>
 
+    <section>
       <b-table
         :opened-detailed="defaultOpenedDetails"
         detailed
@@ -109,7 +129,8 @@ export default {
       defaultOpenedDetails: [],
       showDetailIcon: true,
       activeTab: 0,
-      filter: ""
+      filter: "",
+      manualPath: ""
     };
   },
   methods: {
@@ -172,6 +193,23 @@ export default {
           default:
               return "GRABBED"
       }
+    },
+    manualImport() {
+      let dataWrapper = { path: this.manualPath }
+      axios.post(`/api/manualImport`, dataWrapper, this.axiosAuthConfig())
+      .then(() => {
+        // Do nothing
+      })
+      .catch(error => {
+        this.checkUnauthorizedToken(error);
+        Snackbar.open({
+          message: "Error submitting job",
+          type: "is-danger",
+          indefinite: false,
+          duration: 3000
+        });
+        throw error
+      })
     }
   },
   mounted() {

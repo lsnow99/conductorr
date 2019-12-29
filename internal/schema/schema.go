@@ -145,6 +145,11 @@ type ImportRequest struct {
 	DownloadClientIdentifier string `json:"dl_client_id"`
 }
 
+// ManualImportRequest receive path info for a manual import request
+type ManualImportRequest struct {
+	Path string `json:"path"`
+}
+
 /*
 MediaContainer matches the response format from a Plex /library/sections API
 request (generated at: https://www.onlinetool.io/xmltogo/)
