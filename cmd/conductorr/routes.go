@@ -192,21 +192,12 @@ func ImportHandler(w http.ResponseWriter, r *http.Request) {
 	err = db.Model(job).Where("nzb_linker_id = ?", ir.DownloadContentID).WhereOr("torrent_linker_id = ?", ir.DownloadContentID).Limit(1).Select()
 	if err == pg.ErrNoRows {
 		w.WriteHeader(http.StatusNotFound)
-		log.Printf("Could not find a match for this job ID: (nzb: %s), (tor: %s)", job.NZBLinkerID, job.TorrentLinkerID)
-		return
+		log.Printf("Could not find a match for this job ID: (nzb: %s), (tor: %s). Proceeding anyway", job.NZBLinkerID, job.TorrentLinkerID)
 	} else if err != nil {
 		panic(err)
 	}
 	job.DownloadDirectory = ir.DownloadDirectory
 
-	fbConfig := schema.FilebotConfiguration{}
-	fbConfig.FilebotConfigurationID = true
-	err = db.Select(fbConfig)
-	if err == pg.ErrNoRows {
-		w.WriteHeader(http.StatusNotFound)
-		fmt.Println("Please set filebot connection options in Conductorr settings!")
-		return
-	}
 	job.Status = "FILEBOT"
 	job.TimeFilebotStarted = time.Now()
 	updateJob(job)
@@ -217,6 +208,7 @@ func ImportHandler(w http.ResponseWriter, r *http.Request) {
 	newPath, _ := filebot.GetNewDirectory(job.DownloadDirectory)
 	log.Printf("New path identified as: %s", newPath)
 
+	
 	if job.ContentType == sonarr.LoadConfiguration(false).SonarrCategory {
 		sonarr.NotifyNewPath(newPath, job.GrabberInternalID)
 	} else if job.ContentType == radarr.LoadConfiguration(false).RadarrCategory {
@@ -226,10 +218,9 @@ func ImportHandler(w http.ResponseWriter, r *http.Request) {
 	if job.DownloadClient == "NZBGet" {
 		err = os.RemoveAll(job.DownloadDirectory)
 		if err != nil {
-			// util.LogAllError("Error deleting original file after Filebot copy"+
-			// err.Error(), w)
+			log.Printf("Error deleting original file after filebot copy: %s", err.Error())
 		} else {
-			// util.LogAllInfo("Successfully deleted: "+job.DownloadDirectory, w)
+			log.Printf("Successfully deleted: %s", job.DownloadDirectory)
 		}
 	}
 
