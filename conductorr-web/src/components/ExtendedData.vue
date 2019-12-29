@@ -42,13 +42,7 @@
           :codeText="job.filebot_logs"
         ></code-viewer>
       </b-tab-item>
-
-      <b-tab-item label="Plex Scanner Logs">
-        <code-viewer
-          :codeText="job.scanner_logs"
-        ></code-viewer>
-      </b-tab-item>
-
+      
       <b-tab-item label="Metadata">
         <code-viewer
           :codeText="getMetadata(job)"
