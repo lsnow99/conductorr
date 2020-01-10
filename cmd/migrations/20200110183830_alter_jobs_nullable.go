@@ -8,32 +8,32 @@ import (
 func init() {
 	up := func(db orm.DB) error {
 		_, err := db.Exec(`
-			alter table jobs modify grabber_internal_id null;
-			alter table jobs modify torrent_linker_id null;
-			alter table jobs modify nzb_linker_id null;
-			alter table jobs modify title null;
-			alter table jobs modify imdb_id null;
-			alter table jobs modify release_title null;
-			alter table jobs modify content_type null;
-			alter table jobs modify status null;
-			alter table jobs modify grabbed_quality null;
-			alter table jobs modify grabbed_size null;
+			alter table jobs alter column grabber_internal_id drop NOT NULL;
+			alter table jobs alter column torrent_linker_id drop NOT NULL;
+			alter table jobs alter column nzb_linker_id drop NOT NULL;
+			alter table jobs alter column title drop NOT NULL;
+			alter table jobs alter column imdb_id drop NOT NULL;
+			alter table jobs alter column release_title drop NOT NULL;
+			alter table jobs alter column content_type drop NOT NULL;
+			alter table jobs alter column status drop NOT NULL;
+			alter table jobs alter column grabbed_quality drop NOT NULL;
+			alter table jobs alter column grabbed_size drop NOT NULL;
 		`)
 		return err
 	}
 
 	down := func(db orm.DB) error {
 		_, err := db.Exec(`
-			alter table jobs modify grabber_internal_id NOT NULL;
-			alter table jobs modify torrent_linker_id NOT NULL;
-			alter table jobs modify nzb_linker_id NOT NULL;
-			alter table jobs modify title NOT NULL;
-			alter table jobs modify imdb_id NOT NULL;
-			alter table jobs modify release_title NOT NULL;
-			alter table jobs modify content_type NOT NULL;
-			alter table jobs modify status NOT NULL;
-			alter table jobs modify grabbed_quality NOT NULL;
-			alter table jobs modify grabbed_size NOT NULL;
+			alter table jobs alter column grabber_internal_id SET NOT NULL;
+			alter table jobs alter column torrent_linker_id SET NOT NULL;
+			alter table jobs alter column nzb_linker_id SET NOT NULL;
+			alter table jobs alter column title SET NOT NULL;
+			alter table jobs alter column imdb_id SET NOT NULL;
+			alter table jobs alter column release_title SET NOT NULL;
+			alter table jobs alter column content_type SET NOT NULL;
+			alter table jobs alter column status SET NOT NULL;
+			alter table jobs alter column grabbed_quality SET NOT NULL;
+			alter table jobs alter column grabbed_size SET NOT NULL;
 		`)
 		return err
 	}
