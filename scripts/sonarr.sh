@@ -1,10 +1,10 @@
 #!/bin/bash
 
-torrent_linker_id="$sonarr_download_id$lidarr"
+torrent_linker_id="$sonarr_download_id"
 nzb_linker_id="$sonarr_release_title"
 xarr_id="$sonarr_series_id"
 imdb_id="$sonarr_imdbid"
-content_name="$sonarr_series_title"
+content_name="$sonarr_series_title (S$sonarr_release_seasonnumber""E$sonarr_release_episodenumbers)"
 grabbed_quality="$sonarr_release_quality"
 grabbed_size="$sonarr_release_size"
 
