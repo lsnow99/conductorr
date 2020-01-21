@@ -18,6 +18,9 @@
                 <b-navbar-item tag="router-link" to="/">
                     Home
                 </b-navbar-item>
+                <b-navbar-item tag="router-link" to="/statistics">
+                    Statistics
+                </b-navbar-item>
                 <b-navbar-item tag="router-link" to="/configuration">
                     Configuration
                 </b-navbar-item>

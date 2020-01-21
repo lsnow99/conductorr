@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/xml"
-	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -163,22 +162,116 @@ func (f *Filebot) LoadConfiguration(refreshCache bool) *schema.FilebotConfigurat
 GetNewDirectory searches Filebot's history.xml file to find the new location for
 the media it processed by matching the original location to the record
 */
+// func (f *Filebot) GetNewDirectory(downloadDir string) (string, schema.Sequence) {
+// 	downloadDir = strings.TrimRight(downloadDir, "/")
+// 	oRoot := ""
+// 	var ourSeq schema.Sequence
+
+// 	historyFile, err := os.Open(EndWithSlash(os.Getenv("FB_DIRECTORY")) + "history.xml")
+// 	// if os.Open returns an error then handle it
+// 	if err != nil {
+// 		panic(err)
+// 	}
+
+// 	// defer the closing of our historyFile so that we can parse it later on
+// 	defer historyFile.Close()
+
+// 	byteValue, err := ioutil.ReadAll(historyFile)
+
+// 	if err != nil {
+// 		panic(err)
+// 	}
+
+// 	// we initialize our History array
+// 	var history schema.History
+// 	// we unmarshal our byteArray which contains our
+// 	// historyFile content into 'history' which we defined above
+// 	xml.Unmarshal(byteValue, &history)
+
+// 	for i := 0; i < len(history.Sequences); i++ {
+// 		seq := history.Sequences[i]
+// 		for j := 0; j < len(seq.Renames); j++ {
+// 			ren := seq.Renames[j]
+// 			switch getPathInfo(downloadDir) {
+// 			case FILE:
+// 				if ren.Dir+"/"+ren.From == downloadDir {
+// 					ourSeq = history.Sequences[i]
+// 					oRoot = upDir(upDir(ren.To))
+// 				}
+// 			case DIRECTORY:
+// 				if strings.HasPrefix(ren.Dir, downloadDir) {
+// 					ourSeq = history.Sequences[i]
+// 					oRoot = upDir(upDir(ren.To))
+// 				}
+// 			default:
+// 				return "no path found", ourSeq
+// 			}
+// 		}
+// 	}
+
+// 	return oRoot, ourSeq
+// }
+
+/*
+GetNewDirectory searches Filebot's history.xml file to find the new location for
+the media it processed by matching the original location to the record
+*/
 func (f *Filebot) GetNewDirectory(downloadDir string) (string, schema.Sequence) {
 	downloadDir = strings.TrimRight(downloadDir, "/")
 	oRoot := ""
 	var ourSeq schema.Sequence
 
-	historyFile, err := os.Open(EndWithSlash(os.Getenv("FB_DIRECTORY")) + "history.xml")
-	// if os.Open returns an error then handle it
+	config, err := rest.InClusterConfig()
+
+	// create the clientset
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	pods, err := clientset.CoreV1().Pods(f.config.FbNamespace).List(metav1.ListOptions{})
+
 	if err != nil {
 		panic(err)
 	}
 
-	// defer the closing of our historyFile so that we can parse it later on
-	defer historyFile.Close()
+	var podName string
 
-	byteValue, err := ioutil.ReadAll(historyFile)
+	for _, pod := range pods.Items {
+		log.Printf("Found pod: %s", pod.GetName())
+		if strings.HasPrefix(pod.GetName(), f.config.FbDeploymentName) {
+			podName = pod.GetName()
+		}
+	}
 
+	cmd := []string{
+		"/bin/cat",
+		os.Getenv("FB_DIRECTORY") + "history.xml",
+	}
+
+	req := clientset.CoreV1().RESTClient().Post().Resource("pods").Name(podName).Namespace(f.config.FbNamespace).SubResource("exec")
+	option := &v1.PodExecOptions{
+		Command: cmd,
+		TTY:     false,
+		Stderr:  true,
+		Stdout:  true,
+		Stdin:   false,
+	}
+	req.VersionedParams(
+		option,
+		scheme.ParameterCodec,
+	)
+	exec, err := remotecommand.NewSPDYExecutor(config, "POST", req.URL())
+	if err != nil {
+		panic(err)
+	}
+	stdBuf := &bytes.Buffer{}
+	errBuf := &bytes.Buffer{}
+	err = exec.Stream(remotecommand.StreamOptions{
+		Stdout: stdBuf,
+		Stderr: errBuf,
+	})
+	output := stdBuf.String() + errBuf.String()
 	if err != nil {
 		panic(err)
 	}
@@ -187,7 +280,7 @@ func (f *Filebot) GetNewDirectory(downloadDir string) (string, schema.Sequence) 
 	var history schema.History
 	// we unmarshal our byteArray which contains our
 	// historyFile content into 'history' which we defined above
-	xml.Unmarshal(byteValue, &history)
+	xml.Unmarshal([]byte(output), &history)
 
 	for i := 0; i < len(history.Sequences); i++ {
 		seq := history.Sequences[i]

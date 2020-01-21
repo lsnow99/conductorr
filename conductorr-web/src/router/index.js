@@ -4,6 +4,7 @@ import About from '@/views/About.vue'
 import Configuration from '@/views/Configuration.vue'
 import Overview from '@/views/Overview.vue'
 import Authenticate from '@/views/Authenticate.vue'
+import Statistics from '@/views/Statistics.vue'
 
 Vue.use(VueRouter)
 
@@ -25,6 +26,14 @@ const routes = [
     path: '/configuration',
     name: 'configuration',
     component: Configuration,
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/statistics',
+    name: 'statistics',
+    component: Statistics,
     meta: {
       requiresAuth: true
     }
