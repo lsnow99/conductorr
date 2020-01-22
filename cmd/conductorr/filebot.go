@@ -246,7 +246,7 @@ func (f *Filebot) GetNewDirectory(downloadDir string) (string, schema.Sequence) 
 
 	cmd := []string{
 		"/bin/cat",
-		os.Getenv("FB_DIRECTORY") + "history.xml",
+		os.Getenv("FB_DIRECTORY") + "/history.xml",
 	}
 
 	req := clientset.CoreV1().RESTClient().Post().Resource("pods").Name(podName).Namespace(f.config.FbNamespace).SubResource("exec")
