@@ -272,6 +272,7 @@ func (f *Filebot) GetNewDirectory(downloadDir string) (string, schema.Sequence) 
 		Stderr: errBuf,
 	})
 	output := stdBuf.String() + errBuf.String()
+	log.Printf("output: %s", output)
 	if err != nil {
 		panic(err)
 	}

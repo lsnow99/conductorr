@@ -204,6 +204,7 @@ func ImportHandler(w http.ResponseWriter, r *http.Request) {
 	fbOutput := filebot.RunFilebot(job.DownloadDirectory)
 	log.Println(fbOutput)
 	job.FilebotLogs = fbOutput
+	job.Status = "PLEX"
 	job.TimeFilebotDone = time.Now()
 	updateJob(job)
 	newPath, _ := filebot.GetNewDirectory(job.DownloadDirectory)
@@ -227,7 +228,6 @@ func ImportHandler(w http.ResponseWriter, r *http.Request) {
 
 	id := plex.GetLibraryID(newPath)
 	log.Printf("Library ID: %d", id)
-	job.Status = "PLEX"
 	job.TimeScanStarted = time.Now()
 	updateJob(job)
 	plex.ScanPlex(newPath, id)
