@@ -217,14 +217,14 @@ func ImportHandler(w http.ResponseWriter, r *http.Request) {
 		radarr.NotifyNewPath(newPath, job.GrabberInternalID)
 	}
 
-	if job.DownloadClient == "NZBGet" && newPath != "no path found" {
-		err = os.RemoveAll(job.DownloadDirectory)
-		if err != nil {
-			log.Printf("Error deleting original file after filebot copy: %s", err.Error())
-		} else {
-			log.Printf("Successfully deleted: %s", job.DownloadDirectory)
-		}
-	}
+	// if job.DownloadClient == "NZBGet" && newPath != "no path found" {
+	// 	err = os.RemoveAll(job.DownloadDirectory)
+	// 	if err != nil {
+	// 		log.Printf("Error deleting original file after filebot copy: %s", err.Error())
+	// 	} else {
+	// 		log.Printf("Successfully deleted: %s", job.DownloadDirectory)
+	// 	}
+	// }
 
 	id := plex.GetLibraryID(newPath)
 	log.Printf("Library ID: %d", id)
