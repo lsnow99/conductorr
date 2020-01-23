@@ -371,11 +371,11 @@ func (f *Filebot) execGetPathInfo(path string) PathInfo {
 		"/bin/sh",
 		"-c",
 		`if [[ -d ` + path + ` ]]; then
-		echo "` + path + ` is a directory"
+		echo "directory"
 	elif [[ -f ` + path + ` ]]; then
-		echo "` + path + ` is a file"
+		echo "file"
 	else
-		echo "` + path + ` is not valid"
+		echo "invalid"
 	fi`,
 	}
 
@@ -402,11 +402,19 @@ func (f *Filebot) execGetPathInfo(path string) PathInfo {
 		Stderr: errBuf,
 	})
 	output := stdBuf.String() + errBuf.String()
-	log.Printf("output: %s", output)
+	log.Printf("is a: %s", output)
 	if err != nil {
 		panic(err)
 	}
-	return DIRECTORY
+
+	switch output {
+	case "directory":
+		return DIRECTORY
+	case "file":
+		return FILE
+	default:
+		return NEITHER
+	}
 }
 
 // boolArg quick utility to turn a bool into a "y" or "n" string
