@@ -272,7 +272,6 @@ func (f *Filebot) GetNewDirectory(downloadDir string) (string, schema.Sequence) 
 		Stderr: errBuf,
 	})
 	output := stdBuf.String() + errBuf.String()
-	log.Printf("output: %s", output)
 	if err != nil {
 		panic(err)
 	}
@@ -287,7 +286,7 @@ func (f *Filebot) GetNewDirectory(downloadDir string) (string, schema.Sequence) 
 		seq := history.Sequences[i]
 		for j := 0; j < len(seq.Renames); j++ {
 			ren := seq.Renames[j]
-			switch getPathInfo(downloadDir) {
+			switch f.execGetPathInfo(downloadDir) {
 			case FILE:
 				if ren.Dir+"/"+ren.From == downloadDir {
 					ourSeq = history.Sequences[i]
@@ -341,6 +340,73 @@ func getPathInfo(path string) PathInfo {
 		// it's not a directory
 		return FILE
 	}
+}
+
+// execGetPathInfo get the file/folder info 
+func (f *Filebot) execGetPathInfo(path string) PathInfo {
+	config, err := rest.InClusterConfig()
+
+	// create the clientset
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	pods, err := clientset.CoreV1().Pods(f.config.FbNamespace).List(metav1.ListOptions{})
+
+	if err != nil {
+		panic(err)
+	}
+
+	var podName string
+
+	for _, pod := range pods.Items {
+		log.Printf("Found pod: %s", pod.GetName())
+		if strings.HasPrefix(pod.GetName(), f.config.FbDeploymentName) {
+			podName = pod.GetName()
+		}
+	}
+
+	cmd := []string{
+		"/bin/sh",
+		"-c",
+		`if [[ -d ` + path + ` ]]; then
+		echo "` + path + ` is a directory"
+	elif [[ -f ` + path + ` ]]; then
+		echo "` + path + ` is a file"
+	else
+		echo "` + path + ` is not valid"
+	fi`,
+	}
+
+	req := clientset.CoreV1().RESTClient().Post().Resource("pods").Name(podName).Namespace(f.config.FbNamespace).SubResource("exec")
+	option := &v1.PodExecOptions{
+		Command: cmd,
+		TTY:     false,
+		Stderr:  true,
+		Stdout:  true,
+		Stdin:   false,
+	}
+	req.VersionedParams(
+		option,
+		scheme.ParameterCodec,
+	)
+	exec, err := remotecommand.NewSPDYExecutor(config, "POST", req.URL())
+	if err != nil {
+		panic(err)
+	}
+	stdBuf := &bytes.Buffer{}
+	errBuf := &bytes.Buffer{}
+	err = exec.Stream(remotecommand.StreamOptions{
+		Stdout: stdBuf,
+		Stderr: errBuf,
+	})
+	output := stdBuf.String() + errBuf.String()
+	log.Printf("output: %s", output)
+	if err != nil {
+		panic(err)
+	}
+	return DIRECTORY
 }
 
 // boolArg quick utility to turn a bool into a "y" or "n" string
