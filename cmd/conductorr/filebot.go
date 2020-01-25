@@ -401,8 +401,8 @@ func (f *Filebot) execGetPathInfo(path string) PathInfo {
 		Stdout: stdBuf,
 		Stderr: errBuf,
 	})
-	output := stdBuf.String() + errBuf.String()
-	log.Printf("is a: ;%s;", output)
+	output := strings.TrimSpace(stdBuf.String() + errBuf.String())
+	log.Printf("is a: %s", output)
 	if err != nil {
 		panic(err)
 	}
