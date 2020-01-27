@@ -290,12 +290,12 @@ func (f *Filebot) GetNewDirectory(downloadDir string) (string, schema.Sequence) 
 			case FILE:
 				if ren.Dir+"/"+ren.From == downloadDir {
 					ourSeq = history.Sequences[i]
-					oRoot = upDir(upDir(ren.To))
+					oRoot = upDir(ren.To)
 				}
 			case DIRECTORY:
 				if strings.HasPrefix(ren.Dir, downloadDir) {
 					ourSeq = history.Sequences[i]
-					oRoot = upDir(upDir(ren.To))
+					oRoot = upDir(ren.To)
 				}
 			default:
 				return "no path found", ourSeq
