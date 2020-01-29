@@ -211,11 +211,11 @@ func ImportHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("New path identified as: %s", newPath)
 
 	
-	if job.ContentType == sonarr.LoadConfiguration(false).SonarrCategory {
-		sonarr.NotifyNewPath(newPath, job.GrabberInternalID)
-	} else if job.ContentType == radarr.LoadConfiguration(false).RadarrCategory {
-		radarr.NotifyNewPath(newPath, job.GrabberInternalID)
-	}
+	// if job.ContentType == sonarr.LoadConfiguration(false).SonarrCategory {
+	// 	sonarr.NotifyNewPath(newPath, job.GrabberInternalID)
+	// } else if job.ContentType == radarr.LoadConfiguration(false).RadarrCategory {
+	// 	radarr.NotifyNewPath(newPath, job.GrabberInternalID)
+	// }
 
 	// if job.DownloadClient == "NZBGet" && newPath != "no path found" {
 	// 	err = os.RemoveAll(job.DownloadDirectory)
