@@ -55,7 +55,7 @@ func (f *Filebot) RunFilebot(DownloadDirectory string) string {
 		"-c",
 		strings.Join([]string{
 			"FILEBOT_OPTS=-Dapplication.dir=/valinor/plex",
-			"/opt/filebot/filebot",
+			"/usr/bin/filebot",
 			"-script", "fn:amc",
 			"--output", f.config.FbOutputDir,
 			"--action", f.config.FbAction,
@@ -342,7 +342,7 @@ func getPathInfo(path string) PathInfo {
 	}
 }
 
-// execGetPathInfo get the file/folder info 
+// execGetPathInfo get the file/folder info
 func (f *Filebot) execGetPathInfo(path string) PathInfo {
 	config, err := rest.InClusterConfig()
 
