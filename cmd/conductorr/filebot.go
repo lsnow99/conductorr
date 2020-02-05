@@ -3,8 +3,10 @@ package main
 import (
 	"bytes"
 	"encoding/xml"
+	"fmt"
 	"log"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/go-pg/pg/v9"
@@ -275,6 +277,13 @@ func (f *Filebot) GetNewDirectory(downloadDir string) (string, schema.Sequence) 
 		panic(err)
 	}
 
+	var re = regexp.MustCompile(`(?m)Season \d\d`)
+	var str = `Season 11`
+
+	for i, match := range re.FindAllString(str, -1) {
+		fmt.Println(match, "found at index", i)
+	}
+
 	// we initialize our History array
 	var history schema.History
 	// we unmarshal our byteArray which contains our
@@ -300,6 +309,11 @@ func (f *Filebot) GetNewDirectory(downloadDir string) (string, schema.Sequence) 
 				return "no path found", ourSeq
 			}
 		}
+	}
+
+	match, _ := regexp.MatchString(`Season \d\d`, oRoot)
+	if match {
+		oRoot = upDir(oRoot)
 	}
 
 	return oRoot, ourSeq

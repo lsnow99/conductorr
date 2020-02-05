@@ -208,14 +208,18 @@ func ImportHandler(w http.ResponseWriter, r *http.Request) {
 	job.TimeFilebotDone = time.Now()
 	updateJob(job)
 	newPath, _ := filebot.GetNewDirectory(job.DownloadDirectory)
+	if newPath == "no path found" {
+		log.Fatal(newPath)
+		return
+	}
 	log.Printf("New path identified as: %s", newPath)
 
 	
-	// if job.ContentType == sonarr.LoadConfiguration(false).SonarrCategory {
-	// 	sonarr.NotifyNewPath(newPath, job.GrabberInternalID)
-	// } else if job.ContentType == radarr.LoadConfiguration(false).RadarrCategory {
-	// 	radarr.NotifyNewPath(newPath, job.GrabberInternalID)
-	// }
+	if job.ContentType == sonarr.LoadConfiguration(false).SonarrCategory {
+		sonarr.NotifyNewPath(newPath, job.GrabberInternalID)
+	} else if job.ContentType == radarr.LoadConfiguration(false).RadarrCategory {
+		radarr.NotifyNewPath(newPath, job.GrabberInternalID)
+	}
 
 	// if job.DownloadClient == "NZBGet" && newPath != "no path found" {
 	// 	err = os.RemoveAll(job.DownloadDirectory)
