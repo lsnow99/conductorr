@@ -54,7 +54,6 @@ func (f *Filebot) RunFilebot(DownloadDirectory string) string {
 		"/bin/sh",
 		"-c",
 		strings.Join([]string{
-			"FILEBOT_OPTS=-Dapplication.dir=/valinor/plex",
 			"/usr/bin/filebot",
 			"-script", "fn:amc",
 			"--output", f.config.FbOutputDir,
@@ -246,7 +245,7 @@ func (f *Filebot) GetNewDirectory(downloadDir string) (string, schema.Sequence) 
 
 	cmd := []string{
 		"/bin/cat",
-		os.Getenv("FB_DIRECTORY") + "/history.xml",
+		"/data/.filebot/history.xml",
 	}
 
 	req := clientset.CoreV1().RESTClient().Post().Resource("pods").Name(podName).Namespace(f.config.FbNamespace).SubResource("exec")
