@@ -277,13 +277,6 @@ func (f *Filebot) GetNewDirectory(downloadDir string) (string, schema.Sequence) 
 		panic(err)
 	}
 
-	var re = regexp.MustCompile(`(?m)Season \d\d`)
-	var str = `Season 11`
-
-	for i, match := range re.FindAllString(str, -1) {
-		fmt.Println(match, "found at index", i)
-	}
-
 	// we initialize our History array
 	var history schema.History
 	// we unmarshal our byteArray which contains our
@@ -383,13 +376,13 @@ func (f *Filebot) execGetPathInfo(path string) PathInfo {
 	cmd := []string{
 		"/bin/sh",
 		"-c",
-		`if [[ -d ` + path + ` ]]; then
-		echo "directory"
-	elif [[ -f ` + path + ` ]]; then
-		echo "file"
-	else
-		echo "invalid"
-	fi`,
+		`if [ -d "` + path + `" ]; then
+			echo "directory"
+		elif [ -f "` + path + `" ]; then
+			echo "file"
+		else
+			echo "invalid"
+		fi`,
 	}
 
 	req := clientset.CoreV1().RESTClient().Post().Resource("pods").Name(podName).Namespace(f.config.FbNamespace).SubResource("exec")
