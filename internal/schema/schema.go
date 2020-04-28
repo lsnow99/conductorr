@@ -111,6 +111,13 @@ type RadarrConfiguration struct {
 	RadarrConfigurationID bool     `pg:"radarr_configuration_id, pk"`
 }
 
+// DownloaderConfiguration database + json model
+type DownloaderConfiguration struct {
+	tableName   struct{} `pg:"downloader_configuration" json:"table_name,omitempty"`
+	Name        string   `pg:"name" json:"name,omitempty"`
+	DownloadDir string   `pg:"download_dir" json:"download_dir,omitempty"`
+}
+
 // Configurator json model to transfer configuration fields to ui
 type Configurator struct {
 	Label       string `json:"label"`

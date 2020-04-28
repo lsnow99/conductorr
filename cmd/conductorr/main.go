@@ -75,6 +75,8 @@ func initRoutes() *negroni.Negroni {
 	ar.HandleFunc("/api/refreshToken", JWTRefreshHandler).Methods("GET")
 	ar.HandleFunc("/api/config/{service}", GetConfigHandler).Methods("GET")
 	ar.HandleFunc("/api/config/{service}", SetConfigHandler).Methods("POST")
+	ar.HandleFunc("/api/configuration/downloaders", GetDownloadersHandler).Methods("GET")
+	ar.HandleFunc("/api/configuration/downloaders", SetDownloadersHandler).Methods("POST")
 	ar.HandleFunc("/api/testConfig/{service}", TestConfigHandler).Methods("POST")
 	ar.HandleFunc("/api/jobs", GetJobsHandler).
 		Queries("sort_column", "{sort_column}", 

@@ -3,6 +3,7 @@
         <b-menu-list label="Main Configuration">
             <b-menu-item :active="isActive" icon="server" label="System" v-on:click="navigate('system')"></b-menu-item>
             <b-menu-item icon="lock" label="Security" v-on:click="navigate('security')"></b-menu-item>
+            <b-menu-item icon="download" label="Downloaders" v-on:click="navigate('downloaders')"></b-menu-item>
             <!-- <b-menu-item
                 label="Support"
                 icon="link"

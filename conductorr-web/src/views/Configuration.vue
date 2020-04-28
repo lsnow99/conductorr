@@ -22,6 +22,7 @@ import Sonarr from '@/components/Sonarr.vue'
 import System from '@/components/System.vue'
 import Plex from '@/components/Plex.vue'
 import Security from '@/components/Security.vue'
+import Downloaders from '@/components/Downloaders.vue'
 
 export default {
     name: 'configuration',
@@ -33,7 +34,8 @@ export default {
         Sonarr,
         System,
         Plex,
-        Security
+        Security,
+        Downloaders
     },
     data() {
         return {

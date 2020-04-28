@@ -196,7 +196,8 @@ func ImportHandler(w http.ResponseWriter, r *http.Request) {
 	} else if err != nil {
 		panic(err)
 	}
-	job.DownloadDirectory = ir.DownloadDirectory
+	downloader := GetDownloaderByName(ir.DownloadClientIdentifier)
+	job.DownloadDirectory = downloader.DownloadDir + ir.DownloadDirectory
 
 	job.Status = "FILEBOT"
 	job.TimeFilebotStarted = time.Now()
@@ -560,4 +561,24 @@ func GetConfigHandler(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(configObj); err != nil {
 		panic(err)
 	}
+}
+
+// GetDownloadersHandler return the downloader configurations
+func GetDownloadersHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(LoadDownloaderConfigurations()); err != nil {
+		panic(err)
+	}
+}
+
+// SetDownloadersHandler update downloader configurations
+func SetDownloadersHandler(w http.ResponseWriter, r *http.Request) {
+	configs := []schema.DownloaderConfiguration{}
+	json.NewDecoder(r.Body).Decode(&configs)
+	for i := 0; i < len(configs); i++ {
+		configs[i].DownloadDir = EndWithSlash(configs[i].DownloadDir)
+	}
+	SaveDownloaderConfigurations(configs)
+	w.WriteHeader(http.StatusOK)
 }
