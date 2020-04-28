@@ -282,11 +282,14 @@ func (f *Filebot) GetNewDirectory(downloadDir string) (string, schema.Sequence) 
 	// historyFile content into 'history' which we defined above
 	xml.Unmarshal([]byte(output), &history)
 
+	dirInfo := f.execGetPathInfo(downloadDir)
+
 	for i := 0; i < len(history.Sequences); i++ {
 		seq := history.Sequences[i]
 		for j := 0; j < len(seq.Renames); j++ {
 			ren := seq.Renames[j]
-			switch f.execGetPathInfo(downloadDir) {
+
+			switch dirInfo {
 			case FILE:
 				if ren.Dir+"/"+ren.From == downloadDir {
 					ourSeq = history.Sequences[i]
