@@ -188,8 +188,9 @@ func ImportHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err.Error())
 		return
 	}
+	log.Println(ir)
 	job := &schema.Jobs{}
-	err = db.Model(job).Where("nzb_linker_id = ?", ir.DownloadContentID).WhereOr("torrent_linker_id = ?", ir.DownloadContentID).Limit(1).Select()
+	err = db.Model(job).Where("nzb_linker_id = ?", ir.DownloadContentID).WhereOr("torrent_linker_id = ?", strings.ToUpper(ir.DownloadContentID)).Limit(1).Select()
 	if err == pg.ErrNoRows {
 		w.WriteHeader(http.StatusNotFound)
 		log.Printf("Could not find a match for this job ID: (nzb: %s), (tor: %s). Proceeding anyway", job.NZBLinkerID, job.TorrentLinkerID)
@@ -210,7 +211,7 @@ func ImportHandler(w http.ResponseWriter, r *http.Request) {
 	updateJob(job)
 	newPath, _ := filebot.GetNewDirectory(job.DownloadDirectory)
 	if newPath == "no path found" {
-		log.Fatal(newPath)
+		log.Println(newPath)
 		return
 	}
 	log.Printf("New path identified as: %s", newPath)
