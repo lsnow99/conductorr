@@ -198,7 +198,7 @@ func ImportHandler(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 	downloader := GetDownloaderByName(ir.DownloadClientIdentifier)
-	job.DownloadDirectory = downloader.DownloadDir + ir.DownloadDirectory
+	job.DownloadDirectory = EndWithSlash(downloader.DownloadDir + job.ContentType) + ir.DownloadDirectory
 
 	job.Status = "FILEBOT"
 	job.TimeFilebotStarted = time.Now()

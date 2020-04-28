@@ -23,6 +23,7 @@ func SaveDownloaderConfigurations(configs []schema.DownloaderConfiguration) {
 	}
 }
 
+// GetDownloaderByName retrieve a downloader from the database by name
 func GetDownloaderByName(name string) schema.DownloaderConfiguration {
 	config := schema.DownloaderConfiguration{}
 	config.Name = name
