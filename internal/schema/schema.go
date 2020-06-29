@@ -113,7 +113,7 @@ type RadarrConfiguration struct {
 
 // DownloaderConfiguration database + json model
 type DownloaderConfiguration struct {
-	tableName   struct{} `pg:"downloader_configuration" json:"table_name,omitempty"`
+	tableName   struct{} `pg:"downloader_configuration"`
 	Name        string   `pg:"name" json:"name,omitempty"`
 	DownloadDir string   `pg:"download_dir" json:"download_dir,omitempty"`
 }
