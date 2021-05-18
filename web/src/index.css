@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.o-btn {
+  @apply bg-yellow-500;
+  @apply border-yellow-600;
+  @apply pt-2;
+  @apply pb-2;
+  @apply pl-4;
+  @apply pr-4;
+  @apply rounded-lg;
+  @apply text-lg;
+  @apply font-bold;
+  @apply uppercase;
+}
+
+.o-input {
+  @apply text-gray-900;
+  @apply pt-1;
+  @apply pb-1;
+  @apply pl-2;
+  @apply pr-2;
+  @apply text-lg;
+  @apply rounded-lg;
+}
+
+.o-load__overlay {
+  @apply bg-gray-300;
+  @apply bg-opacity-50;
+}
+
+.o-load__icon {
+  @apply text-gray-900;
+  @apply text-4xl;
+}

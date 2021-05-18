@@ -1,124 +1,42 @@
 package main
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 
-	"github.com/go-pg/pg/v9"
-	"github.com/joho/godotenv"
-
-	"log"
-	"os"
-	"os/exec"
-
-	jwtmiddleware "github.com/auth0/go-jwt-middleware"
-	jwt "github.com/dgrijalva/jwt-go"
-	"github.com/gorilla/mux"
-	"github.com/urfave/negroni"
+	"github.com/lsnow99/conductorr"
+	"github.com/lsnow99/conductorr/internal/dbstore"
+	"github.com/lsnow99/conductorr/internal/routes"
+	"github.com/lsnow99/conductorr/internal/settings"
 )
 
-var db *pg.DB
-var sonarr *Sonarr
-var radarr *Radarr
-var filebot *Filebot
-var plex *Plex
-
 func main() {
-	log.Printf("Starting Conductorr v1\n")
-
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Printf("Did not load .env file: %s. Using given environment variables", err.Error())
+	if err := dbstore.Init(); err != nil {
+		log.Fatal(err)
 	}
-	if len(os.Getenv("JWT_SIGNING_KEY")) < 32 {
-		log.Fatal("Please set env var JWT_SIGNING_KEY to a random string at least 32 characters in length!")
-		os.Exit(1)
-	}
+	defer dbstore.Close()
 
-	db = pg.Connect(&pg.Options{
-		User:     os.Getenv("DB_USER"),
-		Password: os.Getenv("DB_PASSWORD"),
-		Database: os.Getenv("DB_DATABASE"),
-		Addr:     os.Getenv("DB_HOST") + ":" + os.Getenv("DB_PORT"),
-	})
-	defer db.Close()
-
-	runMigrations()
-
-	initConfigs()
-
-	n := initRoutes()
-	port, err := strconv.Atoi(os.Getenv("PORT"))
-	if err != nil {
-		port = 80
-	}
-	n.Run(":" + strconv.Itoa(port))
+	log.Fatal(serveRoutes(8282))
 }
 
-func initRoutes() *negroni.Negroni {
-	r := mux.NewRouter()
-	ar := mux.NewRouter()
+func serveRoutes(port int) error {
+	http.HandleFunc("/api/v1/signin", routes.SignIn)
+	http.HandleFunc("/api/v1/first_time", routes.FirstTime)
 
-	mw := jwtmiddleware.New(jwtmiddleware.Options{
-		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
-			return []byte(os.Getenv("JWT_SIGNING_KEY")), nil
-		},
-		SigningMethod: jwt.SigningMethodHS256,
-	})
-
-	r.HandleFunc("/auth/firstRun", FirstRunHandler).Methods("GET")
-	r.HandleFunc("/auth/signup", SignupHandler).Methods("POST")
-	r.HandleFunc("/auth/login", LoginHandler).Methods("POST")
-	r.HandleFunc("/_link", LinkHandler).Methods("POST")
-	r.HandleFunc("/_import", ImportHandler).Methods("POST")
-
-	ar.HandleFunc("/api/refreshToken", JWTRefreshHandler).Methods("GET")
-	ar.HandleFunc("/api/config/{service}", GetConfigHandler).Methods("GET")
-	ar.HandleFunc("/api/config/{service}", SetConfigHandler).Methods("POST")
-	ar.HandleFunc("/api/configuration/downloaders", GetDownloadersHandler).Methods("GET")
-	ar.HandleFunc("/api/configuration/downloaders", SetDownloadersHandler).Methods("POST")
-	ar.HandleFunc("/api/testConfig/{service}", TestConfigHandler).Methods("POST")
-	ar.HandleFunc("/api/jobs", GetJobsHandler).
-		Queries("sort_column", "{sort_column}", 
-				"sort_order", "{sort_order}", 
-				"filter", "{filter}",
-				"page", "{page:[0-9]+}").
-		Methods("GET")
-	ar.HandleFunc("/api/job/{job_id}", GetJobHandler).Methods("GET")
-	ar.HandleFunc("/api/manualImport", ManualImportHandler).Methods("POST")
-
-	an := negroni.New(negroni.HandlerFunc(mw.HandlerWithNext), negroni.Wrap(ar))
-	r.PathPrefix("/api").Handler(an)
-	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./static/")))
-
-	n := negroni.Classic()
-	n.UseHandler(r)
-
-	return n
-}
-
-func runMigrations() {
-	log.Printf("Running any pending database migrations...")
-	path, err := os.Getwd()
-	if err != nil {
-		panic(err)
+	if settings.ResetUser {
+		log.Println("Warning: allowing user registration either because no user exists in the database currenly, or the RESET_USER environment variable has been set.")
+		http.HandleFunc("/api/v1/signup", routes.SignUp)
 	}
-	out, err := exec.Command(path+"/migrations", "migrate").CombinedOutput()
-	if err != nil {
-		log.Fatalf("Failed to run migration, output:\n%s", out)
-		panic(err)
-	}
-	log.Printf(string(out))
-	log.Printf("Migrations completed")
-}
 
-func initConfigs() {
-	filebot = new(Filebot)
-	sonarr = new(Sonarr)
-	plex = new(Plex)
-	radarr = new(Radarr)
-	sonarr.LoadConfiguration(true)
-	radarr.LoadConfiguration(true)
-	filebot.LoadConfiguration(true)
-	plex.LoadConfiguration(true)
+	if !settings.DebugMode {
+		var staticFS = http.FS(conductorr.WebDist)
+		fs := http.FileServer(staticFS)
+		http.Handle("/", fs)
+	} else {
+		log.Println("Warning: starting in debug mode")
+	}
+
+	log.Printf("Listening on :%d\n", port)
+	return http.ListenAndServe(":"+strconv.Itoa(port), http.DefaultServeMux)
 }

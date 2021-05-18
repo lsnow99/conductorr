@@ -1,7 +1,3 @@
-.vscode/
-/.env
-/conductorr
-/migrations
-dist/
-/static/
-__debug_bin
+cmd/conductorr/__debug_bin
+migrate.linux-amd64
+conductorr.db

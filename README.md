@@ -1,11 +1,45 @@
 # Conductorr
-Kubernetes Plex Download Orchestration
 
-## What is it?
-Conductorr sits as a deployment in your Kubernetes cluster along with Sonarr, Radarr, Filebot, NZBGet/rTorrent, and Plex. Conductorr is the glue between processing downloads from Radarr/Sonarr and running them through Filebot, and finally triggering a Plex Scan on the item. Condcutorr comes with a beautiful web interface to view logs and other information about your downloads so you can find issues in your own pipeline.
+## Developing
 
-## Why is it Needed?
-Running a Plex Server and downloaders in Kubernetes can have its issues, especially with Filebot. For example, after Filebot processes a download, Radarr/Sonarr might disagree with Filebot on the output directory, and if Sonarr/Radarr are not notified of the new path, they may mark the download as a fail and keep trying more downloads indefinitely. Conductorr notifies Sonarr/Radarr of the change to prevent them from continuing to download. Another issue solved by Conductorr is the issue of Plex not noticing new content on certain filesystems (NFS, Ceph, etc). One solution is to use Filebot's built-in Plex scanning feature, but this will scan your entire library, and not just the single file you want it to scan.
+To develop on Conductorr, first clone the repository.
 
-## Installation Guide
-Please refer to the installation guide in the Wiki. Conductorr requires a significant amount of setup, but the documentation aims to be as straighforward as possible.
+[Visual Studio Code](https://code.visualstudio.com/) is recommended for development, and some instructions are specific to VS Code.
+
+### Backend Development
+
+Conductorr backend requires [go](https://golang.org/) version 1.16 to be installed.
+
+Within VS Code, select "Launch Backend" from the debug menu. You can set breakpoints and debug as usual within VS Code. To run the backend without VS Code, use the command `CONDUCTORR_DEBUG=true go run ./cmd/conductorr`
+
+### Frontend Development
+
+Conductorr is built on Vue 3 using Vite and [TailwindCSS](https://tailwindcss.com/).
+
+- `cd web`
+- `yarn install`
+- `yarn dev`
+
+This will start the web frontend and should be available at http://localhost:3000
+
+Modifying files within `web/src` and saving them will cause the website to hot-reload in your browser, aiding in development.
+
+Conductorr uses Tailwind for all styling. [Oruga](https://oruga.io) components are used and styled via Tailwind.
+
+### Database Migrations
+
+Conductorr uses [go-migrate](https://github.com/golang-migrate/migrate) to manage database migrations. The source for migrations are located in the `migrations` folder. When building for release, the migration files are bundled into Conductorr's binary executable via the [embed](https://golang.org/pkg/embed/) package. Alternatively, the directory for Conductorr to look for migration files can be specified via the `MIGRATIONS_PATH` environment variable.
+
+#### Creating new Migrations
+
+To create a new migration, you must have `go-migrate` installed on your system (or have the binary handy). Simply run `migrate create -ext sql -dir migrations/ -seq {migration name}` within Conductorr's root folder. This will create two SQL files in the migrations folder. One that contains the SQL to spin up the migration, and one to spin it down. Alternatively, you could make these files manually by following the naming pattern in the directory (increment the version number for the new up and down migrations).
+
+In order to write effective migrations, abide by the following conventions:
+- Always create both an up and down migration. The down migration should undo any changes made to the database schema by the up migration (ie. if the up migration creates a table or adds a column, the down migration should drop it). Where possible, data should be preserved. Down migrations are not intended ever to be run by end users, and are primarily good practice and useful for development. If a table needs to be removed in a future version, a proper up migration should handle it (with a corresponding down migration to add it back).
+- Always wrap migration files in transactions. This means the first line should be `BEGIN;` and the last line should be `COMMIT;` in any migration file.
+- Since Conductorr attempts to target and support both SQLite and PostgreSQL, try to keep all SQL in migration files cross-compatible between PostgreSQL and SQLite. Where not possible, default to the SQLite syntax (ie. use `blob` instead of `bytea`).  Conductorr runs some basic find/replace operations to convert SQLite SQL to PostgreSQL-compatible SQL before applying PostgreSQL migrations. To check if your code will convert correctly, look in the file `./database/conversion.go`.
+
+#### Dealing with a Failed Migration
+
+When developing, sometimes you might write a migration and run Conductorr to test it, and it fails. `go-migrate` will still increase the version of the database and mark it dirty (When starting Conductorr again it will fail due to a dirty database). In general the only thing you will need to do to fix a dirty database is to run this command: `migrate -path migrations/ -database sqlite://conductorr.db force 0` (replace 0 with one less than the version the database just got pumped to - in other words, if Conductorr outputs "Dirty database version 12. Fix and force version" after a failed up migration, then run `migrate -path migrations/ -database sqlite://conductorr.db force 11`). Note that these instructions are for when Conductorr tries to perform the up migration. If for some reason you see this error during a down migration, then you'll want to increase the version number by one instead of decreasing it.
+
