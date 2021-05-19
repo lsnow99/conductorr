@@ -11,8 +11,10 @@
     "@fortawesome/free-solid-svg-icons": "^5.15.3",
     "@oruga-ui/oruga-next": "^0.4.0",
     "jwt-decode": "^3.1.2",
+    "luxon": "^1.27.0",
     "vue": "^3.0.5",
-    "vue-router": "4"
+    "vue-router": "4",
+    "vuex": "^4.0.0"
   },
   "devDependencies": {
     "@fortawesome/vue-fontawesome": "^3.0.0-3",

@@ -23,6 +23,9 @@
   @apply pr-2;
   @apply text-lg;
   @apply rounded-lg;
+  @apply border-gray-900;
+  @apply border-4;
+  @apply border-opacity-50;
 }
 
 .o-load__overlay {
@@ -33,4 +36,62 @@
 .o-load__icon {
   @apply text-gray-900;
   @apply text-4xl;
+}
+
+.o-notification--danger {
+  @apply bg-red-500;
+}
+
+.o-notification {
+  @apply p-6;
+  @apply -inset-4;
+  @apply font-semibold;
+  @apply rounded-md;
+  @apply text-lg;
+}
+
+.o-radio__check {
+  @apply invisible;
+}
+
+.o-radio {
+  @apply bg-yellow-500;
+  @apply border-yellow-600;
+  @apply pt-2;
+  @apply pb-2;
+  @apply pl-4;
+  @apply pr-4;
+  @apply text-lg;
+  @apply font-bold;
+  @apply uppercase;
+  @apply m-0;
+}
+
+.o-radio--checked {
+  @apply bg-yellow-600;
+  @apply border-yellow-700;
+}
+
+.o-tabs__nav-item-boxed {
+  @apply text-gray-400;
+  @apply p-2;
+  @apply border-t-2;
+  @apply border-l-2;
+  @apply border-r-2;
+  @apply border-b-0;
+}
+
+.o-tabs__nav-item-boxed--active {
+  @apply text-yellow-500;
+  @apply border-yellow-500;
+  @apply rounded-lg;
+  @apply rounded-b-none;
+  @apply z-10;
+  @apply relative;
+}
+
+.o-tabs__nav {
+  @apply relative;
+  @apply overflow-y-hidden;
+  @apply z-0;
 }

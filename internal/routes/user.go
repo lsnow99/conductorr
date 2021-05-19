@@ -5,32 +5,47 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/lsnow99/conductorr/internal/dbstore"
 	"github.com/lsnow99/conductorr/internal/settings"
 )
 
-func SignIn(w http.ResponseWriter, r *http.Request) {
-
-	Respond(w, nil, nil)
-}
-
-type SignUpInput struct {
+type AuthInput struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
-func SignUp(w http.ResponseWriter, r *http.Request) {
-	sui := SignUpInput{}
-	if err := json.NewDecoder(r.Body).Decode(&sui); err != nil {
-		Respond(w, err, nil)
+func SignIn(w http.ResponseWriter, r *http.Request) {
+	creds := AuthInput{}
+	if err := json.NewDecoder(r.Body).Decode(&creds); err != nil {
+		Respond(w, err, nil, false)
 		return
 	}
+	if err := dbstore.CheckUser(r.Context(), creds.Username, creds.Password); err != nil {
+		Respond(w, err, nil, false)
+		return
+	}
+	Respond(w, nil, nil, true)
+}
 
+func SignUp(w http.ResponseWriter, r *http.Request) {
+	creds := AuthInput{}
+	if err := json.NewDecoder(r.Body).Decode(&creds); err != nil {
+		Respond(w, err, nil, false)
+		return
+	}
+	if err := dbstore.SetUser(r.Context(), creds.Username, creds.Password); err != nil {
+		Respond(w, err, nil, false)
+		return
+	}
+	// Don't allow further registrations for the duration of this server instance
+	settings.ResetUser = false
+	Respond(w, nil, nil, true)
 }
 
 func FirstTime(w http.ResponseWriter, r *http.Request) {
 	if settings.ResetUser {
-		Respond(w, nil, nil)
+		Respond(w, nil, nil, false)
 		return
 	}
-	Respond(w, errors.New("not first time"), nil)
+	Respond(w, errors.New("not first time"), nil, false)
 }

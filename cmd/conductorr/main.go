@@ -25,7 +25,7 @@ func serveRoutes(port int) error {
 	http.HandleFunc("/api/v1/first_time", routes.FirstTime)
 
 	if settings.ResetUser {
-		log.Println("Warning: allowing user registration either because no user exists in the database currenly, or the RESET_USER environment variable has been set.")
+		log.Println("Warning: allowing user registration either because no user exists in the database currenly, or the RESET_USER environment variable has been set. After the signup route successfully registers a user, the route will be disabled until the server exits.")
 		http.HandleFunc("/api/v1/signup", routes.SignUp)
 	}
 

@@ -1,6 +1,10 @@
 import { createRouter, createWebHistory } from "vue-router";
 import Home from "./views/Home.vue";
 import Auth from "./views/Auth.vue";
+import TV from "./views/TV.vue";
+import Movies from "./views/Movies.vue";
+import Configuration from "./views/Configuration.vue";
+import Calendar from "./views/Calendar.vue";
 import AuthUtil from "./util/AuthUtil.js";
 
 const routes = [
@@ -20,6 +24,45 @@ const routes = [
       requiresAuth: false,
     },
   },
+  {
+    path: "/movies",
+    name: 'movies',
+    component: Movies,
+    meta: {
+      requiresAuth: true,
+    },
+  },
+  {
+    path: "/tv",
+    name: 'tv',
+    component: TV,
+    meta: {
+      requiresAuth: true,
+    },
+  },
+  {
+    path: "/calendar",
+    name: 'calendar',
+    component: Calendar,
+    meta: {
+      requiresAuth: true,
+    },
+  },
+  {
+    path: "/configuration",
+    name: 'configuration',
+    component: Configuration,
+    meta: {
+      requiresAuth: true,
+    },
+  },
+  {
+    path: "/logout",
+    name: 'logout',
+    meta: {
+      logout: true
+    }
+  }
 ];
 
 const router = createRouter({
@@ -35,6 +78,10 @@ router.beforeEach((to, from, next) => {
   if (to.matched.some((record) => record.meta.logout)) {
     // TODO: Do logout
     AuthUtil.logout();
+    next({
+      name: "auth"
+    })
+    return
   }
   /*
       If a path requires authentication, we first check that the user is logged in
@@ -54,7 +101,9 @@ router.beforeEach((to, from, next) => {
         });
       });
   } else {
-    next();
+    next({
+      name: "home"
+    });
   }
 });
 

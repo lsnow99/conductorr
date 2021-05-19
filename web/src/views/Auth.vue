@@ -1,44 +1,123 @@
 <template>
-<div class="flex flex-row justify-center">
+  <div class="flex flex-row justify-center">
     <section class="max-w-lg mt-72">
-        <o-field label="Username">
-            <o-input type="text" v-model="username" />
-        </o-field>
-        <o-field label="Password">
-            <o-input type="password" v-model="password" />
-        </o-field>
-        <div class="flex flex-row justify-between mt-2">
-            <div />
-            <o-button :loading="true" @click="submit">Login</o-button>
-        </div>
+      <div v-if="first_time" class="text-2xl">Create User</div>
+      <div v-else class="text-2xl">Login</div>
+      <o-field label="Username">
+        <o-input type="text" @keydown.enter="submit" v-model="username" />
+      </o-field>
+      <o-field label="Password">
+        <o-input type="password" @keydown.enter="submit" v-model="password" />
+      </o-field>
+      <o-field v-if="first_time" label="Confirm Password">
+        <o-input
+          type="password"
+          @keydown.enter="submit"
+          v-model="confirmPassword"
+        />
+      </o-field>
+      <div class="flex flex-row justify-between mt-2">
+        <div />
+        <o-button v-if="first_time" @click="submit">Register</o-button>
+        <o-button v-else @click="submit">Login</o-button>
+      </div>
     </section>
-    <o-loading :full-page="true" v-model:active="loading" :can-cancel="false"></o-loading>
-</div>
+    <o-loading
+      :full-page="true"
+      v-model:active="loading"
+      :can-cancel="false"
+    ></o-loading>
+  </div>
 </template>
 
 <script>
-import APIUtil from "../util/APIUtil"
+import APIUtil from "../util/APIUtil";
+import AuthUtil from "../util/AuthUtil";
 
 export default {
-    data() {
-        return {
-            username: "",
-            password: "",
-            loading: false
-        }
+  data() {
+    return {
+      username: "",
+      password: "",
+      confirmPassword: "",
+      loading: true,
+      first_time: false,
+    };
+  },
+  methods: {
+    submit() {
+      if (this.first_time) {
+        this.submitRegister();
+      } else {
+        this.submitLogin();
+      }
     },
-    methods: {
-        submit() {
-            this.loading = true;
-            APIUtil.signIn().then(() => {
-                console.log('success')
-                this.$router.push({ name: 'home' })
-            }).catch((err) => {
-                console.log(err)
-            }).finally(() => {
-                this.loading = false;
-            })
-        }
-    }
-}
+    submitLogin() {
+      this.loading = true;
+      APIUtil.signIn(this.username, this.password)
+        .then(() => {
+          this.$router.push({ name: "home" });
+        })
+        .catch((msg) => {
+          this.$oruga.notification.open({
+            duration: 5000,
+            message: `Error logging in: ${msg}`,
+            position: "bottom-right",
+            variant: "danger",
+            closable: true,
+          });
+        })
+        .finally(() => {
+          this.loading = false;
+        });
+    },
+    submitRegister() {
+      if (this.confirmPassword != this.password) {
+        this.$oruga.notification.open({
+          duration: 5000,
+          message: `Passwords do not match`,
+          position: "bottom-right",
+          variant: "danger",
+          closable: true,
+        });
+        return;
+      }
+      this.loading = true;
+      APIUtil.signUp(this.username, this.password)
+        .then(() => {
+          this.$router.push({ name: "home" });
+        })
+        .catch((msg) => {
+          this.$oruga.notification.open({
+            duration: 5000,
+            message: `Error signing up: ${msg}`,
+            position: "bottom-right",
+            variant: "danger",
+            closable: true,
+          });
+        })
+        .finally(() => {
+          this.loading = false;
+        });
+    },
+  },
+  mounted() {
+    AuthUtil.getLoggedInID()
+      .then(() => {
+        this.$router.push({ name: "home" });
+      })
+      .catch(() => {
+        APIUtil.isFirstTime()
+          .then(() => {
+            this.first_time = true;
+          })
+          .catch((err) => {
+            this.first_time = false;
+          })
+          .finally(() => {
+            this.loading = false;
+          });
+      });
+  },
+};
 </script>

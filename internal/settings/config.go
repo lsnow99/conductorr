@@ -1,8 +1,10 @@
 package settings
 
 import (
+	"errors"
 	"log"
 	"os"
+	"strconv"
 )
 
 var DebugMode bool
@@ -15,12 +17,32 @@ var PGName string
 var PGHost string
 var PGPort string
 var DBPath string
+var JWTSecret string
+var JWTExpDays int
 var MigrationsPath string
 
 func init() {
 
 	if os.Getenv("CONDUCTORR_DEBUG") != "" {
 		DebugMode = true
+	}
+
+	if len(os.Getenv("JWT_SECRET")) >= 64 {
+		JWTSecret = os.Getenv("JWT_SECRET")
+	} else if DebugMode {
+		// In debug mode just use a stupid JWT secret
+		JWTSecret = "abcdefghijklmnopqrstuvwxyz0123456789"
+	} else {
+		log.Fatal(errors.New("required environment variable JWT_SECRET not provided, or was not at least 64 characters. Set JWT_SECRET to a random string of 64+ characters."))
+	}
+
+	if os.Getenv("JWT_EXP_DAYS") != "" {
+		jwtExpDaysStr := os.Getenv("JWT_EXP_DAYS")
+		jwtExpDaysInt, err := strconv.Atoi(jwtExpDaysStr)
+		if err != nil {
+			log.Fatalf("error parsing JWT_EXP_DAYS (%s) as integer", jwtExpDaysStr)
+		}
+		JWTExpDays = jwtExpDaysInt
 	}
 
 	if os.Getenv("RESET_USER") != "" {

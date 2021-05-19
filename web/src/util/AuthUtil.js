@@ -1,4 +1,5 @@
 import jwt_decode from "jwt-decode";
+import store from "../store";
 
 const logout = () => {
   localStorage.clear();
@@ -19,17 +20,15 @@ const setIDToken = (idTok) => {
     localStorage.setItem("id_token", idTok)
 }
 
-const setRefreshToken = (refreshTok) => {
-    localStorage.setItem("refresh_token", refreshTok)
-}
-
 const getLoggedInID = () => {
   return new Promise((resolve, reject) => {
     getIDToken()
       .then((jwt) => {
+        store.commit('setLoggedIn', true)
         resolve(jwt_decode(jwt).sub);
       })
       .catch((err) => {
+        store.commit('setLoggedIn', false)
         reject(err);
       });
   });
@@ -38,6 +37,5 @@ const getLoggedInID = () => {
 export default {
   logout,
   getLoggedInID,
-  setIDToken,
-  setRefreshToken
+  setIDToken
 };
