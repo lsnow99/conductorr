@@ -1,15 +1,23 @@
 <template>
     <section>
-
+        <o-button @click="showNewIndexerModal = true">Add Indexer</o-button>
+        <o-modal v-model:active="showNewIndexerModal">
+            <new-indexer @close="showNewIndexerModal = false"/>
+        </o-modal>
     </section>
 </template>
 
 <script>
+import NewIndexer from "./NewIndexer.vue"
 export default {
     data() {
         return {
-            indexers: []
+            indexers: [],
+            showNewIndexerModal: false,
         }
+    },
+    components: {
+        NewIndexer
     },
     mounted() {
         this.indexers = [
