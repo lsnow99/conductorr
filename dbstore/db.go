@@ -12,7 +12,7 @@ import (
 	"github.com/golang-migrate/migrate/v4/database/sqlite3"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/jackc/pgx/v4"
-	"github.com/lsnow99/conductorr/internal/settings"
+	"github.com/lsnow99/conductorr/settings"
 	_ "github.com/mattn/go-sqlite3"
 )
 

@@ -1,0 +1,11 @@
+package mycsl
+
+import "testing"
+
+func TestParserBasic1(t *testing.T) {
+	expr := Parse(`
+	;wtf dfas
+	(* 2 (+ 3 4))
+	`)
+	t.Log(expr)
+}

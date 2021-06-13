@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/lsnow99/conductorr/internal/settings"
+	"github.com/lsnow99/conductorr/settings"
 	"github.com/dgrijalva/jwt-go"
 )
 

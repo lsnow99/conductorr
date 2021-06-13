@@ -26,6 +26,10 @@ import {
   faDownload,
   faSlidersH,
   faPlayCircle,
+  faFilter,
+  faPlusSquare,
+  faMinusSquare,
+  faPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
@@ -38,6 +42,22 @@ import router from "./router";
 Import our store
 */
 import store from "./store";
+
+/*
+Import Vue Prism
+*/
+import { PrismEditor } from 'vue-prism-editor';
+import 'vue-prism-editor/dist/prismeditor.min.css';
+
+const globalOptions = {
+  debug: 'info',
+  modules: {
+    syntax: true,
+    toolbar: [['code-block']]
+  },
+  readOnly: false,
+  theme: 'snow'
+}
 
 library.add(faSyncAlt);
 library.add(faTimes);
@@ -54,6 +74,10 @@ library.add(faSearch);
 library.add(faDownload);
 library.add(faSlidersH);
 library.add(faPlayCircle);
+library.add(faFilter);
+library.add(faPlusSquare);
+library.add(faMinusSquare);
+library.add(faPlus);
 
 const app = createApp(App);
 app.use(store);
@@ -64,6 +88,7 @@ app.use(Oruga, {
   statusIcon: false,
 });
 app.component("vue-fontawesome", FontAwesomeIcon);
+app.component("PrismEditor", PrismEditor)
 app.mount("#app");
 
 /*

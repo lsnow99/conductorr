@@ -1,0 +1,80 @@
+<template>
+  <section>
+    <div class="flex flex-row justify-between mt-3">
+      <div>
+        <o-button icon-left="plus" @click="showNewProfileModal = true">New Profile</o-button>
+      </div>
+      <div>
+        <o-button icon-left="plus-square" @click="expandAll" class="mr-3"
+          >Expand All</o-button
+        ><o-button icon-left="minus-square" @click="collapseAll"
+          >Collapse All</o-button
+        >
+      </div>
+    </div>
+    <release-profile
+      v-for="(profile, index) in modelValue"
+      :ripTypes="ripTypes"
+      :qualityTypes="qualityTypes"
+      :resolutionTypes="resolutionTypes"
+      v-model="modelValue[index]"
+      v-model:expanded="profile.expanded"
+      :key="index"
+    />
+    <o-modal v-model:active="showNewProfileModal">
+      <new-profile @close="showNewProfileModal = false" @submitted="newProfileSubmitted" />
+    </o-modal>
+  </section>
+</template>
+
+<script>
+import APIUtil from "../util/APIUtil";
+import ReleaseProfile from "../components/ReleaseProfile.vue";
+import NewProfile from "../components/NewProfile.vue";
+
+export default {
+  data() {
+    return {
+      ripTypes: [],
+      qualityTypes: [],
+      resolutionTypes: [],
+      showNewProfileModal: false,
+    };
+  },
+  props: {
+    modelValue: {
+      type: Array,
+      default: function () {
+        return [];
+      },
+    },
+  },
+  components: {
+    ReleaseProfile,
+    NewProfile,
+  },
+  methods: {
+    expandAll() {
+      this.modelValue.forEach((element) => {
+        element.expanded = true;
+      });
+    },
+    collapseAll() {
+      this.modelValue.forEach((element) => {
+        element.expanded = false;
+      });
+    },
+    newProfileSubmitted() {
+      this.showNewProfileModal = false;
+      this.$emit('reload')
+    }
+  },
+  mounted() {
+    APIUtil.getReleaseProfileCfg().then((data) => {
+      this.ripTypes = data.rip_types;
+      this.qualityTypes = data.quality_types;
+      this.resolutionTypes = data.resolutionTypes;
+    });
+  },
+};
+</script>

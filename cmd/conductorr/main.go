@@ -6,9 +6,9 @@ import (
 	"strconv"
 
 	"github.com/lsnow99/conductorr"
-	"github.com/lsnow99/conductorr/internal/dbstore"
-	"github.com/lsnow99/conductorr/internal/routes"
-	"github.com/lsnow99/conductorr/internal/settings"
+	"github.com/lsnow99/conductorr/dbstore"
+	"github.com/lsnow99/conductorr/routes"
+	"github.com/lsnow99/conductorr/settings"
 )
 
 func main() {
@@ -23,6 +23,7 @@ func main() {
 func serveRoutes(port int) error {
 	http.HandleFunc("/api/v1/signin", routes.SignIn)
 	http.HandleFunc("/api/v1/first_time", routes.FirstTime)
+	http.HandleFunc("/api/v1/releaseProfileCfg", routes.GetReleaseProfileCfg)
 
 	if settings.ResetUser {
 		log.Println("Warning: allowing user registration either because no user exists in the database currenly, or the RESET_USER environment variable has been set. After the signup route successfully registers a user, the route will be disabled until the server exits.")

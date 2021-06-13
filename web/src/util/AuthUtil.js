@@ -9,6 +9,7 @@ const getIDToken = () => {
     const idTok = localStorage.getItem("id_token")
     return new Promise((resolve, reject) => {
         if (idTok) {
+          console.log('resolving idTok')
             resolve(idTok)
         } else {
             reject("not logged in")
@@ -37,5 +38,6 @@ const getLoggedInID = () => {
 export default {
   logout,
   getLoggedInID,
+  getIDToken,
   setIDToken
 };

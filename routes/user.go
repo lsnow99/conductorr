@@ -5,8 +5,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/lsnow99/conductorr/internal/dbstore"
-	"github.com/lsnow99/conductorr/internal/settings"
+	"github.com/lsnow99/conductorr/dbstore"
+	"github.com/lsnow99/conductorr/settings"
 )
 
 type AuthInput struct {

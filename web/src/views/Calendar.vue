@@ -2,11 +2,11 @@
   <page-wrapper>
     <section>
       <div class="flex flex-col">
-        <div class="flex flex-row justify-between">
+        <div class="flex flex-col items-center sm:flex-row justify-between">
           <div>
             <o-button @click="resetDate">Today</o-button>
           </div>
-          <div class="overflow-hidden rounded-lg inline-block">
+          <div class="overflow-hidden rounded-lg inline-block mt-4 sm:mt-0">
             <o-radio v-model="viewType" name="viewType" native-value="monthly"
               >Monthly</o-radio
             >
@@ -125,6 +125,16 @@ export default {
     eventClass(index) {
       return EVENT_BACKGROUNDS[index % EVENT_BACKGROUNDS.length];
     },
+  },
+  mounted() {
+    const screenWidth = window.innerWidth
+    if (screenWidth < 768) {
+      this.viewType = "daily"
+    } else if (screenWidth < 1024) {
+      this.viewType = "weekly"
+    } else {
+      this.viewType = "monthly"
+    }
   },
   computed: {
     dates() {

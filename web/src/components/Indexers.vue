@@ -8,7 +8,7 @@
 </template>
 
 <script>
-import NewIndexer from "./NewIndexer.vue"
+import NewIndexer from "./EditIndexer.vue"
 export default {
     data() {
         return {

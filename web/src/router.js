@@ -5,7 +5,9 @@ import TV from "./views/TV.vue";
 import Movies from "./views/Movies.vue";
 import Configuration from "./views/Configuration.vue";
 import Calendar from "./views/Calendar.vue";
+import System from "./views/System.vue";
 import AuthUtil from "./util/AuthUtil.js";
+import { faTachometerAlt } from "@fortawesome/free-solid-svg-icons";
 
 const routes = [
   {
@@ -57,6 +59,14 @@ const routes = [
     },
   },
   {
+    path: "/system",
+    name: 'system',
+    component: System,
+    meta: {
+      requiresAuth: true,
+    }
+  },
+  {
     path: "/logout",
     name: 'logout',
     meta: {
@@ -77,6 +87,7 @@ router.beforeEach((to, from, next) => {
       */
   if (to.matched.some((record) => record.meta.logout)) {
     // TODO: Do logout
+    console.log('logging out')
     AuthUtil.logout();
     next({
       name: "auth"
@@ -92,18 +103,15 @@ router.beforeEach((to, from, next) => {
     // Only allow the requested route if the logged in check passes
     AuthUtil.getLoggedInID()
       .then(() => {
-        next();
-      })
-      .catch(() => {
+        next()
+      }).catch(() => {
         AuthUtil.logout();
         next({
-          name: "auth",
-        });
-      });
+          name: 'auth'
+        })
+      })
   } else {
-    next({
-      name: "home"
-    });
+    next();
   }
 });
 
