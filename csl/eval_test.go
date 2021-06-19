@@ -553,6 +553,46 @@ func TestLengthList(t *testing.T) {
 	checkResult(t, int64(4), res, trace)
 }
 
+func TestIfCondExpr(t *testing.T) {
+	expr, err := Parse(`
+	(if (eq 17 18) (* 7 6) (- 10 5))
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace := Eval(expr, nil)
+	checkResult(t, int64(5), res, trace)
+
+	expr, err = Parse(`
+	(if (eq 17 17) (* 7 6) (- 10 5))
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace = Eval(expr, nil)
+	checkResult(t, int64(42), res, trace)
+}
+
+func TestIfCondLiteral(t *testing.T) {
+	expr, err := Parse(`
+	(if false (* 7 6) (- 10 5))
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace := Eval(expr, nil)
+	checkResult(t, int64(5), res, trace)
+
+	expr, err = Parse(`
+	(if true (* 7 6) (- 10 5))
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace = Eval(expr, nil)
+	checkResult(t, int64(42), res, trace)
+}
+
 func printTrace(trace Trace) {
 	fmt.Println("Program execution steps: ")
 	for _, step := range trace.ExprTree {

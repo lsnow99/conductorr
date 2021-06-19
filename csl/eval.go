@@ -358,6 +358,20 @@ var builtins = map[atomType]operation{
 		}
 		return nil, ErrMismatchOperandTypes
 	},
+	ifAtom: func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) != 3 {
+			return nil, ErrNumOperands
+		}
+		p, ok := args[0].(bool)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+
+		if p {
+			return args[1], nil
+		}
+		return args[2], nil
+	},
 }
 
 func Eval(sexprs []*SExpr, env map[string]interface{}) (interface{}, Trace) {
@@ -400,6 +414,13 @@ func EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace) (interface
 					list.Elems = append(list.Elems, x)
 				case stringAtom:
 					x, ok := atom.stringVal()
+					if !ok {
+						trace.err = ErrBadType
+						return nil, trace
+					}
+					list.Elems = append(list.Elems, x)
+				case boolAtom:
+					x, ok := atom.boolVal()
 					if !ok {
 						trace.err = ErrBadType
 						return nil, trace

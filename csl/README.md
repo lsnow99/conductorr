@@ -73,5 +73,6 @@ Lists are implicitly defined any time expressions are joined within parentheses 
 - `(nth i s)` Returns the `i`th character in the string `s`
 - `(len l)` Returns the length of list `l`
 - `(len s)` Returns the length of string `s`
+- `(if p expr1 expr2)` Returns the result of `expr1` if `p` evaluates to `true`, and returns the result of `expr2` otherwise.
 
 > NOTE: on overloaded functions like `len` and `nth` that accept both strings or lists, the string versions are given priority. Meaning `(nth 0 ("hello world"))` will return `"h"` and not `"hello world"`. Similarly, `(len ("hello world"))` evaluates to `11` and not `1`.

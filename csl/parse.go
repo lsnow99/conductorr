@@ -39,6 +39,7 @@ const (
 	commentToken
 	stringToken
 	numberToken
+	boolToken
 	openToken
 	closeToken
 	symbolToken
@@ -66,6 +67,8 @@ const (
 	nthAtom
 	eqAtom
 	lengthAtom
+	ifAtom
+	boolAtom
 )
 
 type CSLParserError struct {
@@ -113,6 +116,11 @@ func (a Atom) stringVal() (string, bool) {
 	return x, (ok && a.typ == stringAtom)
 }
 
+func (a Atom) boolVal() (bool, bool) {
+	x, ok := a.v.(bool)
+	return x, (ok && a.typ == boolAtom)
+}
+
 func (a Atom) varName() (string, bool) {
 	x, ok := a.v.(string)
 	return x, (ok && a.typ == varAtom)
@@ -152,6 +160,7 @@ func patterns() []Pattern {
 		{whitespaceToken, regexp.MustCompile(`^\s+`)},
 		{commentToken, regexp.MustCompile(`^;.*`)},
 		{stringToken, regexp.MustCompile(`^("(\\.|[^"])*")`)},
+		{boolToken, regexp.MustCompile(`^(true|false)`)},
 		{numberToken, numberPattern},
 		{openToken, regexp.MustCompile(`^(\()`)},
 		{closeToken, regexp.MustCompile(`^(\))`)},
@@ -240,6 +249,13 @@ func ParseAtomicToken(tok *Token) (*SExpr, error) {
 		}
 		sexpr.v = tok.val[1 : len(tok.val)-1]
 		sexpr.typ = stringAtom
+	case boolToken:
+		p, err := strconv.ParseBool(tok.val)
+		if err != nil {
+			return nil, err
+		}
+		sexpr.v = p
+		sexpr.typ = boolAtom
 	case numberToken:
 		matches := numberPattern.FindAllStringSubmatch(tok.val, -1)
 		if matches == nil {
@@ -314,6 +330,8 @@ func ParseAtomicToken(tok *Token) (*SExpr, error) {
 			sexpr.typ = eqAtom
 		case "len":
 			sexpr.typ = lengthAtom
+		case "if":
+			sexpr.typ = ifAtom
 		default:
 			sexpr.typ = varAtom
 			sexpr.v = tok.val
