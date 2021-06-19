@@ -69,6 +69,9 @@ const (
 	lengthAtom
 	ifAtom
 	boolAtom
+	andAtom
+	orAtom
+	notAtom
 )
 
 type CSLParserError struct {
@@ -332,6 +335,12 @@ func ParseAtomicToken(tok *Token) (*SExpr, error) {
 			sexpr.typ = lengthAtom
 		case "if":
 			sexpr.typ = ifAtom
+		case "and":
+			sexpr.typ = andAtom
+		case "or":
+			sexpr.typ = orAtom
+		case "not":
+			sexpr.typ = notAtom
 		default:
 			sexpr.typ = varAtom
 			sexpr.v = tok.val

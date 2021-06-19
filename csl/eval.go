@@ -372,6 +372,53 @@ var builtins = map[atomType]operation{
 		}
 		return args[2], nil
 	},
+	andAtom: func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) < 1 {
+			return nil, ErrNumOperands
+		}
+		p, ok := args[0].(bool)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+
+		for _, arg := range args {
+			q, ok := arg.(bool)
+			if !ok {
+				return nil, ErrMismatchOperandTypes
+			}
+			p = p && q
+		}
+		return p, nil
+	},
+	orAtom: func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) < 1 {
+			return nil, ErrNumOperands
+		}
+		p, ok := args[0].(bool)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+
+		for _, arg := range args {
+			q, ok := arg.(bool)
+			if !ok {
+				return nil, ErrMismatchOperandTypes
+			}
+			p = p || q
+		}
+		return p, nil
+	},
+	notAtom: func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) != 1 {
+			return nil, ErrNumOperands
+		}
+		p, ok := args[0].(bool)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+
+		return !p, nil
+	},
 }
 
 func Eval(sexprs []*SExpr, env map[string]interface{}) (interface{}, Trace) {

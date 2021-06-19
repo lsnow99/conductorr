@@ -593,6 +593,66 @@ func TestIfCondLiteral(t *testing.T) {
 	checkResult(t, int64(42), res, trace)
 }
 
+func TestAndExpr(t *testing.T) {
+	expr, err := Parse(`
+	(and true true true (eq 3 3))
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace := Eval(expr, nil)
+	checkResult(t, true, res, trace)
+
+	expr, err = Parse(`
+	(and true (eq 2 3) true true)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace = Eval(expr, nil)
+	checkResult(t, false, res, trace)
+}
+
+func TestOrExpr(t *testing.T) {
+	expr, err := Parse(`
+	(or false (eq 3 3) false false)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace := Eval(expr, nil)
+	checkResult(t, true, res, trace)
+
+	expr, err = Parse(`
+	(or (eq 1 2) false false false)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace = Eval(expr, nil)
+	checkResult(t, false, res, trace)
+}
+
+func TestNotExpr(t *testing.T) {
+	expr, err := Parse(`
+	(not (or false (eq 3 3) false false))
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace := Eval(expr, nil)
+	checkResult(t, false, res, trace)
+
+	expr, err = Parse(`
+	(not (or (eq 1 2) false false false))
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace = Eval(expr, nil)
+	checkResult(t, true, res, trace)
+}
+
 func printTrace(trace Trace) {
 	fmt.Println("Program execution steps: ")
 	for _, step := range trace.ExprTree {
