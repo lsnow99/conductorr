@@ -65,6 +65,7 @@ const (
 	allLessEqualAtom
 	nthAtom
 	eqAtom
+	lengthAtom
 )
 
 type CSLParserError struct {
@@ -311,6 +312,8 @@ func ParseAtomicToken(tok *Token) (*SExpr, error) {
 			sexpr.typ = nthAtom
 		case "eq":
 			sexpr.typ = eqAtom
+		case "len":
+			sexpr.typ = lengthAtom
 		default:
 			sexpr.typ = varAtom
 			sexpr.v = tok.val

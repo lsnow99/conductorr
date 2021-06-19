@@ -19,6 +19,38 @@ If you are familiar with Lisp syntax, CSL follows it directly. Here is an exampl
 ```
 The value `629` is returned.
 
+### Data Types and Literals
+
+CSL has supports the following datatypes:
+- Integers
+- Strings
+- Booleans
+- Lists
+
+#### Integers
+
+All CSL integers are 64-bit numbers. They can be negative or positive. One special feature of CSL is the ability to use suffixes that are a shorthand to multiply by an order of magnitude. For example, `3G` is equivalent to `3000000000`.
+
+The full list of available suffixes is below:
+- `G` --> 1000000000
+- `Gi` --> 2^30
+- `M` --> 1000000
+- `Mi` --> 2^20
+- `K` --> 1000
+- `Ki` --> 2^10
+
+#### Strings
+
+String literals must be enclosed in double quotes (`"`)
+
+#### Booleans
+
+Boolean literals are `true` and `false`, and are case-sensitive
+
+#### Lists
+
+Lists are implicitly defined any time expressions are joined within parentheses such as `(1 4 "hello" 5 2 "world" true)`. List elements are not required to have the same data type. Single-value lists may be treated as regular values or lists. (ie, `(+ (1) (2))` is equivalent to `(+ 1 2)` and `(in 1 (1))` evaluates correctly as well).
+
 ## Built-In Functions
 
 - `(+ x y ...)` Adds all integer arguments together
@@ -38,3 +70,8 @@ The value `629` is returned.
 - `(in v l)` Returns true if the value of `v` appears in list `l`
 - `(in s1 s2)` Returns true iff `s1` is a substring of `s2`
 - `(nth i l)` Returns the `i`th value in list `l` or error if out of bounds 
+- `(nth i s)` Returns the `i`th character in the string `s`
+- `(len l)` Returns the length of list `l`
+- `(len s)` Returns the length of string `s`
+
+> NOTE: on overloaded functions like `len` and `nth` that accept both strings or lists, the string versions are given priority. Meaning `(nth 0 ("hello world"))` will return `"h"` and not `"hello world"`. Similarly, `(len ("hello world"))` evaluates to `11` and not `1`.

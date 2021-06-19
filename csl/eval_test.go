@@ -509,6 +509,50 @@ func TestGiMiKi(t *testing.T) {
 	checkResult(t, int64(17*(1<<10)), res, trace)
 }
 
+func TestSingleElemList(t *testing.T) {
+	expr, err := Parse(`
+	(+ (1) (2))
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace := Eval(expr, nil)
+	checkResult(t, int64(3), res, trace)
+}
+
+func TestNthString(t *testing.T) {
+	expr, err := Parse(`
+	(nth 4 "hello world")
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace := Eval(expr, nil)
+	checkResult(t, "o", res, trace)
+}
+
+func TestLengthString(t *testing.T) {
+	expr, err := Parse(`
+	(len "hello world")
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace := Eval(expr, nil)
+	checkResult(t, int64(11), res, trace)
+}
+
+func TestLengthList(t *testing.T) {
+	expr, err := Parse(`
+	(len ("hello world" 4 5 1))
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace := Eval(expr, nil)
+	checkResult(t, int64(4), res, trace)
+}
+
 func printTrace(trace Trace) {
 	fmt.Println("Program execution steps: ")
 	for _, step := range trace.ExprTree {

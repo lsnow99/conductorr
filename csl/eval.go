@@ -319,6 +319,12 @@ var builtins = map[atomType]operation{
 		}
 		l, ok := args[1].(List)
 		if !ok {
+			if s, ok := args[1].(string); ok {
+				if i < 0 || i >= int64(len(s)) {
+					return nil, ErrOutOfBounds
+				}
+				return string(s[i]), nil
+			}
 			l = List{
 				Elems: []interface{}{args[1]},
 			}
@@ -339,6 +345,18 @@ var builtins = map[atomType]operation{
 			}
 		}
 		return true, nil
+	},
+	lengthAtom: func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) != 1 {
+			return nil, ErrNumOperands
+		}
+		if s, ok := args[0].(string); ok {
+			return int64(len(s)), nil
+		}
+		if l, ok := args[0].(List); ok {
+			return int64(len(l.Elems)), nil
+		}
+		return nil, ErrMismatchOperandTypes
 	},
 }
 
@@ -421,7 +439,8 @@ func EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace) (interface
 				}
 			} else if operand.L != nil {
 				val, tr := EvalSExpr(operand.L, env, trace)
-				if tr.err != nil {
+				trace = tr
+				if trace.err != nil {
 					return nil, trace
 				}
 				list.Elems = append(list.Elems, val)
@@ -432,7 +451,7 @@ func EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace) (interface
 		}
 	}
 
-	if len(list.Elems) == 1 {
+	if len(list.Elems) == 1 && op == nil {
 		return list.Elems[0], trace
 	}
 	if op != nil {
