@@ -14,7 +14,7 @@ type List struct {
 	Elems []interface{}
 }
 
-type operation func(args ...interface{}) (interface{}, error)
+type operation func(env map[string]interface{}, args ...interface{}) (interface{}, error)
 
 var (
 	ErrMismatchOperandTypes = &CSLEvalError{
@@ -33,6 +33,9 @@ var (
 	ErrUnexpectedFunction = &CSLEvalError{
 		Message: "unexpected function call when parsing list",
 	}
+	ErrUndefinedVar = &CSLEvalError{
+		Message: "undefined variable",
+	}
 )
 
 func (c CSLEvalError) Error() string {
@@ -45,7 +48,7 @@ func (c CSLEvalError) Error() string {
 }
 
 var builtins = map[atomType]operation{
-	addAtom: func(args ...interface{}) (interface{}, error) {
+	addAtom: func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -59,7 +62,7 @@ var builtins = map[atomType]operation{
 		}
 		return sum, nil
 	},
-	subAtom: func(args ...interface{}) (interface{}, error) {
+	subAtom: func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -76,7 +79,7 @@ var builtins = map[atomType]operation{
 		}
 		return difference, nil
 	},
-	multAtom: func(args ...interface{}) (interface{}, error) {
+	multAtom: func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -90,7 +93,7 @@ var builtins = map[atomType]operation{
 		}
 		return product, nil
 	},
-	divAtom: func(args ...interface{}) (interface{}, error) {
+	divAtom: func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -107,20 +110,41 @@ var builtins = map[atomType]operation{
 		}
 		return quotient, nil
 	},
+	defineAtom: func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) != 2 {
+			return nil, ErrNumOperands
+		}
+		x, ok := args[0].(Atom)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		varName, ok := x.varName()
+		env[varName] = args[1]
+		return nil, nil
+	},
 }
 
-func Eval(sexpr *SExpr, env map[string]interface{}) (interface{}, Trace) {
+func Eval(sexprs []*SExpr, env map[string]interface{}) (interface{}, Trace) {
+	var res interface{}
 	trace := Trace{
 		ExprTree: make([]*SExpr, 0),
 		err:      nil,
 	}
-	return EvalSExpr(sexpr, env, trace)
+	for _, tree := range sexprs {
+		res, trace = EvalSExpr(tree, env, trace)
+		if trace.err != nil {
+			return res, trace
+		}
+	}
+	return res, trace
 }
 
 func EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace) (interface{}, Trace) {
 	list := List{}
 	var op operation
 	var firstElem bool = true
+	var isDefine bool
+	var argNum int
 	if sexpr == nil {
 		return nil, trace
 	}
@@ -145,6 +169,22 @@ func EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace) (interface
 						return nil, trace
 					}
 					list.Elems = append(list.Elems, x)
+				case varAtom:
+					x, ok := atom.varName()
+					if !ok {
+						trace.err = ErrBadType
+						return nil, trace
+					}
+					if isDefine && argNum == 0 {
+						list.Elems = append(list.Elems, atom.Atom)
+					} else {
+						val, ok := env[x]
+						if !ok {
+							trace.err = ErrUndefinedVar
+							return nil, trace
+						}
+						list.Elems = append(list.Elems, val)
+					}
 				default:
 					if !firstElem {
 						trace.err = ErrUnexpectedFunction
@@ -152,10 +192,14 @@ func EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace) (interface
 					}
 					var ok bool
 					op, ok = builtins[typ]
+					if typ == defineAtom {
+						isDefine = true
+					}
 					if !ok {
 						trace.err = ErrNoSuchFunction
 						return nil, trace
 					}
+					argNum--
 				}
 			} else if operand.L != nil {
 				val, tr := EvalSExpr(operand.L, env, trace)
@@ -164,6 +208,7 @@ func EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace) (interface
 				}
 				list.Elems = append(list.Elems, val)
 			}
+			argNum++
 			operand = operand.R
 			firstElem = false
 		}
@@ -173,7 +218,7 @@ func EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace) (interface
 		return list.Elems[0], trace
 	}
 	if op != nil {
-		resp, err := op(list.Elems...)
+		resp, err := op(env, list.Elems...)
 		if err != nil {
 			trace.err = err
 			return nil, trace

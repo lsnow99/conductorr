@@ -52,6 +52,7 @@ const (
 	subAtom
 	multAtom
 	divAtom
+	defineAtom
 )
 
 type CSLParserError struct {
@@ -104,7 +105,7 @@ func (a Atom) varName() (string, bool) {
 	return x, (ok && a.typ == varAtom)
 }
 
-func (a Atom) Type() (atomType) {
+func (a Atom) Type() atomType {
 	return a.typ
 }
 
@@ -145,8 +146,8 @@ func patterns() []Pattern {
 
 /*
 NewTokens takes a string for the program and performs regular-expression matching
-to return a slice of parsed tokens. Code is adapted from 
-[Jan Andersson](https://github.com/janne)'s 
+to return a slice of parsed tokens. Code is adapted from
+[Jan Andersson](https://github.com/janne)'s
 [go-lisp](https://github.com/janne/go-lisp) project.
 */
 func NewTokens(program string) (tokens Tokens) {
@@ -187,9 +188,26 @@ func (se *SExpr) getExprAtLevel(level int) []*SExpr {
 Parse is the main client function to parse a script into an S-Expression
 tree. Returns a non-nil error if a parsing error is encountered.
 */
-func Parse(script string) (*SExpr, error) {
+func Parse(script string) ([]*SExpr, error) {
+	var opened, startIndex int
 	tokens := NewTokens(script)
-	return ParseTokens(tokens)
+	trees := make([]*SExpr, 0)
+	for index, tok := range tokens {
+		if tok.typ == openToken {
+			opened++
+		} else if tok.typ == closeToken {
+			opened--
+			if opened == 0 {
+				tree, err := ParseTokens(tokens[startIndex:index+1])
+				if err != nil {
+					return nil, err
+				}
+				startIndex = index + 1
+				trees = append(trees, tree)
+			}
+		}
+	}
+	return trees, nil
 }
 
 /*
@@ -224,6 +242,8 @@ func ParseAtomicToken(tok *Token) (*SExpr, error) {
 			sexpr.typ = multAtom
 		case "/":
 			sexpr.typ = divAtom
+		case "define":
+			sexpr.typ = defineAtom
 		default:
 			sexpr.typ = varAtom
 			sexpr.v = tok.val
