@@ -12,7 +12,7 @@ type CSLEvalError struct {
 
 type Trace struct {
 	ExprTree []*SExpr
-	err      error
+	Err      error
 }
 
 type List struct {
@@ -425,11 +425,11 @@ func Eval(sexprs []*SExpr, env map[string]interface{}) (interface{}, Trace) {
 	var res interface{}
 	trace := Trace{
 		ExprTree: make([]*SExpr, 0),
-		err:      nil,
+		Err:      nil,
 	}
 	for _, tree := range sexprs {
 		res, trace = EvalSExpr(tree, env, trace)
-		if trace.err != nil {
+		if trace.Err != nil {
 			return res, trace
 		}
 	}
@@ -455,28 +455,28 @@ func EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace) (interface
 				case numberAtom:
 					x, ok := atom.numberVal()
 					if !ok {
-						trace.err = ErrBadType
+						trace.Err = ErrBadType
 						return nil, trace
 					}
 					list.Elems = append(list.Elems, x)
 				case stringAtom:
 					x, ok := atom.stringVal()
 					if !ok {
-						trace.err = ErrBadType
+						trace.Err = ErrBadType
 						return nil, trace
 					}
 					list.Elems = append(list.Elems, x)
 				case boolAtom:
 					x, ok := atom.boolVal()
 					if !ok {
-						trace.err = ErrBadType
+						trace.Err = ErrBadType
 						return nil, trace
 					}
 					list.Elems = append(list.Elems, x)
 				case varAtom:
 					x, ok := atom.varName()
 					if !ok {
-						trace.err = ErrBadType
+						trace.Err = ErrBadType
 						return nil, trace
 					}
 					if isDefine && argNum == 0 {
@@ -484,14 +484,14 @@ func EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace) (interface
 					} else {
 						val, ok := env[x]
 						if !ok {
-							trace.err = ErrUndefinedVar
+							trace.Err = ErrUndefinedVar
 							return nil, trace
 						}
 						list.Elems = append(list.Elems, val)
 					}
 				default:
 					if !firstElem {
-						trace.err = ErrUnexpectedFunction
+						trace.Err = ErrUnexpectedFunction
 						return nil, trace
 					}
 					var ok bool
@@ -500,7 +500,7 @@ func EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace) (interface
 						isDefine = true
 					}
 					if !ok {
-						trace.err = ErrNoSuchFunction
+						trace.Err = ErrNoSuchFunction
 						return nil, trace
 					}
 					argNum--
@@ -508,7 +508,7 @@ func EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace) (interface
 			} else if operand.L != nil {
 				val, tr := EvalSExpr(operand.L, env, trace)
 				trace = tr
-				if trace.err != nil {
+				if trace.Err != nil {
 					return nil, trace
 				}
 				list.Elems = append(list.Elems, val)
@@ -525,7 +525,7 @@ func EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace) (interface
 	if op != nil {
 		resp, err := op(env, list.Elems...)
 		if err != nil {
-			trace.err = err
+			trace.Err = err
 			return nil, trace
 		}
 		return resp, trace

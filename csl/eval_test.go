@@ -52,7 +52,7 @@ func TestDefineVar(t *testing.T) {
 	}
 	env := make(map[string]interface{})
 	_, trace := Eval(expr, env)
-	if trace.err != nil {
+	if trace.Err != nil {
 		t.Fatal(trace)
 	}
 	expected := int64(10)
@@ -661,9 +661,9 @@ func printTrace(trace Trace) {
 }
 
 func checkResult(t *testing.T, expected interface{}, res interface{}, trace Trace) {
-	if trace.err != nil {
+	if trace.Err != nil {
 		printTrace(trace)
-		t.Fatal(trace.err)
+		t.Fatal(trace.Err)
 	}
 	if !reflect.DeepEqual(res, expected) {
 		t.Fatalf("got %v expected %v", res, expected)
