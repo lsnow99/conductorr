@@ -5,6 +5,17 @@ type CSLEvalError struct {
 	Internal bool
 }
 
+type Trace struct {
+	ExprTree []*SExpr
+	err      error
+}
+
+type List struct {
+	Elems []interface{}
+}
+
+type operation func(args ...interface{}) (interface{}, error)
+
 var (
 	ErrMismatchOperandTypes = &CSLEvalError{
 		Message: "incorrect operand type for + operation",
@@ -13,11 +24,14 @@ var (
 		Message: "incorrect number of operands",
 	}
 	ErrBadType = &CSLEvalError{
-		Message: "failed to cast type",
+		Message:  "failed to cast type",
 		Internal: true,
 	}
 	ErrNoSuchFunction = &CSLEvalError{
 		Message: "no such function",
+	}
+	ErrUnexpectedFunction = &CSLEvalError{
+		Message: "unexpected function call when parsing list",
 	}
 )
 
@@ -30,8 +44,8 @@ func (c CSLEvalError) Error() string {
 	return str
 }
 
-var builtins = map[atomType]func(args... interface{})(interface{}, error){
-	addAtom: func(args... interface{}) (interface{}, error) {
+var builtins = map[atomType]operation{
+	addAtom: func(args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -44,8 +58,8 @@ var builtins = map[atomType]func(args... interface{})(interface{}, error){
 			sum += x
 		}
 		return sum, nil
-	},	
-	subAtom: func(args... interface{}) (interface{}, error) {
+	},
+	subAtom: func(args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -62,7 +76,7 @@ var builtins = map[atomType]func(args... interface{})(interface{}, error){
 		}
 		return difference, nil
 	},
-	multAtom: func(args... interface{}) (interface{}, error) {
+	multAtom: func(args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -76,7 +90,7 @@ var builtins = map[atomType]func(args... interface{})(interface{}, error){
 		}
 		return product, nil
 	},
-	divAtom: func(args... interface{}) (interface{}, error) {
+	divAtom: func(args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -95,46 +109,77 @@ var builtins = map[atomType]func(args... interface{})(interface{}, error){
 	},
 }
 
-func Eval(sexpr *SExpr, env map[string]interface{}) (interface{}, error) {
+func Eval(sexpr *SExpr, env map[string]interface{}) (interface{}, Trace) {
+	trace := Trace{
+		ExprTree: make([]*SExpr, 0),
+		err:      nil,
+	}
+	return EvalSExpr(sexpr, env, trace)
+}
+
+func EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace) (interface{}, Trace) {
+	list := List{}
+	var op operation
+	var firstElem bool = true
 	if sexpr == nil {
-		return nil, nil
+		return nil, trace
 	}
 	if !sexpr.isAtom() {
-		if sexpr.L != nil && sexpr.L.isAtom() {
-			atom := sexpr.L
-			switch typ := sexpr.L.Type(); typ {
-			case numberAtom:
-				x, ok := atom.numberVal()
-				if !ok {
-					return nil, ErrBadType
-				}
-				return x, nil
-			case stringAtom:
-				x, ok := atom.stringVal()
-				if !ok {
-					return nil, ErrBadType
-				}
-				return x, nil
-			default:
-				op, ok := builtins[typ]
-				if !ok {
-					return nil, ErrNoSuchFunction
-				}
-				args := []interface{}{}
-				operand := sexpr.R
-				for operand != nil {
-					arg, err := Eval(operand, env)
-					if err != nil {
-						return nil, err
+		operand := sexpr
+		for operand != nil {
+			trace.ExprTree = append(trace.ExprTree, operand)
+			if operand.L != nil && operand.L.isAtom() {
+				atom := operand.L
+				switch typ := operand.L.Type(); typ {
+				case numberAtom:
+					x, ok := atom.numberVal()
+					if !ok {
+						trace.err = ErrBadType
+						return nil, trace
 					}
-					args = append(args, arg)
-					operand = operand.R
+					list.Elems = append(list.Elems, x)
+				case stringAtom:
+					x, ok := atom.stringVal()
+					if !ok {
+						trace.err = ErrBadType
+						return nil, trace
+					}
+					list.Elems = append(list.Elems, x)
+				default:
+					if !firstElem {
+						trace.err = ErrUnexpectedFunction
+						return nil, trace
+					}
+					var ok bool
+					op, ok = builtins[typ]
+					if !ok {
+						trace.err = ErrNoSuchFunction
+						return nil, trace
+					}
 				}
-				return op(args...)
+			} else if operand.L != nil {
+				val, tr := EvalSExpr(operand.L, env, trace)
+				if tr.err != nil {
+					return nil, trace
+				}
+				list.Elems = append(list.Elems, val)
 			}
-		} else if sexpr.L != nil {
-			return Eval(sexpr.L, env)
+			operand = operand.R
+			firstElem = false
 		}
 	}
-	return nil, nil
+
+	if len(list.Elems) == 1 {
+		return list.Elems[0], trace
+	}
+	if op != nil {
+		resp, err := op(list.Elems...)
+		if err != nil {
+			trace.err = err
+			return nil, trace
+		}
+		return resp, trace
+	} else {
+		return list, trace
+	}
 }
