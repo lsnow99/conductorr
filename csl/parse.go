@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 type atomType uint8
@@ -53,6 +54,17 @@ const (
 	multAtom
 	divAtom
 	defineAtom
+	inAtom
+	greaterAtom
+	allGreaterAtom
+	lessAtom
+	allLessAtom
+	greaterEqualAtom
+	allGreaterEqualAtom
+	lessEqualAtom
+	allLessEqualAtom
+	nthAtom
+	eqAtom
 )
 
 type CSLParserError struct {
@@ -131,13 +143,15 @@ func (se *SExpr) String() string {
 	return str
 }
 
+var numberPattern = regexp.MustCompile(`^(((\-)?([0-9]+)(?i)(Gi|G|Mi|M|Ki|K)?))`)
+
 // patterns returns the array of registered regex patterns
 func patterns() []Pattern {
 	return []Pattern{
 		{whitespaceToken, regexp.MustCompile(`^\s+`)},
 		{commentToken, regexp.MustCompile(`^;.*`)},
 		{stringToken, regexp.MustCompile(`^("(\\.|[^"])*")`)},
-		{numberToken, regexp.MustCompile(`^((([0-9]+)?\.)?[0-9]+)`)},
+		{numberToken, numberPattern},
 		{openToken, regexp.MustCompile(`^(\()`)},
 		{closeToken, regexp.MustCompile(`^(\))`)},
 		{symbolToken, regexp.MustCompile(`^('|[^\s();]+)`)},
@@ -226,11 +240,42 @@ func ParseAtomicToken(tok *Token) (*SExpr, error) {
 		sexpr.v = tok.val[1 : len(tok.val)-1]
 		sexpr.typ = stringAtom
 	case numberToken:
-		sexpr.v, err = strconv.ParseInt(tok.val, 10, 64)
+		matches := numberPattern.FindAllStringSubmatch(tok.val, -1)
+		if matches == nil {
+			return nil, ErrParseNumber
+		}
+		if len(matches) != 1 {
+			return nil, ErrParseNumber
+		}
+		if len(matches[0]) != 6 {
+			return nil, ErrParseNumber
+		}
+		// Parse base number
+		num, err := strconv.ParseInt(matches[0][4], 10, 64)
 		if err != nil {
 			err = ErrParseNumber
 			break
 		}
+		// Parse multiplier
+		switch strings.ToUpper(matches[0][5]) {
+		case "G":
+			num *= int64(1000000000)
+		case "M":
+			num *= int64(1000000)
+		case "K":
+			num *= int64(1000)
+		case "GI":
+			num *= (1 << 30)
+		case "MI":
+			num *= (1 << 20)
+		case "KI":
+			num *= (1 << 10)
+		}
+		// Flip sign if necessary
+		if matches[0][3] == "-" {
+			num *= -1
+		}
+		sexpr.v = num
 		sexpr.typ = numberAtom
 	case symbolToken:
 		switch tok.val {
@@ -244,6 +289,28 @@ func ParseAtomicToken(tok *Token) (*SExpr, error) {
 			sexpr.typ = divAtom
 		case "define":
 			sexpr.typ = defineAtom
+		case "in":
+			sexpr.typ = inAtom
+		case ">":
+			sexpr.typ = greaterAtom
+		case ">>":
+			sexpr.typ = allGreaterAtom
+		case "<":
+			sexpr.typ = lessAtom
+		case "<<":
+			sexpr.typ = allLessAtom
+		case ">=":
+			sexpr.typ = greaterEqualAtom
+		case ">>=":
+			sexpr.typ = allGreaterEqualAtom
+		case "<=":
+			sexpr.typ = lessEqualAtom
+		case "<<=":
+			sexpr.typ = allLessEqualAtom
+		case "nth":
+			sexpr.typ = nthAtom
+		case "eq":
+			sexpr.typ = eqAtom
 		default:
 			sexpr.typ = varAtom
 			sexpr.v = tok.val

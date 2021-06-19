@@ -1,5 +1,10 @@
 package csl
 
+import (
+	"reflect"
+	"strings"
+)
+
 type CSLEvalError struct {
 	Message  string
 	Internal bool
@@ -18,7 +23,7 @@ type operation func(env map[string]interface{}, args ...interface{}) (interface{
 
 var (
 	ErrMismatchOperandTypes = &CSLEvalError{
-		Message: "incorrect operand type for + operation",
+		Message: "incorrect operand types",
 	}
 	ErrNumOperands = &CSLEvalError{
 		Message: "incorrect number of operands",
@@ -35,6 +40,9 @@ var (
 	}
 	ErrUndefinedVar = &CSLEvalError{
 		Message: "undefined variable",
+	}
+	ErrOutOfBounds = &CSLEvalError{
+		Message: "index out of bounds",
 	}
 )
 
@@ -121,6 +129,216 @@ var builtins = map[atomType]operation{
 		varName, ok := x.varName()
 		env[varName] = args[1]
 		return nil, nil
+	},
+	inAtom: func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) != 2 {
+			return nil, ErrNumOperands
+		}
+		x := args[0]
+		l, ok := args[1].(List)
+		if !ok {
+			if str, ok := args[1].(string); ok {
+				if substr, ok := x.(string); ok {
+					return strings.Contains(str, substr), nil
+				} else {
+					return nil, ErrMismatchOperandTypes
+				}
+			}
+			return reflect.DeepEqual(x, args[1]), nil
+		}
+		for _, elem := range l.Elems {
+			if reflect.DeepEqual(elem, x) {
+				return true, nil
+			}		
+		}
+		return false, nil
+	},
+	greaterAtom: func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) < 2 {
+			return nil, ErrNumOperands
+		}
+		first, ok := args[0].(int64)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		for _, arg := range args[1:] {
+			x, ok := arg.(int64)
+			if !ok {
+				return nil, ErrMismatchOperandTypes
+			}
+			if !(first > x) {
+				return false, nil
+			}
+		}
+		return true, nil
+	},
+	lessAtom: func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) < 2 {
+			return nil, ErrNumOperands
+		}
+		first, ok := args[0].(int64)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		for _, arg := range args[1:] {
+			x, ok := arg.(int64)
+			if !ok {
+				return nil, ErrMismatchOperandTypes
+			}
+			if !(first < x) {
+				return false, nil
+			}
+		}
+		return true, nil
+	},
+	greaterEqualAtom: func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) < 2 {
+			return nil, ErrNumOperands
+		}
+		first, ok := args[0].(int64)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		for _, arg := range args[1:] {
+			x, ok := arg.(int64)
+			if !ok {
+				return nil, ErrMismatchOperandTypes
+			}
+			if !(first >= x) {
+				return false, nil
+			}
+		}
+		return true, nil
+	},
+	lessEqualAtom: func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) < 2 {
+			return nil, ErrNumOperands
+		}
+		first, ok := args[0].(int64)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		for _, arg := range args[1:] {
+			x, ok := arg.(int64)
+			if !ok {
+				return nil, ErrMismatchOperandTypes
+			}
+			if !(first <= x) {
+				return false, nil
+			}
+		}
+		return true, nil
+	},
+	allLessEqualAtom: func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) < 2 {
+			return nil, ErrNumOperands
+		}
+		prev, ok := args[0].(int64)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		for _, arg := range args[1:] {
+			x, ok := arg.(int64)
+			if !ok {
+				return nil, ErrMismatchOperandTypes
+			}
+			if !(prev <= x) {
+				return false, nil
+			}
+			prev = x
+		}
+		return true, nil
+	},
+	allGreaterEqualAtom: func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) < 2 {
+			return nil, ErrNumOperands
+		}
+		prev, ok := args[0].(int64)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		for _, arg := range args[1:] {
+			x, ok := arg.(int64)
+			if !ok {
+				return nil, ErrMismatchOperandTypes
+			}
+			if !(prev >= x) {
+				return false, nil
+			}
+			prev = x
+		}
+		return true, nil
+	},
+	allGreaterAtom: func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) < 2 {
+			return nil, ErrNumOperands
+		}
+		prev, ok := args[0].(int64)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		for _, arg := range args[1:] {
+			x, ok := arg.(int64)
+			if !ok {
+				return nil, ErrMismatchOperandTypes
+			}
+			if !(prev > x) {
+				return false, nil
+			}
+			prev = x
+		}
+		return true, nil
+	},
+	allLessAtom: func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) < 2 {
+			return nil, ErrNumOperands
+		}
+		prev, ok := args[0].(int64)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		for _, arg := range args[1:] {
+			x, ok := arg.(int64)
+			if !ok {
+				return nil, ErrMismatchOperandTypes
+			}
+			if !(prev < x) {
+				return false, nil
+			}
+			prev = x
+		}
+		return true, nil
+	},
+	nthAtom: func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) != 2 {
+			return nil, ErrNumOperands
+		}
+		i, ok := args[0].(int64)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		l, ok := args[1].(List)
+		if !ok {
+			l = List{
+				Elems: []interface{}{args[1]},
+			}
+		}
+		if i < 0 || i >= int64(len(l.Elems)) {
+			return nil, ErrOutOfBounds
+		}
+		return l.Elems[i], nil
+	},
+	eqAtom: func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) < 2 {
+			return nil, ErrNumOperands
+		}
+		first := args[0]
+		for _, arg := range args[1:] {
+			if !reflect.DeepEqual(first, arg) {
+				return false, nil
+			}
+		}
+		return true, nil
 	},
 }
 
