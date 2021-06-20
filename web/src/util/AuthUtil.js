@@ -7,31 +7,28 @@ const logout = () => {
 
 const getIDToken = () => {
     const idTok = localStorage.getItem("id_token")
-    return new Promise((resolve, reject) => {
-        if (idTok) {
-          console.log('resolving idTok')
-            resolve(idTok)
-        } else {
-            reject("not logged in")
-        }
-    })
+    if (!idTok) {
+      throw "not logged in"
+    }
+    return idTok
 }
 
 const setIDToken = (idTok) => {
-    localStorage.setItem("id_token", idTok)
+  localStorage.setItem("id_token", idTok)
+  store.commit('setLoggedIn', true)
 }
 
 const getLoggedInID = () => {
   return new Promise((resolve, reject) => {
-    getIDToken()
-      .then((jwt) => {
-        store.commit('setLoggedIn', true)
-        resolve(jwt_decode(jwt).sub);
-      })
-      .catch((err) => {
-        store.commit('setLoggedIn', false)
-        reject(err);
-      });
+    try {
+      let idTok = getIDToken()
+      store.commit('setLoggedIn', true)
+      resolve(jwt_decode(idTok).sub)
+    } catch (err) {
+      store.commit('setLoggedIn', false)
+      console.log(err)
+      reject(err)
+    }
   });
 };
 

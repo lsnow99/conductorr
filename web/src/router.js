@@ -87,7 +87,6 @@ router.beforeEach((to, from, next) => {
       */
   if (to.matched.some((record) => record.meta.logout)) {
     // TODO: Do logout
-    console.log('logging out')
     AuthUtil.logout();
     next({
       name: "auth"

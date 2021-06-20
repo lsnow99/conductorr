@@ -1,3 +1,7 @@
+BEGIN;
+
 DROP TABLE user;
 
 DROP TABLE media;
+
+COMMIT;

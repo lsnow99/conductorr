@@ -8,8 +8,5 @@ import PageWrapper from "../components/PageWrapper.vue";
 
 export default {
   components: { PageWrapper },
-  mounted() {
-    console.log("home Mounted")
-  }
 };
 </script>

@@ -1,10 +1,14 @@
 <template>
 <router-view></router-view>
+<toaster />
 </template>
 
 <script>
+import Toaster from "./components/Toaster.vue"
 export default {
-
+  components: {
+    Toaster
+  }
 }
 </script>
 

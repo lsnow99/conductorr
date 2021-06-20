@@ -13,11 +13,11 @@
       </div>
     </div>
     <release-profile
-      v-for="(profile, index) in modelValue"
+      v-for="(profile, index) in profiles"
       :ripTypes="ripTypes"
       :qualityTypes="qualityTypes"
       :resolutionTypes="resolutionTypes"
-      v-model="modelValue[index]"
+      v-model="profiles[index]"
       v-model:expanded="profile.expanded"
       :key="index"
     />
@@ -39,15 +39,8 @@ export default {
       qualityTypes: [],
       resolutionTypes: [],
       showNewProfileModal: false,
+      profiles: []
     };
-  },
-  props: {
-    modelValue: {
-      type: Array,
-      default: function () {
-        return [];
-      },
-    },
   },
   components: {
     ReleaseProfile,
@@ -55,21 +48,28 @@ export default {
   },
   methods: {
     expandAll() {
-      this.modelValue.forEach((element) => {
+      this.profiles.forEach((element) => {
         element.expanded = true;
       });
     },
     collapseAll() {
-      this.modelValue.forEach((element) => {
+      this.profiles.forEach((element) => {
         element.expanded = false;
       });
     },
     newProfileSubmitted() {
       this.showNewProfileModal = false;
-      this.$emit('reload')
+      this.loadProfiles()
+    },
+    loadProfiles() {
+      APIUtil.getProfiles().then((data) => {
+        this.profiles = data
+      })
     }
   },
   mounted() {
+    this.loadProfiles()
+
     APIUtil.getReleaseProfileCfg().then((data) => {
       this.ripTypes = data.rip_types;
       this.qualityTypes = data.quality_types;

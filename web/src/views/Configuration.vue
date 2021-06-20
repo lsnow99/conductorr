@@ -32,7 +32,7 @@
             >
           </span>
         </template>
-        <release-profiles @reload="loadConfiguration" v-model="configuration.releaseProfiles" />
+        <release-profiles />
       </o-tab-item>
       <o-tab-item>
         <template v-slot:header>
@@ -76,8 +76,6 @@ import PageWrapper from "../components/PageWrapper.vue";
 import ReleaseProfiles from "./ReleaseProfiles.vue";
 import Downloaders from "../components/Downloaders.vue";
 
-import APIUtil from "../util/APIUtil";
-
 export default {
   components: {
     PageWrapper,
@@ -85,23 +83,6 @@ export default {
     ReleaseProfiles,
     NewDownloader,
     Downloaders,
-  },
-  data() {
-    return {
-      configuration: {
-        releaseProfiles: [{ name: "Logan", sort: "code", filter: "morecode" }],
-      },
-    };
-  },
-  methods: {
-    loadConfiguration() {
-      APIUtil.getConfiguration().then((re) => {
-        this.configuration = re.data
-      })
-    }
-  },
-  mounted() {
-    this.loadConfiguration()
   },
 };
 </script>

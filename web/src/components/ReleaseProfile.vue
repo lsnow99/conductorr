@@ -36,13 +36,25 @@
             <o-switch class="mt-4 ml-4" v-model="quality.is_enabled"></o-switch>
           </div>
         </div>
+        Filter
         <prism-editor
-          class="my-editor height-200"
-          v-model="code"
+          class="my-editor height-400"
+          v-model="modelValue.filter"
           :highlight="highlighter"
           line-numbers
         ></prism-editor>
-        <o-button @click="save">Save</o-button>
+        Sorter
+        <prism-editor
+          class="my-editor height-400"
+          v-model="modelValue.sorter"
+          :highlight="highlighter"
+          line-numbers
+        ></prism-editor>
+        <o-button @click="save"
+          ><action-button :mode="loading ? 'loading' : ''"
+            >Save</action-button
+          ></o-button
+        >
       </div>
     </transition>
   </div>
@@ -88,7 +100,11 @@ import "prismjs/components/prism-clike";
 import "prismjs/components/prism-lisp";
 import "prismjs/themes/prism-tomorrow.css"; // import syntax highlighting styles
 
+import APIUtil from "../util/APIUtil";
+import ActionButton from "./ActionButton.vue";
+
 export default {
+  components: { ActionButton },
   data() {
     return {
       test: [0, 40],
@@ -101,6 +117,7 @@ export default {
   (check-res-bitrate a 'BLURAY-480P' 0 4000000)
 )`,
       qualityConfigs: [],
+      loading: false,
     };
   },
   props: {
@@ -150,7 +167,25 @@ export default {
     dragEnded(values) {
       console.log(values);
     },
-    save() {},
+    save() {
+      this.loading = true;
+      APIUtil.updateProfile(
+        this.modelValue.id,
+        this.modelValue.name,
+        this.modelValue.filter,
+        this.modelValue.sorter
+      )
+        .then(() => {
+          this.saved++
+          this.$store.commit("addToast", {
+            type: "success",
+            msg: `Saved profile ${this.modelValue.name}`
+          })
+        })
+        .finally(() => {
+          this.loading = false;
+        });
+    },
     highlighter(code) {
       // js highlight example
       return highlight(code, languages.lisp, "lisp");

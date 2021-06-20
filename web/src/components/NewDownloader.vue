@@ -81,7 +81,6 @@ export default {
   emits: ['close', 'selected'],
   methods: {
     next() {
-        console.log(this.selectedDownloader)
       this.$emit('selected', this.selectedDownloader)
     },
   },

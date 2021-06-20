@@ -7,6 +7,7 @@ require (
 	github.com/ethereum/go-ethereum v1.10.3
 	github.com/golang-migrate/migrate v3.5.4+incompatible
 	github.com/golang-migrate/migrate/v4 v4.14.1
+	github.com/gorilla/mux v1.8.0
 	github.com/hekmon/transmissionrpc v1.1.0
 	github.com/jackc/pgx/v4 v4.11.0
 	github.com/mattn/go-sqlite3 v1.14.7

@@ -1,13 +1,14 @@
+import store from "../store";
 import AuthUtil from "./AuthUtil";
 
-const doAPIReq = (url, options, useAuth = true) => {
+const doAPIReq = (url, options, useAuth = true, errMsg = undefined, ) => {
   return new Promise((resolve, reject) => {
     if (useAuth) {
       if (!options.headers) {
         options.headers = {};
       }
       try {
-        const tok = Promise.resolve(AuthUtil.getIDTOken);
+        const tok = AuthUtil.getIDToken();
         options.headers["Authorization"] = tok;
       } catch (err) {
         console.log(err);
@@ -26,8 +27,13 @@ const doAPIReq = (url, options, useAuth = true) => {
             resolve({});
           }
         } else {
-          console.log(resp.msg);
-          reject(`api request error: ${resp.msg}`);
+          if (errMsg) {
+            store.commit("addToast", {
+              type: "error",
+              msg: errMsg
+            })
+          }
+          reject(`api request error: `, resp.msg);
         }
       })
       .catch((err) => {
@@ -56,7 +62,8 @@ const signIn = (username, password) => {
         password,
       }),
     },
-    false
+    false,
+    "Authentication error"
   );
 };
 
@@ -70,7 +77,8 @@ const signUp = (username, password) => {
         password,
       }),
     },
-    false
+    false,
+    "Error registering user"
   );
 };
 
@@ -83,9 +91,38 @@ const createNewProfile = (name) => {
         name,
       }),
     },
-    true
+    true,
+    `Error creating profile ${name}`
   );
 };
+
+const getProfiles = () => {
+  return doAPIReq(
+    `/api/v1/profile`,
+    {
+      method: "GET"
+    },
+    true,
+    `Error getting profiles`
+  )
+}
+
+const updateProfile = (id, name, filter, sorter) => {
+  return doAPIReq(
+    `/api/v1/profile/${id}`,
+    {
+      method: "PUT",
+      body: JSON.stringify({
+        id,
+        name,
+        filter,
+        sorter
+      })
+    },
+    true,
+    `Error updating profile ${name}`
+  )
+}
 
 const getConfiguration = () => {
   return doAPIReq(
@@ -93,7 +130,7 @@ const getConfiguration = () => {
     {
       method: "GET",
     },
-    true
+    true,
   );
 };
 
@@ -103,7 +140,7 @@ const getReleaseProfileCfg = () => {
     {
       method: "GET",
     },
-    true
+    true,
   );
 };
 
@@ -112,6 +149,8 @@ export default {
   signUp,
   isFirstTime,
   createNewProfile,
+  getProfiles,
+  updateProfile,
   getConfiguration,
   getReleaseProfileCfg,
 };
