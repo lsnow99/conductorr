@@ -3,8 +3,6 @@
 @tailwind utilities;
 
 .o-btn {
-  @apply bg-yellow-500;
-  @apply border-yellow-600;
   @apply pt-2;
   @apply pb-2;
   @apply pl-4;
@@ -13,6 +11,18 @@
   @apply text-lg;
   @apply font-bold;
   @apply uppercase;
+  @apply bg-gray-500;
+  @apply border-gray-600;
+}
+
+.o-btn--primary {
+  @apply bg-yellow-500;
+  @apply border-yellow-600;
+}
+
+.o-btn--danger {
+  @apply bg-red-500;
+  @apply border-red-600;
 }
 
 .o-input:not(.o-inputit__input) {
@@ -57,8 +67,16 @@
   @apply bg-red-500;
 }
 
+.o-notification--success {
+  @apply bg-green-500;
+}
+
+.o-notices {
+  @apply z-50;
+}
+
 .o-notification {
-  @apply p-6;
+  @apply p-4;
   @apply -inset-4;
   @apply font-semibold;
   @apply rounded-md;
@@ -113,8 +131,19 @@
 
 .o-modal__content {
   @apply dark:bg-gray-600;
-  @apply w-auto;
   @apply rounded-xl;
+}
+
+.o-modal__content--fullscreen {
+  @apply h-full;
+  @apply container;
+  @apply flex;
+  @apply flex-col;
+}
+
+.o-modal__close {
+  @apply right-10;
+  @apply top-10;
 }
 
 .modal-card-header,
@@ -136,6 +165,7 @@
   @apply border-b-2;
   @apply border-gray-300;
   @apply p-4;
+  @apply flex-1;
 }
 
 .o-input__icon-left {

@@ -3,6 +3,7 @@ package settings
 import (
 	"errors"
 	"log"
+	"net"
 	"os"
 	"strconv"
 )
@@ -20,6 +21,9 @@ var DBPath string
 var JWTSecret string
 var JWTExpDays int
 var MigrationsPath string
+var OmdbApiKey string
+var ServerHost string
+var CookieDomain string
 
 func init() {
 
@@ -67,6 +71,30 @@ func init() {
 		DBPath = os.Getenv("DB_PATH")
 	} else {
 		DBPath = "./conductorr.db"
+	}
+
+	if os.Getenv("OMDB_API_KEY") != "" {
+		OmdbApiKey = os.Getenv("OMDB_API_KEY")
+	} else if DebugMode {
+		/*
+			This is a free API key that has a limit of 1,000 requests per day. It is intended
+			only for development purposes. Please do not abuse it. If you would like an API
+			key for yourself, you can get one for free at https://www.omdbapi.com
+		*/
+		OmdbApiKey = "2fe27f52"
+	}
+
+	// Set cookie domain from SERVER_HOST. Can parse IP addresses or hostnames
+	if os.Getenv("SERVER_HOST") != "" {
+		ServerHost = os.Getenv("SERVER_HOST")
+	} else {
+		ServerHost = "localhost"
+	}
+	addr := net.ParseIP(ServerHost)
+	if addr == nil && ServerHost != "localhost" {
+		CookieDomain = "." + ServerHost
+	} else {
+		CookieDomain = ServerHost
 	}
 
 	if os.Getenv("MIGRATIONS_PATH") != "" {

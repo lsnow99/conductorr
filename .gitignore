@@ -1,3 +1,4 @@
 cmd/conductorr/__debug_bin
 migrate.linux-amd64
 conductorr.db
+conductorr.db-journal

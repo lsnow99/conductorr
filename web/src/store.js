@@ -3,21 +3,13 @@ import { createStore } from "vuex";
 const store = createStore({
   state() {
     return {
-      loggedIn: false,
-      toasts: [],
+      loggedIn: true,
     };
   },
   mutations: {
     setLoggedIn(state, loggedIn) {
       state.loggedIn = loggedIn;
     },
-    addToast(state, toast) {
-      state.toasts.push(toast) - 1
-      setTimeout(() => {
-        const index = state.toasts.indexOf(toast)
-        state.toasts.splice(index, 1)
-      }, 4000)
-    }
   },
   getters: {
     loggedIn (state) {

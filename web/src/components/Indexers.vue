@@ -1,6 +1,6 @@
 <template>
     <section>
-        <o-button @click="showNewIndexerModal = true">Add Indexer</o-button>
+        <o-button variant="primary" @click="showNewIndexerModal = true">Add Indexer</o-button>
         <o-modal v-model:active="showNewIndexerModal">
             <new-indexer @close="showNewIndexerModal = false"/>
         </o-modal>

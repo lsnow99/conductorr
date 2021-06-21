@@ -16,7 +16,7 @@ CREATE TABLE media(
     poster BLOB,
     parent_media_id INTEGER,
     tmdb_id INTEGER,
-    imdb_id VARCHAR(8),
+    imdb_id VARCHAR(10),
     tmdb_rating INTEGER,
     imdb_rating INTEGER,
     runtime INTEGER,

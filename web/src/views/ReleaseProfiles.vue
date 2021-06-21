@@ -2,12 +2,12 @@
   <section>
     <div class="flex flex-row justify-between mt-3">
       <div>
-        <o-button icon-left="plus" @click="showNewProfileModal = true">New Profile</o-button>
+        <o-button variant="primary" icon-left="plus" @click="showNewProfileModal = true">New Profile</o-button>
       </div>
       <div>
-        <o-button icon-left="plus-square" @click="expandAll" class="mr-3"
+        <o-button variant="primary" icon-left="plus-square" @click="expandAll" class="mr-3"
           >Expand All</o-button
-        ><o-button icon-left="minus-square" @click="collapseAll"
+        ><o-button variant="primary" icon-left="minus-square" @click="collapseAll"
           >Collapse All</o-button
         >
       </div>
@@ -19,6 +19,7 @@
       :resolutionTypes="resolutionTypes"
       v-model="profiles[index]"
       v-model:expanded="profile.expanded"
+      @reload="loadProfiles"
       :key="index"
     />
     <o-modal v-model:active="showNewProfileModal">

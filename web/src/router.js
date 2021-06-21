@@ -7,6 +7,7 @@ import Configuration from "./views/Configuration.vue";
 import Calendar from "./views/Calendar.vue";
 import System from "./views/System.vue";
 import AuthUtil from "./util/AuthUtil.js";
+import store from "./store"
 import { faTachometerAlt } from "@fortawesome/free-solid-svg-icons";
 
 const routes = [
@@ -100,15 +101,14 @@ router.beforeEach((to, from, next) => {
       */
   if (to.matched.some((record) => record.meta.requiresAuth)) {
     // Only allow the requested route if the logged in check passes
-    AuthUtil.getLoggedInID()
-      .then(() => {
-        next()
-      }).catch(() => {
-        AuthUtil.logout();
-        next({
-          name: 'auth'
-        })
+    if (store.getters.loggedIn) {
+      next()
+    } else {
+      AuthUtil.logout();
+      next({
+        name: 'auth'
       })
+    }
   } else {
     next();
   }

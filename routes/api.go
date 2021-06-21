@@ -2,7 +2,9 @@ package routes
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
+	"net"
 	"net/http"
 	"time"
 
@@ -12,17 +14,23 @@ import (
 
 var whitelistPaths = []string{
 	"/api/v1/signin",
-	"/api/v1/first_time",
+	"/api/v1/firstTime",
+	"/api/v1/checkAuth",
 }
+
+var authErr = errors.New("token failed validation")
+
+const UserAuthKey = "id_token"
+const MaxCookieAgeSecs = 60 * 60 * 24 * 14
 
 type response struct {
-	Success bool        `json:"success"`
-	Data    interface{} `json:"data"`
-	Msg     string      `json:"msg"`
-	Token   string      `json:"token"`
+	Success    bool        `json:"success"`
+	Data       interface{} `json:"data"`
+	Msg        string      `json:"msg"`
+	FailedAuth bool        `json:"failed_auth"`
 }
 
-func Respond(w http.ResponseWriter, err error, data interface{}, authorize bool) {
+func Respond(w http.ResponseWriter, reqHost string, err error, data interface{}, authorize bool) {
 	r := response{}
 	if err != nil {
 		r.Success = false
@@ -31,13 +39,38 @@ func Respond(w http.ResponseWriter, err error, data interface{}, authorize bool)
 		r.Success = true
 	}
 	r.Data = data
+	r.FailedAuth = err == authErr
 
 	if authorize {
 		tok, err := GenerateIDToken()
 		if err != nil {
 			r.Success = false
 		} else {
-			r.Token = tok
+			var cookieDomain string
+			addr := net.ParseIP(reqHost)
+			if addr == nil && reqHost != "localhost" {
+				cookieDomain = "." + reqHost
+			} else {
+				cookieDomain = reqHost
+			}
+
+			cookie := http.Cookie{
+				Name:     UserAuthKey,
+				Value:    tok,
+				Path:     "/",
+				Domain:   cookieDomain,
+				Expires:  time.Now().Add(time.Second * MaxCookieAgeSecs),
+				Secure:   !settings.DebugMode,
+				HttpOnly: true,
+			}
+
+			if settings.DebugMode {
+				cookie.SameSite = http.SameSiteLaxMode
+			} else {
+				cookie.SameSite = http.SameSiteStrictMode
+			}
+
+			http.SetCookie(w, &cookie)
 		}
 	}
 
@@ -59,7 +92,6 @@ func GenerateIDToken() (string, error) {
 
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 		var shouldAuth = true
 		for _, path := range whitelistPaths {
 			if path == r.URL.Path {
@@ -68,16 +100,21 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		}
 
 		if shouldAuth {
-			tok := r.Header.Get("Authorization")
-			_, err := jwt.Parse(tok, func(t *jwt.Token) (interface{}, error) {
-				return []byte(settings.JWTSecret), nil
-			})
-			if err != nil {
-				Respond(w, err, nil, false)
+			tok, err := r.Cookie(UserAuthKey)
+			if err != nil || !checkToken(tok.Value) {
+				Respond(w, "", authErr, nil, false)
 				return
 			}
 		}
+
 		// Call the next handler, which can be another middleware in the chain, or the final handler.
 		next.ServeHTTP(w, r)
 	})
+}
+
+func checkToken(tok string) bool {
+	_, err := jwt.Parse(tok, func(t *jwt.Token) (interface{}, error) {
+		return []byte(settings.JWTSecret), nil
+	})
+	return err == nil
 }

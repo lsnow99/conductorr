@@ -1,6 +1,6 @@
 <template>
   <section>
-    <o-button @click="showDownloaderModal = true">Add Downloader</o-button>
+    <o-button @click="showDownloaderModal = true" variant="primary">Add Downloader</o-button>
     <o-modal v-model:active="showDownloaderModal" @close="close">
       <new-downloader v-if="downloader == ''" @close="close" @selected="selectedDownloader"/>
       <edit-transmission v-if="downloader == 'transmission'" @close="close"/>

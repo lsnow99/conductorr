@@ -1,37 +1,35 @@
 import store from "../store";
 import AuthUtil from "./AuthUtil";
 
-const doAPIReq = (url, options, useAuth = true, errMsg = undefined, ) => {
+const doAPIReq = (url, options, errMsg = undefined) => {
   return new Promise((resolve, reject) => {
-    if (useAuth) {
-      if (!options.headers) {
-        options.headers = {};
-      }
-      try {
-        const tok = AuthUtil.getIDToken();
-        options.headers["Authorization"] = tok;
-      } catch (err) {
-        console.log(err);
-      }
-    }
     fetch(url, options)
       .then((re) => re.json())
       .then((resp) => {
         if (resp.success) {
-          if (resp.token) {
-            AuthUtil.setIDToken(resp.token);
-          }
-          if (resp.data) {
+          if (resp.data !== undefined) {
             resolve(resp.data);
           } else {
             resolve({});
           }
         } else {
-          if (errMsg) {
-            store.commit("addToast", {
-              type: "error",
-              msg: errMsg
-            })
+          if (resp.failed_auth) {
+            AuthUtil.logout();
+            this.$oruga.notification.open({
+              duration: 3000,
+              message: `Authentication error`,
+              position: "bottom-right",
+              variant: "danger",
+              closable: false,
+            });
+          } else if (errMsg) {
+            this.$oruga.notification.open({
+              duration: 3000,
+              message: errMsg,
+              position: "bottom-right",
+              variant: "danger",
+              closable: false,
+            });
           }
           reject(`api request error: `, resp.msg);
         }
@@ -43,13 +41,9 @@ const doAPIReq = (url, options, useAuth = true, errMsg = undefined, ) => {
 };
 
 const isFirstTime = () => {
-  return doAPIReq(
-    `/api/v1/first_time`,
-    {
-      method: "GET",
-    },
-    false
-  );
+  return doAPIReq(`/api/v1/firstTime`, {
+    method: "GET",
+  });
 };
 
 const signIn = (username, password) => {
@@ -62,7 +56,6 @@ const signIn = (username, password) => {
         password,
       }),
     },
-    false,
     "Authentication error"
   );
 };
@@ -77,7 +70,6 @@ const signUp = (username, password) => {
         password,
       }),
     },
-    false,
     "Error registering user"
   );
 };
@@ -91,8 +83,27 @@ const createNewProfile = (name) => {
         name,
       }),
     },
-    true,
     `Error creating profile ${name}`
+  );
+};
+
+const searchLibrary = (query, contentType, page) => {
+  return doAPIReq(
+    `/api/v1/library/search?q=${query}&type=${contentType}&page=${page}`,
+    {
+      method: "GET",
+    },
+    `Error searching library`
+  );
+};
+
+const searchNew = (query, contentType, page) => {
+  return doAPIReq(
+    `/api/v1/new/search?q=${query}&type=${contentType}&page=${page}`,
+    {
+      method: "GET",
+    },
+    `Error searching for media`
   );
 };
 
@@ -100,12 +111,11 @@ const getProfiles = () => {
   return doAPIReq(
     `/api/v1/profile`,
     {
-      method: "GET"
+      method: "GET",
     },
-    true,
     `Error getting profiles`
-  )
-}
+  );
+};
 
 const updateProfile = (id, name, filter, sorter) => {
   return doAPIReq(
@@ -116,32 +126,49 @@ const updateProfile = (id, name, filter, sorter) => {
         id,
         name,
         filter,
-        sorter
-      })
+        sorter,
+      }),
     },
-    true,
     `Error updating profile ${name}`
-  )
-}
-
-const getConfiguration = () => {
-  return doAPIReq(
-    `/api/v1/configuration`,
-    {
-      method: "GET",
-    },
-    true,
   );
 };
 
-const getReleaseProfileCfg = () => {
+const deleteProfile = (id) => {
   return doAPIReq(
-    `/api/v1/releaseProfileCfg`,
+    `/api/v1/profile/${id}`,
     {
-      method: "GET",
+      method: "DELETE",
     },
-    true,
+    `Error deleting profile`
   );
+};
+
+const getConfiguration = () => {
+  return doAPIReq(`/api/v1/configuration`, {
+    method: "GET",
+  });
+};
+
+const getReleaseProfileCfg = () => {
+  return doAPIReq(`/api/v1/releaseProfileCfg`, {
+    method: "GET",
+  });
+};
+
+const addMedia = (imdb_id) => {
+  return doAPIReq(
+    `/api/v1/add/${imdb_id}`,
+    {
+      method: "POST",
+    },
+    `Error adding media`
+  );
+};
+
+const checkAuth = () => {
+  return doAPIReq(`/api/v1/checkAuth`, {
+    method: "GET",
+  });
 };
 
 export default {
@@ -151,6 +178,11 @@ export default {
   createNewProfile,
   getProfiles,
   updateProfile,
+  deleteProfile,
   getConfiguration,
   getReleaseProfileCfg,
+  searchLibrary,
+  searchNew,
+  addMedia,
+  checkAuth,
 };

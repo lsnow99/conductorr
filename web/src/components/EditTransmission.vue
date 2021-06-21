@@ -1,12 +1,6 @@
 <template>
   <header class="modal-card-header">
     <p class="modal-card-title">New Indexer</p>
-    <o-icon
-      clickable
-      native-type="button"
-      icon="times"
-      @click="$emit('close')"
-    />
   </header>
   <section class="modal-card-content">
     <div>
@@ -45,10 +39,10 @@
   <footer class="modal-card-footer">
     <o-button @click="$emit('close')">Cancel</o-button>
     <div>
-      <o-button @click="test" class="mr-3">
+      <o-button variant="primary" @click="test" class="mr-3">
         <action-button :mode="testingMode"> Test </action-button>
       </o-button>
-      <o-button @click="save">Save</o-button>
+      <o-button variant="primary" @click="save">Save</o-button>
     </div>
   </footer>
 </template>

@@ -1,5 +1,5 @@
 <template>
-  <div :class="mode?'loading':''">
+  <div :class="mode ? 'loading' : ''">
     <slot />
   </div>
   <div v-if="mode === 'loading'" class="loader" />
@@ -12,7 +12,7 @@
   visibility: hidden;
 }
 
-.loader{
+.loader {
   content: "";
   position: absolute;
   top: 50%;
@@ -35,6 +35,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -47,14 +48,18 @@ export default {
     mode: {
       type: String,
       default: function () {
-        return '';
+        return "";
       },
     },
   },
   computed: {
     contentVisible() {
-      return !(this.mode === "loading" || this.mode === "success" || this.mode === "error")
-    }
-  }
+      return !(
+        this.mode === "loading" ||
+        this.mode === "success" ||
+        this.mode === "error"
+      );
+    },
+  },
 };
 </script>

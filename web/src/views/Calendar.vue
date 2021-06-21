@@ -4,7 +4,7 @@
       <div class="flex flex-col">
         <div class="flex flex-col items-center sm:flex-row justify-between">
           <div>
-            <o-button @click="resetDate">Today</o-button>
+            <o-button variant="primary" @click="resetDate">Today</o-button>
           </div>
           <div class="overflow-hidden rounded-lg inline-block mt-4 sm:mt-0">
             <o-radio v-model="viewType" name="viewType" native-value="monthly"
@@ -19,13 +19,13 @@
           </div>
         </div>
         <div class="flex flex-row justify-between mt-4">
-          <o-button @click="goPrev">
+          <o-button variant="primary" @click="goPrev">
             <vue-fontawesome icon="chevron-left" />
           </o-button>
-          <div class="text-2xl font-semibold">
+          <div class="text-2xl font-semibold text-center">
             {{ niceDateRange }}
           </div>
-          <o-button @click="goNext">
+          <o-button variant="primary" @click="goNext">
             <vue-fontawesome icon="chevron-right" />
           </o-button>
         </div>
@@ -42,13 +42,13 @@
           </div>
           <div class="overflow-y-auto height-full">
             <div
-                v-for="(event, index) in date.events"
-                :key="index"
-                :class="eventClass(index)"
-                class="text-lg p-2"
+              v-for="(event, index) in date.events"
+              :key="index"
+              :class="eventClass(index)"
+              class="text-lg p-2"
             >
-                <span class="font-bold">{{ event.time }}</span
-                > <span class="font-semibold">{{ event.title }}</span>
+              <span class="font-bold">{{ event.time }}</span>
+              <span class="font-semibold">{{ event.title }}</span>
             </div>
           </div>
         </div>
@@ -60,19 +60,24 @@
 <style scoped>
 .date {
   height: 12rem;
+
   @apply bg-gray-700;
 }
+
 .monthly-wrapper {
   @apply grid;
   @apply grid-cols-7;
 }
+
 .weekly-wrapper {
   @apply grid;
   @apply grid-cols-7;
 }
+
 .daily-date {
   height: 32rem;
 }
+
 .weekly-date {
   height: 32rem;
 }
@@ -127,13 +132,13 @@ export default {
     },
   },
   mounted() {
-    const screenWidth = window.innerWidth
+    const screenWidth = window.innerWidth;
     if (screenWidth < 768) {
-      this.viewType = "daily"
+      this.viewType = "daily";
     } else if (screenWidth < 1024) {
-      this.viewType = "weekly"
+      this.viewType = "weekly";
     } else {
-      this.viewType = "monthly"
+      this.viewType = "monthly";
     }
   },
   computed: {
@@ -159,30 +164,32 @@ export default {
           dates.push({
             day: curDate.day,
             gray: false,
-            events: [{
-                time: '5:00pm',
-                title: 'Westworld'
-            },
-            {
-                time: '7:00pm',
-                title: 'Family Guy'
-            },
-            {
-                time: '9:00pm',
-                title: 'Bloodline'
-            },
-            {
-                time: '10:00pm',
-                title: 'Invincible'
-            },
-            {
-                time: '10:00pm',
-                title: 'True Detective'
-            },
-            {
-                time: '11:00pm',
-                title: 'Watchmen'
-            }],
+            events: [
+              {
+                time: "5:00pm",
+                title: "Westworld",
+              },
+              {
+                time: "7:00pm",
+                title: "Family Guy",
+              },
+              {
+                time: "9:00pm",
+                title: "Bloodline",
+              },
+              {
+                time: "10:00pm",
+                title: "Invincible",
+              },
+              {
+                time: "10:00pm",
+                title: "True Detective",
+              },
+              {
+                time: "11:00pm",
+                title: "Watchmen",
+              },
+            ],
           });
         }
         for (let i = monthEndDoW; i < 6; i++) {
@@ -201,30 +208,32 @@ export default {
           dates.push({
             day: curDate.day,
             gray: false,
-            events: [{
-                time: '5:00pm',
-                title: 'Westworld'
-            },
-            {
-                time: '7:00pm',
-                title: 'Family Guy'
-            },
-            {
-                time: '9:00pm',
-                title: 'Bloodline'
-            },
-            {
-                time: '10:00pm',
-                title: 'Invincible'
-            },
-            {
-                time: '10:00pm',
-                title: 'True Detective'
-            },
-            {
-                time: '11:00pm',
-                title: 'Watchmen'
-            }],
+            events: [
+              {
+                time: "5:00pm",
+                title: "Westworld",
+              },
+              {
+                time: "7:00pm",
+                title: "Family Guy",
+              },
+              {
+                time: "9:00pm",
+                title: "Bloodline",
+              },
+              {
+                time: "10:00pm",
+                title: "Invincible",
+              },
+              {
+                time: "10:00pm",
+                title: "True Detective",
+              },
+              {
+                time: "11:00pm",
+                title: "Watchmen",
+              },
+            ],
           });
         }
       } else if (this.viewType === "daily") {
@@ -244,7 +253,10 @@ export default {
     },
     niceDateRange() {
       if (this.viewType === "monthly") {
-        return this.selectedDate.toLocaleString({ month: 'long', year: 'numeric' });
+        return this.selectedDate.toLocaleString({
+          month: "long",
+          year: "numeric",
+        });
       } else if (this.viewType === "weekly") {
         const weekStart = this.selectedDate.startOf("week");
         const weekEnd = this.selectedDate.endOf("week");

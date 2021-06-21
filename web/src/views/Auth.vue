@@ -18,8 +18,10 @@
       </o-field>
       <div class="flex flex-row justify-between mt-2">
         <div />
-        <o-button v-if="first_time" @click="submit">Register</o-button>
-        <o-button v-else @click="submit">Login</o-button>
+        <o-button variant="primary" v-if="first_time" @click="submit"
+          >Register</o-button
+        >
+        <o-button variant="primary" v-else @click="submit">Login</o-button>
       </div>
     </section>
     <o-loading
@@ -57,6 +59,7 @@ export default {
       APIUtil.signIn(this.username, this.password)
         .then(() => {
           this.$router.push({ name: "home" });
+          this.$store.commit("setLoggedIn", true);
         })
         .catch((msg) => {
           this.$oruga.notification.open({
@@ -64,8 +67,9 @@ export default {
             message: `Error logging in: ${msg}`,
             position: "bottom-right",
             variant: "danger",
-            closable: true,
+            closable: false,
           });
+          this.$store.commit("setLoggedIn", false);
         })
         .finally(() => {
           this.loading = false;
@@ -78,7 +82,7 @@ export default {
           message: `Passwords do not match`,
           position: "bottom-right",
           variant: "danger",
-          closable: true,
+          closable: false,
         });
         return;
       }
@@ -93,7 +97,7 @@ export default {
             message: `Error signing up: ${msg}`,
             position: "bottom-right",
             variant: "danger",
-            closable: true,
+            closable: false,
           });
         })
         .finally(() => {
@@ -102,22 +106,20 @@ export default {
     },
   },
   mounted() {
-    AuthUtil.getLoggedInID()
-      .then(() => {
+      if (this.$store.getters.loggedIn) {
         this.$router.push({ name: "home" });
-      })
-      .catch(() => {
+      } else {
         APIUtil.isFirstTime()
           .then(() => {
             this.first_time = true;
           })
-          .catch((err) => {
+          .catch(() => {
             this.first_time = false;
           })
           .finally(() => {
             this.loading = false;
           });
-      });
+      }
   },
 };
 </script>

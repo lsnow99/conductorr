@@ -13,6 +13,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/jackc/pgx/v4"
 	"github.com/lsnow99/conductorr/settings"
+	"github.com/lsnow99/conductorr/constant"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -68,6 +69,21 @@ func Init() error {
 		return err
 	}
 
+	if err := initUser(); err != nil {
+		return err
+	}
+	if err := initGenres(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func Close() error {
+	return db.Close()
+}
+
+func initUser() error {
 	rows, err := db.Query(`SELECT count(*) FROM user`)
 	if err != nil {
 		return err
@@ -85,10 +101,39 @@ func Init() error {
 	if count == 0 {
 		settings.ResetUser = true
 	}
-
 	return nil
 }
 
-func Close() error {
-	return db.Close()
+func initGenres() error {
+	for _, genre := range constant.Geners {
+		_, err := db.Exec(`
+			INSERT INTO genre (name)
+			SELECT (?)
+			WHERE NOT EXISTS (
+				SELECT * FROM genre
+				WHERE name = ?)
+			`, genre, genre)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func ptrToNullString(str *string) (nstr sql.NullString) {
+	if str == nil {
+		return nstr
+	}
+	nstr.String = *str
+	nstr.Valid = true
+	return nstr
+}
+
+func ptrToNullInt32(i *int) (ni sql.NullInt32) {
+	if i == nil {
+		return ni
+	}
+	ni.Int32 = int32(*i)
+	ni.Valid = true
+	return ni
 }

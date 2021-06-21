@@ -1,12 +1,6 @@
 <template>
   <header class="modal-card-header">
     <p class="modal-card-title">New Downloader</p>
-    <o-icon
-      clickable
-      native-type="button"
-      icon="times"
-      @click="$emit('close')"
-    />
   </header>
   <section class="modal-card-content">
     <div v-if="!showNext" class="grid md:grid-cols-2">
@@ -29,7 +23,7 @@
   <footer class="modal-card-footer">
     <o-button @click="$emit('close')">Cancel</o-button>
     <div>
-      <o-button :disabled="selectedDownloader == ''" @click="next"
+      <o-button variant="primary" :disabled="selectedDownloader == ''" @click="next"
         >Next</o-button
       >
     </div>

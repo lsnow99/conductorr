@@ -14,7 +14,7 @@
     </div>
     <transition name="fade">
       <div v-if="computedExpanded" class="p-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2">
+        <!-- <div class="grid grid-cols-1 sm:grid-cols-2">
           <div
             v-for="quality in qualityConfigs"
             :key="quality.name"
@@ -35,7 +35,7 @@
             </div>
             <o-switch class="mt-4 ml-4" v-model="quality.is_enabled"></o-switch>
           </div>
-        </div>
+        </div> -->
         Filter
         <prism-editor
           class="my-editor height-400"
@@ -50,11 +50,18 @@
           :highlight="highlighter"
           line-numbers
         ></prism-editor>
-        <o-button @click="save"
-          ><action-button :mode="loading ? 'loading' : ''"
-            >Save</action-button
-          ></o-button
-        >
+        <div class="flex flex-row justify-between mt-4">
+          <o-button variant="danger" @click="deleteProfile">
+            <action-button :mode="loadingDelete ? 'loading' : ''"
+              >Delete</action-button
+            ></o-button
+          >
+          <o-button variant="primary" @click="save"
+            ><action-button :mode="loadingSave ? 'loading' : ''"
+              >Save</action-button
+            ></o-button
+          >
+        </div>
       </div>
     </transition>
   </div>
@@ -117,9 +124,11 @@ export default {
   (check-res-bitrate a 'BLURAY-480P' 0 4000000)
 )`,
       qualityConfigs: [],
-      loading: false,
+      loadingDelete: false,
+      loadingSave: false,
     };
   },
+  emits: ["reload"],
   props: {
     expanded: {
       type: Boolean,
@@ -168,7 +177,7 @@ export default {
       console.log(values);
     },
     save() {
-      this.loading = true;
+      this.loadingSave = true;
       APIUtil.updateProfile(
         this.modelValue.id,
         this.modelValue.name,
@@ -176,14 +185,33 @@ export default {
         this.modelValue.sorter
       )
         .then(() => {
-          this.saved++
-          this.$store.commit("addToast", {
-            type: "success",
-            msg: `Saved profile ${this.modelValue.name}`
-          })
+          this.$oruga.notification.open({
+            duration: 3000,
+            message: `Saved profile ${this.modelValue.name}`,
+            position: "bottom-right",
+            variant: "success",
+            closable: false,
+          });
         })
         .finally(() => {
-          this.loading = false;
+          this.loadingSave = false;
+        });
+    },
+    deleteProfile() {
+      this.loadingDelete = true;
+      APIUtil.deleteProfile(this.modelValue.id)
+        .then(() => {
+          this.$oruga.notification.open({
+            duration: 3000,
+            message: `Deleted profile ${this.modelValue.name}`,
+            position: "bottom-right",
+            variant: "success",
+            closable: false,
+          });
+          this.$emit("reload");
+        })
+        .finally(() => {
+          this.loadingDelete = false;
         });
     },
     highlighter(code) {

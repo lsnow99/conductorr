@@ -17,35 +17,35 @@ type AuthInput struct {
 func SignIn(w http.ResponseWriter, r *http.Request) {
 	creds := AuthInput{}
 	if err := json.NewDecoder(r.Body).Decode(&creds); err != nil {
-		Respond(w, err, nil, false)
+		Respond(w, r.Host, err, nil, false)
 		return
 	}
 	if err := dbstore.CheckUser(r.Context(), creds.Username, creds.Password); err != nil {
-		Respond(w, err, nil, false)
+		Respond(w, r.Host, err, nil, false)
 		return
 	}
-	Respond(w, nil, nil, true)
+	Respond(w, r.Host, nil, nil, true)
 }
 
 func SignUp(w http.ResponseWriter, r *http.Request) {
 	creds := AuthInput{}
 	if err := json.NewDecoder(r.Body).Decode(&creds); err != nil {
-		Respond(w, err, nil, false)
+		Respond(w, r.Host, err, nil, false)
 		return
 	}
 	if err := dbstore.SetUser(r.Context(), creds.Username, creds.Password); err != nil {
-		Respond(w, err, nil, false)
+		Respond(w, r.Host, err, nil, false)
 		return
 	}
 	// Don't allow further registrations for the duration of this server instance
 	settings.ResetUser = false
-	Respond(w, nil, nil, true)
+	Respond(w, r.Host, nil, nil, true)
 }
 
 func FirstTime(w http.ResponseWriter, r *http.Request) {
 	if settings.ResetUser {
-		Respond(w, nil, nil, false)
+		Respond(w, r.Host, nil, nil, false)
 		return
 	}
-	Respond(w, errors.New("not first time"), nil, false)
+	Respond(w, r.Host, errors.New("not first time"), nil, false)
 }
