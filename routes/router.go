@@ -12,6 +12,7 @@ func GetRouter() http.Handler {
 	r := mux.NewRouter()
 	
 	// Unauthenticated routes
+	r.HandleFunc("/api/csl.wasm", LoadCSL).Methods("GET")
 	r.HandleFunc("/api/v1/signin", SignIn).Methods("POST")
 	r.HandleFunc("/api/v1/firstTime", FirstTime).Methods("GET")
 	r.HandleFunc("/api/v1/checkAuth", CheckAuth).Methods("GET")
@@ -20,11 +21,13 @@ func GetRouter() http.Handler {
 	r.HandleFunc("/api/v1/profile", CreateProfile).Methods("POST")
 	r.HandleFunc("/api/v1/profile/{id}", UpdateProfile).Methods("PUT")
 	r.HandleFunc("/api/v1/profile/{id}", DeleteProfile).Methods("DELETE")
+	r.HandleFunc("/api/v1/profile/{id}", GetProfile).Methods("GET")
 	r.HandleFunc("/api/v1/profile", GetProfiles).Methods("GET")
 	r.HandleFunc("/api/v1/library/search", SearchLibraryByTitle).Methods("GET")
 	r.HandleFunc("/api/v1/new/search", SearchNewByTitle).Methods("GET")
 	r.HandleFunc("/api/v1/add/{imdb_id}", AddMedia).Methods("POST")
 	r.HandleFunc("/api/v1/poster/{id}", GetPoster).Methods("GET")
+	r.HandleFunc("/api/v1/media/{id}", GetMedia).Methods("GET")
 	r.Use(AuthMiddleware)
 
 	if settings.ResetUser {

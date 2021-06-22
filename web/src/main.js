@@ -30,6 +30,16 @@ import {
   faPlusSquare,
   faMinusSquare,
   faPlus,
+  faBook,
+  faAngleRight,
+  faAngleLeft,
+  faTimesCircle,
+  faHeart,
+  faQuestionCircle,
+  faExternalLinkAlt,
+  faCaretUp,
+  faCaretDown,
+  faPlay,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
@@ -78,6 +88,17 @@ library.add(faFilter);
 library.add(faPlusSquare);
 library.add(faMinusSquare);
 library.add(faPlus);
+library.add(faBook);
+library.add(faAngleRight);
+library.add(faAngleLeft);
+library.add(faTimesCircle);
+library.add(faHeart);
+library.add(faGitAlt);
+library.add(faQuestionCircle);
+library.add(faExternalLinkAlt);
+library.add(faCaretUp);
+library.add(faCaretDown);
+library.add(faPlay);
 
 const app = createApp(App);
 app.use(store);
@@ -95,4 +116,5 @@ app.mount("#app");
 Import VueX devtools fix from https://github.com/erdemefe07/vuex4-devtools-support
 */
 import { addDevtools } from "./vuexdev";
+import { faGitAlt } from "@fortawesome/free-brands-svg-icons";
 addDevtools(app, store);

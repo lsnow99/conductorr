@@ -1,7 +1,8 @@
 <template>
-  <section class="container mx-auto mt-4">
+  <div class="flex flex-col min-h-screen">
+  <section class="container mx-auto mt-4 pb-4">
     <section class="menu" :class="expandMenu ? 'expanded' : ''">
-      <div class="visible xl:hidden pl-5 pr-5 pt-6 pb-6 text-xl">
+      <div class="visible lg:hidden pl-5 pr-5 pt-6 pb-6 text-xl">
         <div
           class="
             border-solid border-4
@@ -21,7 +22,7 @@
       <router-link
         v-for="route in routeTree"
         :key="route.name"
-        class="route-item reg-route hidden xl:visible"
+        class="route-item reg-route hidden lg:visible"
         :class="curRouteName === route.name ? 'cur-route' : ''"
         :to="{ name: route.name }"
       >
@@ -30,7 +31,7 @@
       </router-link>
       <router-link
         :to="{ name: 'logout' }"
-        class="route-item ml-auto logout align-middle flex items-center"
+        class="route-item ml-auto logout flex items-center"
       >
         <vue-fontawesome icon="sign-out-alt" />
         Logout
@@ -40,16 +41,44 @@
       <slot />
     </section>
   </section>
+  <footer class="mt-auto">
+    <div class="container mx-auto flex flex-row justify-center items-center bg-gray-700 rounded-t-md h-14">
+      <o-tooltip variant="info">
+        <a href="javascript:void()" class="text-gray-500 hover:text-red-500">
+          <vue-fontawesome class="footer-icon" icon="heart" />
+        </a>
+        <template v-slot:content>Donate <vue-fontawesome class="ml-1" icon="external-link-alt" /></template>
+      </o-tooltip>
+      <o-tooltip variant="info">
+        <a href="https://github.com/lsnow99/conductorr" target="_blank" class="text-gray-500 hover:text-blue-500">
+          <vue-fontawesome class="footer-icon" :icon="['fab', 'git-alt']" />
+        </a>
+        <template v-slot:content>Source Code <vue-fontawesome class="ml-1" icon="external-link-alt" /></template>
+      </o-tooltip>
+      <o-tooltip variant="info">
+        <a href="https://github.com/lsnow99/conductorr/issues" target="_blank" class="text-gray-500 hover:text-green-500">
+          <vue-fontawesome class="footer-icon" icon="question-circle" />
+        </a>
+        <template v-slot:content>Support <vue-fontawesome class="ml-1" icon="external-link-alt" /></template>
+      </o-tooltip>
+    </div>
+  </footer>
+  </div>
 </template>
 
 <style scoped>
+.footer-icon {
+  @apply text-2xl;
+  @apply mx-3;
+}
+
 .route-item {
   @apply px-5 py-4 text-xl cursor-pointer hover:bg-yellow-400 focus:bg-yellow-400 uppercase text-white;
 }
 
 .reg-route {
   @apply hidden;
-  @apply xl:block;
+  @apply lg:block;
 }
 
 .expanded > .reg-route {
@@ -57,17 +86,17 @@
 }
 
 .menu {
-  @apply rounded-md flex flex-row xl:flex-row bg-gray-600 overflow-hidden sm:m-0 m-2;
+  @apply rounded-md flex flex-row lg:flex-row bg-gray-600 overflow-hidden sm:m-0 m-2;
 }
 
 .menu.expanded {
   @apply flex-col;
-  @apply xl:flex-row;
+  @apply lg:flex-row;
 }
 
 .expanded > .logout {
   @apply ml-0;
-  @apply xl:ml-auto;
+  @apply lg:ml-auto;
 }
 
 .cur-route {
@@ -87,14 +116,9 @@ export default {
           icon: "home",
         },
         {
-          title: "Movies",
-          name: "movies",
-          icon: "film",
-        },
-        {
-          title: "TV Shows",
-          name: "tv",
-          icon: "tv",
+          title: "Library",
+          name: "library",
+          icon: "book",
         },
         {
           title: "Calendar",

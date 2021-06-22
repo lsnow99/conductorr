@@ -37,29 +37,17 @@
           </div>
         </div> -->
         Filter
-        <prism-editor
-          class="my-editor height-400"
-          v-model="modelValue.filter"
-          :highlight="highlighter"
-          line-numbers
-        ></prism-editor>
+        <CSLEditor readonly v-model="modelValue.filter" />
         Sorter
-        <prism-editor
-          class="my-editor height-400"
-          v-model="modelValue.sorter"
-          :highlight="highlighter"
-          line-numbers
-        ></prism-editor>
+        <CSLEditor readonly v-model="modelValue.sorter" />
         <div class="flex flex-row justify-between mt-4">
           <o-button variant="danger" @click="deleteProfile">
             <action-button :mode="loadingDelete ? 'loading' : ''"
               >Delete</action-button
             ></o-button
           >
-          <o-button variant="primary" @click="save"
-            ><action-button :mode="loadingSave ? 'loading' : ''"
-              >Save</action-button
-            ></o-button
+          <o-button variant="primary" @click="edit"
+            >Edit</o-button
           >
         </div>
       </div>
@@ -67,51 +55,14 @@
   </div>
 </template>
 
-<style scoped>
-/* required class */
-.my-editor {
-  /* we dont use `language-` classes anymore so thats why we need to add background and text color manually */
-  background: #2d2d2d;
-  color: #ccc;
-
-  /* you must provide font-family font-size line-height. Example: */
-  font-family: Fira code, Fira Mono, Consolas, Menlo, Courier, monospace;
-  font-size: 14px;
-  line-height: 1.5;
-  padding: 5px;
-}
-
-/* optional class for removing the outline */
-.prism-editor__textarea:focus {
-  outline: none;
-}
-
-/* attempt to remove word-wrap */
-.prism-editor__textarea {
-  width: 999999px !important;
-}
-
-.prism-editor-wrapper .prism-editor__editor,
-.prism-editor-wrapper .prism-editor__textarea {
-  white-space: pre !important;
-}
-
-.prism-editor__container {
-  overflow-x: scroll !important;
-}
-</style>
 
 <script>
-import { highlight, languages } from "prismjs/components/prism-core";
-import "prismjs/components/prism-clike";
-import "prismjs/components/prism-lisp";
-import "prismjs/themes/prism-tomorrow.css"; // import syntax highlighting styles
-
 import APIUtil from "../util/APIUtil";
 import ActionButton from "./ActionButton.vue";
+import CSLEditor from './CSLEditor.vue';
 
 export default {
-  components: { ActionButton },
+  components: { ActionButton, CSLEditor },
   data() {
     return {
       test: [0, 40],
@@ -128,7 +79,7 @@ export default {
       loadingSave: false,
     };
   },
-  emits: ["reload"],
+  emits: ["reload", "update:expanded"],
   props: {
     expanded: {
       type: Boolean,
@@ -214,10 +165,9 @@ export default {
           this.loadingDelete = false;
         });
     },
-    highlighter(code) {
-      // js highlight example
-      return highlight(code, languages.lisp, "lisp");
-    },
+    edit() {
+      this.$router.push({name: 'editProfile', params: {profile_id: this.modelValue.id}})
+    }
   },
   computed: {
     computedExpanded: {

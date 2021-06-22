@@ -25,6 +25,15 @@ func GetProfiles() ([]*Profile, error) {
 	return profiles, rows.Err()
 }
 
+func GetProfileByID(id int) (Profile, error) {
+	row := db.QueryRow(`SELECT id, name, filter, sorter FROM profile WHERE id = ?`, id)
+
+	profile := Profile{}
+	err := row.Scan(&profile.ID, &profile.Name, &profile.Filter, &profile.Sorter)
+
+	return profile, err
+}
+
 func UpdateProfile(id int, name, filter, sorter string) error {
 	_, err := db.Exec(`UPDATE profile SET name = ?, filter = ?, sorter = ? WHERE id = ?`, name, filter, sorter, id)
 	return err

@@ -171,6 +171,18 @@ const checkAuth = () => {
   });
 };
 
+const getMedia = (id) => {
+  return doAPIReq(`/api/v1/media/${id}`, {
+    method: "GET"
+  })
+}
+
+const getProfile = (id) => {
+  return doAPIReq(`/api/v1/profile/${id}`, {
+    method: "GET"
+  })
+}
+
 export default {
   signIn,
   signUp,
@@ -185,4 +197,6 @@ export default {
   searchNew,
   addMedia,
   checkAuth,
+  getMedia,
+  getProfile
 };

@@ -12,6 +12,12 @@ Conductorr backend requires [go](https://golang.org/) version 1.16 to be install
 
 Within VS Code, select "Launch Backend" from the debug menu. You can set breakpoints and debug as usual within VS Code. To run the backend without VS Code, use the command `CONDUCTORR_DEBUG=true go run ./cmd/conductorr`
 
+### WebAssembly CSL Module
+
+Conductorr's profile editor page uses a WebAssembly module to do client-side validation and parsing of CSL scripts. Before developing on the frontend, you must generate this module using `./build.sh` (or `./build.bat` on Windows). This script assumes you have [Brotli](https://github.com/google/brotli) installed and available in your PATH.
+
+> NOTE: If you skip this step, it is likely you will run into an issue where `wasm_exec.js` is not found when testing locally in the frontend, or when building for production.
+
 ### Frontend Development
 
 Conductorr is built on Vue 3 using Vite and [TailwindCSS](https://tailwindcss.com/).

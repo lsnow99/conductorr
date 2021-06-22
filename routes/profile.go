@@ -20,6 +20,15 @@ type Profile struct {
 	Sorter string `json:"sorter,omitempty"`
 }
 
+func NewProfileFromDB(dbProfile *dbstore.Profile) (Profile) {
+	profile := Profile{}
+	profile.ID = dbProfile.ID
+	profile.Name = dbProfile.Name.String
+	profile.Filter = dbProfile.Filter.String
+	profile.Sorter = dbProfile.Sorter.String
+	return profile
+}
+
 func GetProfiles(w http.ResponseWriter, r *http.Request) {
 	dbProfiles, err := dbstore.GetProfiles()
 	if err != nil {
@@ -29,15 +38,21 @@ func GetProfiles(w http.ResponseWriter, r *http.Request) {
 
 	profiles := make([]Profile, len(dbProfiles))
 	for i, dbProfile := range dbProfiles {
-		profile := Profile{}
-		profile.ID = dbProfile.ID
-		profile.Name = dbProfile.Name.String
-		profile.Filter = dbProfile.Filter.String
-		profile.Sorter = dbProfile.Sorter.String
-		profiles[i] = profile
+		profiles[i] = NewProfileFromDB(dbProfile)
 	}
 
 	Respond(w, r.Host, nil, profiles, true)
+}
+
+func GetProfile(w http.ResponseWriter, r *http.Request) {
+	profileIDStr := mux.Vars(r)["id"]
+	profileID, err := strconv.Atoi(profileIDStr)
+	if err != nil {
+		Respond(w, r.Host, err, nil, true)
+		return
+	}
+	profile, err := dbstore.GetProfileByID(profileID)
+	Respond(w, r.Host, err, NewProfileFromDB(&profile), true)
 }
 
 func CreateProfile(w http.ResponseWriter, r *http.Request) {

@@ -1,14 +1,14 @@
 import { createRouter, createWebHistory } from "vue-router";
 import Home from "./views/Home.vue";
 import Auth from "./views/Auth.vue";
-import TV from "./views/TV.vue";
-import Movies from "./views/Movies.vue";
 import Configuration from "./views/Configuration.vue";
+import EditProfile from "./views/EditProfile.vue";
+import Library from "./views/Library.vue";
+import Media from "./views/Media.vue";
 import Calendar from "./views/Calendar.vue";
 import System from "./views/System.vue";
 import AuthUtil from "./util/AuthUtil.js";
 import store from "./store"
-import { faTachometerAlt } from "@fortawesome/free-solid-svg-icons";
 
 const routes = [
   {
@@ -28,20 +28,29 @@ const routes = [
     },
   },
   {
-    path: "/movies",
-    name: 'movies',
-    component: Movies,
+    path: "/library",
+    name: 'library',
+    component: Library,
     meta: {
       requiresAuth: true,
     },
   },
   {
-    path: "/tv",
-    name: 'tv',
-    component: TV,
+    path: "/media/:media_id",
+    name: 'media',
+    component: Media,
     meta: {
       requiresAuth: true,
-    },
+      navName: 'library'
+    }
+  },
+  {
+    path: "/editProfile/:profile_id",
+    name: 'editProfile',
+    component: EditProfile,
+    meta: {
+      requiresAuth: true,
+    }
   },
   {
     path: "/calendar",

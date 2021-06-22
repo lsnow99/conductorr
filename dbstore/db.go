@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"path/filepath"
+	"time"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database"
@@ -12,8 +13,8 @@ import (
 	"github.com/golang-migrate/migrate/v4/database/sqlite3"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/jackc/pgx/v4"
-	"github.com/lsnow99/conductorr/settings"
 	"github.com/lsnow99/conductorr/constant"
+	"github.com/lsnow99/conductorr/settings"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -47,7 +48,7 @@ func Init() error {
 
 		driver, err = sqlite3.WithInstance(db, &sqlite3.Config{
 			DatabaseName: "main",
-			NoTxWrap: true,
+			NoTxWrap:     true,
 		})
 		if err != nil {
 			return err
@@ -136,4 +137,13 @@ func ptrToNullInt32(i *int) (ni sql.NullInt32) {
 	ni.Int32 = int32(*i)
 	ni.Valid = true
 	return ni
+}
+
+func ptrToNullTime(t *time.Time) (nt sql.NullTime) {
+	if t == nil {
+		return nt
+	}
+	nt.Time = *t
+	nt.Valid = true
+	return nt
 }

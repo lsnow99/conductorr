@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -16,7 +17,7 @@ import (
 const apiHost = "www.omdbapi.com"
 
 var yearPattern = regexp.MustCompile(`^(\d{4})(\-|–)?(\d{4})?`)
-var runtimePattern = regexp.MustCompile(`^([0-9]+) mins`)
+var runtimePattern = regexp.MustCompile(`^([0-9]+) min`)
 
 type SearchResults struct {
 	Search          []SearchResult
@@ -56,17 +57,17 @@ type IndividualResult struct {
 		Source string
 		Value  string
 	}
-	Metascore    int
-	MetascoreStr string `json:"Metascore"`
-	ImdbRating   float32
+	Metascore     int
+	MetascoreStr  string `json:"Metascore"`
+	ImdbRating    float32
 	ImdbRatingStr string `json:"imdbRating"`
-	ImdbVotes    string `json:"imdbVotes"`
-	DVD          string
-	BoxOffice    string
-	Production   string
-	Website      string
-	Response     string
-	Error        string
+	ImdbVotes     string `json:"imdbVotes"`
+	DVD           string
+	BoxOffice     string
+	Production    string
+	Website       string
+	Response      string
+	Error         string
 }
 
 type HTTPClient interface {
@@ -96,6 +97,8 @@ func SearchByTitle(title string, contentType string, page int) (*SearchResults, 
 		q.Set("type", "series")
 	} // else include all content types
 	u.RawQuery = q.Encode()
+
+	log.Println(u.String())
 
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
@@ -161,13 +164,14 @@ func SearchByImdbID(imdbID string) (*IndividualResult, error) {
 		return nil, errors.New(result.Error)
 	}
 
-	result.Sanitize()
-	return result, nil
+	return result, result.Sanitize()
 }
 
 func (ir *IndividualResult) Sanitize() error {
 	// Sanitize the underlying SearchResult
-	ir.SearchResult.Sanitize()
+	if err := ir.SearchResult.Sanitize(); err != nil {
+		return err
+	}
 
 	/*
 		Parse the runtime into a number of minutes

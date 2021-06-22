@@ -4,7 +4,7 @@
   </header>
   <section class="modal-card-content">
     <o-field label="Name">
-      <o-input v-model="name" />
+      <o-input @keydown.enter="submit" v-model="name" />
     </o-field>
   </section>
   <footer class="modal-card-footer">

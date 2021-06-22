@@ -17,7 +17,7 @@ export default {
     APIUtil.checkAuth().then((isLoggedIn) => {
       this.$store.commit("setLoggedIn", isLoggedIn);
       if (isLoggedIn) {
-        this.$router.push({ name: "home" });
+        // this.$router.push({ name: "home" });
       } else {
         this.$router.push({ name: "auth" });
       }

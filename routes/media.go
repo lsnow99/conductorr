@@ -62,3 +62,14 @@ func GetPoster(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(poster)
 }
+
+func GetMedia(w http.ResponseWriter, r *http.Request) {
+	mediaIDStr := mux.Vars(r)["id"]
+	mediaID, err := strconv.Atoi(mediaIDStr)
+	if err != nil {
+		Respond(w, r.Host, err, nil, true)
+		return
+	}
+	media, err := dbstore.GetMediaByID(mediaID)
+	Respond(w, r.Host, err, NewMediaResponseFromDB(media), true)
+}

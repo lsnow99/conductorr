@@ -231,8 +231,13 @@ func Parse(script string) ([]*SExpr, error) {
 				}
 				startIndex = index + 1
 				trees = append(trees, tree)
+			} else if opened < 0 {
+				return nil, ErrSyntaxCloseParens
 			}
 		}
+	}
+	if opened != 0 {
+		return nil, ErrSyntaxEOF
 	}
 	return trees, nil
 }

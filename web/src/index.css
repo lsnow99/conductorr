@@ -90,10 +90,8 @@
 .o-radio {
   @apply bg-yellow-500;
   @apply border-yellow-600;
-  @apply pt-2;
-  @apply pb-2;
-  @apply pl-4;
-  @apply pr-4;
+  @apply py-2;
+  @apply px-4;
   @apply text-lg;
   @apply font-bold;
   @apply uppercase;
@@ -101,6 +99,21 @@
 }
 
 .o-radio--checked {
+  @apply bg-yellow-600;
+  @apply border-yellow-700;
+}
+
+.o-pag__link {
+  @apply bg-yellow-500;
+  @apply border-yellow-600;
+  @apply py-2;
+  @apply px-4;
+  @apply rounded-lg;
+  @apply mx-1;
+  @apply font-bold;
+}
+
+.o-pag__link--current {
   @apply bg-yellow-600;
   @apply border-yellow-700;
 }
@@ -221,6 +234,19 @@
   @apply bg-yellow-500;
 }
 
+.o-tip__content--info {
+  @apply bg-gray-600;
+}
+
+/* .o-tip__arrow--info {
+  @apply border-gray-600;
+  @apply rotate-45;
+} */
+
+.o-tip__arrow--info {
+  border-top-color: #4b5563;
+}
+
 .o-slide--disabled {
   @apply opacity-50;
 }
@@ -228,4 +254,44 @@
 .o-tip__content {
   @apply rounded-lg;
   @apply p-2;
+}
+
+.o-input__icon-right {
+  @apply mr-2;
+  @apply text-gray-800;
+}
+
+.o-pag__previous,
+.o-pag__next {
+  @apply text-xl;
+}
+
+.o-drop__item {
+  @apply w-40;
+  @apply p-2;
+  @apply bg-yellow-500;
+  @apply hover:bg-yellow-600;
+}
+
+.o-drop__menu {
+  @apply rounded-md;
+  @apply overflow-hidden;
+  @apply py-2;
+  @apply bg-yellow-500;
+  @apply font-bold;
+  @apply uppercase;
+}
+
+.o-pag__link--disabled {
+  @apply opacity-60;
+}
+
+.o-chk__check {
+  @apply bg-yellow-500;
+  @apply p-3;
+  @apply rounded-md;
+}
+
+.o-chk__label {
+  @apply ml-1;
 }

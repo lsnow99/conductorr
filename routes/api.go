@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -16,6 +17,7 @@ var whitelistPaths = []string{
 	"/api/v1/signin",
 	"/api/v1/firstTime",
 	"/api/v1/checkAuth",
+	"/api/csl.wasm",
 }
 
 var authErr = errors.New("token failed validation")
@@ -46,6 +48,9 @@ func Respond(w http.ResponseWriter, reqHost string, err error, data interface{},
 		if err != nil {
 			r.Success = false
 		} else {
+			if i := strings.Index(reqHost, ":"); i > 0 {
+				reqHost = reqHost[:i]
+			}
 			var cookieDomain string
 			addr := net.ParseIP(reqHost)
 			if addr == nil && reqHost != "localhost" {

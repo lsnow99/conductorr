@@ -1,13 +1,18 @@
 package dbstore
 
-import "time"
+import (
+	"strings"
+	"time"
+)
 
 func SearchMedia(title string, contentType string, page int) ([]*Media, int, error) {
+	title = strings.ToUpper(title)
 	row := db.QueryRow(`
 		SELECT COUNT(id)
 		FROM media
-		WHERE UPPER(title) LIKE '%?%'
-		`, title)
+		WHERE UPPER(title) LIKE '%' || ? || '%'
+		AND content_type LIKE '%' || ? || '%'
+		`, title, contentType)
 
 	var count int
 
@@ -20,8 +25,11 @@ func SearchMedia(title string, contentType string, page int) ([]*Media, int, err
 			parent_media_id, tmdb_id, imdb_id, tmdb_rating, imdb_rating,
 			runtime
 		FROM media
-		WHERE UPPER(title) LIKE '%?%' LIMIT 10 OFFSET ?
-		`, title, title, (page-1)*10)
+		WHERE UPPER(title) LIKE '%' || ? || '%' 
+		AND content_type LIKE '%' || ? || '%'
+		LIMIT 10 
+		OFFSET ?
+		`, title, contentType, (page-1)*10)
 
 	if err != nil {
 		return nil, 0, err
@@ -40,7 +48,7 @@ func SearchMedia(title string, contentType string, page int) ([]*Media, int, err
 		medias = append(medias, &media)
 	}
 
-	return medias, 0, nil
+	return medias, count, nil
 }
 
 func AddMedia(title *string, description *string, releasedAt *time.Time, endedAt *time.Time,
@@ -52,15 +60,18 @@ func AddMedia(title *string, description *string, releasedAt *time.Time, endedAt
 		return 0, err
 	}
 
+	released := ptrToNullTime(releasedAt)
+	ended := ptrToNullTime(endedAt)
+
 	row := tx.QueryRow(`
 		INSERT INTO media (title, description, released_at, ended_at, content_type,
 			parent_media_id, tmdb_id, imdb_id, tmdb_rating, imdb_rating, runtime, poster)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		RETURNING id
-		`, ptrToNullString(title), ptrToNullString(description), releasedAt, endedAt,
-		ptrToNullString(contentType), ptrToNullInt32(parentMediaID), ptrToNullInt32(tmdbID),
-		ptrToNullString(imdbID), ptrToNullInt32(tmdbID), ptrToNullInt32(imdbRating),
-		ptrToNullInt32(runtime), poster)
+		`, ptrToNullString(title), ptrToNullString(description), released, 
+		ended,	ptrToNullString(contentType), ptrToNullInt32(parentMediaID), 
+		ptrToNullInt32(tmdbID),	ptrToNullString(imdbID), ptrToNullInt32(tmdbID), 
+		ptrToNullInt32(imdbRating),	ptrToNullInt32(runtime), poster)
 
 	err = row.Scan(&id)
 	if err != nil {
@@ -108,4 +119,21 @@ func GetPoster(mediaID int) (poster []byte, err error) {
 	err = row.Scan(&poster)
 
 	return poster, err
+}
+
+func GetMediaByID(id int) (media Media, err error) {
+	row := db.QueryRow(`
+		SELECT id, title, description, released_at, ended_at, content_type,
+			parent_media_id, tmdb_id, imdb_id, tmdb_rating, imdb_rating,
+			runtime
+		FROM media
+		WHERE id = ?
+		`, id)
+
+	err = row.Scan(&media.ID, &media.Title, &media.Description, &media.ReleasedAt,
+		&media.EndedAt, &media.ContentType, &media.ParentMediaID,
+		&media.TmdbID, &media.ImdbID, &media.TmdbRating, &media.ImdbRating,
+		&media.Runtime)
+
+	return media, err
 }
