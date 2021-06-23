@@ -96,7 +96,7 @@ func GetMediaByImdbID(imdbID string) (media Media, err error) {
 	row := db.QueryRow(`
 		SELECT id, title, description, released_at, ended_at, content_type,
 			parent_media_id, tmdb_id, imdb_id, tmdb_rating, imdb_rating,
-			runtime
+			runtime, status, path, size
 		FROM media
 		WHERE imdb_id = ?
 		`, imdbID)
@@ -104,7 +104,7 @@ func GetMediaByImdbID(imdbID string) (media Media, err error) {
 	err = row.Scan(&media.ID, &media.Title, &media.Description, &media.ReleasedAt,
 		&media.EndedAt, &media.ContentType, &media.ParentMediaID,
 		&media.TmdbID, &media.ImdbID, &media.TmdbRating, &media.ImdbRating,
-		&media.Runtime)
+		&media.Runtime, &media.Status, &media.Path, &media.Size)
 
 	return media, err
 }

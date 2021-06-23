@@ -20,6 +20,9 @@ CREATE TABLE media(
     tmdb_rating INTEGER,
     imdb_rating INTEGER,
     runtime INTEGER,
+    status VARCHAR(32) NOT NULL DEFAULT 'missing',
+    path VARCHAR(2048),
+    size BIGINT,
     FOREIGN KEY(parent_media_id) REFERENCES media(id) 
 );
 

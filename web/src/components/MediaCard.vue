@@ -65,6 +65,8 @@
 </style>
 
 <script>
+import MediaUtil from "../util/MediaUtil"
+
 export default {
   props: {
     media: {
@@ -77,6 +79,7 @@ export default {
       },
     },
   },
+  mixins: [MediaUtil],
   emits: ["click"],
   computed: {
     year() {

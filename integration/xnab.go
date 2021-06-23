@@ -41,7 +41,7 @@ func (x *Xnab) Search(media Media) ([]newznab.NZB, error) {
 	if media.ContentType == Movie {
 		if x.caps.Searching.MovieSearch.Available == "yes" {
 			if strings.Contains(x.caps.Searching.MovieSearch.SupportedParams, "imdbid") {
-				return x.client.SearchWithIMDB([]int{newznab.CategoryMovieAll}, media.ImdbID)
+				return x.client.SearchWithIMDB([]int{newznab.CategoryMovieAll}, strings.ReplaceAll(media.ImdbID, "t", ""))
 			}
 			return x.client.SearchWithQuery([]int{newznab.CategoryMovieAll}, media.QueryString(), "movie")
 		}

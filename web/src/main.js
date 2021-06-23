@@ -45,6 +45,7 @@ import {
   faExclamationTriangle,
   faInfoCircle,
   faAngleDoubleDown,
+  faStar,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
@@ -109,6 +110,8 @@ library.add(faExclamationCircle);
 library.add(faExclamationTriangle);
 library.add(faInfoCircle);
 library.add(faAngleDoubleDown);
+library.add(faImdb);
+library.add(faStar);
 
 const app = createApp(App);
 app.use(store);
@@ -126,5 +129,5 @@ app.mount("#app");
 Import VueX devtools fix from https://github.com/erdemefe07/vuex4-devtools-support
 */
 import { addDevtools } from "./vuexdev";
-import { faGitAlt } from "@fortawesome/free-brands-svg-icons";
+import { faGitAlt, faImdb } from "@fortawesome/free-brands-svg-icons";
 addDevtools(app, store);
