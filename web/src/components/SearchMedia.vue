@@ -1,6 +1,6 @@
 <template>
   <div class="md:flex flex-col md:flex-row justify-between items-center">
-    <o-field label="Search" class="flex-1 mx-2">
+    <o-field label="Search" class="flex-1">
       <o-input
         @change="search"
         type="text"

@@ -25,4 +25,7 @@ type Media struct {
 	TmdbRating    sql.NullInt32
 	ImdbRating    sql.NullInt32
 	Runtime       sql.NullInt32
+	Status        string
+	Path          sql.NullString
+	Size          sql.NullInt64
 }

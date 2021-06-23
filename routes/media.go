@@ -38,7 +38,7 @@ func AddMedia(w http.ResponseWriter, r *http.Request) {
 
 	genres := strings.Split(result.Genre, ", ")
 
-	id, err := dbstore.AddMedia(&result.Title, &result.Plot, nil, nil,
+	id, err := dbstore.AddMedia(&result.Title, &result.Plot, &result.ReleasedAt, &result.EndedAt,
 		&result.Type, nil, nil, &result.ImdbID, nil, &imdbRating, &result.Runtime,
 		&poster, genres)
 	Respond(w, r.Host, err, id, true)
