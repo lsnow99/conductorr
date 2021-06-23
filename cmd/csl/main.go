@@ -7,14 +7,43 @@ import (
 )
 
 func Validate(this js.Value, args []js.Value) interface{} {
-	_, err := csl.Parse(args[0].String())
-	if err != nil {
-		return err.Error()
-	}
-	return ""
+	callback := args[len(args)-1:][0]
+	go func(){
+		_, err := csl.Parse(args[0].String())
+		if err != nil {
+			callback.Invoke(false, err.Error())
+			return
+		}
+		callback.Invoke(true, js.Null())
+	}()
+	return nil
+}
+
+func Run(this js.Value, args []js.Value) interface{} {
+	callback := args[len(args)-1:][0]
+	go func(){
+		sexprs, err := csl.Parse(args[0].String())
+		if err != nil {
+			callback.Invoke(false, err.Error())
+			return
+		}
+		env := make(map[string]interface{})
+		result, trace := csl.Eval(sexprs, env)
+		if trace.Err != nil {
+			callback.Invoke(false, err.Error())
+			return
+		}
+		if list, ok := result.(csl.List); ok {
+			callback.Invoke(true, js.Null(), list.Elems)
+			return
+		}
+		callback.Invoke(true, js.Null(), result)
+	}()
+	return nil
 }
 
 func main() {
 	js.Global().Set("Validate", js.FuncOf(Validate))
+	js.Global().Set("Run", js.FuncOf(Run))
 	select {}
 }

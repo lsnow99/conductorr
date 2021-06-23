@@ -1,8 +1,8 @@
 <template>
   <prism-editor
-    class="my-editor"
-    style="height: 100%"
+    class="my-editor h-full"
     v-model="computedValue"
+    @keydown.enter.ctrl="enterPressed"
     :highlight="highlighter"
     :readonly="readonly"
     line-numbers
@@ -18,27 +18,24 @@
 
   /* you must provide font-family font-size line-height. Example: */
   font-family: Fira code, Fira Mono, Consolas, Menlo, Courier, monospace;
-  font-size: 14px;
+  font-size: 20px;
   line-height: 1.5;
   padding: 5px;
 }
 
 /* optional class for removing the outline */
-.prism-editor__textarea:focus {
+:deep(.prism-editor__textarea:focus) {
   outline: none;
 }
 
 /* attempt to remove word-wrap */
-.prism-editor__textarea {
-  width: 999999px !important;
+:deep(.prism-editor__textarea) {
+  /* width: 5000px !important; */
 }
-
-.prism-editor-wrapper .prism-editor__editor,
-.prism-editor-wrapper .prism-editor__textarea {
+:deep(.prism-editor__editor) {
   white-space: pre !important;
 }
-
-.prism-editor__container {
+:deep(.prism-editor__container) {
   overflow-x: scroll !important;
 }
 </style>
@@ -65,11 +62,15 @@ export default {
       },
     },
   },
-  emits: ['update:modelValue'],
+  emits: ['update:modelValue', 'submit'],
   methods: {
     highlighter(code) {
       return highlight(code, languages.lisp, "lisp");
     },
+    enterPressed(event) {
+      event.stopImmediatePropagation()
+      this.$emit('submit')
+    }
   },
   computed: {
     computedValue: {

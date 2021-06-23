@@ -43,6 +43,18 @@ func TestEvalList(t *testing.T) {
 	checkResult(t, expected, res, trace)
 }
 
+func TestSingleString(t *testing.T) {
+	expr, err := Parse(`
+	("hello")
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	result, trace := Eval(expr, nil)
+	expected := "hello"
+	checkResult(t, expected, result, trace)
+}
+
 func TestDefineVar(t *testing.T) {
 	expr, err := Parse(`
 	(define x 10)

@@ -40,6 +40,11 @@ import {
   faCaretUp,
   faCaretDown,
   faPlay,
+  faCheckCircle,
+  faExclamationCircle,
+  faExclamationTriangle,
+  faInfoCircle,
+  faAngleDoubleDown,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
@@ -99,6 +104,11 @@ library.add(faExternalLinkAlt);
 library.add(faCaretUp);
 library.add(faCaretDown);
 library.add(faPlay);
+library.add(faCheckCircle);
+library.add(faExclamationCircle);
+library.add(faExclamationTriangle);
+library.add(faInfoCircle);
+library.add(faAngleDoubleDown);
 
 const app = createApp(App);
 app.use(store);

@@ -1,10 +1,10 @@
 <template>
   <section>
-    <div class="flex flex-row justify-between mt-3">
-      <div>
+    <div class="flex flex-col sm:flex-row justify-between mt-3">
+      <div class="flex justify-center">
         <o-button variant="primary" icon-left="plus" @click="showNewProfileModal = true">New Profile</o-button>
       </div>
-      <div>
+      <div class="flex justify-center mt-4 sm:mt-0">
         <o-button variant="primary" icon-left="plus-square" @click="expandAll" class="mr-3"
           >Expand All</o-button
         ><o-button variant="primary" icon-left="minus-square" @click="collapseAll"
