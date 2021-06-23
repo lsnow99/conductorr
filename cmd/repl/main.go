@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"strings"
 
 	"github.com/lsnow99/conductorr/csl"
 )
@@ -28,10 +27,7 @@ func main() {
 		fmt.Print(">> ")
 		scanner := bufio.NewScanner(os.Stdin)
 		scanner.Scan()
-		script := strings.TrimSpace(scanner.Text())
-		if script[0] != '(' {
-			script = "(" + script + ")"
-		}
+		script := scanner.Text()
 		exprs, err := csl.Parse(script)
 		if err != nil {
 			fmt.Println(err)

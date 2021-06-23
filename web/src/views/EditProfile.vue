@@ -13,7 +13,7 @@
         <div class="w-60"></div>
       </div>
       <div class="flex flex-row justify-between">
-        <div class="flex flex-row">
+        <div class="flex flex-col sm:flex-row">
           <div
             class="tabitem"
             @click="activeFunction = 'filter'"
@@ -32,12 +32,12 @@
         <!-- <o-checkbox v-model="showGenerator" variant="primary"
             >Show Generator</o-checkbox
           > -->
-        <div class="p-2">
-          <o-button class="mx-1" @click="initSplits(true)">Reset View</o-button>
-          <o-button class="mx-1" variant="primary" @click="validate"
+        <div class="p-2 flex flex-col sm:flex-row">
+          <o-button class="mx-1 my-1 sm:my-0" @click="initSplits(true)">Reset View</o-button>
+          <o-button class="mx-1 my-1 sm:my-0" variant="primary" @click="validate"
             >Validate</o-button
           >
-          <o-button class="mx-1" variant="primary">Save</o-button>
+          <o-button class="mx-1 my-1 sm:my-0" variant="primary">Save</o-button>
         </div>
       </div>
     </div>

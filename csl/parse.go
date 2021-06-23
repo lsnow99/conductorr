@@ -217,8 +217,15 @@ tree. Returns a non-nil error if a parsing error is encountered.
 */
 func Parse(script string) ([]*SExpr, error) {
 	var opened, startIndex int
-	tokens := NewTokens(script)
 	trees := make([]*SExpr, 0)
+	script = strings.TrimSpace(script)
+	if len(script) < 1 {
+		return trees, nil
+	}
+	if script[0] != '(' {
+		script = "(" + script + ")"
+	}
+	tokens := NewTokens(script)
 	for index, tok := range tokens {
 		if tok.typ == openToken {
 			opened++

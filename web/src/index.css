@@ -3,10 +3,8 @@
 @tailwind utilities;
 
 .o-btn {
-  @apply pt-2;
-  @apply pb-2;
-  @apply pl-4;
-  @apply pr-4;
+  @apply py-2;
+  @apply px-4;
   @apply rounded-lg;
   @apply text-lg;
   @apply font-bold;
@@ -27,10 +25,8 @@
 
 .o-input:not(.o-inputit__input) {
   @apply text-gray-900;
-  @apply pt-1;
-  @apply pb-1;
-  @apply pl-2;
-  @apply pr-2;
+  @apply py-1;
+  @apply px-2;
   @apply text-lg;
   @apply rounded-lg;
   @apply border-gray-900;
@@ -294,4 +290,16 @@
 
 .o-chk__label {
   @apply ml-1;
+}
+
+.o-sel {
+  @apply text-gray-900;
+  @apply py-1;
+  @apply pl-2;
+  @apply pr-8;
+  @apply rounded-lg;
+  @apply border-gray-900;
+  @apply border-4;
+  @apply border-opacity-50;
+  @apply text-lg;
 }

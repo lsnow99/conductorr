@@ -8,7 +8,7 @@ import (
 
 func Validate(this js.Value, args []js.Value) interface{} {
 	callback := args[len(args)-1:][0]
-	go func(){
+	go func() {
 		_, err := csl.Parse(args[0].String())
 		if err != nil {
 			callback.Invoke(false, err.Error())
@@ -21,7 +21,7 @@ func Validate(this js.Value, args []js.Value) interface{} {
 
 func Run(this js.Value, args []js.Value) interface{} {
 	callback := args[len(args)-1:][0]
-	go func(){
+	go func() {
 		sexprs, err := csl.Parse(args[0].String())
 		if err != nil {
 			callback.Invoke(false, err.Error())
@@ -30,7 +30,7 @@ func Run(this js.Value, args []js.Value) interface{} {
 		env := make(map[string]interface{})
 		result, trace := csl.Eval(sexprs, env)
 		if trace.Err != nil {
-			callback.Invoke(false, err.Error())
+			callback.Invoke(false, trace.Err.Error())
 			return
 		}
 		if list, ok := result.(csl.List); ok {
