@@ -10,7 +10,7 @@ import (
 
 func GetRouter() http.Handler {
 	r := mux.NewRouter()
-	
+
 	// Unauthenticated routes
 	r.HandleFunc("/api/csl.wasm", LoadCSL).Methods("GET")
 	r.HandleFunc("/api/v1/signin", SignIn).Methods("POST")
@@ -28,7 +28,7 @@ func GetRouter() http.Handler {
 	r.HandleFunc("/api/v1/add/{imdb_id}", AddMedia).Methods("POST")
 	r.HandleFunc("/api/v1/poster/{id}", GetPoster).Methods("GET")
 	r.HandleFunc("/api/v1/media/{id}", GetMedia).Methods("GET")
-	r.HandleFunc("/api/v1/media/{id}/searchReleasesManual", SearchReleasesManual).Methods("POST")
+	r.HandleFunc("/api/v1/media/{id}/searchReleasesManual", SearchReleasesManual).Methods("GET")
 	r.Use(AuthMiddleware)
 
 	if settings.ResetUser {

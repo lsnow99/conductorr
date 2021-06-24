@@ -303,3 +303,7 @@
   @apply border-opacity-50;
   @apply text-lg;
 }
+
+.o-sel--placeholder {
+  @apply text-gray-400;
+}

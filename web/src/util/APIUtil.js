@@ -183,6 +183,12 @@ const getProfile = (id) => {
   })
 }
 
+const searchReleasesManual = (id) => {
+  return doAPIReq(`/api/v1/media/${id}/searchReleasesManual`, {
+    method: "GET"
+  })
+}
+
 export default {
   signIn,
   signUp,
@@ -198,5 +204,6 @@ export default {
   addMedia,
   checkAuth,
   getMedia,
-  getProfile
+  getProfile,
+  searchReleasesManual
 };

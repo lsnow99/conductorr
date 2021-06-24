@@ -49,7 +49,7 @@
           </div>
           <div id="split2" class="flex flex-col">
             <div class="titlebar">Editor</div>
-            <CSLEditor @submit="run" v-model="code" />
+            <CSLEditor @submit="run" v-model="computedCode" />
           </div>
         </div>
         <div id="split4" class="flex flex-col">
@@ -63,7 +63,8 @@
                 immediately before running your script):
               </div>
               <div class="p-4">
-                <CSLEditor readonly v-model="releaseACode" />
+                <CSLEditor v-if="activeFunction=='filter'" readonly v-model="releaseACode" />
+                <CSLEditor v-if="activeFunction=='sorter'" readonly v-model="releaseABCode" />
               </div>
               <div class="flex flex-row justify-center p-4">
                 <o-button @click="run" variant="primary">Run</o-button>
@@ -258,7 +259,7 @@ export default {
       });
     },
     validate() {
-      Validate(this.code, (ok, err) => {
+      Validate(this.computedCode, (ok, err) => {
         if (!ok) {
           this.pushOutput("Validation error: " + err, "danger");
         } else {
@@ -267,7 +268,7 @@ export default {
       });
     },
     run() {
-      Run(this.code, (ok, err, result) => {
+      Run(this.computedCode, (ok, err, result) => {
         if (!ok) {
           this.pushOutput("Execution error: " + err, "danger");
         } else if (result) {
@@ -343,7 +344,23 @@ export default {
       return this.renderedCode(this.releaseB)
     },
     releaseABCode() {
-      return this.releaseACode() + '\n' + this.releaseBCode()
+      return this.releaseACode + '\n' + this.releaseBCode
+    },
+    computedCode: {
+      get() {
+        if (this.activeFunction == 'filter') {
+          return this.profile.filter
+        } else if (this.activeFunction == 'sorter') {
+          return this.profile.sorter
+        }
+      },
+      set(val) {
+        if (this.activeFunction == 'filter') {
+          this.profile.filter = val
+        } else if (this.activeFunction == 'sorter') {
+          this.profile.sorter = val
+        }
+      }
     }
   }
 };
