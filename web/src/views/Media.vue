@@ -26,10 +26,12 @@
         </div>
         <p class="text-lg">{{ media.description }}</p>
       </div>
-      <div @click="searchManual">
-        <o-icon v-if="!loadingManualSearch" icon="search" />
-        <o-icon v-else class="text-4xl text-gray-300" icon="sync-alt" spin />
-      </div>
+      <o-tooltip variant="info" position="bottom" label="Search Manually">
+        <div @click="searchManual">
+          <o-icon v-if="!loadingManualSearch" icon="search" />
+          <o-icon v-else class="text-4xl text-gray-300" icon="sync-alt" spin />
+        </div>
+      </o-tooltip>
     </section>
     <o-table
       :data="releases"

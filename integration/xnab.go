@@ -33,7 +33,14 @@ func (x *Xnab) TestConnection() error {
 	return err
 }
 
-func (x *Xnab) Search(media Media) ([]newznab.NZB, error) {
+func prepareResponse(nzbs []newznab.NZB, media *Media) ([]Release) {
+	releases := make([]Release, len(nzbs))
+	for i, nzb := range nzbs {
+		releases[i] = NewRelease(nzb.ID, nzb.Title, nzb.Description, nzb.DownloadURL, nzb.Category, nzb.Size, nzb.AirDate, nzb.PubDate, media)
+	}
+}
+
+func (x *Xnab) Search(media *Media) ([]Release, error) {
 	if x.caps.Searching.Search.Available != "yes" {
 		return nil, fmt.Errorf("searching not enabled on indexer")
 	}
@@ -41,19 +48,25 @@ func (x *Xnab) Search(media Media) ([]newznab.NZB, error) {
 	if media.ContentType == Movie {
 		if x.caps.Searching.MovieSearch.Available == "yes" {
 			if strings.Contains(x.caps.Searching.MovieSearch.SupportedParams, "imdbid") {
-				return x.client.SearchWithIMDB([]int{newznab.CategoryMovieAll}, strings.ReplaceAll(media.ImdbID, "t", ""))
+				nzbs, err := x.client.SearchWithIMDB([]int{newznab.CategoryMovieAll}, strings.ReplaceAll(media.ImdbID, "t", ""))
+				return prepareResponse(nzbs, media), err
 			}
-			return x.client.SearchWithQuery([]int{newznab.CategoryMovieAll}, media.QueryString(), "movie")
+			nzbs, err := x.client.SearchWithQuery([]int{newznab.CategoryMovieAll}, media.QueryString(), "movie")
+			return prepareResponse(nzbs, media), err
 		}
-		return x.client.SearchWithQuery([]int{newznab.CategoryMovieAll}, media.QueryString(), "search")
+		nzbs, err := x.client.SearchWithQuery([]int{newznab.CategoryMovieAll}, media.QueryString(), "search")
+		return prepareResponse(nzbs, media), err
 	} else if media.ContentType == TVShow {
 		if x.caps.Searching.TvSearch.Available == "yes" {
 			if strings.Contains(x.caps.Searching.TvSearch.SupportedParams, "tvdbid") {
-				return x.client.SearchWithTVDB([]int{newznab.CategoryTVAll}, media.ParentMedia.TvdbID, media.Season, media.Episode)
+				nzbs, err := x.client.SearchWithTVDB([]int{newznab.CategoryTVAll}, media.ParentMedia.TvdbID, media.Season, media.Episode)
+				return prepareResponse(nzbs, media), err
 			}
-			return x.client.SearchWithQuery([]int{newznab.CategoryTVAll}, media.QueryString(), "tvsearch")
+			nzbs, err := x.client.SearchWithQuery([]int{newznab.CategoryTVAll}, media.QueryString(), "tvsearch")
+			return prepareResponse(nzbs, media), err
 		}
-		return x.client.SearchWithQuery([]int{newznab.CategoryTVAll}, media.QueryString(), "search")
+		nzbs, err := x.client.SearchWithQuery([]int{newznab.CategoryTVAll}, media.QueryString(), "search")
+		return prepareResponse(nzbs, media), err
 	}
 	return nil, fmt.Errorf("unrecognized media content type: %d", media.ContentType)
 }

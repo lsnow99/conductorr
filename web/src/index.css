@@ -241,6 +241,7 @@
 
 .o-tip__arrow--info {
   border-top-color: #4b5563;
+  border-bottom-color: #4b5563;
 }
 
 .o-slide--disabled {
@@ -306,4 +307,12 @@
 
 .o-sel--placeholder {
   @apply text-gray-400;
+}
+
+.o-table__wrapper--mobile tr:not(.o-table__tr--selected) {
+  @apply bg-gray-800;
+}
+
+.o-table__wrapper--mobile tr:not(.o-table__tr--selected):hover {
+  @apply bg-gray-900;
 }
