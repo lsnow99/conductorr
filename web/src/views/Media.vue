@@ -4,34 +4,43 @@
       <img class="hidden md:block" :src="media.poster" />
       <div class="ml-4">
         <h1 class="text-4xl lg:text-6xl">{{ media.title }}</h1>
-        <div class="py-4 flex flex-row items-center">
-          <div class="text-2xl mx-4 text-gray-300">
-            {{ mediaYear(media) }}
+        <div class="py-4 flex flex-row items-center justify-between">
+          <div class="flex flex-row items-center">
+            <div class="text-2xl mx-4 text-gray-300">
+              {{ mediaYear(media) }}
+            </div>
+            <div class="text-2xl mx-4 text-gray-300">
+              <o-icon class="text-lg" icon="star" />
+              {{ media.imdb_rating }}%
+            </div>
+            <a
+              :href="`https://www.imdb.com/title/${media.imdb_id}`"
+              target="_blank"
+              class="inline-block pt-1 mx-4"
+            >
+              <o-icon
+                class="text-4xl text-gray-300 hover:text-yellow-300"
+                pack="fab"
+                icon="imdb"
+              />
+            </a>
           </div>
-          <div class="text-2xl mx-4 text-gray-300">
-            <o-icon class="text-lg" icon="star" />
-            {{ media.imdb_rating }}%
+          <div>
+            <o-tooltip variant="info" position="bottom" label="Search Manually">
+              <div class="text-2xl text-gray-300">
+                <div v-if="!loadingManualSearch" @click="searchManual">
+                  <o-icon
+                    class="cursor-pointer"
+                    icon="search"
+                  />
+                </div>
+                <o-icon v-else icon="sync-alt" spin />
+              </div>
+            </o-tooltip>
           </div>
-          <a
-            :href="`https://www.imdb.com/title/${media.imdb_id}`"
-            target="_blank"
-            class="inline-block pt-1 mx-4"
-          >
-            <o-icon
-              class="text-4xl text-gray-300 hover:text-yellow-300"
-              pack="fab"
-              icon="imdb"
-            />
-          </a>
         </div>
         <p class="text-lg">{{ media.description }}</p>
       </div>
-      <o-tooltip variant="info" position="bottom" label="Search Manually">
-        <div @click="searchManual">
-          <o-icon v-if="!loadingManualSearch" icon="search" />
-          <o-icon v-else class="text-4xl text-gray-300" icon="sync-alt" spin />
-        </div>
-      </o-tooltip>
     </section>
     <o-table
       :data="releases"
@@ -41,41 +50,75 @@
       :loading="isLoading"
       mobile-cards
     >
-      <o-table-column field="id" label="ID" width="40" numeric v-slot="props">
-        {{ props.row.id }}
+      <o-table-column
+        field="download_type"
+        label="Type"
+        v-slot="props"
+        position="centered"
+      >
+        <div v-if="props.row.download_type == 'torrent'" class="bg-green-500">
+          torrent
+        </div>
+        <div v-if="props.row.download_type == 'nzb'" class="bg-blue-500">
+          nzb
+        </div>
       </o-table-column>
 
-      <o-table-column field="first_name" label="First Name" v-slot="props">
-        {{ props.row.first_name }}
+      <o-table-column field="title" label="Title" v-slot="props">
+        {{ props.row.title }}
       </o-table-column>
 
-      <o-table-column field="last_name" label="Last Name" v-slot="props">
-        {{ props.row.last_name }}
+      <o-table-column field="resolution" label="Resolution" v-slot="props">
+        {{ props.row.resolution }}
+      </o-table-column>
+
+      <o-table-column field="rip_type" label="Rip Type" v-slot="props">
+        {{ props.row.rip_type }}
+      </o-table-column>
+
+      <o-table-column field="encoding" label="Encoding" v-slot="props">
+        {{ props.row.encoding }}
+      </o-table-column>
+
+      <o-table-column field="size" label="Size" v-slot="props">
+        {{ niceSize(props.row.size) }}
       </o-table-column>
 
       <o-table-column
-        field="date"
-        label="Date"
+        field="age"
+        label="Age"
         position="centered"
         v-slot="props"
       >
-        {{ new Date(props.row.date).toLocaleDateString() }}
+        {{ `${props.row.age} days` }}
       </o-table-column>
 
-      <o-table-column label="Gender" v-slot="props">
-        <span>
+      <o-table-column
+        field="warnings"
+        label="Warnings"
+        position="centered"
+        v-slot="props"
+      >
+        <o-tooltip variant="info" position="bottom" label="Search Manually">
           <o-icon
-            pack="fas"
-            :icon="props.row.gender === 'Male' ? 'mars' : 'venus'"
-          >
-          </o-icon>
-          {{ props.row.gender }}
-        </span>
+            class="bg-red-500"
+            v-if="props.row.warnings && props.row.warnings.length > 0"
+            @click="download(props.row)"
+            icon="exclamation-circle"
+          />
+        </o-tooltip>
+      </o-table-column>
+
+      <o-table-column label="Actions" position="centered" v-slot="props">
+        <o-icon v-if="props.row.search" spin icon="sync-alt" />
+        <o-icon
+          v-else
+          class="cursor-pointer"
+          @click="download(props)"
+          icon="download"
+        />
       </o-table-column>
     </o-table>
-    <div v-for="release in releases" :key="release.title">
-      {{ release }}
-    </div>
   </page-wrapper>
 </template>
 
@@ -83,6 +126,7 @@
 import PageWrapper from "../components/PageWrapper.vue";
 import APIUtil from "../util/APIUtil";
 import MediaUtil from "../util/MediaUtil";
+import Helpers from "../util/Helpers";
 
 const STATUS_TYPES = ["wanted", ""];
 
@@ -108,6 +152,10 @@ export default {
           this.loadingManualSearch = false;
         });
     },
+    download(data) {
+      this.releases[data.index].search = true;
+    },
+    niceSize: Helpers.niceSize,
   },
   created() {
     this.mediaID = parseInt(this.$route.params.media_id);

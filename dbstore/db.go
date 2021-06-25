@@ -106,7 +106,7 @@ func initUser() error {
 }
 
 func initGenres() error {
-	for _, genre := range constant.Geners {
+	for _, genre := range constant.Genres {
 		_, err := db.Exec(`
 			INSERT INTO genre (name)
 			SELECT (?)

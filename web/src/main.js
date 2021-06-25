@@ -46,6 +46,8 @@ import {
   faInfoCircle,
   faAngleDoubleDown,
   faStar,
+  faArrowUp,
+  faArrowDown,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
@@ -112,6 +114,8 @@ library.add(faInfoCircle);
 library.add(faAngleDoubleDown);
 library.add(faImdb);
 library.add(faStar);
+library.add(faArrowUp);
+library.add(faArrowDown);
 
 const app = createApp(App);
 app.use(store);

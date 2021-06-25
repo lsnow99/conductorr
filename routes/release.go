@@ -35,9 +35,9 @@ func SearchReleasesManual(w http.ResponseWriter, r *http.Request) {
 	media.ImdbID = dbMedia.ImdbID.String
 	media.Year = dbMedia.ReleasedAt.Time.Year()
 
-	xnab := integration.NewXnab(0, "7c1yDyAz12ZJDpUunuXyAeFxeFv0jjeI", "https://api.nzbgeek.info", "NZBGeek")
+	xnab := integration.NewXnab(0, "7c1yDyAz12ZJDpUunuXyAeFxeFv0jjeI", "https://api.nzbgeek.info", "NZBGeek", "nzb")
 	xnab.TestConnection()
-	results, err := xnab.Search(media)
+	results, err := xnab.Search(&media)
 	if err != nil {
 		log.Println(err)
 	}

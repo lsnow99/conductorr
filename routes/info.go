@@ -7,9 +7,8 @@ import (
 )
 
 func GetReleaseProfileCfg(w http.ResponseWriter, r *http.Request) {
-	response := map[string][]string{
+	response := map[string]interface{}{
 		"rip_types":        constant.RipTypes,
-		"quality_types":    constant.QualityTypes,
 		"resolution_types": constant.ResolutionTypes,
 	}
 	Respond(w, r.Host, nil, response, true)
