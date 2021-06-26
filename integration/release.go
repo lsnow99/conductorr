@@ -48,6 +48,17 @@ func NewRelease(id, title, description, downloadURL string, categories []string,
 	release.Resolution = searchKeywords(title, constant.ResolutionTypes, false)
 	release.Encoding = searchKeywords(title, constant.EncodingTypes, false)
 
+	if release.Resolution == "" && release.Encoding == "Xvid" {
+		release.Resolution = "352p"
+	}
+	if release.Resolution == "" && release.RipType == "DVDRip" {
+		release.Resolution = "480i"
+	}
+
+	if release.RipType == "" && release.Encoding == "Xvid" {
+		release.RipType = "DVDRip"
+	}
+
 	return release
 }
 

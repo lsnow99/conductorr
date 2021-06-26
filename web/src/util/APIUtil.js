@@ -1,5 +1,6 @@
 import store from "../store";
 import AuthUtil from "./AuthUtil";
+import EventBus from "./EventBus";
 
 const doAPIReq = (url, options, errMsg = undefined) => {
   return new Promise((resolve, reject) => {
@@ -15,21 +16,21 @@ const doAPIReq = (url, options, errMsg = undefined) => {
         } else {
           if (resp.failed_auth) {
             AuthUtil.logout();
-            this.$oruga.notification.open({
+            EventBus.emit('notification', {
               duration: 3000,
               message: `Authentication error`,
               position: "bottom-right",
               variant: "danger",
               closable: false,
-            });
+            })
           } else if (errMsg) {
-            this.$oruga.notification.open({
+            EventBus.emit('notification', {
               duration: 3000,
               message: errMsg,
               position: "bottom-right",
               variant: "danger",
               closable: false,
-            });
+            })
           }
           reject(`api request error: `, resp.msg);
         }
@@ -189,6 +190,88 @@ const searchReleasesManual = (id) => {
   })
 }
 
+const testIndexer = (name, base_url, api_key, for_movies, for_series, download_type) => {
+  return doAPIReq(`/api/v1/testIndexer`, {
+    method: "POST",
+    body: JSON.stringify({
+      name,
+      base_url,
+      api_key,
+      for_movies,
+      for_series,
+      download_type
+    })
+  })
+}
+
+const newIndexer = (name, base_url, api_key, for_movies, for_series, download_type) => {
+  return doAPIReq(`/api/v1/indexer`, {
+    method: "POST",
+    body: JSON.stringify({
+      name,
+      base_url,
+      api_key,
+      for_movies,
+      for_series,
+      download_type
+    })
+  })
+}
+
+const getIndexers = () => {
+  return doAPIReq(`/api/v1/indexer`, {
+    method: "GET",
+  })
+}
+
+const updateIndexer = (id, name, base_url, api_key, for_movies, for_series, download_type) => {
+  return doAPIReq(`/api/v1/indexer/${id}`, {
+    method: "PUT",
+    body: JSON.stringify({
+      name,
+      base_url,
+      api_key,
+      for_movies,
+      for_series,
+      download_type
+    })
+  })
+}
+
+const deleteIndexer = (id) => {
+  return doAPIReq(`/api/v1/indexer/${id}`, {
+    method: "DELETE"
+  })
+}
+
+const testPath = (path) => {
+  return doAPIReq(`/api/v1/testPath`, {
+    method: "POST",
+    body: JSON.stringify({
+      path
+    })
+  })
+}
+
+const updatePaths = (paths) => {
+  return doAPIReq(`/api/v1/path`, {
+    method: "PUT",
+    body: JSON.stringify(paths)
+  })
+}
+
+const getPaths = () => {
+  return doAPIReq(`/api/v1/path`, {
+    method: "GET",
+  })
+}
+
+const deletePath = (id) => {
+  return doAPIReq(`/api/v1/path/${id}`, {
+    method: "DELETE"
+  })
+}
+
 export default {
   signIn,
   signUp,
@@ -205,5 +288,14 @@ export default {
   checkAuth,
   getMedia,
   getProfile,
-  searchReleasesManual
+  searchReleasesManual,
+  testIndexer,
+  newIndexer,
+  getIndexers,
+  updateIndexer,
+  testPath,
+  deleteIndexer,
+  updatePaths,
+  getPaths,
+  deletePath
 };

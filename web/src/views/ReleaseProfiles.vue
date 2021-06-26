@@ -1,8 +1,8 @@
 <template>
-  <section>
-    <div class="flex flex-col sm:flex-row justify-between mt-3">
+  <section class="mt-3">
+    <div class="flex flex-col sm:flex-row justify-between">
       <div class="flex justify-center">
-        <o-button variant="primary" icon-left="plus" @click="showNewProfileModal = true">New Profile</o-button>
+        <o-button variant="primary" @click="showNewProfileModal = true">New Profile</o-button>
       </div>
       <div class="flex justify-center mt-4 sm:mt-0">
         <o-button variant="primary" icon-left="plus-square" @click="expandAll" class="mr-3"

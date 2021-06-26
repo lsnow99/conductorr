@@ -1,22 +1,22 @@
 <template>
   <header class="modal-card-header">
-    <p class="modal-card-title">New Indexer</p>
+    <p class="modal-card-title">{{ title }}</p>
   </header>
-  <section class="modal-card-content">
+  <section class="modal-card-content w-96 min-w-full">
     <div>
       Indexer Type
       <div class="flex justify-center">
         <div class="overflow-hidden rounded-lg inline-block">
           <o-radio
-            v-model="computedIndexer.indexer_type"
+            v-model="computedIndexer.download_type"
             name="indexerType"
-            native-value="torznab"
+            native-value="torrent"
             >Torznab</o-radio
           >
           <o-radio
-            v-model="computedIndexer.indexer_type"
+            v-model="computedIndexer.download_type"
             name="indexerType"
-            native-value="newznab"
+            native-value="nzb"
             >Newznab</o-radio
           >
         </div>
@@ -29,7 +29,11 @@
         />
       </o-field>
       <o-field label="URL">
-        <o-input type="text" v-model="computedIndexer.url" placeholder="URL" />
+        <o-input
+          type="text"
+          v-model="computedIndexer.base_url"
+          placeholder="URL"
+        />
       </o-field>
       <o-field label="API Key">
         <o-input
@@ -71,10 +75,8 @@
         </div>
       </o-field> -->
       <div class="mt-3 flex flex-col">
-        <o-switch v-model="computedIndexer.use_for_movies"
-          >Use for Movies</o-switch
-        >
-        <o-switch v-model="computedIndexer.use_for_tv">Use for TV</o-switch>
+        <o-switch v-model="computedIndexer.for_movies">Use for Movies</o-switch>
+        <o-switch v-model="computedIndexer.for_series">Use for TV</o-switch>
       </div>
     </div>
   </section>
@@ -84,12 +86,13 @@
       <o-button variant="primary" @click="test" class="mr-3">
         <action-button :mode="testingMode"> Test </action-button>
       </o-button>
-      <o-button variant="primary" @click="save">Save</o-button>
+      <o-button variant="primary" @click="submit">Save</o-button>
     </div>
   </footer>
 </template>
 
 <script>
+import APIUtil from "../util/APIUtil";
 import ActionButton from "./ActionButton.vue";
 
 const possibleTags = [
@@ -119,26 +122,70 @@ export default {
       type: Object,
       default: function () {
         return {
-          indexer_type: "torznab",
+          download_type: "torrent",
         };
       },
     },
+    title: {
+      type: String,
+      default: function () {
+        return "";
+      },
+    },
   },
+  emits: ["submit", "close"],
   components: {
     ActionButton,
   },
   methods: {
-    save() {},
     test() {
-      if (this.testingMode === "loading") {
-        this.testingMode = "success";
-      } else if (this.testingMode === "success") {
-        this.testingMode = "error";
-      } else if (this.testingMode === "error") {
-        this.testingMode = "";
-      } else {
-        this.testingMode = "loading";
+      this.sanitize();
+      const validationErr = this.validate();
+      if (validationErr) {
+        this.$oruga.notification.open({
+          duration: 5000,
+          message: validationErr,
+          position: "bottom-right",
+          variant: "danger",
+          closable: false,
+        });
+        return;
       }
+      this.testingMode = "loading";
+      APIUtil.testIndexer(
+        this.computedIndexer.name,
+        this.computedIndexer.base_url,
+        this.computedIndexer.api_key,
+        this.computedIndexer.for_movies,
+        this.computedIndexer.for_series,
+        this.computedIndexer.download_type
+      )
+        .then((resp) => {
+          if (resp.success) {
+            this.$oruga.notification.open({
+              duration: 5000,
+              message: `Test succeeded`,
+              position: "bottom-right",
+              variant: "success",
+              closable: false,
+            });
+            this.testingMode = "success";
+          } else {
+            this.$oruga.notification.open({
+              duration: 5000,
+              message: `Test failed: ${resp.msg}`,
+              position: "bottom-right",
+              variant: "danger",
+              closable: false,
+            });
+            this.testingMode = "danger";
+          }
+        })
+        .finally(() => {
+          setTimeout(() => {
+            this.testingMode = "";
+          }, 5000);
+        });
     },
     getFilteredTags(text) {
       this.filteredTags = possibleTags.filter((option) => {
@@ -149,6 +196,41 @@ export default {
     },
     resetFilteredTags() {
       this.filteredTags = possibleTags;
+    },
+    sanitize() {
+      this.computedIndexer.name = this.computedIndexer.name
+        ? this.computedIndexer.name.trim()
+        : undefined;
+      this.computedIndexer.base_url = this.computedIndexer.base_url
+        ? this.computedIndexer.base_url.trim()
+        : undefined;
+      this.computedIndexer.api_key = this.computedIndexer.api_key
+        ? this.computedIndexer.api_key.trim()
+        : undefined;
+    },
+    validate() {
+      if (!this.computedIndexer.name) {
+        return "Name is required";
+      } else if (!this.computedIndexer.base_url) {
+        return "Base URL is required";
+      } else if (!this.computedIndexer.api_key) {
+        return "API Key is required";
+      }
+    },
+    submit() {
+      this.sanitize();
+      const validationErr = this.validate();
+      if (validationErr) {
+        this.$oruga.notification.open({
+          duration: 5000,
+          message: validationErr,
+          position: "bottom-right",
+          variant: "danger",
+          closable: false,
+        });
+        return;
+      }
+      this.$emit("submit", this.computedIndexer);
     },
   },
   computed: {

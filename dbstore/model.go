@@ -29,3 +29,14 @@ type Media struct {
 	Path          sql.NullString
 	Size          sql.NullInt64
 }
+
+type Indexer struct {
+	ID      int
+	Name    string
+	UserID sql.NullInt32
+	BaseUrl string
+	ApiKey  string
+	ForMovies bool
+	ForSeries bool
+	DownloadType string
+}

@@ -316,3 +316,24 @@
 .o-table__wrapper--mobile tr:not(.o-table__tr--selected):hover {
   @apply bg-gray-900;
 }
+
+.o-table--striped tr:nth-child(2n) {
+  @apply bg-gray-900;
+}
+
+.o-table {
+  @apply h-40;
+}
+
+.o-table__td {
+  @apply break-all;
+}
+
+.o-table__td::before {
+  @apply break-normal;
+  @apply font-bold;
+}
+
+.o-tab-item__content {
+  min-height: 70vh;
+}

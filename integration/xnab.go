@@ -1,29 +1,31 @@
 package integration
 
 import (
+	"errors"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/mrobinsn/go-newznab/newznab"
 )
 
 type Xnab struct {
-	userID  int
-	apiKey  string
-	baseUrl string
-	name    string
-	caps    newznab.Capabilities
-	client  newznab.Client
+	userID       int
+	apiKey       string
+	baseUrl      string
+	name         string
+	caps         newznab.Capabilities
+	client       newznab.Client
 	downloadType string
 }
 
 func NewXnab(userID int, apiKey, baseUrl, name, downloadType string) *Xnab {
 	x := &Xnab{
-		userID:  userID,
-		apiKey:  apiKey,
-		baseUrl: baseUrl,
-		name:    name,
-		client:  newznab.New(baseUrl, apiKey, userID, true),
+		userID:       userID,
+		apiKey:       apiKey,
+		baseUrl:      baseUrl,
+		name:         name,
+		client:       newznab.New(baseUrl, apiKey, userID, true),
 		downloadType: downloadType,
 	}
 	return x
@@ -31,11 +33,24 @@ func NewXnab(userID int, apiKey, baseUrl, name, downloadType string) *Xnab {
 
 func (x *Xnab) TestConnection() error {
 	caps, err := x.client.Capabilities()
+	if err != nil {
+		return err
+	}
 	x.caps = caps
+	if x.caps.Searching.MovieSearch.Available == "yes" {
+		// Check auth
+		_, err = x.client.SearchWithQuery([]int{newznab.CategoryMovieAll}, "The", "movie")
+	} else if x.caps.Searching.TvSearch.Available == "yes" {
+		// Check auth
+		_, err = x.client.SearchWithQuery([]int{newznab.CategoryMovieAll}, "The", "movie")
+	} else {
+		log.Println(caps)
+		return errors.New("Searching is not enabled")
+	}
 	return err
 }
 
-func (x *Xnab) prepareResponse(nzbs []newznab.NZB, media *Media) ([]Release) {
+func (x *Xnab) prepareResponse(nzbs []newznab.NZB, media *Media) []Release {
 	releases := make([]Release, len(nzbs))
 	for i, nzb := range nzbs {
 		releases[i] = NewRelease(nzb.ID, nzb.Title, nzb.Description, nzb.DownloadURL, nzb.Category, nzb.Size, nzb.AirDate, nzb.PubDate, media, x)

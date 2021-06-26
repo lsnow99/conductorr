@@ -6,6 +6,7 @@
 
 <script>
 import APIUtil from "./util/APIUtil";
+import EventBus from "./util/EventBus";
 
 export default {
   data() {
@@ -36,6 +37,11 @@ export default {
       }
     },
   },
+  created() {
+    EventBus.on('notification', (data) => {
+      this.$oruga.notification.open(data);
+    })
+  }
 };
 </script>
 

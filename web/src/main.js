@@ -48,6 +48,10 @@ import {
   faStar,
   faArrowUp,
   faArrowDown,
+  faCheck,
+  faCogs,
+  faTrash,
+  faEdit,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
@@ -116,6 +120,10 @@ library.add(faImdb);
 library.add(faStar);
 library.add(faArrowUp);
 library.add(faArrowDown);
+library.add(faCheck);
+library.add(faCogs);
+library.add(faTrash);
+library.add(faEdit);
 
 const app = createApp(App);
 app.use(store);

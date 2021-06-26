@@ -4,9 +4,9 @@
       <img class="hidden md:block" :src="media.poster" />
       <div class="ml-4">
         <h1 class="text-4xl lg:text-6xl">{{ media.title }}</h1>
-        <div class="py-4 flex flex-row items-center justify-between">
+        <div class="py-4 flex flex-row items-center justify-between px-4">
           <div class="flex flex-row items-center">
-            <div class="text-2xl mx-4 text-gray-300">
+            <div class="text-2xl mr-4 text-gray-300">
               {{ mediaYear(media) }}
             </div>
             <div class="text-2xl mx-4 text-gray-300">
@@ -47,7 +47,7 @@
       striped
       narrowed
       hoverable
-      :loading="isLoading"
+      :loading="loadingManualSearch"
       mobile-cards
     >
       <o-table-column
@@ -80,13 +80,14 @@
         {{ props.row.encoding }}
       </o-table-column>
 
-      <o-table-column field="size" label="Size" v-slot="props">
+      <o-table-column sortable field="size" label="Size" v-slot="props">
         {{ niceSize(props.row.size) }}
       </o-table-column>
 
       <o-table-column
         field="age"
         label="Age"
+        sortable
         position="centered"
         v-slot="props"
       >
@@ -103,18 +104,17 @@
           <o-icon
             class="bg-red-500"
             v-if="props.row.warnings && props.row.warnings.length > 0"
-            @click="download(props.row)"
             icon="exclamation-circle"
           />
         </o-tooltip>
       </o-table-column>
 
-      <o-table-column label="Actions" position="centered" v-slot="props">
+      <o-table-column label="Download" position="centered" v-slot="props">
         <o-icon v-if="props.row.search" spin icon="sync-alt" />
         <o-icon
           v-else
           class="cursor-pointer"
-          @click="download(props)"
+          @click="download(props.row)"
           icon="download"
         />
       </o-table-column>
@@ -152,8 +152,11 @@ export default {
           this.loadingManualSearch = false;
         });
     },
-    download(data) {
-      this.releases[data.index].search = true;
+    download(release) {
+      const index = this.releases.findIndex(elem => elem.id == release.id)
+      if (index >= 0) {
+        this.releases[index].search = true
+      }
     },
     niceSize: Helpers.niceSize,
   },

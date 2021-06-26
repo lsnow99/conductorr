@@ -2,18 +2,30 @@
   <div class="flex flex-col h-screen max-h-screen" style="max-width: 100vw">
     <div class="flex flex-col bg-gray-900 bg-opacity-20">
       <div class="p-2 flex flex-1 flex-row justify-between">
-        <div class="w-60">
+        <div class="w-32">
           <o-button @click="$router.go(-1)" icon-left="chevron-left"
             >Back</o-button
           >
         </div>
         <div class="flex text-2xl items-center">
-          Editing Profile: {{ profile.name }}
+          <span v-if="!editingName"
+            >{{ `Editing Profile: ${profile.name}` }}
+            <o-icon
+              @click="editingName = true"
+              class="cursor-pointer ml-4"
+              icon="edit" /></span
+          ><span v-else class="flex flex-row"
+            ><o-input @keydown.enter="editingName = false" v-model="profile.name" /><o-icon
+              @click="editingName = false"
+              class="cursor-pointer ml-4"
+              icon="check"
+            />
+          </span>
         </div>
-        <div class="w-60"></div>
+        <div class="w-32 hidden sm:flex"></div>
       </div>
-      <div class="flex flex-row justify-between">
-        <div class="flex flex-col sm:flex-row">
+      <div class="flex flex-col sm:flex-row justify-between">
+        <div class="flex flex-row w-full">
           <div
             class="tabitem"
             @click="activeFunction = 'filter'"
@@ -32,16 +44,24 @@
         <!-- <o-checkbox v-model="showGenerator" variant="primary"
             >Show Generator</o-checkbox
           > -->
-        <div class="p-2 flex flex-col sm:flex-row">
-          <o-button class="mx-1 my-1 sm:my-0" @click="initSplits(true)">Reset View</o-button>
-          <o-button class="mx-1 my-1 sm:my-0" variant="primary" @click="validate"
+        <div class="p-2 flex flex-row justify-center">
+          <o-button class="mx-1 my-1 sm:my-0" @click="initSplits(true)"
+            >Reset View</o-button
+          >
+          <o-button
+            class="mx-1 my-1 sm:my-0"
+            variant="primary"
+            @click="validate"
             >Validate</o-button
           >
-          <o-button class="mx-1 my-1 sm:my-0" variant="primary">Save</o-button>
+          <o-button class="mx-1 my-1 sm:my-0" variant="primary" @click="updateProfile">Save</o-button>
         </div>
       </div>
     </div>
-    <div class="flex h-full flex-1 w-full" style="max-height: calc(100vh - 104px)">
+    <div
+      class="flex h-full flex-1 w-full"
+      style="max-height: calc(100vh - 104px)"
+    >
       <div class="flex h-full w-full flex-1 flex-row">
         <div id="split3" class="flex flex-col">
           <div v-show="showGenerator" id="split1" class="flex flex-col">
@@ -55,7 +75,9 @@
         <div id="split4" class="flex flex-col">
           <div id="split5" class="flex flex-col">
             <div class="titlebar">Test Cases</div>
-            <div class="px-16 h-full overflow-y-scroll overflow-x-scroll w-full">
+            <div
+              class="px-16 h-full overflow-y-scroll overflow-x-scroll w-full"
+            >
               Release A
               <release-builder v-model="releaseA" />
               <div class="text-xl">
@@ -63,8 +85,16 @@
                 immediately before running your script):
               </div>
               <div class="p-4">
-                <CSLEditor v-if="activeFunction=='filter'" readonly v-model="releaseACode" />
-                <CSLEditor v-if="activeFunction=='sorter'" readonly v-model="releaseABCode" />
+                <CSLEditor
+                  v-if="activeFunction == 'filter'"
+                  readonly
+                  v-model="releaseACode"
+                />
+                <CSLEditor
+                  v-if="activeFunction == 'sorter'"
+                  readonly
+                  v-model="releaseABCode"
+                />
               </div>
               <div class="flex flex-row justify-center p-4">
                 <o-button @click="run" variant="primary">Run</o-button>
@@ -143,6 +173,8 @@
   @apply uppercase;
   @apply text-2xl;
   @apply cursor-pointer;
+  @apply w-full;
+  @apply sm:w-auto;
 }
 
 .tabitem-active {
@@ -182,13 +214,14 @@ export default {
       split34: null,
       split56: null,
       profile: {},
-      profile_id: 0,
+      profileID: 0,
       showGenerator: true,
       code: "",
       outputs: [],
       activeFunction: "filter",
       releaseA: {},
       releaseB: {},
+      editingName: false,
     };
   },
   components: { CSLEditor, ReleaseBuilder },
@@ -272,10 +305,10 @@ export default {
         if (!ok) {
           this.pushOutput("Execution error: " + err, "danger");
         } else if (result) {
-          console.log(result)
+          console.log(result);
           this.pushOutput(result, "success");
         } else {
-          this.pushOutput("Script returned null", "warning")
+          this.pushOutput("Script returned null", "warning");
         }
       });
     },
@@ -294,15 +327,29 @@ export default {
       this.$refs.outputScroller.scrollTop =
         this.$refs.outputScroller.scrollHeight;
     },
-    renderedCode(release) {
-      return `(define a ("${release.title}" "${release.indexer}" "${release.download_type}" "${release.content_type}" "${release.rip_type}" "${release.quality}" "${release.resolution}" ${release.encoding} ${release.seeders} ${release.age} ${release.bitrate}))`;
+    renderedCode(release, releaseVar) {
+      return `(define ${releaseVar} ("${release.title}" "${release.indexer}" "${release.download_type}" "${release.content_type}" "${release.rip_type}" "${release.quality}" "${release.resolution}" ${release.encoding} ${release.seeders} ${release.age} ${release.bitrate}))`;
     },
+    editName() {
+      this.editingName = true;
+    },
+    updateProfile() {
+      APIUtil.updateProfile(this.profileID, this.profile.name, this.profile.filter, this.profile.sorter).then(() => {
+        this.$oruga.notification.open({
+          duration: 3000,
+          message: `Saved successfully`,
+          position: "bottom-right",
+          variant: "success",
+          closable: false,
+        })
+      })
+    }
   },
   created() {
-    this.profile_id = this.$route.params.profile_id;
+    this.profileID = parseInt(this.$route.params.profile_id);
   },
   mounted() {
-    APIUtil.getProfile(this.profile_id).then((profile) => {
+    APIUtil.getProfile(this.profileID).then((profile) => {
       this.profile = profile;
     });
     let savedPref = localStorage.getItem("show-generator");
@@ -338,30 +385,30 @@ export default {
   },
   computed: {
     releaseACode() {
-      return this.renderedCode(this.releaseA)
+      return this.renderedCode(this.releaseA, "a");
     },
     releaseBCode() {
-      return this.renderedCode(this.releaseB)
+      return this.renderedCode(this.releaseB, "b");
     },
     releaseABCode() {
-      return this.releaseACode + '\n' + this.releaseBCode
+      return this.releaseACode + "\n" + this.releaseBCode;
     },
     computedCode: {
       get() {
-        if (this.activeFunction == 'filter') {
-          return this.profile.filter
-        } else if (this.activeFunction == 'sorter') {
-          return this.profile.sorter
+        if (this.activeFunction == "filter") {
+          return this.profile.filter;
+        } else if (this.activeFunction == "sorter") {
+          return this.profile.sorter;
         }
       },
       set(val) {
-        if (this.activeFunction == 'filter') {
-          this.profile.filter = val
-        } else if (this.activeFunction == 'sorter') {
-          this.profile.sorter = val
+        if (this.activeFunction == "filter") {
+          this.profile.filter = val;
+        } else if (this.activeFunction == "sorter") {
+          this.profile.sorter = val;
         }
-      }
-    }
-  }
+      },
+    },
+  },
 };
 </script>

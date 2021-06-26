@@ -14,28 +14,6 @@
     </div>
     <transition name="fade">
       <div v-if="computedExpanded" class="p-4">
-        <!-- <div class="grid grid-cols-1 sm:grid-cols-2">
-          <div
-            v-for="quality in qualityConfigs"
-            :key="quality.name"
-            class="flex flex-row px-2"
-          >
-            <div class="flex flex-1">
-              <o-field :label="quality.name" rootClass="flex-1">
-                <o-slider
-                  rounded
-                  v-model="quality.bitrate"
-                  @dragend="dragEnded"
-                  :disabled="!quality.is_enabled"
-                  :min="0"
-                  :max="25000000000"
-                  :customFormatter="formatBitrate"
-                />
-              </o-field>
-            </div>
-            <o-switch class="mt-4 ml-4" v-model="quality.is_enabled"></o-switch>
-          </div>
-        </div> -->
         Filter
         <CSLEditor readonly v-model="modelValue.filter" />
         Sorter

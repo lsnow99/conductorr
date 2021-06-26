@@ -3,11 +3,31 @@
     <slot />
   </div>
   <div v-if="mode === 'loading'" class="loader" />
-  <div v-if="mode === 'success'" class="success" />
-  <div v-if="mode === 'error'" class="error" />
+  <div v-if="mode === 'success'" class="success"><o-icon icon="check" /></div>
+  <div v-if="mode === 'danger'" class="danger"><o-icon icon="times" /></div>
 </template>
 
 <style scoped>
+.danger,
+.success {
+  @apply absolute;
+  @apply top-1;
+  @apply right-0;
+  @apply left-0;
+  @apply ml-auto;
+  @apply mr-auto;
+  @apply text-center;
+  @apply text-xl;
+}
+
+.danger {
+  @apply text-red-500;
+}
+
+.success {
+  @apply text-green-500;
+}
+
 .loading {
   visibility: hidden;
 }
@@ -57,7 +77,7 @@ export default {
       return !(
         this.mode === "loading" ||
         this.mode === "success" ||
-        this.mode === "error"
+        this.mode === "danger"
       );
     },
   },

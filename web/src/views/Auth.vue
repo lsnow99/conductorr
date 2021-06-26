@@ -58,8 +58,8 @@ export default {
       this.loading = true;
       APIUtil.signIn(this.username, this.password)
         .then(() => {
-          this.$router.push({ name: "home" });
           this.$store.commit("setLoggedIn", true);
+          this.$router.push({ name: "home" });
         })
         .catch((msg) => {
           this.$oruga.notification.open({
