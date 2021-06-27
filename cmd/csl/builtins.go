@@ -1,6 +1,9 @@
 package main
 
 import (
+	"reflect"
+
+	"github.com/lsnow99/conductorr/constant"
 	"github.com/lsnow99/conductorr/csl"
 )
 
@@ -37,6 +40,42 @@ func init() {
 	})
 	csl.RegisterFunction("r-runtime", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		return GetNthFromRelease(env, append([]interface{}{int64(10)}, args...)...)
+	})
+	csl.RegisterFunction("r-riptype-order", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		retVal, err := GetNthFromRelease(env, append([]interface{}{int64(5)}, args...)...)
+		if err != nil {
+			return nil, err
+		}
+		for val, opts := range constant.RipTypes {
+			if reflect.DeepEqual(val, retVal) {
+				return int64(opts.Priority), nil
+			}
+		}
+		return int64(0), nil
+	})
+	csl.RegisterFunction("r-resolution-order", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		retVal, err := GetNthFromRelease(env, append([]interface{}{int64(5)}, args...)...)
+		if err != nil {
+			return nil, err
+		}
+		for val, opts := range constant.ResolutionTypes {
+			if reflect.DeepEqual(val, retVal) {
+				return int64(opts.Priority), nil
+			}
+		}
+		return int64(0), nil
+	})
+	csl.RegisterFunction("r-encoding-order", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		retVal, err := GetNthFromRelease(env, append([]interface{}{int64(5)}, args...)...)
+		if err != nil {
+			return nil, err
+		}
+		for val, opts := range constant.EncodingTypes {
+			if reflect.DeepEqual(val, retVal) {
+				return int64(opts.Priority), nil
+			}
+		}
+		return int64(0), nil
 	})
 }
 

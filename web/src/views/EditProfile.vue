@@ -44,9 +44,6 @@
             Sorter
           </div>
         </div>
-        <!-- <o-checkbox v-model="showGenerator" variant="primary"
-            >Show Generator</o-checkbox
-          > -->
         <div class="p-2 flex flex-row justify-center">
           <o-button class="mx-1 my-1 sm:my-0" @click="initSplits(true)"
             >Reset View</o-button
@@ -72,7 +69,7 @@
     >
       <div class="flex h-full w-full flex-1 flex-row">
         <div id="split3" class="flex flex-col">
-          <div v-show="showGenerator" id="split1" class="flex flex-col">
+          <div id="split1" class="flex flex-col">
             <div class="titlebar">Generator</div>
           </div>
           <div id="split2" class="flex flex-col">
@@ -238,7 +235,6 @@ export default {
       split56: null,
       profile: {},
       profileID: 0,
-      showGenerator: true,
       code: "",
       outputs: [],
       activeFunction: "filter",
@@ -286,16 +282,14 @@ export default {
         this.split56 = null;
       }
 
-      if (this.showGenerator) {
-        this.split12 = Split(["#split1", "#split2"], {
-          sizes: reset ? undefined : this.loadSizes("split-sizes12"),
-          minSize: 200,
-          direction: "vertical",
-          onDragEnd: function (sizes) {
-            localStorage.setItem("split-sizes12", JSON.stringify(sizes));
-          },
-        });
-      }
+      this.split12 = Split(["#split1", "#split2"], {
+        sizes: reset ? undefined : this.loadSizes("split-sizes12"),
+        minSize: 200,
+        direction: "vertical",
+        onDragEnd: function (sizes) {
+          localStorage.setItem("split-sizes12", JSON.stringify(sizes));
+        },
+      });
 
       this.split34 = Split(["#split3", "#split4"], {
         sizes: reset ? [40, 60] : this.loadSizes("split-sizes34", [40, 60]),
@@ -313,6 +307,12 @@ export default {
           localStorage.setItem("split-sizes56", JSON.stringify(sizes));
         },
       });
+
+      if (reset) {
+        localStorage.setItem("split-sizes12", "")
+        localStorage.setItem("split-sizes34", "")
+        localStorage.setItem("split-sizes56", "")
+      }
     },
     validate() {
       Validate(this.computedCode, (ok, err) => {
@@ -328,10 +328,11 @@ export default {
         a: this.releaseA,
       };
       if (this.activeFunction == "sorter") env.b = this.releaseB;
+      console.log(env)
       Run(this.computedCode, env, (ok, err, result) => {
         if (!ok) {
           this.pushOutput("Execution error: " + err, "danger");
-        } else if (result || result === 0) {
+        } else if (result || result === 0 || result === false) {
           console.log(result);
           this.pushOutput(result, "success");
         } else {
@@ -395,20 +396,10 @@ export default {
     APIUtil.getProfile(this.profileID).then((profile) => {
       this.profile = profile;
     });
-    let savedPref = localStorage.getItem("show-generator");
-    this.showGenerator = savedPref != "";
     this.initSplits();
     this.initCSL();
   },
   watch: {
-    showGenerator: function (newVal) {
-      this.initSplits();
-      if (newVal) {
-        localStorage.setItem("show-generator", "true");
-      } else {
-        localStorage.setItem("show-generator", "");
-      }
-    },
     outputs: {
       handler() {
         setTimeout(() => {

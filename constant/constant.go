@@ -1,5 +1,10 @@
 package constant
 
+type ParsedOption struct {
+	Priority     int
+	ParseStrings []string
+}
+
 var (
 	Genres = []string{
 		"Action",
@@ -31,33 +36,102 @@ var (
 		"War",
 		"Western",
 	}
-	RipTypes = map[string][]string{
-		"BDRip":    {"BDRip", "BRip", "BRRip", "BDMV", "BDR", "BD25", "BD50", "BD5", "BD9", "Blu-Ray", "BluRay", "BLURAY"},
-		"WEBRip":   {"WEBRip", "WEB Rip", "WEB-RIP"},
-		"WEBDL":    {"WEBDL", "WEB DL", "WEB-DL", "WEB"},
-		"WEBCap":   {"WEBCAP", "WEB-CAP", "WEB CAP"},
-		"HDTV":     {"HDTV", "PDTV", "TVRip", "HDTVRip", "DTVRip", "DVBRip", "DTHRip", "SATRip", "DSRip", "DSR", "HC", "HD-Rip"},
-		"DVDRip":   {"DVDR", "DVD-Full", "Full-Rip", "DVD-5", "DVD-9", "DVDRip", "DVDMux", "DVD5", "DVD9"},
-		"HDRip":    {"HDRip", "WEB-DLRip"},
-		"SCR":      {"SCR", "SCREENER", "DVDSCR", "DVDSCREENER", "BDSCR"},
-		"CAM":      {"CAM", "CAM-Rip", "HDCAM"},
-		"TELESYNC": {"TELESYNC", "TS", "HDTS", "PDVD", "PreDVDRip"},
+	RipTypes = map[string]ParsedOption{
+		"CAM": {
+			Priority: 10,
+			ParseStrings: []string{"CAM", "CAM-Rip", "HDCAM"},
+		},
+		"TELESYNC": {
+			Priority: 20,
+			ParseStrings: []string{"TELESYNC", "TS", "HDTS", "PDVD", "PreDVDRip"},
+		},
+		"SCR": {
+			Priority: 30,
+			ParseStrings: []string{"SCR", "SCREENER", "DVDSCR", "DVDSCREENER", "BDSCR"},
+		},
+		"HDTV": {
+			Priority: 40,
+			ParseStrings: []string{"HDTV", "PDTV", "TVRip", "HDTVRip", "DTVRip", "DVBRip", "DTHRip", "SATRip", "DSRip", "DSR", "HC", "HD-Rip"},
+		},
+		"DVDRip": {
+			Priority: 50,
+			ParseStrings: []string{"DVDR", "DVD-Full", "Full-Rip", "DVD-5", "DVD-9", "DVDRip", "DVDMux", "DVD5", "DVD9"},
+		},
+		"HDRip": {
+			Priority: 60,
+			ParseStrings: []string{"HDRip", "WEB-DLRip"},
+		},
+		"WEBCap": {
+			Priority: 70,
+			ParseStrings: []string{"WEBCAP", "WEB-CAP", "WEB CAP"},
+		},
+		"WEBRip": {
+			Priority: 80,
+			ParseStrings: []string{"WEBRip", "WEB Rip", "WEB-RIP"},
+		},
+		"WEBDL": {
+			Priority: 90,
+			ParseStrings: []string{"WEBDL", "WEB DL", "WEB-DL", "WEB"},
+		},
+		"BDRip": {
+			Priority: 100,
+			ParseStrings: []string{"BDRip", "BRip", "BRRip", "BDMV", "BDR", "BD25", "BD50", "BD5", "BD9", "Blu-Ray", "BluRay", "BLURAY"},
+		},
 	}
-	ResolutionTypes = map[string][]string{
-		"352p":  {"352p"},
-		"360p":  {"360p"},
-		"480i":  {"480i"},
-		"480P":  {"480P"},
-		"576i":  {"576i"},
-		"576p":  {"576p"},
-		"720P":  {"720"},
-		"1080P": {"1080"},
-		"2160P": {"2160"},
+	ResolutionTypes = map[string]ParsedOption{
+		"352p": {
+			Priority: 10,
+			ParseStrings: []string{"352p"},
+		},
+		"360p": {
+			Priority: 20,
+			ParseStrings: []string{"360p"},
+		},
+		"480i": {
+			Priority: 30,
+			ParseStrings: []string{"480i"},
+		},
+		"480p": {
+			Priority: 40,
+			ParseStrings: []string{"480p"},
+		},
+		"576i": {
+			Priority: 50,
+			ParseStrings: []string{"576i"},
+		},
+		"576p": {
+			Priority: 60,
+			ParseStrings: []string{"576p"},
+		},
+		"720p": {
+			Priority: 70,
+			ParseStrings: []string{"720"},
+		},
+		"1080p": {
+			Priority: 80,
+			ParseStrings: []string{"1080"},
+		},
+		"2160p": {
+			Priority: 90,
+			ParseStrings: []string{"2160"},
+		},
 	}
-	EncodingTypes = map[string][]string{
-		"Xvid": {"Xvid", "DivX"},
-		"x264": {"x264", "H.264", "AVC"},
-		"x265": {"x265", "HEVC", "H.265"},
-		"VP9":  {"VP9"},
+	EncodingTypes = map[string]ParsedOption{
+		"Xvid": {
+			Priority: 10,
+			ParseStrings: []string{"Xvid", "DivX"},
+		},
+		"x264": {
+			Priority: 20,
+			ParseStrings: []string{"x264", "H.264", "AVC"},
+		},
+		"x265": {
+			Priority: 30,
+			ParseStrings: []string{"x265", "HEVC", "H.265"},
+		},
+		"VP9": {
+			Priority: 40,
+			ParseStrings: []string{"VP9"},
+		},
 	}
 )

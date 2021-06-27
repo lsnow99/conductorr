@@ -62,9 +62,9 @@ func NewRelease(id, title, description, downloadURL string, categories []string,
 	return release
 }
 
-func searchKeywords(title string, keywordMap map[string][]string, secondTry bool) string {
+func searchKeywords(title string, keywordMap map[string]constant.ParsedOption, secondTry bool) string {
 	for k, v := range keywordMap {
-		for _, keyword := range v {
+		for _, keyword := range v.ParseStrings {
 			if secondTry {
 				title = strings.ToUpper(title)
 				keyword = strings.ToUpper(keyword)
