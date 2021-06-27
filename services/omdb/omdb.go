@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -81,6 +80,10 @@ func init() {
 }
 
 func SearchByTitle(title string, contentType string, page int) (*SearchResults, error) {
+	if title == "" {
+		return &SearchResults{}, nil
+	}
+
 	u := url.URL{}
 	u.Scheme = "https"
 	u.Host = apiHost
@@ -97,8 +100,6 @@ func SearchByTitle(title string, contentType string, page int) (*SearchResults, 
 		q.Set("type", "series")
 	} // else include all content types
 	u.RawQuery = q.Encode()
-
-	log.Println(u.String())
 
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {

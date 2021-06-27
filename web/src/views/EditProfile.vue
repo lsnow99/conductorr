@@ -15,7 +15,10 @@
               class="cursor-pointer ml-4"
               icon="edit" /></span
           ><span v-else class="flex flex-row"
-            ><o-input @keydown.enter="editingName = false" v-model="profile.name" /><o-icon
+            ><o-input
+              @keydown.enter="editingName = false"
+              v-model="profile.name"
+            /><o-icon
               @click="editingName = false"
               class="cursor-pointer ml-4"
               icon="check"
@@ -54,7 +57,12 @@
             @click="validate"
             >Validate</o-button
           >
-          <o-button class="mx-1 my-1 sm:my-0" variant="primary" @click="updateProfile">Save</o-button>
+          <o-button
+            class="mx-1 my-1 sm:my-0"
+            variant="primary"
+            @click="updateProfile"
+            >Save</o-button
+          >
         </div>
       </div>
     </div>
@@ -68,7 +76,18 @@
             <div class="titlebar">Generator</div>
           </div>
           <div id="split2" class="flex flex-col">
-            <div class="titlebar">Editor</div>
+            <div class="titlebar flex flex-row justify-between">
+              <div>Editor</div>
+              <div>
+                <o-button
+                  variant="primary"
+                  size="small"
+                  icon-right="play"
+                  @click="run"
+                  >Run</o-button
+                >
+              </div>
+            </div>
             <CSLEditor @submit="run" v-model="computedCode" />
           </div>
         </div>
@@ -78,8 +97,12 @@
             <div
               class="px-16 h-full overflow-y-scroll overflow-x-scroll w-full"
             >
-              Release A
-              <release-builder v-model="releaseA" />
+              <release-builder title="Release A" v-model="releaseA" />
+              <release-builder
+                v-if="activeFunction == 'sorter'"
+                title="Release B"
+                v-model="releaseB"
+              />
               <div class="text-xl">
                 Rendered code (this is what you can assume is injected
                 immediately before running your script):
@@ -301,10 +324,14 @@ export default {
       });
     },
     run() {
-      Run(this.computedCode, (ok, err, result) => {
+      let env = {
+        a: this.releaseA,
+      };
+      if (this.activeFunction == "sorter") env.b = this.releaseB;
+      Run(this.computedCode, env, (ok, err, result) => {
         if (!ok) {
           this.pushOutput("Execution error: " + err, "danger");
-        } else if (result) {
+        } else if (result || result === 0) {
           console.log(result);
           this.pushOutput(result, "success");
         } else {
@@ -328,22 +355,38 @@ export default {
         this.$refs.outputScroller.scrollHeight;
     },
     renderedCode(release, releaseVar) {
-      return `(define ${releaseVar} ("${release.title}" "${release.indexer}" "${release.download_type}" "${release.content_type}" "${release.rip_type}" "${release.quality}" "${release.resolution}" ${release.encoding} ${release.seeders} ${release.age} ${release.bitrate}))`;
+      return `(define ${releaseVar} ("${release.title}" "${release.indexer}" "${release.download_type}" "${release.content_type}" "${release.rip_type}" "${release.resolution}" "${release.encoding}" ${release.seeders} ${release.age} ${release.size} ${release.runtime}))`;
     },
     editName() {
       this.editingName = true;
     },
     updateProfile() {
-      APIUtil.updateProfile(this.profileID, this.profile.name, this.profile.filter, this.profile.sorter).then(() => {
+      APIUtil.updateProfile(
+        this.profileID,
+        this.profile.name,
+        this.profile.filter,
+        this.profile.sorter
+      ).then(() => {
         this.$oruga.notification.open({
           duration: 3000,
           message: `Saved successfully`,
           position: "bottom-right",
           variant: "success",
           closable: false,
-        })
-      })
-    }
+        });
+      });
+    },
+    initCSL() {
+      let go = new Go();
+
+      WebAssembly.instantiateStreaming(
+        fetch("/api/csl.wasm"),
+        go.importObject
+      ).then(async (result) => {
+        await go.run(result.instance);
+        this.initCSL();
+      });
+    },
   },
   created() {
     this.profileID = parseInt(this.$route.params.profile_id);
@@ -355,15 +398,7 @@ export default {
     let savedPref = localStorage.getItem("show-generator");
     this.showGenerator = savedPref != "";
     this.initSplits();
-
-    let go = new Go();
-
-    WebAssembly.instantiateStreaming(
-      fetch("/api/csl.wasm"),
-      go.importObject
-    ).then((result) => {
-      go.run(result.instance);
-    });
+    this.initCSL();
   },
   watch: {
     showGenerator: function (newVal) {

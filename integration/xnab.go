@@ -3,7 +3,6 @@ package integration
 import (
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/mrobinsn/go-newznab/newznab"
@@ -44,7 +43,6 @@ func (x *Xnab) TestConnection() error {
 		// Check auth
 		_, err = x.client.SearchWithQuery([]int{newznab.CategoryMovieAll}, "The", "movie")
 	} else {
-		log.Println(caps)
 		return errors.New("Searching is not enabled")
 	}
 	return err

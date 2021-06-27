@@ -26,8 +26,19 @@
             </a>
           </div>
           <div>
-            <o-tooltip variant="info" position="bottom" label="Search Manually">
-              <div class="text-2xl text-gray-300">
+            <o-tooltip variant="info" :position="tooltipPosition" label="Search/Download Automatically">
+              <div class="text-2xl mx-2 text-gray-300">
+                <div v-if="!loadingAutoSearch" @click="searchManual">
+                  <o-icon
+                    class="cursor-pointer"
+                    icon="bolt"
+                  />
+                </div>
+                <o-icon v-else icon="sync-alt" spin />
+              </div>
+            </o-tooltip>
+            <o-tooltip variant="info" :position="tooltipPosition" label="Search Manually">
+              <div class="text-2xl mx-2 text-gray-300">
                 <div v-if="!loadingManualSearch" @click="searchManual">
                   <o-icon
                     class="cursor-pointer"
@@ -44,7 +55,6 @@
     </section>
     <o-table
       :data="releases"
-      striped
       narrowed
       hoverable
       :loading="loadingManualSearch"
@@ -137,6 +147,8 @@ export default {
       mediaID: 0,
       releases: [],
       loadingManualSearch: false,
+      loadingAutoSearch: false,
+      tooltipPosition: 'bottom'
     };
   },
   mixins: [MediaUtil],
@@ -167,6 +179,10 @@ export default {
     APIUtil.getMedia(this.mediaID).then((media) => {
       this.media = media;
     });
+    const screenWidth = window.innerWidth;
+    if (screenWidth < 768) {
+      this.tooltipPosition = "left";
+    }
   },
 };
 </script>

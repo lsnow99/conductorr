@@ -14,7 +14,7 @@ Within VS Code, select "Launch Backend" from the debug menu. You can set breakpo
 
 ### WebAssembly CSL Module
 
-Conductorr's profile editor page uses a WebAssembly module to do client-side validation and parsing of CSL scripts. Before developing on the frontend, you must generate this module using `./build.sh` (or `./build.bat` on Windows). This script assumes you have [Brotli](https://github.com/google/brotli) installed and available in your PATH.
+Conductorr's profile editor page uses a WebAssembly module to do client-side validation and parsing of CSL scripts. Before developing on the frontend, you must generate this module using `./build_csl.sh` (or `./build_csl.bat` on Windows). This script assumes you have [Brotli](https://github.com/google/brotli) installed and available in your PATH.
 
 > NOTE: If you skip this step, it is likely you will run into an issue where `wasm_exec.js` is not found when testing locally in the frontend, or when building for production.
 

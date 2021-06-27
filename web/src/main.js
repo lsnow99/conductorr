@@ -52,8 +52,12 @@ import {
   faCogs,
   faTrash,
   faEdit,
+  faBolt,
+  faDice,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+
+import { faGitAlt, faImdb } from "@fortawesome/free-brands-svg-icons";
 
 /*
 Import our router
@@ -124,6 +128,8 @@ library.add(faCheck);
 library.add(faCogs);
 library.add(faTrash);
 library.add(faEdit);
+library.add(faBolt);
+library.add(faDice);
 
 const app = createApp(App);
 app.use(store);
@@ -141,5 +147,4 @@ app.mount("#app");
 Import VueX devtools fix from https://github.com/erdemefe07/vuex4-devtools-support
 */
 import { addDevtools } from "./vuexdev";
-import { faGitAlt, faImdb } from "@fortawesome/free-brands-svg-icons";
 addDevtools(app, store);

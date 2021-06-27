@@ -49,29 +49,9 @@ const (
 const (
 	stringAtom = iota + 1
 	numberAtom
-	varAtom
-	addAtom
-	subAtom
-	multAtom
-	divAtom
-	defineAtom
-	inAtom
-	greaterAtom
-	allGreaterAtom
-	lessAtom
-	allLessAtom
-	greaterEqualAtom
-	allGreaterEqualAtom
-	lessEqualAtom
-	allLessEqualAtom
-	nthAtom
-	eqAtom
-	lengthAtom
-	ifAtom
 	boolAtom
-	andAtom
-	orAtom
-	notAtom
+	varAtom
+	fnAtom
 )
 
 type CSLParserError struct {
@@ -127,6 +107,11 @@ func (a Atom) boolVal() (bool, bool) {
 func (a Atom) varName() (string, bool) {
 	x, ok := a.v.(string)
 	return x, (ok && a.typ == varAtom)
+}
+
+func (a Atom) fnName() (string, bool) {
+	x, ok := a.v.(string)
+	return x, (ok && a.typ == fnAtom)
 }
 
 func (a Atom) Type() atomType {
@@ -310,53 +295,13 @@ func ParseAtomicToken(tok *Token) (*SExpr, error) {
 		sexpr.v = num
 		sexpr.typ = numberAtom
 	case symbolToken:
-		switch tok.val {
-		case "+":
-			sexpr.typ = addAtom
-		case "-":
-			sexpr.typ = subAtom
-		case "*":
-			sexpr.typ = multAtom
-		case "/":
-			sexpr.typ = divAtom
-		case "define":
-			sexpr.typ = defineAtom
-		case "in":
-			sexpr.typ = inAtom
-		case ">":
-			sexpr.typ = greaterAtom
-		case ">>":
-			sexpr.typ = allGreaterAtom
-		case "<":
-			sexpr.typ = lessAtom
-		case "<<":
-			sexpr.typ = allLessAtom
-		case ">=":
-			sexpr.typ = greaterEqualAtom
-		case ">>=":
-			sexpr.typ = allGreaterEqualAtom
-		case "<=":
-			sexpr.typ = lessEqualAtom
-		case "<<=":
-			sexpr.typ = allLessEqualAtom
-		case "nth":
-			sexpr.typ = nthAtom
-		case "eq":
-			sexpr.typ = eqAtom
-		case "len":
-			sexpr.typ = lengthAtom
-		case "if":
-			sexpr.typ = ifAtom
-		case "and":
-			sexpr.typ = andAtom
-		case "or":
-			sexpr.typ = orAtom
-		case "not":
-			sexpr.typ = notAtom
-		default:
+		if _, ok := builtins[tok.val]; ok {
+			sexpr.typ = fnAtom
+			sexpr.v = tok.val
+		} else {
 			sexpr.typ = varAtom
 			sexpr.v = tok.val
-		}
+		}		
 	}
 	return sexpr, err
 }

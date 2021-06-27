@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"log"
 	"net/http"
 	"strconv"
 
@@ -38,9 +37,5 @@ func SearchReleasesManual(w http.ResponseWriter, r *http.Request) {
 	xnab := integration.NewXnab(0, "7c1yDyAz12ZJDpUunuXyAeFxeFv0jjeI", "https://api.nzbgeek.info", "NZBGeek", "nzb")
 	xnab.TestConnection()
 	results, err := xnab.Search(&media)
-	if err != nil {
-		log.Println(err)
-	}
-	log.Println(results)
 	Respond(w, r.Host, err, results, true)
 }

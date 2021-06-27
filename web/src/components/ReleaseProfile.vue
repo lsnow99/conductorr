@@ -95,13 +95,6 @@ export default {
     },
   },
   methods: {
-    // Source: https://web.archive.org/web/20120507054320/http://codeaid.net/javascript/convert-size-in-bytes-to-human-readable-format-(javascript)
-    formatBitrate(bytes) {
-      var sizes = ["B", "KB", "MB", "GB", "TB"];
-      if (bytes == 0) return "0B/s";
-      var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
-      return Math.round(bytes / Math.pow(1024, i), 2) + " " + sizes[i] + "/s";
-    },
     dragEnded(values) {
       console.log(values);
     },
