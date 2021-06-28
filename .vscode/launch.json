@@ -15,7 +15,7 @@
       "name": "Launch Backend",
       "type": "go",
       "request": "launch",
-      "mode": "auto",
+      "mode": "debug",
       "program": "${workspaceFolder}/cmd/conductorr",
       "cwd": "${workspaceFolder}",
       "env": {

@@ -51,12 +51,6 @@
           <o-button
             class="mx-1 my-1 sm:my-0"
             variant="primary"
-            @click="validate"
-            >Validate</o-button
-          >
-          <o-button
-            class="mx-1 my-1 sm:my-0"
-            variant="primary"
             @click="updateProfile"
             >Save</o-button
           >
@@ -77,8 +71,15 @@
               <div>Editor</div>
               <div>
                 <o-button
+                  size="small"
+                  class="mx-1"
+                  @click="validate"
+                  >Validate</o-button
+                >
+                <o-button
                   variant="primary"
                   size="small"
+                  class="mx-1"
                   icon-right="play"
                   @click="run"
                   >Run</o-button
@@ -309,9 +310,9 @@ export default {
       });
 
       if (reset) {
-        localStorage.setItem("split-sizes12", "")
-        localStorage.setItem("split-sizes34", "")
-        localStorage.setItem("split-sizes56", "")
+        localStorage.setItem("split-sizes12", "");
+        localStorage.setItem("split-sizes34", "");
+        localStorage.setItem("split-sizes56", "");
       }
     },
     validate() {
@@ -328,7 +329,6 @@ export default {
         a: this.releaseA,
       };
       if (this.activeFunction == "sorter") env.b = this.releaseB;
-      console.log(env)
       Run(this.computedCode, env, (ok, err, result) => {
         if (!ok) {
           this.pushOutput("Execution error: " + err, "danger");

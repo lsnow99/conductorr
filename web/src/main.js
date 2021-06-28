@@ -54,6 +54,7 @@ import {
   faEdit,
   faBolt,
   faDice,
+  faWrench,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
@@ -130,6 +131,7 @@ library.add(faTrash);
 library.add(faEdit);
 library.add(faBolt);
 library.add(faDice);
+library.add(faWrench);
 
 const app = createApp(App);
 app.use(store);

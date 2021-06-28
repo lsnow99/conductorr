@@ -3,7 +3,30 @@
     <div class="flex flex-row justify-between text-2xl mt-2">
       <div>{{ title }}</div>
       <div>
-        <o-icon @click="randomize" class="cursor-pointer" icon="dice" />
+        <o-tooltip
+          class="text-base"
+          variant="info"
+          :position="tooltipPosition"
+          label="Clear"
+        >
+          <o-icon
+            @click="clear"
+            class="text-2xl cursor-pointer mx-1"
+            icon="times-circle"
+          />
+        </o-tooltip>
+        <o-tooltip
+          class="text-base"
+          variant="info"
+          :position="tooltipPosition"
+          label="Randomize"
+        >
+          <o-icon
+            @click="randomize"
+            class="text-2xl cursor-pointer mx-1"
+            icon="dice"
+          />
+        </o-tooltip>
       </div>
     </div>
     <div class="flex flex-row">
@@ -122,47 +145,47 @@
 </template>
 
 <script>
-import APIUtil from '../util/APIUtil';
+import APIUtil from "../util/APIUtil";
 import { RESOLUTION_TYPES, RIP_TYPES, ENCODING_TYPES } from "../util/Constants";
 
 const EXAMPLE_MOVIES = [
   {
     title: "Manos.The.Hands.of.Fate.1966.THEATRiCAL.1080p.BluRay.x264-SADPANDA",
-    resolution: "1080P",
+    resolution: "1080p",
     encoding: "x264",
     rip_type: "BDRip",
-    content_type: "movie"
+    content_type: "movie",
   },
   {
     title:
       "The.Last.Man.On.Earth.1964.1080p.BluRay.Plus.Comm.DTS.x264-MaG-Obfuscated",
-    resolution: "1080P",
+    resolution: "1080p",
     encoding: "x264",
     rip_type: "TELESYNC",
-    content_type: "movie"
+    content_type: "movie",
   },
   {
     title:
       "Night.of.the.Living.Dead.1968.1080p.BluRay.CRITERION.Plus.Comms.FLAC.x264-MaG-Obfuscated",
-    resolution: "1080P",
+    resolution: "1080p",
     encoding: "x264",
     rip_type: "BDRip",
-    content_type: "movie"
+    content_type: "movie",
   },
   {
     title:
       "Santa.Claus.Conquers.the.Martians.1964.1080p.BDRip.DTS.x265.10bit-MarkII",
-    resolution: "1080P",
+    resolution: "1080p",
     encoding: "x265",
     rip_type: "TELESYNC",
-    content_type: "movie"
+    content_type: "movie",
   },
   {
     title: "The.Terror.1963.720p.BluRay.DTS.x264-DJ",
-    resolution: "720P",
+    resolution: "720p",
     encoding: "x264",
     rip_type: "TELESYNC",
-    content_type: "movie"
+    content_type: "movie",
   },
 ];
 
@@ -173,7 +196,8 @@ export default {
       RIP_TYPES,
       ENCODING_TYPES,
       size: null,
-      indexers: []
+      indexers: [],
+      tooltipPosition: "bottom",
     };
   },
   props: {
@@ -196,8 +220,8 @@ export default {
       const release =
         EXAMPLE_MOVIES[Math.floor(Math.random() * EXAMPLE_MOVIES.length)];
       if (release.title == this.computedRelease.title) {
-        this.randomize()
-        return
+        this.randomize();
+        return;
       }
       const size = Math.floor(Math.random() * 15 * Math.pow(2, 30));
       release.size = size;
@@ -205,20 +229,28 @@ export default {
       release.runtime = Math.floor(Math.random() * 300);
       release.age = Math.floor(Math.random() * 3000);
 
-      if(this.indexers && this.indexers.length > 0) {
-        const randomIndexer = this.indexers[Math.floor(Math.random() * this.indexers.length)]
-        release.indexer = randomIndexer.name
-        release.download_type = randomIndexer.download_type
-        if (release.download_type == 'torrent') {
-          release.seeders = Math.floor(Math.random() * 50)
+      if (this.indexers && this.indexers.length > 0) {
+        const randomIndexer =
+          this.indexers[Math.floor(Math.random() * this.indexers.length)];
+        release.indexer = randomIndexer.name;
+        release.download_type = randomIndexer.download_type;
+        if (release.download_type == "torrent") {
+          release.seeders = Math.floor(Math.random() * 50);
         } else {
-          release.seeders = 0
+          release.seeders = 0;
         }
       }
 
       this.computedRelease = release;
     },
+    clear() {
+      this.size = null
+      this.$emit('update:modelValue', {})
+    },
     updateSize() {
+      if(this.size == null) {
+        return
+      }
       let newRelease = this.computedRelease;
       newRelease.size = this.size;
       switch (newRelease.sizeUnit) {
@@ -243,9 +275,13 @@ export default {
     },
   },
   mounted() {
-    APIUtil.getIndexers().then(indexers => {
-      this.indexers = indexers
-    })
+    APIUtil.getIndexers().then((indexers) => {
+      this.indexers = indexers;
+    });
+    const screenWidth = window.innerWidth;
+    if (screenWidth < 768) {
+      this.tooltipPosition = "left";
+    }
   },
   computed: {
     computedRelease: {

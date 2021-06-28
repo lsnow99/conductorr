@@ -4,7 +4,16 @@
       <img class="hidden md:block" :src="media.poster" />
       <div class="ml-4">
         <h1 class="text-4xl lg:text-6xl">{{ media.title }}</h1>
-        <div class="py-4 flex flex-row items-center justify-between px-4">
+        <div
+          class="
+            py-4
+            flex flex-col
+            sm:flex-row
+            sm:items-center
+            justify-between
+            px-4
+          "
+        >
           <div class="flex flex-row items-center">
             <div class="text-2xl mr-4 text-gray-300">
               {{ mediaYear(media) }}
@@ -25,25 +34,38 @@
               />
             </a>
           </div>
-          <div>
-            <o-tooltip variant="info" :position="tooltipPosition" label="Search/Download Automatically">
+          <div class="flex self-end">
+            <o-tooltip
+              variant="info"
+              :position="tooltipPosition"
+              label="Edit Media"
+            >
+              <div class="text-2xl mx-2 text-gray-300">
+                <div @click="editMedia">
+                  <o-icon class="cursor-pointer" icon="wrench" />
+                </div>
+              </div>
+            </o-tooltip>
+            <o-tooltip
+              variant="info"
+              :position="tooltipPosition"
+              label="Search/Download Automatically"
+            >
               <div class="text-2xl mx-2 text-gray-300">
                 <div v-if="!loadingAutoSearch" @click="searchManual">
-                  <o-icon
-                    class="cursor-pointer"
-                    icon="bolt"
-                  />
+                  <o-icon class="cursor-pointer" icon="bolt" />
                 </div>
                 <o-icon v-else icon="sync-alt" spin />
               </div>
             </o-tooltip>
-            <o-tooltip variant="info" :position="tooltipPosition" label="Search Manually">
+            <o-tooltip
+              variant="info"
+              :position="tooltipPosition"
+              label="Search Manually"
+            >
               <div class="text-2xl mx-2 text-gray-300">
                 <div v-if="!loadingManualSearch" @click="searchManual">
-                  <o-icon
-                    class="cursor-pointer"
-                    icon="search"
-                  />
+                  <o-icon class="cursor-pointer" icon="search" />
                 </div>
                 <o-icon v-else icon="sync-alt" spin />
               </div>
@@ -129,6 +151,12 @@
         />
       </o-table-column>
     </o-table>
+    <o-modal
+      v-model:active="showEditMediaModal"
+      @close="showEditMediaModal = false"
+    >
+      <edit-media :media="media" @close="showEditMediaModal = false" />
+    </o-modal>
   </page-wrapper>
 </template>
 
@@ -137,8 +165,7 @@ import PageWrapper from "../components/PageWrapper.vue";
 import APIUtil from "../util/APIUtil";
 import MediaUtil from "../util/MediaUtil";
 import Helpers from "../util/Helpers";
-
-const STATUS_TYPES = ["wanted", ""];
+import EditMedia from "../components/EditMedia.vue";
 
 export default {
   data() {
@@ -148,11 +175,12 @@ export default {
       releases: [],
       loadingManualSearch: false,
       loadingAutoSearch: false,
-      tooltipPosition: 'bottom'
+      tooltipPosition: "bottom",
+      showEditMediaModal: false,
     };
   },
   mixins: [MediaUtil],
-  components: { PageWrapper },
+  components: { PageWrapper, EditMedia },
   methods: {
     searchManual() {
       this.loadingManualSearch = true;
@@ -165,12 +193,15 @@ export default {
         });
     },
     download(release) {
-      const index = this.releases.findIndex(elem => elem.id == release.id)
+      const index = this.releases.findIndex((elem) => elem.id == release.id);
       if (index >= 0) {
-        this.releases[index].search = true
+        this.releases[index].search = true;
       }
     },
     niceSize: Helpers.niceSize,
+    editMedia() {
+      this.showEditMediaModal = true;
+    },
   },
   created() {
     this.mediaID = parseInt(this.$route.params.media_id);

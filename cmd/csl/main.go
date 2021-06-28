@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"syscall/js"
 
 	"github.com/lsnow99/conductorr/csl"
@@ -19,22 +20,80 @@ func Validate(this js.Value, args []js.Value) interface{} {
 	return nil
 }
 
-func buildRelease(release js.Value) csl.List {
+func buildRelease(release js.Value) (csl.List, error) {
+	title := strOrNil(release.Get("title"))
+	if title == nil {
+		return csl.List{}, fmt.Errorf("title is nil")
+	}
+	indexer := strOrNil(release.Get("indexer"))
+	if indexer == nil {
+		return csl.List{}, fmt.Errorf("indexer is nil")
+	}
+	downloadType := strOrNil(release.Get("download_type"))
+	if downloadType == nil {
+		return csl.List{}, fmt.Errorf("download_type is nil")
+	}
+	contentType := strOrNil(release.Get("content_type"))
+	if contentType == nil {
+		return csl.List{}, fmt.Errorf("content_type is nil")
+	}
+	ripType := strOrNil(release.Get("rip_type"))
+	if ripType == nil {
+		return csl.List{}, fmt.Errorf("rip_type is nil")
+	}
+	resolution := strOrNil(release.Get("resolution"))
+	if resolution == nil {
+		return csl.List{}, fmt.Errorf("resolution is nil")
+	}
+	encoding := strOrNil(release.Get("encoding"))
+	if encoding == nil {
+		return csl.List{}, fmt.Errorf("encoding is nil")
+	}
+	seeders := intOrNil(release.Get("seeders"))
+	if seeders == nil {
+		return csl.List{}, fmt.Errorf("seeders is nil")
+	}
+	age := intOrNil(release.Get("age"))
+	if age == nil {
+		return csl.List{}, fmt.Errorf("age is nil")
+	}
+	size := intOrNil(release.Get("size"))
+	if size == nil {
+		return csl.List{}, fmt.Errorf("size is nil")
+	}
+	runtime := intOrNil(release.Get("runtime"))
+	if runtime == nil {
+		return csl.List{}, fmt.Errorf("runtime is nil")
+	}
 	return csl.List{
 		Elems: []interface{}{
-			release.Get("title"),
-			release.Get("indexer"),
-			release.Get("download_type"),
-			release.Get("content_type"),
-			release.Get("rip_type"),
-			release.Get("resolution"),
-			release.Get("encoding"),
-			release.Get("seeders"),
-			release.Get("age"),
-			release.Get("size"),
-			release.Get("runtime"),
+			title,
+			indexer,
+			contentType,
+			downloadType,
+			ripType,
+			resolution,
+			encoding,
+			seeders,
+			age,
+			size,
+			runtime,
 		},
+	}, nil
+}
+
+func strOrNil(val js.Value) interface{} {
+	if val.IsNull() || val.IsUndefined() {
+		return nil
 	}
+	return val.String()
+}
+
+func intOrNil(val js.Value) interface{} {
+	if val.IsNull() || val.IsUndefined() {
+		return nil
+	}
+	return int64(val.Float())
 }
 
 func Run(this js.Value, args []js.Value) interface{} {
@@ -42,9 +101,19 @@ func Run(this js.Value, args []js.Value) interface{} {
 	env := make(map[string]interface{})
 	a := args[1].Get("a")
 	b := args[1].Get("b")
-	env["a"] = buildRelease(a)
+	aR, err := buildRelease(a)
+	if err != nil {
+		callback.Invoke(false, err.Error())
+		return nil
+	}
+	env["a"] = aR
 	if !b.IsUndefined() {
-		env["b"] = buildRelease(b)
+		bR, err := buildRelease(b)
+		if err != nil {
+			callback.Invoke(false, err.Error())
+			return nil
+		}
+		env["b"] = bR
 	}
 	go func() {
 		sexprs, err := csl.Parse(args[0].String())

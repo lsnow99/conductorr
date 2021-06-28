@@ -1,5 +1,7 @@
 package csl
 
+import "errors"
+
 type CSLEvalError struct {
 	Message  string
 	Internal bool
@@ -113,7 +115,7 @@ func EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace) (interface
 					} else {
 						val, ok := env[x]
 						if !ok {
-							trace.Err = ErrUndefinedVar
+							trace.Err = errors.New("undefined variable: " + x)
 							return nil, trace
 						}
 						list.Elems = append(list.Elems, val)

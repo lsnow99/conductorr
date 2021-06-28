@@ -1,8 +1,6 @@
 package main
 
 import (
-	"reflect"
-
 	"github.com/lsnow99/conductorr/constant"
 	"github.com/lsnow99/conductorr/csl"
 )
@@ -42,12 +40,16 @@ func init() {
 		return GetNthFromRelease(env, append([]interface{}{int64(10)}, args...)...)
 	})
 	csl.RegisterFunction("r-riptype-order", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
-		retVal, err := GetNthFromRelease(env, append([]interface{}{int64(5)}, args...)...)
+		retVal, err := GetNthFromRelease(env, append([]interface{}{int64(4)}, args...)...)
 		if err != nil {
 			return nil, err
 		}
+		retStr, ok := retVal.(string)
+		if !ok {
+			return nil, csl.ErrBadType
+		}
 		for val, opts := range constant.RipTypes {
-			if reflect.DeepEqual(val, retVal) {
+			if val == retStr {
 				return int64(opts.Priority), nil
 			}
 		}
@@ -58,24 +60,51 @@ func init() {
 		if err != nil {
 			return nil, err
 		}
+		retStr, ok := retVal.(string)
+		if !ok {
+			return nil, csl.ErrBadType
+		}
 		for val, opts := range constant.ResolutionTypes {
-			if reflect.DeepEqual(val, retVal) {
+			if val == retStr {
 				return int64(opts.Priority), nil
 			}
 		}
 		return int64(0), nil
 	})
 	csl.RegisterFunction("r-encoding-order", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
-		retVal, err := GetNthFromRelease(env, append([]interface{}{int64(5)}, args...)...)
+		retVal, err := GetNthFromRelease(env, append([]interface{}{int64(6)}, args...)...)
 		if err != nil {
 			return nil, err
 		}
+		retStr, ok := retVal.(string)
+		if !ok {
+			return nil, csl.ErrBadType
+		}
 		for val, opts := range constant.EncodingTypes {
-			if reflect.DeepEqual(val, retVal) {
+			if val == retStr {
 				return int64(opts.Priority), nil
 			}
 		}
 		return int64(0), nil
+	})
+	csl.RegisterFunction("r-bitrate", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		size, err := GetNthFromRelease(env, append([]interface{}{int64(9)}, args...)...)
+		if err != nil {
+			return nil, err
+		}
+		runtime, err := GetNthFromRelease(env, append([]interface{}{int64(10)}, args...)...)
+		if err != nil {
+			return nil, err
+		}
+		sizeNum, ok := size.(int64)
+		if !ok {
+			return nil, csl.ErrBadType
+		}
+		runtimeNum, ok := runtime.(int64)
+		if !ok {
+			return nil, csl.ErrBadType
+		}
+		return int64(sizeNum / (runtimeNum * 60)), nil
 	})
 }
 

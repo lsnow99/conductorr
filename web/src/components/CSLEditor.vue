@@ -24,13 +24,13 @@
 }
 
 /* optional class for removing the outline */
-:deep(.prism-editor__textarea:focus) {
+/* :deep(.prism-editor__textarea:focus) {
   outline: none;
-}
+} */
 
 /* attempt to remove word-wrap */
 :deep(.prism-editor__textarea) {
-  /* width: 5000px !important; */
+  width: 5000px !important;
 }
 :deep(.prism-editor__editor) {
   white-space: pre !important;
