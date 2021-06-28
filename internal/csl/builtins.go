@@ -1,4 +1,4 @@
-package main
+package csl
 
 import (
 	"github.com/lsnow99/conductorr/constant"

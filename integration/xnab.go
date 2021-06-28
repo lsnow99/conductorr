@@ -51,7 +51,7 @@ func (x *Xnab) TestConnection() error {
 func (x *Xnab) prepareResponse(nzbs []newznab.NZB, media *Media) []Release {
 	releases := make([]Release, len(nzbs))
 	for i, nzb := range nzbs {
-		releases[i] = NewRelease(nzb.ID, nzb.Title, nzb.Description, nzb.DownloadURL, nzb.Category, nzb.Size, nzb.AirDate, nzb.PubDate, media, x)
+		releases[i] = NewRelease(nzb.ID, nzb.Title, nzb.Description, nzb.DownloadURL, nzb.Category, nzb.Size, int64(nzb.Seeders), nzb.AirDate, nzb.PubDate, media, x)
 	}
 	return releases
 }

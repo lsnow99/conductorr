@@ -1,0 +1,5 @@
+BEGIN;
+
+ALTER TABLE media ADD COLUMN profile_id INTEGER REFERENCES profile(id);
+
+COMMIT;

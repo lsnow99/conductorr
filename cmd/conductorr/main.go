@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	_ "github.com/lsnow99/conductorr/internal/csl"
 	"github.com/lsnow99/conductorr"
 	"github.com/lsnow99/conductorr/dbstore"
 	"github.com/lsnow99/conductorr/routes"

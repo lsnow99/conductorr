@@ -2,15 +2,34 @@ package routes
 
 import (
 	"database/sql"
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/lsnow99/conductorr/dbstore"
 	"github.com/lsnow99/conductorr/services/omdb"
 )
+
+type MediaInput struct {
+	ID            int        `json:"id,omitempty"`
+	Title         string     `json:"title,omitempty"`
+	Description   string     `json:"description,omitempty"`
+	ReleasedAt    time.Time  `json:"released_at,omitempty"`
+	EndedAt       *time.Time `json:"ended_at,omitempty"`
+	ContentType   string     `json:"content_type,omitempty"`
+	Poster        string     `json:"poster,omitempty"`
+	ParentMediaID int        `json:"parent_media_id,omitempty"`
+	TmdbID        int        `json:"tmdb_id,omitempty"`
+	ImdbID        string     `json:"imdb_id,omitempty"`
+	TmdbRating    int        `json:"tmdb_rating,omitempty"`
+	ImdbRating    int        `json:"imdb_rating,omitempty"`
+	Runtime       int        `json:"runtime,omitempty"`
+	ProfileID     int        `json:"profile_id,omitempty"`
+}
 
 func AddMedia(w http.ResponseWriter, r *http.Request) {
 	imdbID := mux.Vars(r)["imdb_id"]
@@ -72,4 +91,21 @@ func GetMedia(w http.ResponseWriter, r *http.Request) {
 	}
 	media, err := dbstore.GetMediaByID(mediaID)
 	Respond(w, r.Host, err, NewMediaResponseFromDB(media), true)
+}
+
+func UpdateMedia(w http.ResponseWriter, r *http.Request) {
+	media := MediaInput{}
+	if err := json.NewDecoder(r.Body).Decode(&media); err != nil {
+		Respond(w, r.Host, err, nil, true)
+		return
+	}
+	idStr := mux.Vars(r)["id"]
+	idInt, err := strconv.Atoi(idStr)
+	if err != nil {
+		Respond(w, r.Host, err, nil, true)
+		return
+	}
+
+	err = dbstore.UpdateMedia(idInt, media.ProfileID)
+	Respond(w, r.Host, err, nil, true)
 }

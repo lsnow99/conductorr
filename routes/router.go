@@ -28,6 +28,7 @@ func GetRouter() http.Handler {
 	r.HandleFunc("/api/v1/add/{imdb_id}", AddMedia).Methods("POST")
 	r.HandleFunc("/api/v1/poster/{id}", GetPoster).Methods("GET")
 	r.HandleFunc("/api/v1/media/{id}", GetMedia).Methods("GET")
+	r.HandleFunc("/api/v1/media/{id}", UpdateMedia).Methods("PUT")
 	r.HandleFunc("/api/v1/media/{id}/searchReleasesManual", SearchReleasesManual).Methods("GET")
 	r.HandleFunc("/api/v1/testIndexer", TestIndexer).Methods("POST")
 	r.HandleFunc("/api/v1/indexer", CreateIndexer).Methods("POST")

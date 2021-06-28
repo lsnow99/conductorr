@@ -11,25 +11,26 @@ import (
 )
 
 type MediaResponse struct {
-	ID            int       `json:"id,omitempty"`
-	Title         string    `json:"title,omitempty"`
-	Description   string    `json:"description,omitempty"`
-	ReleasedAt    time.Time `json:"released_at,omitempty"`
+	ID            int        `json:"id,omitempty"`
+	Title         string     `json:"title,omitempty"`
+	Description   string     `json:"description,omitempty"`
+	ReleasedAt    time.Time  `json:"released_at,omitempty"`
 	EndedAt       *time.Time `json:"ended_at,omitempty"`
-	ContentType   string    `json:"content_type,omitempty"`
-	Poster        string    `json:"poster,omitempty"`
-	ParentMediaID int       `json:"parent_media_id,omitempty"`
-	TmdbID        int       `json:"tmdb_id,omitempty"`
-	ImdbID        string    `json:"imdb_id,omitempty"`
-	TmdbRating    int       `json:"tmdb_rating,omitempty"`
-	ImdbRating    int       `json:"imdb_rating,omitempty"`
-	Runtime       int       `json:"runtime,omitempty"`
+	ContentType   string     `json:"content_type,omitempty"`
+	Poster        string     `json:"poster,omitempty"`
+	ParentMediaID int        `json:"parent_media_id,omitempty"`
+	TmdbID        int        `json:"tmdb_id,omitempty"`
+	ImdbID        string     `json:"imdb_id,omitempty"`
+	TmdbRating    int        `json:"tmdb_rating,omitempty"`
+	ImdbRating    int        `json:"imdb_rating,omitempty"`
+	Runtime       int        `json:"runtime,omitempty"`
+	ProfileID     int        `json:"profile_id,omitempty"`
 
 	InLibrary bool `json:"in_library,omitempty"`
 }
 
 type SearchResponse struct {
-	TotalResults int              `json:"total_results"`
+	TotalResults int             `json:"total_results"`
 	Results      []MediaResponse `json:"results"`
 }
 
@@ -65,6 +66,9 @@ func NewMediaResponseFromDB(media dbstore.Media) (m MediaResponse) {
 	}
 	if media.ImdbRating.Valid {
 		m.ImdbRating = int(media.ImdbRating.Int32)
+	}
+	if media.ProfileID.Valid {
+		m.ProfileID = int(media.ProfileID.Int32)
 	}
 	return m
 }
@@ -130,7 +134,7 @@ func SearchNewByTitle(w http.ResponseWriter, r *http.Request) {
 
 	sr := SearchResponse{
 		TotalResults: omdbResults.TotalResults,
-		Results: medias,
+		Results:      medias,
 	}
 
 	Respond(w, r.Host, err, sr, true)
@@ -149,7 +153,7 @@ func SearchLibraryByTitle(w http.ResponseWriter, r *http.Request) {
 
 	// Search our own library
 	medias, total, err := dbstore.SearchMedia(query, contentType, page)
-	
+
 	results := make([]MediaResponse, 0)
 	for _, media := range medias {
 		if media == nil {

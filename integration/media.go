@@ -45,6 +45,8 @@ type Media struct {
 	Season int
 	// Episode (tv shows only)
 	Episode int
+	// Runtime minutes duration of media
+	Runtime int
 }
 
 func (m Media) QueryString() string {

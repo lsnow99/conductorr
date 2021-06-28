@@ -1,0 +1,5 @@
+BEGIN;
+
+ALTER TABLE media DROP COLUMN profile_id;
+
+COMMIT;

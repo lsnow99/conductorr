@@ -32,7 +32,7 @@ const doAPIReq = (url, options, errMsg = undefined) => {
               closable: false,
             })
           }
-          reject(`api request error: `, resp.msg);
+          reject(resp.msg);
         }
       })
       .catch((err) => {
@@ -272,6 +272,15 @@ const deletePath = (id) => {
   })
 }
 
+const updateMedia = (id, profile_id) => {
+  return doAPIReq(`/api/v1/media/${id}`, {
+    method: "PUT",
+    body: JSON.stringify({
+      profile_id
+    })
+  })
+}
+
 export default {
   signIn,
   signUp,
@@ -297,5 +306,6 @@ export default {
   deleteIndexer,
   updatePaths,
   getPaths,
-  deletePath
+  deletePath,
+  updateMedia
 };

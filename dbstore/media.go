@@ -68,10 +68,10 @@ func AddMedia(title *string, description *string, releasedAt *time.Time, endedAt
 			parent_media_id, tmdb_id, imdb_id, tmdb_rating, imdb_rating, runtime, poster)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		RETURNING id
-		`, ptrToNullString(title), ptrToNullString(description), released, 
-		ended,	ptrToNullString(contentType), ptrToNullInt32(parentMediaID), 
-		ptrToNullInt32(tmdbID),	ptrToNullString(imdbID), ptrToNullInt32(tmdbID), 
-		ptrToNullInt32(imdbRating),	ptrToNullInt32(runtime), poster)
+		`, ptrToNullString(title), ptrToNullString(description), released,
+		ended, ptrToNullString(contentType), ptrToNullInt32(parentMediaID),
+		ptrToNullInt32(tmdbID), ptrToNullString(imdbID), ptrToNullInt32(tmdbID),
+		ptrToNullInt32(imdbRating), ptrToNullInt32(runtime), poster)
 
 	err = row.Scan(&id)
 	if err != nil {
@@ -125,7 +125,7 @@ func GetMediaByID(id int) (media Media, err error) {
 	row := db.QueryRow(`
 		SELECT id, title, description, released_at, ended_at, content_type,
 			parent_media_id, tmdb_id, imdb_id, tmdb_rating, imdb_rating,
-			runtime
+			runtime, profile_id
 		FROM media
 		WHERE id = ?
 		`, id)
@@ -133,7 +133,14 @@ func GetMediaByID(id int) (media Media, err error) {
 	err = row.Scan(&media.ID, &media.Title, &media.Description, &media.ReleasedAt,
 		&media.EndedAt, &media.ContentType, &media.ParentMediaID,
 		&media.TmdbID, &media.ImdbID, &media.TmdbRating, &media.ImdbRating,
-		&media.Runtime)
+		&media.Runtime, &media.ProfileID)
 
 	return media, err
+}
+
+func UpdateMedia(id int, profileID int) (err error) {
+	_, err = db.Exec(`
+		UPDATE media SET profile_id = ? WHERE id = ?
+		`, profileID, id)
+	return err
 }

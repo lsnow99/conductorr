@@ -28,6 +28,7 @@ type Media struct {
 	Status        string
 	Path          sql.NullString
 	Size          sql.NullInt64
+	ProfileID	  sql.NullInt32
 }
 
 type Indexer struct {

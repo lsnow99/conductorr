@@ -132,9 +132,12 @@
         position="centered"
         v-slot="props"
       >
-        <o-tooltip variant="info" position="bottom" label="Search Manually">
+        <o-tooltip variant="info" position="bottom">
+          <template v-slot:content>
+            <div v-for="(warning, index) in props.row.warnings" :key="index">{{warning}}</div>
+          </template>
           <o-icon
-            class="bg-red-500"
+            class="text-red-500"
             v-if="props.row.warnings && props.row.warnings.length > 0"
             icon="exclamation-circle"
           />
@@ -187,6 +190,15 @@ export default {
       APIUtil.searchReleasesManual(this.mediaID)
         .then((releases) => {
           this.releases = releases;
+        })
+        .catch(err => {
+          this.$oruga.notification.open({
+            duration: 3000,
+            message: `Error searching: ${err}`,
+            variant: "danger",
+            closable: false,
+            position: "bottom-right"
+          })
         })
         .finally(() => {
           this.loadingManualSearch = false;
