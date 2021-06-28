@@ -164,7 +164,7 @@ export default {
           if (resp.success) {
             this.$oruga.notification.open({
               duration: 5000,
-              message: `Test succeeded`,
+              message: `Connected successfully`,
               position: "bottom-right",
               variant: "success",
               closable: false,

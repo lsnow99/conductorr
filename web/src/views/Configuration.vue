@@ -85,7 +85,7 @@ import Indexers from "./Indexers.vue";
 import NewDownloader from "../components/NewDownloader.vue";
 import PageWrapper from "../components/PageWrapper.vue";
 import ReleaseProfiles from "./ReleaseProfiles.vue";
-import Downloaders from "../components/Downloaders.vue";
+import Downloaders from "./Downloaders.vue";
 import PostProcessing from "./PostProcessing.vue";
 
 export default {

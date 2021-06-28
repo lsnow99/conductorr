@@ -1,7 +1,6 @@
 package integration
 
 import (
-	"encoding/json"
 	"errors"
 	"net/url"
 	"strconv"
@@ -17,12 +16,6 @@ type Transmission struct {
 	downloads []Download
 }
 
-type TransmissionConfig struct {
-	Username string
-	Password string
-	URL      string
-}
-
 func NewTransmission(username, password, baseUrl string) *Transmission {
 	return &Transmission{
 		username: username,
@@ -31,13 +24,15 @@ func NewTransmission(username, password, baseUrl string) *Transmission {
 	}
 }
 
-func NewTransmissionFromConfig(configuration string) (*Transmission, error) {
-	cfg := TransmissionConfig{}
-	if err := json.Unmarshal([]byte(configuration), &cfg); err != nil {
-		return nil, err
+func NewTransmissionFromConfig(configuration map[string]interface{}) (*Transmission, error) {
+	username, uOK := configuration["username"].(string)
+	password, pOK := configuration["password"].(string)
+	baseUrl, bOK := configuration["base_url"].(string)
+	if !uOK || !pOK || !bOK {
+		return nil, errors.New("failed to parse transmission configuration")
 	}
 
-	return NewTransmission(cfg.Username, cfg.Password, cfg.URL), nil
+	return NewTransmission(username, password, baseUrl), nil
 }
 
 func (t *Transmission) Init() error {
@@ -48,6 +43,8 @@ func (t *Transmission) Init() error {
 		port = "80"
 	} else if port == "" && endpoint.Scheme == "https" {
 		port = "443"
+	} else if port == "" {
+		return errors.New("Invalid URL")
 	}
 
 	portInt, err := strconv.ParseUint(port, 10, 16)
@@ -83,13 +80,13 @@ func (t *Transmission) AddMedia(media *Media) error {
 	falseVal := false
 	addPayload := transmissionrpc.TorrentAddPayload{
 		Filename: &media.URL,
-		Paused: &falseVal,
+		Paused:   &falseVal,
 	}
 	torrent, err := t.client.TorrentAdd(&addPayload)
 	if err != nil {
 		return err
 	}
-	
+
 	if torrent.HashString == nil {
 		return errors.New("transmission did not return a hash string")
 	}

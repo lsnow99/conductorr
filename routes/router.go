@@ -39,6 +39,10 @@ func GetRouter() http.Handler {
 	r.HandleFunc("/api/v1/path", GetPaths).Methods("GET")
 	r.HandleFunc("/api/v1/path", SetPaths).Methods("PUT")
 	r.HandleFunc("/api/v1/path/{id}", DeletePath).Methods("DELETE")
+	r.HandleFunc("/api/v1/testDownloader", TestDownloader).Methods("POST")
+	r.HandleFunc("/api/v1/downloader", NewDownloader).Methods("POST")
+	r.HandleFunc("/api/v1/downloader", GetDownloaders).Methods("GET")
+	r.HandleFunc("/api/v1/downloader/{id}", UpdateDownloader).Methods("PUT")
 	r.Use(AuthMiddleware)
 
 	if settings.ResetUser {

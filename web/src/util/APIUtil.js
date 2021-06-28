@@ -7,6 +7,7 @@ const doAPIReq = (url, options, errMsg = undefined) => {
     fetch(url, options)
       .then((re) => re.json())
       .then((resp) => {
+        console.log(resp)
         if (resp.success) {
           if (resp.data !== undefined) {
             resolve(resp.data);
@@ -281,6 +282,41 @@ const updateMedia = (id, profile_id) => {
   })
 }
 
+const testDownloader = (downloader_type, config) => {
+  return doAPIReq(`/api/v1/testDownloader`, {
+    method: "POST",
+    body: JSON.stringify({
+      downloader_type,
+      config,
+    })
+  })
+}
+
+const newDownloader = (downloader_type, config) => {
+  return doAPIReq(`/api/v1/downloader`, {
+    method: "POST",
+    body: JSON.stringify({
+      downloader_type,
+      config
+    })
+  })
+}
+
+const getDownloaders = () => {
+  return doAPIReq(`/api/v1/downloader`, {
+    method: "GET",
+  })
+}
+
+const updateDownloader = (id, config) => {
+  return doAPIReq(`/api/v1/downloader/${id}`, {
+    method: "PUT",
+    body: JSON.stringify({
+      config
+    })
+  })
+}
+
 export default {
   signIn,
   signUp,
@@ -307,5 +343,9 @@ export default {
   updatePaths,
   getPaths,
   deletePath,
-  updateMedia
+  updateMedia,
+  testDownloader,
+  newDownloader,
+  getDownloaders,
+  updateDownloader
 };

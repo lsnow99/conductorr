@@ -41,3 +41,9 @@ type Indexer struct {
 	ForSeries bool
 	DownloadType string
 }
+
+type Downloader struct {
+	ID int
+	DownloaderType string
+	Config map[string]interface{}
+}

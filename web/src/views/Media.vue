@@ -75,6 +75,8 @@
         <p class="text-lg">{{ media.description }}</p>
       </div>
     </section>
+    <section 
+      class="mt-4">
     <o-table
       :data="releases"
       narrowed
@@ -154,6 +156,7 @@
         />
       </o-table-column>
     </o-table>
+    </section>
     <o-modal
       v-model:active="showEditMediaModal"
       @close="showEditMediaModal = false"

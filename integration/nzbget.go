@@ -1,7 +1,6 @@
 package integration
 
 import (
-	"encoding/json"
 	"errors"
 	"net/url"
 	"strconv"
@@ -12,94 +11,90 @@ import (
 type NZBGet struct {
 	username  string
 	password  string
-	baseUrl       string
+	baseUrl   string
 	rpcClient *rpc.Client
 	downloads []Download
 }
 
-type NZBGetConfig struct {
-	Username string
-	Password string
-	URL      string
-}
-
 type DownloadEntry struct {
-	NZBID int
-	NZBFilename string
-	NZBName string
-	Kind string
-	URL string
-	DestDir string
-	FinalDir string
-	Category string
-	FileSizeLo uint
-	FileSizeHi uint
-	FileSizeMB int
-	RemainingSizeLo uint
-	RemainingSizeHi uint
-	RemainingSizeMB int
-	PausedSizeLo uint
-	PausedSizeHi uint
-	PausedSizeMB int
-	FileCount int
+	NZBID              int
+	NZBFilename        string
+	NZBName            string
+	Kind               string
+	URL                string
+	DestDir            string
+	FinalDir           string
+	Category           string
+	FileSizeLo         uint
+	FileSizeHi         uint
+	FileSizeMB         int
+	RemainingSizeLo    uint
+	RemainingSizeHi    uint
+	RemainingSizeMB    int
+	PausedSizeLo       uint
+	PausedSizeHi       uint
+	PausedSizeMB       int
+	FileCount          int
 	RemainingFileCount int
-	RemainingParCount int
-	MinPostTime int
-	MaxPostTime int
-	MaxPriority int
-	ActiveDownloads int
-	Status string
-	TotalArticles int
-	SuccessArticles int
-	FailedArticles int
-	Health int
-	CriticalHealth int
-	DownloadedSizeLo uint
-	DownlaodedSizeHi uint
-	DownloadedSizeMB int
-	DownloadTimeSec int
-	MessageCount int
-	DupeKey string
-	DupeScore int
-	DupeMode string
-	Parameters []struct{
-		Name string
+	RemainingParCount  int
+	MinPostTime        int
+	MaxPostTime        int
+	MaxPriority        int
+	ActiveDownloads    int
+	Status             string
+	TotalArticles      int
+	SuccessArticles    int
+	FailedArticles     int
+	Health             int
+	CriticalHealth     int
+	DownloadedSizeLo   uint
+	DownlaodedSizeHi   uint
+	DownloadedSizeMB   int
+	DownloadTimeSec    int
+	MessageCount       int
+	DupeKey            string
+	DupeScore          int
+	DupeMode           string
+	Parameters         []struct {
+		Name  string
 		Value string
 	}
-	ParStatus string
+	ParStatus    string
 	UnpackStatus string
-	MoveStatus string
-	ScriptStatus []struct{
-		Name string
+	MoveStatus   string
+	ScriptStatus []struct {
+		Name   string
 		Status string
 	}
-	DeleteStatus string
-	MarkStatus string
-	ScriptStatuses string
+	DeleteStatus     string
+	MarkStatus       string
+	ScriptStatuses   string
 	PostTotalTimeSec int
-	ParTimeSec int
-	RepairTimeSec int
-	UnpackTimeSec int
-	PostInfoText string
+	ParTimeSec       int
+	RepairTimeSec    int
+	UnpackTimeSec    int
+	PostInfoText     string
 }
 
 func NewNZBGet(username, password, baseUrl string) *NZBGet {
 	n := &NZBGet{
 		username: username,
 		password: password,
-		baseUrl:      baseUrl,
+		baseUrl:  baseUrl,
 	}
 
 	return n
 }
 
-func NewNZBGetFromConfig(configuration string) (*NZBGet, error) {
-	cfg := NZBGetConfig{}
-	if err := json.Unmarshal([]byte(configuration), &cfg); err != nil {
-		return nil, err
+func NewNZBGetFromConfig(configuration map[string]interface{}) (*NZBGet, error) {
+	username, uOK := configuration["username"].(string)
+	password, pOK := configuration["password"].(string)
+	baseUrl, bOK := configuration["base_url"].(string)
+	if !uOK || !pOK || !bOK {
+		return nil, errors.New("failed to parse nzbget configuration")
 	}
 
-	return NewNZBGet(cfg.Username, cfg.Password, cfg.URL), nil
+	return NewNZBGet(username, password, baseUrl), nil
 }
 
 func (n *NZBGet) Init() error {
@@ -116,16 +111,16 @@ func (n *NZBGet) Init() error {
 	return nil
 }
 
-func (n *NZBGet) GetConfig() string {
-	cfg := NZBGetConfig{
-		Username: n.username,
-		Password: n.password,
-		URL:      n.baseUrl,
-	}
-	data, _ := json.Marshal(cfg)
+// func (n *NZBGet) GetConfig() string {
+// 	cfg := NZBGetConfig{
+// 		Username: n.username,
+// 		Password: n.password,
+// 		URL:      n.baseUrl,
+// 	}
+// 	data, _ := json.Marshal(cfg)
 
-	return string(data)
-}
+// 	return string(data)
+// }
 
 func (n *NZBGet) TestConnection() error {
 	var ver string
@@ -162,7 +157,7 @@ func (n *NZBGet) AddMedia(media *Media) error {
 	return nil
 }
 
-func (n *NZBGet) PollDownloads() error {
+func (n *NZBGet) PollDownloads(names []string) error {
 	entries := make([]DownloadEntry, 0)
 
 	if err := n.rpcClient.Call(&entries, "listgroups"); err != nil {

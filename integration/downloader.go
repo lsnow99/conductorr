@@ -1,6 +1,9 @@
 package integration
 
-import "time"
+import (
+	"errors"
+	"time"
+)
 
 type Downloader interface {
 	AddMedia(*Media) error
@@ -11,6 +14,8 @@ type Downloader interface {
 	*/
 	PollDownloads([]string) error
 	GetDownloads() []Download
+	TestConnection() error
+	Init() error
 }
 
 type Download struct {
@@ -24,4 +29,14 @@ type Download struct {
 	BytesLeft uint64
 	// FullSize full size of the download in bytes
 	FullSize uint64
+}
+
+func NewDownloaderFromConfig(downloaderType string, config map[string]interface{}) (Downloader, error) {
+	switch downloaderType {
+	case "transmission":
+		return NewTransmissionFromConfig(config)
+	case "nzbget":
+		return NewNZBGetFromConfig(config)
+	}
+	return nil, errors.New("no such downloader registered")
 }
