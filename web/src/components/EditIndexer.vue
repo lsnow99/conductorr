@@ -207,6 +207,9 @@ export default {
       this.computedIndexer.api_key = this.computedIndexer.api_key
         ? this.computedIndexer.api_key.trim()
         : undefined;
+      if (this.computedIndexer.base_url.endsWith('/')) {
+        this.computedIndexer.base_url = this.computedIndexer.base_url.slice(0, -1)
+      }
     },
     validate() {
       if (!this.computedIndexer.name) {
