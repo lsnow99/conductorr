@@ -17,10 +17,6 @@ const (
 )
 
 type Media struct {
-	// Identifier for the media, could be the hash or the nzb name
-	Identifier string
-	// FriendlyName readable name for the download
-	FriendlyName string
 	// Title of the content
 	Title string
 	// Year of the content

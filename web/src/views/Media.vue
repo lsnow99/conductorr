@@ -90,10 +90,10 @@
         v-slot="props"
         position="centered"
       >
-        <div v-if="props.row.download_type == 'torrent'" class="bg-green-500">
+        <div v-if="props.row.download_type == 'torrent'" class="font-bold bg-green-500">
           torrent
         </div>
-        <div v-if="props.row.download_type == 'nzb'" class="bg-blue-500">
+        <div v-if="props.row.download_type == 'nzb'" class="font-bold bg-blue-500">
           nzb
         </div>
       </o-table-column>
@@ -211,6 +211,7 @@ export default {
       const index = this.releases.findIndex((elem) => elem.id == release.id);
       if (index >= 0) {
         this.releases[index].search = true;
+        APIUtil.downloadRelease(this.mediaID, )
       }
     },
     niceSize: Helpers.niceSize,

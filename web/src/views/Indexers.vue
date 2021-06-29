@@ -3,18 +3,20 @@
     <o-button variant="primary" @click="showNewIndexerModal = true"
       >Add Indexer</o-button
     >
-    <config-item v-for="indexer in indexers" :key="indexer.id" :title="indexer.name" @edit="editIndexer(indexer)" @delete="deleteIndexer(indexer)">
+    <config-item :delete-message="`Are you sure you want to delete indexer '${indexer.name}'?`" v-for="indexer in indexers" :key="indexer.id" :title="indexer.name" @edit="editIndexer(indexer)" @delete="deleteIndexer(indexer)">
+      <div>
       <o-field label="Base URL">
         <o-input type="text" disabled v-model="indexer.base_url" />
       </o-field>
       <o-field label="API Key">
-        <o-input type="text" disabled v-model="indexer.base_url" />
+        <o-input type="text" disabled v-model="indexer.api_key" />
       </o-field>
       <div class="mt-3 flex flex-col">
         <o-switch disabled v-model="indexer.for_movies"
           >Use for Movies</o-switch
         >
         <o-switch disabled v-model="indexer.for_series">Use for TV</o-switch>
+      </div>
       </div>
     </config-item>
     <o-modal v-model:active="showNewIndexerModal">

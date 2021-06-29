@@ -4,10 +4,11 @@
   </header>
   <section class="modal-card-content">
     <div>
+      {{computedTest}}
       <o-field label="Name">
         <o-input
           type="text"
-          v-model="computedTransmission.name"
+          v-model="computedName"
           placeholder="Name"
         />
       </o-field>
@@ -48,6 +49,7 @@
 <script>
 import APIUtil from '../util/APIUtil';
 import ActionButton from "./ActionButton.vue";
+import DownloaderUtil from "../util/DownloaderUtil";
 
 export default {
   data() {
@@ -64,6 +66,7 @@ export default {
       },
     },
   },
+  mixins: [ DownloaderUtil ],
   components: {
     ActionButton,
   },
@@ -115,15 +118,15 @@ export default {
         });
     },
     sanitize() {
-      this.computedTransmission.name = this.computedTransmission.name
-        ? this.computedTransmission.name.trim()
+      this.computedName = this.computedName
+        ? this.computedName.trim()
         : undefined;
       this.computedTransmission.base_url = this.computedTransmission.base_url
         ? this.computedTransmission.base_url.trim()
         : undefined;
     },
     validate() {
-      if (!this.computedTransmission.name) {
+      if (!this.computedName) {
         return "Name is required";
       } else if (!this.computedTransmission.base_url) {
         return "Base URL is required";

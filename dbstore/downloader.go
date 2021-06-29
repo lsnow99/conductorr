@@ -2,17 +2,17 @@ package dbstore
 
 import "encoding/json"
 
-func NewDownloader(downloaderType string, config map[string]interface{}) error {
+func NewDownloader(downloaderType, name string, config map[string]interface{}) error {
 	configStr, err := json.Marshal(config)
 	if err != nil {
 		return err
 	}
-	_, err = db.Exec(`INSERT INTO downloader (downloader_type, config) VALUES (?, ?)`, downloaderType, configStr)
+	_, err = db.Exec(`INSERT INTO downloader (downloader_type, name, config) VALUES (?, ?, ?)`, downloaderType, name, configStr)
 	return err
 }
 
 func GetDownloaders() (downloaders []Downloader, err error) {
-	rows, err := db.Query(`SELECT id, downloader_type, config FROM downloader WHERE true`)
+	rows, err := db.Query(`SELECT id, downloader_type, name, config FROM downloader WHERE true`)
 	if err != nil {
 		return nil, err
 	}
@@ -20,7 +20,7 @@ func GetDownloaders() (downloaders []Downloader, err error) {
 	for rows.Next() {
 		downloader := Downloader{}
 		var configStr string
-		err := rows.Scan(&downloader.ID, &downloader.DownloaderType, &configStr)
+		err := rows.Scan(&downloader.ID, &downloader.DownloaderType, &downloader.Name, &configStr)
 		if err != nil {
 			return nil, err
 		}
@@ -33,11 +33,16 @@ func GetDownloaders() (downloaders []Downloader, err error) {
 	return downloaders, nil
 }
 
-func UpdateDownloader(id int, config map[string]interface{}) error {
+func UpdateDownloader(id int, name string, config map[string]interface{}) error {
 	configStr, err := json.Marshal(config)
 	if err != nil {
 		return err
 	}
-	_, err = db.Exec(`UPDATE downloader SET config = ? WHERE id = ?`, configStr, id)
+	_, err = db.Exec(`UPDATE downloader SET config = ?, name = ? WHERE id = ?`, configStr, name, id)
+	return err
+}
+
+func DeleteDownloader(id int) error {
+	_, err := db.Exec(`DELETE FROM downloader WHERE id = ?`, id)
 	return err
 }

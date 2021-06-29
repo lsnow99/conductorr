@@ -6,7 +6,7 @@ import (
 )
 
 type Downloader interface {
-	AddMedia(*Media) error
+	AddRelease(*Release) error
 	/*
 		PollDownloads takes a string of download ID's (typically hashes for torrents or nzb ids
 		for nzbget) and performs a refresh for the status of all the downloads identified in the
@@ -19,8 +19,8 @@ type Downloader interface {
 }
 
 type Download struct {
-	// Media embedded struct
-	Media
+	// Release embedded struct
+	Release
 	// Status of the media
 	Status int
 	// Started time

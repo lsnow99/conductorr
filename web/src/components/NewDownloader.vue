@@ -32,7 +32,7 @@
 
 <style scoped>
 .downloader {
-  @apply border-dashed border-4 border-gray-300 py-8 px-16 m-2 text-2xl cursor-pointer hover:opacity-50 flex justify-center font-bold select-none;
+  @apply border-dashed border-4 border-gray-300 py-8 px-16 m-2 text-2xl cursor-pointer hover:opacity-70 flex justify-center font-bold select-none;
 }
 
 .downloader.active {

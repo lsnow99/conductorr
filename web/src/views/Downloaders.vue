@@ -1,14 +1,24 @@
 <template>
   <section class="mt-3">
-    <div v-for="downloader in downloaders" :key="downloader.id">
-      {{ downloader
-      }}<o-button variant="primary" @click="editDownloader(downloader)"
-        >Edit</o-button
-      >
-    </div>
-    <o-button @click="showNewDownloaderModal = true" variant="primary"
+    <o-button @click="showNewDownloader" variant="primary"
       >Add Downloader</o-button
     >
+    <config-item
+      @edit="editDownloader(downloader)"
+      @delete="deleteDownloader(downloader)"
+      collapsible
+      :title="downloader.name"
+      :delete-message="`Are you sure you want to delete downloader '${downloader.name}'?`"
+      v-for="downloader in downloaders"
+      :key="downloader.id"
+    >
+      <div class="flex flex-col">
+        Configuration:
+        <code class="bg-gray-800 whitespace-pre p-2">
+          {{ JSON.stringify(downloader.config, null, 4) }}
+        </code>
+      </div>
+    </config-item>
     <o-modal v-model:active="showNewDownloaderModal" @close="close">
       <new-downloader
         v-if="downloaderType == ''"
@@ -17,6 +27,7 @@
       />
       <edit-transmission
         v-if="downloaderType == 'transmission'"
+        v-model:name="editingName"
         @submit="newTransmission"
         @close="closeNewDownloaderModal"
       />
@@ -27,6 +38,7 @@
     >
       <edit-transmission
         :transmission="editingDownloader.config"
+        v-model:name="editingName"
         @submit="updateTransmission"
         @close="showEditDownloaderModal = false"
       />
@@ -38,6 +50,7 @@
 import NewDownloader from "../components/NewDownloader.vue";
 import EditTransmission from "../components/EditTransmission.vue";
 import APIUtil from "../util/APIUtil";
+import ConfigItem from "../components/ConfigItem.vue";
 
 export default {
   data() {
@@ -47,11 +60,13 @@ export default {
       downloaderType: "",
       downloaders: [],
       editingDownloader: {},
+      editingName: "",
     };
   },
   components: {
     NewDownloader,
     EditTransmission,
+    ConfigItem,
   },
   methods: {
     selectedDownloader(downloaderType) {
@@ -71,9 +86,22 @@ export default {
     editDownloader(downloader) {
       this.showEditDownloaderModal = true;
       this.editingDownloader = downloader;
+      this.editingName = downloader.name;
     },
-    updateDownloader(id, config) {
-      APIUtil.updateDownloader(id, config).then(() => {
+    deleteDownloader(downloader) {
+      APIUtil.deleteDownloader(downloader.id).then(() => {
+        this.$oruga.notification.open({
+          duration: 3000,
+          message: `Deleted successfully`,
+          position: "bottom-right",
+          variant: "success",
+          closable: false,
+        });
+        this.loadDownloaders()
+      })
+    },
+    updateDownloader(id, name, config) {
+      APIUtil.updateDownloader(id, name, config).then(() => {
         this.$oruga.notification.open({
           duration: 3000,
           message: `Updated successfully`,
@@ -84,9 +112,9 @@ export default {
         this.showEditDownloaderModal = false;
         this.loadDownloaders();
       });
-      },
-    newDownloader(downloaderType, config) {
-      APIUtil.newDownloader(downloaderType, config).then(() => {
+    },
+    newDownloader(downloaderType, name, config) {
+      APIUtil.newDownloader(downloaderType, name, config).then(() => {
         this.$oruga.notification.open({
           duration: 3000,
           message: `Created successfully`,
@@ -99,11 +127,20 @@ export default {
       });
     },
     newTransmission(config) {
-      this.newDownloader("transmission", config);
+      this.newDownloader("transmission", this.editingName, config);
     },
     updateTransmission(config) {
-        this.updateDownloader(this.editingDownloader.id, config)
+      this.updateDownloader(
+        this.editingDownloader.id,
+        this.editingName,
+        config
+      );
     },
+    showNewDownloader() {
+      this.downloaderType = ""
+      this.editingName = ""
+      this.showNewDownloaderModal = true
+    }
   },
   mounted() {
     this.loadDownloaders();

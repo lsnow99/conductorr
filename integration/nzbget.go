@@ -127,19 +127,22 @@ func (n *NZBGet) TestConnection() error {
 	return n.rpcClient.Call(&ver, "version")
 }
 
-func (n *NZBGet) AddMedia(media *Media) error {
+func (n *NZBGet) AddRelease(release *Release) error {
+	if release == nil {
+		return errors.New("release is null, cannot add to nzbget")
+	}
 	var code, priority int
 
-	if media.HighPriority {
+	if release.HighPriority {
 		priority = 100
 	}
 	if err := n.rpcClient.Call(&code,
 		"append",
 		"",
-		media.URL,
-		media.Category,
+		release.DownloadURL,
+		release.Indexer,
 		priority,
-		media.HighPriority,
+		release.HighPriority,
 		false,
 		"",
 		0,
@@ -152,7 +155,7 @@ func (n *NZBGet) AddMedia(media *Media) error {
 		return errors.New("error adding media to nzbget")
 	}
 
-	media.Identifier = strconv.Itoa(code)
+	release.Identifier = strconv.Itoa(code)
 
 	return nil
 }

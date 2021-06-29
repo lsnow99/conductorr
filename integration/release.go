@@ -11,39 +11,46 @@ import (
 )
 
 type Release struct {
-	ID          string    `json:"id"`
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	DownloadURL string    `json:"download_url"`
-	Categories  []string  `json:"categories"`
-	Size        int64     `json:"size"`
-	Seeders     int64     `json:"seeders"`
-	AirDate     time.Time `json:"air_date"`
-	PubDate     time.Time `json:"pub_date"`
-	Media       *Media    `json:"-"`
-	Age         int       `json:"age"`
-	RipType     string    `json:"rip_type"`
-	Resolution  string    `json:"resolution"`
-	Encoding    string    `json:"encoding"`
-	DownloadType string `json:"download_type"`
-	Indexer string `json:"indexer"`
-	Warnings []string `json:"warnings"`
+	ID           string    `json:"id,omitempty"`
+	Title        string    `json:"title,omitempty"`
+	Description  string    `json:"description,omitempty"`
+	DownloadURL  string    `json:"download_url,omitempty"`
+	Categories   []string  `json:"categories,omitempty"`
+	Size         int64     `json:"size,omitempty"`
+	Seeders      int64     `json:"seeders,omitempty"`
+	AirDate      time.Time `json:"air_date,omitempty"`
+	PubDate      time.Time `json:"pub_date,omitempty"`
+	Age          int       `json:"age,omitempty"`
+	RipType      string    `json:"rip_type,omitempty"`
+	Resolution   string    `json:"resolution,omitempty"`
+	Encoding     string    `json:"encoding,omitempty"`
+	DownloadType string    `json:"download_type,omitempty"`
+	Indexer      string    `json:"indexer,omitempty"`
+	Warnings     []string  `json:"warnings,omitempty"`
+	Media        *Media    `json:"media,omitempty"`
+
+	// Identifier for the media, could be the hash or the nzb name
+	Identifier string
+	// HighPriority whether to download with high priority
+	HighPriority bool
+	// FriendlyName friendly name from indexer
+	FriendlyName string
 }
 
 func NewRelease(id, title, description, downloadURL string, categories []string, size, seeders int64, airDate, pubDate time.Time, media *Media, indexer *Xnab) Release {
 	release := Release{
-		ID: id,
-		Title: title,
-		Description: description,
-		DownloadURL: downloadURL,
-		Categories: categories,
-		Size: size,
-		Seeders: seeders,
-		AirDate: airDate,
-		PubDate: pubDate,
-		Media: media,
+		ID:           id,
+		Title:        title,
+		Description:  description,
+		DownloadURL:  downloadURL,
+		Categories:   categories,
+		Size:         size,
+		Seeders:      seeders,
+		AirDate:      airDate,
+		PubDate:      pubDate,
+		Media:        media,
 		DownloadType: indexer.downloadType,
-		Indexer: indexer.name,
+		Indexer:      indexer.name,
 	}
 
 	// Calculate age in days
@@ -117,7 +124,7 @@ func FilterReleases(releases []Release, filter string) ([]Release, []Release, er
 		if !ok {
 			return nil, nil, fmt.Errorf("csl script returned non boolean value %v", val)
 		}
-		if (include) {
+		if include {
 			included = append(included, release)
 		} else {
 			excluded = append(excluded, release)
@@ -128,9 +135,9 @@ func FilterReleases(releases []Release, filter string) ([]Release, []Release, er
 
 /*
 SortReleases takes a pointer to a slice of Releases, as well as a CSL script
-whose job is to return true if release A should be preferred over release B, 
+whose job is to return true if release A should be preferred over release B,
 and false otherwise. The CSL script will be run with the `a` and `b` variables
-set to the CSL list representation of the pair of releases. The CSL script 
+set to the CSL list representation of the pair of releases. The CSL script
 should always return either true or false. True means release A > release B.
 
 If this function ends due to an error, correctness is not guaranteed, and

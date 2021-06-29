@@ -76,10 +76,13 @@ func (t *Transmission) TestConnection() error {
 	return nil
 }
 
-func (t *Transmission) AddMedia(media *Media) error {
+func (t *Transmission) AddRelease(release *Release) error {
+	if release == nil {
+		return errors.New("release passed to transmission was nil")
+	}
 	falseVal := false
 	addPayload := transmissionrpc.TorrentAddPayload{
-		Filename: &media.URL,
+		Filename: &release.DownloadURL,
 		Paused:   &falseVal,
 	}
 	torrent, err := t.client.TorrentAdd(&addPayload)
@@ -90,7 +93,7 @@ func (t *Transmission) AddMedia(media *Media) error {
 	if torrent.HashString == nil {
 		return errors.New("transmission did not return a hash string")
 	}
-	media.Identifier = *torrent.HashString
+	release.Identifier = *torrent.HashString
 
 	return nil
 }

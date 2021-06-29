@@ -55,6 +55,8 @@ import {
   faBolt,
   faDice,
   faWrench,
+  faChevronDown,
+  faChevronUp,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
@@ -97,6 +99,8 @@ library.add(faServer);
 library.add(faBars);
 library.add(faChevronLeft);
 library.add(faChevronRight);
+library.add(faChevronDown);
+library.add(faChevronUp);
 library.add(faSearch);
 library.add(faDownload);
 library.add(faSlidersH);

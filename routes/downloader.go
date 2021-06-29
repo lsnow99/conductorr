@@ -11,12 +11,14 @@ import (
 )
 
 type DownloaderInput struct {
+	Name           string                 `json:"name,omitempty"`
 	DownloaderType string                 `json:"downloader_type,omitempty"`
 	Config         map[string]interface{} `json:"config,omitempty"`
 }
 
 type DownloaderResponse struct {
 	ID             int                    `json:"id,omitempty"`
+	Name           string                 `json:"name,omitempty"`
 	DownloaderType string                 `json:"downloader_type,omitempty"`
 	Config         map[string]interface{} `json:"config,omitempty"`
 }
@@ -53,7 +55,7 @@ func NewDownloader(w http.ResponseWriter, r *http.Request) {
 		Respond(w, r.Host, err, nil, true)
 		return
 	}
-	err := dbstore.NewDownloader(downloaderInput.DownloaderType, downloaderInput.Config)
+	err := dbstore.NewDownloader(downloaderInput.DownloaderType, downloaderInput.Name, downloaderInput.Config)
 	Respond(w, r.Host, err, nil, true)
 }
 
@@ -66,7 +68,8 @@ func GetDownloaders(w http.ResponseWriter, r *http.Request) {
 	downloaders := make([]DownloaderResponse, len(dbDownloaders))
 	for i, dlr := range dbDownloaders {
 		downloaders[i] = DownloaderResponse{
-			ID: dlr.ID,
+			ID:             dlr.ID,
+			Name:           dlr.Name,
 			DownloaderType: dlr.DownloaderType,
 			Config:         dlr.Config,
 		}
@@ -86,6 +89,18 @@ func UpdateDownloader(w http.ResponseWriter, r *http.Request) {
 		Respond(w, r.Host, err, nil, true)
 		return
 	}
-	err = dbstore.UpdateDownloader(idInt, downloaderInput.Config)
+	err = dbstore.UpdateDownloader(idInt, downloaderInput.Name, downloaderInput.Config)
+	Respond(w, r.Host, err, nil, true)
+}
+
+func DeleteDownloader(w http.ResponseWriter, r *http.Request) {
+	idStr := mux.Vars(r)["id"]
+	idInt, err := strconv.Atoi(idStr)
+	if err != nil {
+		Respond(w, r.Host, err, nil, true)
+		return
+	}
+
+	err = dbstore.DeleteDownloader(idInt)
 	Respond(w, r.Host, err, nil, true)
 }

@@ -44,6 +44,7 @@ type Indexer struct {
 
 type Downloader struct {
 	ID int
+	Name string
 	DownloaderType string
 	Config map[string]interface{}
 }

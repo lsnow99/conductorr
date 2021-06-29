@@ -109,3 +109,14 @@ func UpdateMedia(w http.ResponseWriter, r *http.Request) {
 	err = dbstore.UpdateMedia(idInt, media.ProfileID)
 	Respond(w, r.Host, err, nil, true)
 }
+
+func DownloadMediaRelease(w http.ResponseWriter, r *http.Request) {
+	mediaIDStr := mux.Vars(r)["id"]
+	mediaID, err := strconv.Atoi(mediaIDStr)
+	if err != nil {
+		Respond(w, r.Host, err, nil, true)
+		return
+	}
+
+	
+}

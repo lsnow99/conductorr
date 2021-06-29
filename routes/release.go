@@ -49,9 +49,22 @@ func SearchReleasesManual(w http.ResponseWriter, r *http.Request) {
 	media.ImdbID = dbMedia.ImdbID.String
 	media.Year = dbMedia.ReleasedAt.Time.Year()
 
-	xnab := integration.NewXnab(0, "7c1yDyAz12ZJDpUunuXyAeFxeFv0jjeI", "https://api.nzbgeek.info", "NZBGeek", "nzb")
-	xnab.TestConnection()
-	results, err := xnab.Search(&media)
+	indexers, err := getIndexers()
+	if err != nil {
+		Respond(w, r.Host, err, nil, true)
+		return
+	}
+
+	results := make([]integration.Release, 0)
+	for _, indexer := range indexers {
+		indexer.TestConnection()
+		indexerResults, err := indexer.Search(&media)
+		if err != nil {
+			Respond(w, r.Host, err, nil, true)
+			return
+		}
+		results = append(results, indexerResults...)
+	}
 
 	included, excluded, err := integration.FilterReleases(results, profile.Filter.String)
 	if err != nil {
@@ -70,4 +83,17 @@ func SearchReleasesManual(w http.ResponseWriter, r *http.Request) {
 	}
 
 	Respond(w, r.Host, nil, releases, true)
+}
+
+
+func getIndexers() ([]*integration.Xnab, error) {
+	dbIndexers, err := dbstore.GetIndexers()
+	if err != nil {
+		return nil, err
+	}
+	indexers := make([]*integration.Xnab, len(dbIndexers))
+	for i, indexer := range dbIndexers {
+		indexers[i] = integration.NewXnab(0, indexer.ApiKey, indexer.BaseUrl, indexer.Name, indexer.DownloadType)
+	}
+	return indexers, nil
 }

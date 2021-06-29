@@ -4,3 +4,4 @@ conductorr.db
 conductorr.db-journal
 /dist
 web/src/util/wasm_exec.js
+/conductorr

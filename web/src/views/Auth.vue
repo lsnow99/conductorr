@@ -89,6 +89,7 @@ export default {
       this.loading = true;
       APIUtil.signUp(this.username, this.password)
         .then(() => {
+          this.$store.commit("setLoggedIn", true);
           this.$router.push({ name: "home" });
         })
         .catch((msg) => {

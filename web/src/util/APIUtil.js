@@ -292,10 +292,11 @@ const testDownloader = (downloader_type, config) => {
   })
 }
 
-const newDownloader = (downloader_type, config) => {
+const newDownloader = (downloader_type, name, config) => {
   return doAPIReq(`/api/v1/downloader`, {
     method: "POST",
     body: JSON.stringify({
+      name,
       downloader_type,
       config
     })
@@ -308,11 +309,27 @@ const getDownloaders = () => {
   })
 }
 
-const updateDownloader = (id, config) => {
+const updateDownloader = (id, name, config) => {
   return doAPIReq(`/api/v1/downloader/${id}`, {
     method: "PUT",
     body: JSON.stringify({
+      name,
       config
+    })
+  })
+}
+
+const deleteDownloader = (id) => {
+  return doAPIReq(`/api/v1/downloader/${id}`, {
+    method: "DELETE",
+  })
+}
+
+const downloadMediaRelease = (mediaID, download_url) => {
+  return doAPIReq(`/api/v1/media/${mediaID}/download`, {
+    method: "POST",
+    body: JSON.stringify({
+      download_url
     })
   })
 }
@@ -347,5 +364,7 @@ export default {
   testDownloader,
   newDownloader,
   getDownloaders,
-  updateDownloader
+  updateDownloader,
+  deleteDownloader,
+  downloadMediaRelease,
 };
