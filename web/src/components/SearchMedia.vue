@@ -63,6 +63,7 @@ export default {
       contentType: "",
       page: 1,
       current: 1,
+      lastSearchTime: new Date()
     };
   },
   props: {
@@ -106,13 +107,17 @@ export default {
   emits: ["close", "search", "selected-media", "update:query"],
   methods: {
     search() {
-      this.$emit("search", this.computedQuery, this.contentType, this.page);
+      const now = new Date()
+      if (now.getTime() - this.lastSearchTime.getTime() > 300){
+        this.$emit("search", this.computedQuery, this.contentType, this.page);
+        this.lastSearchTime = now
+      }
     },
     clear() {
       this.computedQuery = ''
       console.log('computedQuery', this.computedQuery)
       this.search();
-    }
+    },
   },
   mounted() {
     this.search();
