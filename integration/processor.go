@@ -17,5 +17,5 @@ func addToQueue(release *Release) {
 }
 
 func DownloadMediaRelease(release *Release) {
-	
+
 }

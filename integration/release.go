@@ -28,13 +28,14 @@ type Release struct {
 	Indexer      string    `json:"indexer,omitempty"`
 	Warnings     []string  `json:"warnings,omitempty"`
 	Media        *Media    `json:"media,omitempty"`
+	IndexerID    int       `json:"indexer_id,omitempty"`
 
 	// Identifier for the media, could be the hash or the nzb name
-	Identifier string
+	Identifier string `json:"identifier,omitempty"`
 	// HighPriority whether to download with high priority
-	HighPriority bool
+	HighPriority bool `json:"high_priority,omitempty"`
 	// FriendlyName friendly name from indexer
-	FriendlyName string
+	FriendlyName string `json:"friendly_name,omitempty"`
 }
 
 func NewRelease(id, title, description, downloadURL string, categories []string, size, seeders int64, airDate, pubDate time.Time, media *Media, indexer *Xnab) Release {

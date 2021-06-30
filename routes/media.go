@@ -110,6 +110,11 @@ func UpdateMedia(w http.ResponseWriter, r *http.Request) {
 	Respond(w, r.Host, err, nil, true)
 }
 
+type DownloadMediaReleaseInput struct {
+	ReleaseID int `json:"release_id,omitempty"`
+	IndexerID int `json:"indexer_id,omitempty"`
+}
+
 func DownloadMediaRelease(w http.ResponseWriter, r *http.Request) {
 	mediaIDStr := mux.Vars(r)["id"]
 	mediaID, err := strconv.Atoi(mediaIDStr)
@@ -118,5 +123,18 @@ func DownloadMediaRelease(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	dlInput := DownloadMediaReleaseInput{}
+	if err := json.NewDecoder(r.Body).Decode(&dlInput); err != nil {
+		Respond(w, r.Host, err, nil, true)
+		return
+	}
+
+	media, err := dbstore.GetMediaByID(mediaID)
+	if err != nil {
+		Respond(w, r.Host, err, nil, true)
+		return
+	}
+
 	
+	_ = media
 }

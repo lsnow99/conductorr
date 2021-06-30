@@ -325,11 +325,12 @@ const deleteDownloader = (id) => {
   })
 }
 
-const downloadMediaRelease = (mediaID, download_url) => {
-  return doAPIReq(`/api/v1/media/${mediaID}/download`, {
+const downloadMediaRelease = (media_id, release_id, indexer_id) => {
+  return doAPIReq(`/api/v1/media/${media_id}/download`, {
     method: "POST",
     body: JSON.stringify({
-      download_url
+      release_id,
+      indexer_id
     })
   })
 }

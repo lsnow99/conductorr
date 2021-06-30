@@ -8,8 +8,7 @@
           class="
             py-4
             flex flex-col
-            sm:flex-row
-            sm:items-center
+            sm:flex-row sm:items-center
             justify-between
             px-4
           "
@@ -75,87 +74,94 @@
         <p class="text-lg">{{ media.description }}</p>
       </div>
     </section>
-    <section 
-      class="mt-4">
-    <o-table
-      :data="releases"
-      narrowed
-      hoverable
-      :loading="loadingManualSearch"
-      mobile-cards
-    >
-      <o-table-column
-        field="download_type"
-        label="Type"
-        v-slot="props"
-        position="centered"
+    <section class="mt-4">
+      <o-table
+        :data="releases"
+        narrowed
+        hoverable
+        :loading="loadingManualSearch"
+        mobile-cards
       >
-        <div v-if="props.row.download_type == 'torrent'" class="font-bold bg-green-500">
-          torrent
-        </div>
-        <div v-if="props.row.download_type == 'nzb'" class="font-bold bg-blue-500">
-          nzb
-        </div>
-      </o-table-column>
+        <o-table-column
+          field="download_type"
+          label="Type"
+          v-slot="props"
+          position="centered"
+        >
+          <div
+            v-if="props.row.download_type == 'torrent'"
+            class="font-bold bg-green-500"
+          >
+            torrent
+          </div>
+          <div
+            v-if="props.row.download_type == 'nzb'"
+            class="font-bold bg-blue-500"
+          >
+            nzb
+          </div>
+        </o-table-column>
 
-      <o-table-column field="title" label="Title" v-slot="props">
-        {{ props.row.title }}
-      </o-table-column>
+        <o-table-column field="title" label="Title" v-slot="props">
+          {{ props.row.title }}
+        </o-table-column>
 
-      <o-table-column field="resolution" label="Resolution" v-slot="props">
-        {{ props.row.resolution }}
-      </o-table-column>
+        <o-table-column field="resolution" label="Resolution" v-slot="props">
+          {{ props.row.resolution }}
+        </o-table-column>
 
-      <o-table-column field="rip_type" label="Rip Type" v-slot="props">
-        {{ props.row.rip_type }}
-      </o-table-column>
+        <o-table-column field="rip_type" label="Rip Type" v-slot="props">
+          {{ props.row.rip_type }}
+        </o-table-column>
 
-      <o-table-column field="encoding" label="Encoding" v-slot="props">
-        {{ props.row.encoding }}
-      </o-table-column>
+        <o-table-column field="encoding" label="Encoding" v-slot="props">
+          {{ props.row.encoding }}
+        </o-table-column>
 
-      <o-table-column sortable field="size" label="Size" v-slot="props">
-        {{ niceSize(props.row.size) }}
-      </o-table-column>
+        <o-table-column sortable field="size" label="Size" v-slot="props">
+          {{ niceSize(props.row.size) }}
+        </o-table-column>
 
-      <o-table-column
-        field="age"
-        label="Age"
-        sortable
-        position="centered"
-        v-slot="props"
-      >
-        {{ `${props.row.age} days` }}
-      </o-table-column>
+        <o-table-column
+          field="age"
+          label="Age"
+          sortable
+          position="centered"
+          v-slot="props"
+        >
+          {{ `${props.row.age} days` }}
+        </o-table-column>
 
-      <o-table-column
-        field="warnings"
-        label="Warnings"
-        position="centered"
-        v-slot="props"
-      >
-        <o-tooltip variant="info" position="bottom">
-          <template v-slot:content>
-            <div v-for="(warning, index) in props.row.warnings" :key="index">{{warning}}</div>
-          </template>
+        <o-table-column
+          field="warnings"
+          label="Warnings"
+          position="centered"
+          v-slot="props"
+        >
+          <o-tooltip variant="info" position="bottom">
+            <template v-slot:content>
+              <div v-for="(warning, index) in props.row.warnings" :key="index">
+                {{ warning }}
+              </div>
+            </template>
+            <o-icon
+              class="text-red-500"
+              v-if="props.row.warnings && props.row.warnings.length > 0"
+              icon="exclamation-circle"
+            />
+          </o-tooltip>
+        </o-table-column>
+
+        <o-table-column label="Download" position="centered" v-slot="props">
+          <o-icon v-if="props.row.search" spin icon="sync-alt" />
           <o-icon
-            class="text-red-500"
-            v-if="props.row.warnings && props.row.warnings.length > 0"
-            icon="exclamation-circle"
+            v-else
+            class="cursor-pointer"
+            @click="download(props.row)"
+            icon="download"
           />
-        </o-tooltip>
-      </o-table-column>
-
-      <o-table-column label="Download" position="centered" v-slot="props">
-        <o-icon v-if="props.row.search" spin icon="sync-alt" />
-        <o-icon
-          v-else
-          class="cursor-pointer"
-          @click="download(props.row)"
-          icon="download"
-        />
-      </o-table-column>
-    </o-table>
+        </o-table-column>
+      </o-table>
     </section>
     <o-modal
       v-model:active="showEditMediaModal"
@@ -194,24 +200,31 @@ export default {
         .then((releases) => {
           this.releases = releases;
         })
-        .catch(err => {
+        .catch((err) => {
           this.$oruga.notification.open({
             duration: 3000,
             message: `Error searching: ${err}`,
             variant: "danger",
             closable: false,
-            position: "bottom-right"
-          })
+            position: "bottom-right",
+          });
         })
         .finally(() => {
           this.loadingManualSearch = false;
         });
     },
     download(release) {
-      const index = this.releases.findIndex((elem) => elem.id == release.id);
+      let index = this.releases.findIndex((elem) => elem.id == release.id);
       if (index >= 0) {
         this.releases[index].search = true;
-        APIUtil.downloadRelease(this.mediaID, )
+        APIUtil.downloadRelease(this.mediaID, release.id, release.indexer_id)
+          .then(() => {})
+          .finally(() => {
+            let index = this.releases.findIndex(
+              (elem) => elem.id == release.id
+            );
+            this.releases[index].search = false;
+          });
       }
     },
     niceSize: Helpers.niceSize,
