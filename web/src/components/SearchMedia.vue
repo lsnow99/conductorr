@@ -63,7 +63,7 @@ export default {
       contentType: "",
       page: 1,
       current: 1,
-      lastSearchTime: new Date()
+      lastSearchTime: null
     };
   },
   props: {
@@ -108,7 +108,7 @@ export default {
   methods: {
     search() {
       const now = new Date()
-      if (now.getTime() - this.lastSearchTime.getTime() > 300){
+      if (!this.lastSearchTime || now.getTime() - this.lastSearchTime.getTime() > 300){
         this.$emit("search", this.computedQuery, this.contentType, this.page);
         this.lastSearchTime = now
       }

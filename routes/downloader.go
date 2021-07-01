@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/lsnow99/conductorr/dbstore"
 	"github.com/lsnow99/conductorr/integration"
+	"github.com/lsnow99/conductorr/app"
 )
 
 type DownloaderInput struct {
@@ -55,7 +56,11 @@ func NewDownloader(w http.ResponseWriter, r *http.Request) {
 		Respond(w, r.Host, err, nil, true)
 		return
 	}
-	err := dbstore.NewDownloader(downloaderInput.DownloaderType, downloaderInput.Name, downloaderInput.Config)
+	err := app.DM.RegisterDownloader(downloaderInput.DownloaderType, downloaderInput.Name, downloaderInput.Config)
+	if err != nil {
+		Respond(w, r.Host, err, nil, true)
+	}
+	err = dbstore.NewDownloader(downloaderInput.DownloaderType, downloaderInput.Name, downloaderInput.Config)
 	Respond(w, r.Host, err, nil, true)
 }
 

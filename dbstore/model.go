@@ -46,5 +46,6 @@ type Downloader struct {
 	ID int
 	Name string
 	DownloaderType string
+	DownloadType string
 	Config map[string]interface{}
 }

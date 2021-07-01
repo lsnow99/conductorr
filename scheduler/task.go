@@ -7,11 +7,11 @@ import (
 
 type Task interface {
 	GetFrequency() time.Duration
-	DoTask() error
+	DoTask()
 }
 
 var Tasks []*Task
-var ctx context.Context
+var ctx context.Context = context.Background()
 
 func RegisterTask(t Task) {
 	Tasks = append(Tasks, &t)
@@ -20,10 +20,7 @@ func RegisterTask(t Task) {
 		for {
 			select {
 			case <- ticker.C:
-				err := t.DoTask()
-				if err != nil {
-
-				}
+				t.DoTask()
 			case <- ctx.Done():
 				return
 			}

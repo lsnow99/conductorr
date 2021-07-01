@@ -1,6 +1,9 @@
 package dbstore
 
-import "encoding/json"
+import (
+	"database/sql"
+	"encoding/json"
+)
 
 func NewDownloader(downloaderType, name string, config map[string]interface{}) error {
 	configStr, err := json.Marshal(config)
@@ -13,8 +16,10 @@ func NewDownloader(downloaderType, name string, config map[string]interface{}) e
 
 func GetDownloaders() (downloaders []Downloader, err error) {
 	rows, err := db.Query(`SELECT id, downloader_type, name, config FROM downloader WHERE true`)
-	if err != nil {
+	if err != nil && err != sql.ErrNoRows {
 		return nil, err
+	} else if err == sql.ErrNoRows {
+		return downloaders, nil
 	}
 
 	for rows.Next() {

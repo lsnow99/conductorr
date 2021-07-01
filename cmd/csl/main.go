@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"syscall/js"
 
-	_ "github.com/lsnow99/conductorr/internal/csl"
 	"github.com/lsnow99/conductorr/csl"
+	_ "github.com/lsnow99/conductorr/internal/csl"
 )
 
 func Validate(this js.Value, args []js.Value) interface{} {

@@ -183,21 +183,16 @@ func (n *NZBGet) PollDownloads(names []string) error {
 		switch entry.Status {
 		case "PAUSED":
 			d.Status = Paused
-			break
 		case "DOWNLOADING":
 			d.Status = Downloading
-			break
 		case "FETCHING":
 		case "QUEUED":
 		case "PP_QUEUED":
 			d.Status = Waiting
-			break
 		case "PP_FINISHED":
 			d.Status = Done
-			break
 		default:
 			d.Status = Processing
-			break
 		}
 		d.FriendlyName = entry.NZBName
 		d.BytesLeft = convertLoHi(entry.RemainingSizeLo, entry.RemainingSizeHi)

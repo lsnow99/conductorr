@@ -2,7 +2,6 @@ package logger
 
 import (
 	"log"
-	"sync"
 	"time"
 )
 
@@ -13,22 +12,36 @@ const (
 )
 
 type LogMessage struct {
-	Level uint8
-	Message string
+	Level     uint8
+	Message   string
 	Timestamp time.Time
 }
 
 type logsContainer struct {
-	sync.Mutex
+	sendChan    chan LogMessage
+	recvChan    chan []LogMessage
 	logMessages []LogMessage
 }
 
 var logs logsContainer
 
+func init() {
+	logs.sendChan = make(chan LogMessage)
+	logs.recvChan = make(chan []LogMessage)
+	go func ()  {
+		for {
+			select {
+			case log := <-logs.sendChan:
+				logs.logMessages = append(logs.logMessages, log)
+			case <-logs.recvChan:
+				logs.recvChan <- logs.logMessages
+			}
+		}
+	}()
+}
+
 func GetLogs() []LogMessage {
-	logs.Lock()
-	defer logs.Unlock()
-	return logs.logMessages
+	return <-logs.recvChan
 }
 
 func LogToStdout(err error) {
@@ -48,11 +61,9 @@ func LogDanger(err error) {
 }
 
 func addLog(err error, level uint8) {
-	logs.Lock()
-	defer logs.Unlock()
-	logs.logMessages = append(logs.logMessages, LogMessage{
-		Level: level,
-		Message: err.Error(),
+	logs.sendChan <- LogMessage{
+		Level:     level,
+		Message:   err.Error(),
 		Timestamp: time.Now(),
-	})
+	}
 }

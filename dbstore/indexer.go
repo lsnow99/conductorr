@@ -1,16 +1,18 @@
 package dbstore
 
+import "database/sql"
+
 func CreateIndexer(name string, userID *int, baseUrl, apiKey string, forMovies, forSeries bool, downloadType string) error {
 	_, err := db.Exec(`INSERT INTO indexer (name, user_id, base_url, api_key, for_movies, for_series, download_type) VALUES (?, ?, ?, ?, ?, ?, ?)`, name, userID, baseUrl, apiKey, forMovies, forSeries, downloadType)
 	return err
 }
 
-func GetIndexers() ([]Indexer, error) {
-	indexers := make([]Indexer, 0)
-
+func GetIndexers() (indexers []Indexer, err error) {
 	rows, err := db.Query(`SELECT id, name, user_id, base_url, api_key, for_movies, for_series, download_type FROM indexer;`)
-	if err != nil {
+	if err != nil && err != sql.ErrNoRows {
 		return nil, err
+	} else if err == sql.ErrNoRows {
+		return indexers, nil
 	}
 
 	for rows.Next() {

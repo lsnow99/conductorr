@@ -8,7 +8,7 @@ require (
 	github.com/golang-migrate/migrate v3.5.4+incompatible
 	github.com/golang-migrate/migrate/v4 v4.14.1
 	github.com/gorilla/mux v1.8.0
-	github.com/hekmon/transmissionrpc v1.1.0
+	github.com/hekmon/transmissionrpc v1.1.1-0.20210523080628-42bb8f04fdc8
 	github.com/jackc/pgx/v4 v4.11.0
 	github.com/mattn/go-sqlite3 v1.14.7
 	github.com/mrobinsn/go-newznab v1.1.0

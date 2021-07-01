@@ -217,7 +217,7 @@ export default {
       let index = this.releases.findIndex((elem) => elem.id == release.id);
       if (index >= 0) {
         this.releases[index].search = true;
-        APIUtil.downloadRelease(this.mediaID, release.id, release.indexer_id)
+        APIUtil.downloadMediaRelease(this.mediaID, release)
           .then(() => {})
           .finally(() => {
             let index = this.releases.findIndex(

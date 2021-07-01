@@ -17,6 +17,7 @@ const (
 )
 
 type Media struct {
+	ID int
 	// Title of the content
 	Title string
 	// Year of the content

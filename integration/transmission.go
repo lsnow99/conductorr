@@ -44,7 +44,7 @@ func (t *Transmission) Init() error {
 	} else if port == "" && endpoint.Scheme == "https" {
 		port = "443"
 	} else if port == "" {
-		return errors.New("Invalid URL")
+		return errors.New("invalid URL")
 	}
 
 	portInt, err := strconv.ParseUint(port, 10, 16)
@@ -124,34 +124,28 @@ func (t *Transmission) PollDownloads(hashes []string) error {
 		switch *torrent.Status {
 		case transmissionrpc.TorrentStatusStopped:
 			d.Status = Paused
-			break
 		case transmissionrpc.TorrentStatusCheckWait:
 			d.Status = Waiting
-			break
 		case transmissionrpc.TorrentStatusCheck:
 			d.Status = Processing
-			break
 		case transmissionrpc.TorrentStatusDownloadWait:
 			d.Status = Waiting
-			break
 		case transmissionrpc.TorrentStatusDownload:
 			d.Status = Downloading
-			break
 		case transmissionrpc.TorrentStatusSeedWait:
 			d.Status = Done
-			break
 		case transmissionrpc.TorrentStatusSeed:
 			d.Status = Done
-			break
 		case transmissionrpc.TorrentStatusIsolated:
 			d.Status = Error
-			break
 		}
 		d.BytesLeft = uint64(*torrent.LeftUntilDone)
 		d.FullSize = uint64(*torrent.TotalSize)
 		d.FriendlyName = *torrent.Name
 		downloads = append(downloads, d)
 	}
+
+	t.downloads = downloads
 	return nil
 }
 

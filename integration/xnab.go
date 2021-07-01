@@ -43,7 +43,7 @@ func (x *Xnab) TestConnection() error {
 		// Check auth
 		_, err = x.client.SearchWithQuery([]int{newznab.CategoryMovieAll}, "The", "movie")
 	} else {
-		return errors.New("Searching is not enabled")
+		return errors.New("searching is not enabled")
 	}
 	return err
 }

@@ -55,7 +55,7 @@ func NewRelease(id, title, description, downloadURL string, categories []string,
 	}
 
 	// Calculate age in days
-	release.Age = int(time.Now().Sub(pubDate).Hours() / 24)
+	release.Age = int(time.Since(pubDate).Hours() / 24)
 
 	// Parse the quality, resolution, encoding, and rip type information
 	release.RipType = searchKeywords(title, constant.RipTypes, false)

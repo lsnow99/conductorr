@@ -10,7 +10,9 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/lsnow99/conductorr/app"
 	"github.com/lsnow99/conductorr/dbstore"
+	"github.com/lsnow99/conductorr/integration"
 	"github.com/lsnow99/conductorr/services/omdb"
 )
 
@@ -29,6 +31,17 @@ type MediaInput struct {
 	ImdbRating    int        `json:"imdb_rating,omitempty"`
 	Runtime       int        `json:"runtime,omitempty"`
 	ProfileID     int        `json:"profile_id,omitempty"`
+}
+
+func NewIntegrationMediaFromDBMedia(media dbstore.Media) (m integration.Media) {
+	m.ID = media.ID
+	if media.Title.Valid {
+		m.Title = media.Title.String
+	}
+	if media.Description.Valid {
+		m.Description = media.Description.String
+	}
+	return m
 }
 
 func AddMedia(w http.ResponseWriter, r *http.Request) {
@@ -110,11 +123,6 @@ func UpdateMedia(w http.ResponseWriter, r *http.Request) {
 	Respond(w, r.Host, err, nil, true)
 }
 
-type DownloadMediaReleaseInput struct {
-	ReleaseID int `json:"release_id,omitempty"`
-	IndexerID int `json:"indexer_id,omitempty"`
-}
-
 func DownloadMediaRelease(w http.ResponseWriter, r *http.Request) {
 	mediaIDStr := mux.Vars(r)["id"]
 	mediaID, err := strconv.Atoi(mediaIDStr)
@@ -123,8 +131,8 @@ func DownloadMediaRelease(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dlInput := DownloadMediaReleaseInput{}
-	if err := json.NewDecoder(r.Body).Decode(&dlInput); err != nil {
+	release := integration.Release{}
+	if err := json.NewDecoder(r.Body).Decode(&release); err != nil {
 		Respond(w, r.Host, err, nil, true)
 		return
 	}
@@ -135,6 +143,6 @@ func DownloadMediaRelease(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	
-	_ = media
+	err = app.DM.Download(NewIntegrationMediaFromDBMedia(media), release, true)
+	Respond(w, r.Host, err, nil, true)
 }
