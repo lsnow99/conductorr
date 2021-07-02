@@ -12,6 +12,7 @@ export default {
   data() {
     return {
       initialized: false,
+      interval: 0
     }
   },
   mounted() {
@@ -24,6 +25,11 @@ export default {
       }
       this.initialized = true;
     });
+    this.interval = setInterval(() => {
+      APIUtil.getStatus().then((status) => {
+        this.$store.commit("setStatus", status)
+      })
+    }, 5000)
   },
   computed: {
     loggedIn() {
@@ -41,6 +47,9 @@ export default {
     EventBus.on('notification', (data) => {
       this.$oruga.notification.open(data);
     })
+  },
+  beforeUnmount() {
+    clearInterval(this.interval)
   }
 };
 </script>

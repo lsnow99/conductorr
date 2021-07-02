@@ -7,8 +7,11 @@ import (
 )
 
 func TestTransmissionConnection(t *testing.T) {
-	transmission := NewTransmission("username", "password", "http://localhost:9091")
-	err := transmission.Init()
+	transmission, err := NewTransmission("username", "password", "http://localhost:9091")
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = transmission.Init()
 	if err != nil {
 		t.Fatal(err)
 	}

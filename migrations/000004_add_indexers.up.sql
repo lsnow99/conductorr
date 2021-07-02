@@ -3,7 +3,7 @@ BEGIN;
 CREATE TABLE indexer(
     id INTEGER PRIMARY KEY,
     name VARCHAR(128) NOT NULL,
-    user_id INTEGER,
+    user_id INTEGER NOT NULL,
     base_url TEXT NOT NULL,
     api_key TEXT NOT NULL,
     for_movies BOOLEAN NOT NULL,

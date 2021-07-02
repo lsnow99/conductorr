@@ -6,13 +6,14 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/lsnow99/conductorr/app"
 	"github.com/lsnow99/conductorr/dbstore"
 	"github.com/lsnow99/conductorr/integration"
 )
 
 type IndexerInput struct {
 	Name         string `json:"name"`
-	UserID       *int   `json:"user_id,omitempty"`
+	UserID       int   `json:"user_id,omitempty"`
 	BaseUrl      string `json:"base_url,omitempty"`
 	ApiKey       string `json:"api_key,omitempty"`
 	ForMovies    bool   `json:"for_movies,omitempty"`
@@ -81,25 +82,31 @@ func UpdateIndexer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	idStr := mux.Vars(r)["id"]
-	idInt, err := strconv.Atoi(idStr)
+	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		Respond(w, r.Host, err, nil, true)
 		return
 	}
 
-	err = dbstore.UpdateIndexer(idInt, indexer.Name, indexer.UserID, indexer.BaseUrl, indexer.ApiKey, indexer.ForMovies, indexer.ForSeries)
-	Respond(w, r.Host, err, nil, true)
+	err = dbstore.UpdateIndexer(id, indexer.Name, indexer.UserID, indexer.BaseUrl, indexer.ApiKey, indexer.ForMovies, indexer.ForSeries)
+	if err != nil {
+		Respond(w, r.Host, err, nil, true)
+		return
+	}
+	app.IM.RegisterIndexer(id, indexer.DownloadType, indexer.UserID, indexer.Name, indexer.ApiKey, indexer.BaseUrl, indexer.ForMovies, indexer.ForSeries)
 }
 
 func DeleteIndexer(w http.ResponseWriter, r *http.Request) {
 	idStr := mux.Vars(r)["id"]
-	idInt, err := strconv.Atoi(idStr)
+	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		Respond(w, r.Host, err, nil, true)
 		return
 	}
 
-	err = dbstore.DeleteIndexer(idInt)
+	app.IM.DeleteIndexer(id)
+
+	err = dbstore.DeleteIndexer(id)
 	Respond(w, r.Host, err, nil, true)
 }
 
@@ -109,11 +116,7 @@ func TestIndexer(w http.ResponseWriter, r *http.Request) {
 		Respond(w, r.Host, err, nil, true)
 		return
 	}
-	var userID int
-	if indexer.UserID != nil {
-		userID = *indexer.UserID
-	}
-	xnab := integration.NewXnab(userID, indexer.ApiKey, indexer.BaseUrl, indexer.Name, indexer.DownloadType)
+	xnab := integration.NewXnab(indexer.UserID, indexer.ApiKey, indexer.BaseUrl, indexer.Name, indexer.DownloadType)
 	err := xnab.TestConnection()
 	resp := make(map[string]interface{})
 	resp["success"] = err == nil

@@ -2,7 +2,7 @@ package dbstore
 
 import "database/sql"
 
-func CreateIndexer(name string, userID *int, baseUrl, apiKey string, forMovies, forSeries bool, downloadType string) error {
+func CreateIndexer(name string, userID int, baseUrl, apiKey string, forMovies, forSeries bool, downloadType string) error {
 	_, err := db.Exec(`INSERT INTO indexer (name, user_id, base_url, api_key, for_movies, for_series, download_type) VALUES (?, ?, ?, ?, ?, ?, ?)`, name, userID, baseUrl, apiKey, forMovies, forSeries, downloadType)
 	return err
 }
@@ -35,7 +35,7 @@ func GetIndexerByID(id int) (Indexer, error) {
 	return indexer, err
 }
 
-func UpdateIndexer(id int, name string, userID *int, baseUrl, apiKey string, forMovies, forSeries bool) error {
+func UpdateIndexer(id int, name string, userID int, baseUrl, apiKey string, forMovies, forSeries bool) error {
 	_, err := db.Exec(`UPDATE indexer SET name = ?, user_id = ?, base_url = ?, api_key = ?, for_movies = ?, for_series = ? WHERE id = ?`, name, userID, baseUrl, apiKey, forMovies, forSeries, id)
 	return err
 }

@@ -16,12 +16,41 @@ type Transmission struct {
 	downloads []Download
 }
 
-func NewTransmission(username, password, baseUrl string) *Transmission {
+func NewTransmission(username, password, baseUrl string) (*Transmission, error) {
+	endpoint, err := url.Parse(baseUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	port := endpoint.Port()
+	if port == "" && endpoint.Scheme == "http" {
+		port = "80"
+	} else if port == "" && endpoint.Scheme == "https" {
+		port = "443"
+	} else if port == "" {
+		return nil, errors.New("invalid URL")
+	}
+
+	portInt, err := strconv.ParseUint(port, 10, 16)
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := transmissionrpc.New(endpoint.Hostname(), username, password, &transmissionrpc.AdvancedConfig{
+		HTTPS: endpoint.Scheme == "https",
+		Port:  uint16(portInt),
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
 	return &Transmission{
 		username: username,
 		password: password,
 		baseUrl:  baseUrl,
-	}
+		client: client,
+	}, nil
 }
 
 func NewTransmissionFromConfig(configuration map[string]interface{}) (*Transmission, error) {
@@ -32,36 +61,11 @@ func NewTransmissionFromConfig(configuration map[string]interface{}) (*Transmiss
 		return nil, errors.New("failed to parse transmission configuration")
 	}
 
-	return NewTransmission(username, password, baseUrl), nil
+	return NewTransmission(username, password, baseUrl)
 }
 
 func (t *Transmission) Init() error {
-	endpoint, _ := url.Parse(t.baseUrl)
-
-	port := endpoint.Port()
-	if port == "" && endpoint.Scheme == "http" {
-		port = "80"
-	} else if port == "" && endpoint.Scheme == "https" {
-		port = "443"
-	} else if port == "" {
-		return errors.New("invalid URL")
-	}
-
-	portInt, err := strconv.ParseUint(port, 10, 16)
-	if err != nil {
-		return err
-	}
-
-	client, err := transmissionrpc.New(endpoint.Hostname(), t.username, t.password, &transmissionrpc.AdvancedConfig{
-		HTTPS: endpoint.Scheme == "https",
-		Port:  uint16(portInt),
-	})
-
-	if err != nil {
-		return err
-	}
-	t.client = client
-
+	
 	return nil
 }
 

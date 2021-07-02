@@ -10,20 +10,39 @@ type Task interface {
 	DoTask()
 }
 
-var Tasks []*Task
+type managedTask struct {
+	Task
+	startChan chan struct{}
+}
+
+var tasks []*managedTask
 var ctx context.Context = context.Background()
 
 func RegisterTask(t Task) {
-	Tasks = append(Tasks, &t)
+	mt := &managedTask{
+		Task: t,
+		startChan: make(chan struct{}),
+	}
+	tasks = append(tasks, mt)
 	go func() {
+		<-mt.startChan
+		t.DoTask()
 		ticker := time.NewTicker(t.GetFrequency())
 		for {
 			select {
 			case <- ticker.C:
-				t.DoTask()
+				go func ()  {
+					t.DoTask()
+				}()
 			case <- ctx.Done():
 				return
 			}
 		}
 	}()
+}
+
+func StartTasks() {
+	for _, task := range tasks {
+		task.startChan <- struct{}{}
+	}
 }

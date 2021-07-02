@@ -9,7 +9,8 @@ var IM IndexerManager
 var Monitor SystemMonitor
 
 func init() {
-	scheduler.RegisterTask(Monitor)
+	Monitor.statusMap = make(map[string]SystemTypeStatus)
+	scheduler.RegisterTask(&Monitor)
 	scheduler.RegisterTask(&DM)
 	scheduler.RegisterTask(&IM)
 }

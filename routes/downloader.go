@@ -36,12 +36,6 @@ func TestDownloader(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	resp := make(map[string]interface{})
-	if err := downloader.Init(); err != nil {
-		resp["success"] = err == nil
-		resp["msg"] = err.Error()
-		Respond(w, r.Host, nil, resp, true)
-		return
-	}
 	err = downloader.TestConnection()
 	resp["success"] = err == nil
 	if err != nil {
@@ -56,11 +50,16 @@ func NewDownloader(w http.ResponseWriter, r *http.Request) {
 		Respond(w, r.Host, err, nil, true)
 		return
 	}
-	err := app.DM.RegisterDownloader(downloaderInput.DownloaderType, downloaderInput.Name, downloaderInput.Config)
+	id, err := dbstore.NewDownloader(downloaderInput.DownloaderType, downloaderInput.Name, downloaderInput.Config)
 	if err != nil {
 		Respond(w, r.Host, err, nil, true)
+		return
 	}
-	err = dbstore.NewDownloader(downloaderInput.DownloaderType, downloaderInput.Name, downloaderInput.Config)
+	err = app.DM.RegisterDownloader(id, downloaderInput.DownloaderType, downloaderInput.Name, downloaderInput.Config)
+	if err != nil {
+		Respond(w, r.Host, err, nil, true)
+		return
+	}
 	Respond(w, r.Host, err, nil, true)
 }
 
@@ -84,7 +83,7 @@ func GetDownloaders(w http.ResponseWriter, r *http.Request) {
 
 func UpdateDownloader(w http.ResponseWriter, r *http.Request) {
 	idStr := mux.Vars(r)["id"]
-	idInt, err := strconv.Atoi(idStr)
+	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		Respond(w, r.Host, err, nil, true)
 		return
@@ -94,7 +93,12 @@ func UpdateDownloader(w http.ResponseWriter, r *http.Request) {
 		Respond(w, r.Host, err, nil, true)
 		return
 	}
-	err = dbstore.UpdateDownloader(idInt, downloaderInput.Name, downloaderInput.Config)
+	err = dbstore.UpdateDownloader(id, downloaderInput.DownloaderType, downloaderInput.Name, downloaderInput.Config)
+	if err != nil {
+		Respond(w, r.Host, err, nil, true)
+		return
+	}
+	err = app.DM.RegisterDownloader(id, downloaderInput.DownloaderType, downloaderInput.Name, downloaderInput.Config)
 	Respond(w, r.Host, err, nil, true)
 }
 

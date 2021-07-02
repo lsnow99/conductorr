@@ -2,26 +2,28 @@ package app
 
 import (
 	"reflect"
+	"sync"
 	"time"
 )
 
 type SystemStatus struct {
-	msg        string
-	systemName string
+	Msg        string `json:"msg,omitempty"`
+	SystemName string `json:"system_name,omitempty"`
 }
 
 type SystemTypeStatus struct {
-	healthy  bool
-	msg      string
-	statuses []SystemStatus
+	Healthy  bool           `json:"healthy"`
+	Msg      string         `json:"msg,omitempty"`
+	Statuses []SystemStatus `json:"statuses,omitempty"`
 }
 
 type SystemMonitor struct {
+	sync.RWMutex
 	// statusMap maps system types to an array of statuses that describe the health of the system
 	statusMap map[string]SystemTypeStatus
 }
 
-func (m SystemMonitor) GetFrequency() time.Duration {
+func (m *SystemMonitor) GetFrequency() time.Duration {
 	return time.Minute * 20
 }
 
@@ -30,9 +32,17 @@ type Service interface {
 	GetName() string
 }
 
-func (m SystemMonitor) DoTask() {
+func (m *SystemMonitor) DoTask() {
+	m.Lock()
+	defer m.Unlock()
 	m.statusMap["indexer"] = checkSystem("indexer", buildServices(IM.getIndexers()))
 	m.statusMap["downloader"] = checkSystem("downloader", buildServices(DM.getDownloaders()))
+}
+
+func (m *SystemMonitor) GetStatus() map[string]SystemTypeStatus {
+	m.RLock()
+	defer m.RUnlock()
+	return m.statusMap
 }
 
 func buildServices(arr interface{}) (services []Service) {
@@ -49,25 +59,25 @@ func buildServices(arr interface{}) (services []Service) {
 func checkSystem(systemType string, services []Service) (sts SystemTypeStatus) {
 	for _, service := range services {
 		if err := service.TestConnection(); err != nil {
-			sts.statuses = append(sts.statuses, SystemStatus{
-				msg:        "Could not connect to downloader " + service.GetName() + ": " + err.Error(),
-				systemName: service.GetName(),
+			sts.Statuses = append(sts.Statuses, SystemStatus{
+				Msg:        "Could not connect to " + systemType + " " + service.GetName() + ": " + err.Error(),
+				SystemName: service.GetName(),
 			})
 		}
 	}
 
 	if len(services) == 0 {
-		sts.healthy = false
-		sts.msg = "No " + systemType + "s configured"
-	} else if len(sts.statuses) == len(services) {
-		sts.healthy = false
-		sts.msg = "All " + systemType + "s are failing"
-	} else if len(sts.statuses) > 0 {
-		sts.healthy = false
-		sts.msg = "Some downloaders are failing"
+		sts.Healthy = false
+		sts.Msg = "No " + systemType + "s configured"
+	} else if len(sts.Statuses) == len(services) {
+		sts.Healthy = false
+		sts.Msg = "All " + systemType + "s are failing"
+	} else if len(sts.Statuses) > 0 {
+		sts.Healthy = false
+		sts.Msg = "Some " + systemType + "s are failing"
 	} else {
-		sts.healthy = true
-		sts.msg = "All downloaders are connectable"
+		sts.Healthy = true
+		sts.Msg = "All " + systemType + "s are connectable"
 	}
 	return sts
 }

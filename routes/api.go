@@ -20,7 +20,7 @@ var whitelistPaths = []string{
 	"/api/csl.wasm",
 }
 
-var authErr = errors.New("token failed validation")
+var errAuth = errors.New("token failed validation")
 
 const UserAuthKey = "id_token"
 const MaxCookieAgeSecs = 60 * 60 * 24 * 14
@@ -41,7 +41,7 @@ func Respond(w http.ResponseWriter, reqHost string, err error, data interface{},
 		r.Success = true
 	}
 	r.Data = data
-	r.FailedAuth = err == authErr
+	r.FailedAuth = err == errAuth
 
 	if authorize {
 		tok, err := GenerateIDToken()
@@ -107,7 +107,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		if shouldAuth {
 			tok, err := r.Cookie(UserAuthKey)
 			if err != nil || !checkToken(tok.Value) {
-				Respond(w, "", authErr, nil, false)
+				Respond(w, "", errAuth, nil, false)
 				return
 			}
 		}

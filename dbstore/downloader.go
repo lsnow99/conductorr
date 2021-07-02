@@ -5,13 +5,21 @@ import (
 	"encoding/json"
 )
 
-func NewDownloader(downloaderType, name string, config map[string]interface{}) error {
+func NewDownloader(downloaderType, name string, config map[string]interface{}) (id int, err error) {
 	configStr, err := json.Marshal(config)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	_, err = db.Exec(`INSERT INTO downloader (downloader_type, name, config) VALUES (?, ?, ?)`, downloaderType, name, configStr)
-	return err
+	row := db.QueryRow(`
+	INSERT INTO downloader (downloader_type, name, config) 
+	VALUES (?, ?, ?) 
+	RETURNING id`, downloaderType, name, configStr)
+
+	err = row.Scan(&id)
+	if err != nil {
+		return 0, err
+	}
+	return id, err
 }
 
 func GetDownloaders() (downloaders []Downloader, err error) {
@@ -38,12 +46,12 @@ func GetDownloaders() (downloaders []Downloader, err error) {
 	return downloaders, nil
 }
 
-func UpdateDownloader(id int, name string, config map[string]interface{}) error {
+func UpdateDownloader(id int, downloaderType, name string, config map[string]interface{}) error {
 	configStr, err := json.Marshal(config)
 	if err != nil {
 		return err
 	}
-	_, err = db.Exec(`UPDATE downloader SET config = ?, name = ? WHERE id = ?`, configStr, name, id)
+	_, err = db.Exec(`UPDATE downloader SET config = ?, name = ? downloader_type = ? WHERE id = ?`, configStr, name, downloaderType, id)
 	return err
 }
 

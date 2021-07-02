@@ -4,19 +4,23 @@ const store = createStore({
   state() {
     return {
       loggedIn: true,
+      status: {}
     };
   },
   mutations: {
     setLoggedIn(state, loggedIn) {
       state.loggedIn = loggedIn;
     },
+    setStatus(state, status) {
+      state.status = status
+    }
   },
   getters: {
     loggedIn (state) {
       return state.loggedIn
     },
-    toasts(state) {
-      return state.toasts
+    status (state) {
+      return state.status
     }
   }
 });

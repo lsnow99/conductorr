@@ -332,6 +332,12 @@ const downloadMediaRelease = (media_id, release) => {
   })
 }
 
+const getStatus = () => {
+  return doAPIReq(`/api/v1/status`, {
+    method: "GET",
+  })
+}
+
 export default {
   signIn,
   signUp,
@@ -365,4 +371,5 @@ export default {
   updateDownloader,
   deleteDownloader,
   downloadMediaRelease,
+  getStatus
 };

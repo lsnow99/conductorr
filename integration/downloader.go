@@ -15,7 +15,6 @@ type Downloader interface {
 	PollDownloads([]string) error
 	GetDownloads() []Download
 	TestConnection() error
-	Init() error
 }
 
 type Download struct {

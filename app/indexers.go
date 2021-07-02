@@ -4,9 +4,11 @@ import (
 	"time"
 
 	"github.com/lsnow99/conductorr/integration"
+	"github.com/lsnow99/conductorr/logger"
 )
 
 type ManagedIndexer struct {
+	ID int
 	Name      string
 	ForMovies bool
 	ForSeries bool
@@ -33,14 +35,28 @@ func (im *IndexerManager) getIndexers() []ManagedIndexer {
 	return im.indexers
 }
 
-func (im *IndexerManager) RegisterIndexer(downloadType string, userID int, name, apiKey, baseUrl string, forMovies, forSeries bool) {
+func (im *IndexerManager) RegisterIndexer(id int, downloadType string, userID int, name, apiKey, baseUrl string, forMovies, forSeries bool) {
 	indexer := integration.NewXnab(userID, apiKey, baseUrl, name, downloadType)
-	im.indexers = append(im.indexers, ManagedIndexer{
+	mi := ManagedIndexer{
 		Name:      name,
 		ForMovies: forMovies,
 		ForSeries: forSeries,
 		Indexer:   indexer,
-	})
+	}
+	err := mi.TestConnection()
+	if err != nil {
+		logger.LogWarn(err)
+	}
+	var added bool
+	for i, indexer := range im.indexers {
+		if indexer.ID == id {
+			im.indexers[i] = mi
+			added = true
+		}
+	}
+	if !added {
+		im.indexers = append(im.indexers, mi)
+	}
 }
 
 func (im *IndexerManager) Search(media *integration.Media) ([]integration.Release, error) {
@@ -54,4 +70,13 @@ func (im *IndexerManager) Search(media *integration.Media) ([]integration.Releas
 		results = append(results, indexerResults...)
 	}
 	return results, nil
+}
+
+func (im *IndexerManager) DeleteIndexer(id int) {
+	for i, indexer := range im.indexers {
+		if indexer.ID == id {
+			im.indexers = append(im.indexers[:i], im.indexers[i+1:]...)
+			return
+		}
+	}
 }

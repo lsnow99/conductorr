@@ -34,7 +34,7 @@ type Media struct {
 type Indexer struct {
 	ID      int
 	Name    string
-	UserID sql.NullInt32
+	UserID int
 	BaseUrl string
 	ApiKey  string
 	ForMovies bool
