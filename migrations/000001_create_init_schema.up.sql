@@ -23,7 +23,8 @@ CREATE TABLE media(
     status VARCHAR(32) NOT NULL DEFAULT 'missing',
     path VARCHAR(2048),
     size BIGINT,
-    FOREIGN KEY(parent_media_id) REFERENCES media(id) 
+    FOREIGN KEY(parent_media_id) REFERENCES media(id),
+    CONSTRAINT uq_imdb_id UNIQUE (imdb_id)
 );
 
 COMMIT;

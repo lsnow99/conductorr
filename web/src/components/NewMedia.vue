@@ -34,12 +34,19 @@
     <o-button @click="$emit('close')">Cancel</o-button>
     <o-button variant="primary" @click="save">Save</o-button>
   </footer>
+  <o-modal
+    v-model:active="showNewMediaModal"
+    @close="showNewMediaModal = false"
+  >
+    <edit-media @submit="addMedia" :media="media" @close="showNewMediaModal = false" />
+  </o-modal>
 </template>
 
 <script>
 import APIUtil from "../util/APIUtil";
 import MediaCard from "../components/MediaCard.vue";
 import SearchMedia from "./SearchMedia.vue";
+import EditMedia from "./EditMedia.vue"
 
 export default {
   data() {
@@ -48,6 +55,8 @@ export default {
       totalResults: 0,
       loading: false,
       query: "",
+      media: {},
+      showNewMediaModal: false,
     };
   },
   props: {
@@ -64,7 +73,7 @@ export default {
       },
     },
   },
-  components: { MediaCard, SearchMedia },
+  components: { MediaCard, SearchMedia, EditMedia },
   emits: ["close"],
   methods: {
     search(query, contentType, page) {
@@ -83,24 +92,16 @@ export default {
         });
     },
     selectedMedia(media) {
-      this.loading = true;
-      console.log(media);
-      APIUtil.addMedia(media.imdb_id)
-        .then((id) => {
-          this.$oruga.notification.open({
-            duration: 3000,
-            message: `Successfully added ${media.title}`,
-            position: "bottom-right",
-            variant: "success",
-            closable: false,
-          });
-          this.$emit("close");
-          this.$router.push({ name: "media", params: { media_id: id } });
-        })
-        .finally(() => {
-          this.loading = false;
-        });
+      this.showNewMediaModal = true;
+      this.media = media;
     },
+    addMedia(profileID, pathID) {
+      APIUtil.addMedia(this.media.imdb_id, profileID, pathID).then(id => {
+        this.$router.push({name: 'media', params: {media_id: id}})
+      }).catch(err => {
+        console.log(err)
+      })
+    }
   },
   created() {
     this.query = this.defaultQuery;

@@ -4,6 +4,9 @@ import (
 	"reflect"
 	"sync"
 	"time"
+
+	"github.com/lsnow99/conductorr/dbstore"
+	"github.com/lsnow99/conductorr/integration"
 )
 
 type SystemStatus struct {
@@ -37,6 +40,7 @@ func (m *SystemMonitor) DoTask() {
 	defer m.Unlock()
 	m.statusMap["indexer"] = checkSystem("indexer", buildServices(IM.getIndexers()))
 	m.statusMap["downloader"] = checkSystem("downloader", buildServices(DM.getDownloaders()))
+	m.statusMap["path"] = getPathsStatus()
 }
 
 func (m *SystemMonitor) GetStatus() map[string]SystemTypeStatus {
@@ -80,4 +84,36 @@ func checkSystem(systemType string, services []Service) (sts SystemTypeStatus) {
 		sts.Msg = "All " + systemType + "s are connectable"
 	}
 	return sts
+}
+
+func getPathsStatus() (sts SystemTypeStatus) {
+	paths, err := dbstore.GetPaths()
+	if err != nil {
+		sts.Healthy = false
+		sts.Msg = "Could not retrieve paths from database"
+		return
+	}
+	for _, path := range paths {
+		if err := integration.CheckPath(path.Path); err != nil {
+			sts.Statuses = append(sts.Statuses, SystemStatus{
+				Msg: err.Error(),
+				SystemName: path.Path,
+			})
+		}
+	}
+
+	if len(paths) == 0 {
+		sts.Healthy = false
+		sts.Msg = "No paths configured"
+	} else if len(sts.Statuses) == len(paths) {
+		sts.Healthy = false
+		sts.Msg = "All paths are failing"
+	} else if len(sts.Statuses) > 0 {
+		sts.Healthy = false
+		sts.Msg = "Some paths are failing"
+	} else {
+		sts.Healthy = true
+		sts.Msg = "All paths are OK"
+	}
+	return
 }

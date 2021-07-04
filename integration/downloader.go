@@ -18,10 +18,12 @@ type Downloader interface {
 }
 
 type Download struct {
-	// Release embedded struct
-	Release
+	Media *Media
+	FriendlyName string
+	Identifier string
+	FinalDir string
 	// Status of the media
-	Status int
+	Status string
 	// Started time
 	Started time.Time
 	// BytesLeft number of bytes remaining to download

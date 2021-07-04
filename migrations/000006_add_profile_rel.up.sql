@@ -1,5 +1,5 @@
 BEGIN;
 
-ALTER TABLE media ADD COLUMN profile_id INTEGER REFERENCES profile(id);
+ALTER TABLE media ADD COLUMN profile_id INTEGER NOT NULL REFERENCES profile(id);
 
 COMMIT;

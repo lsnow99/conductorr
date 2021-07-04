@@ -139,3 +139,24 @@ var (
 		"nzbget": "nzb",
 	}
 )
+
+const (
+	// Whenever the downloader has the download queued, but is not currently downloading
+	StatusWaiting = "waiting"
+	// Whenever the download has been set to paused in the downloader
+	StatusPaused = "paused"
+	// Whenever the downloader is actively downloading the download
+	StatusDownloading = "downloading"
+	// Whenever the downloader is unpacking/moving/processing the download
+	StatusProcessing = "processing"
+	// Whenever the downloader believes its job to be completely done for the download
+	StatusComplete = "complete"
+	// The downloader failed to download the release
+	StatusError = "error"
+	// Conductorr is processing the download
+	StatusCProcessing = "cprocessing"
+	// Conductorr failed to process the download
+	StatusCError = "cerror"
+	// Conductorr is done with the download
+	StatusDone = "done"
+)

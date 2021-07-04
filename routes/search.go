@@ -25,6 +25,7 @@ type MediaResponse struct {
 	ImdbRating    int        `json:"imdb_rating,omitempty"`
 	Runtime       int        `json:"runtime,omitempty"`
 	ProfileID     int        `json:"profile_id,omitempty"`
+	PathID        int        `json:"path_id,omitempty"`
 
 	InLibrary bool `json:"in_library,omitempty"`
 }
@@ -67,9 +68,8 @@ func NewMediaResponseFromDB(media dbstore.Media) (m MediaResponse) {
 	if media.ImdbRating.Valid {
 		m.ImdbRating = int(media.ImdbRating.Int32)
 	}
-	if media.ProfileID.Valid {
-		m.ProfileID = int(media.ProfileID.Int32)
-	}
+	m.ProfileID = media.ProfileID
+	m.PathID = media.PathID
 	return m
 }
 

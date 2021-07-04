@@ -76,6 +76,7 @@
     </section>
     <section class="mt-4">
       <o-table
+        :height="loading ? '400px' : ''"
         :data="releases"
         narrowed
         hoverable
@@ -167,7 +168,11 @@
       v-model:active="showEditMediaModal"
       @close="showEditMediaModal = false"
     >
-      <edit-media :media="media" @close="showEditMediaModal = false" />
+      <edit-media
+        @submit="updateMedia"
+        :media="media"
+        @close="showEditMediaModal = false"
+      />
     </o-modal>
   </page-wrapper>
 </template>
@@ -214,14 +219,14 @@ export default {
         });
     },
     download(release) {
-      let index = this.releases.findIndex((elem) => elem.id == release.id);
+      let index = this.releases.findIndex((elem) => elem.download_url == release.download_url);
       if (index >= 0) {
         this.releases[index].search = true;
         APIUtil.downloadMediaRelease(this.mediaID, release)
           .then(() => {})
           .finally(() => {
             let index = this.releases.findIndex(
-              (elem) => elem.id == release.id
+              (elem) => elem.download_url == release.download_url
             );
             this.releases[index].search = false;
           });
@@ -230,6 +235,11 @@ export default {
     niceSize: Helpers.niceSize,
     editMedia() {
       this.showEditMediaModal = true;
+    },
+    updateMedia(profileID, pathID) {
+      APIUtil.updateMedia(this.mediaID, profileID, pathID).then(() => {
+        this.showEditMediaModal = false;
+      });
     },
   },
   created() {

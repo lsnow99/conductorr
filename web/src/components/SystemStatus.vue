@@ -1,10 +1,19 @@
 <template>
-  <div class="text-2xl">
-    <o-icon icon="times" class="text-red-500" />
-    <o-icon icon="check" class="text-green-500" />
-    {{system}}
+  <div class="p-4" :class="status.healthy === false ? 'bg-red-500' : 'bg-green-500'">
+    <div class="text-2xl flex flex-row justify-between">
+      <div>
+      <o-icon v-if="status.healthy === false" icon="times" />
+      <o-icon v-else icon="check" />
+      {{ system }}
+      </div>
+      <div>
+      {{status.msg}}
+      </div>
+    </div>
     <ul>
-        <li v-for="statusMsg in status.statuses" :key="statusMsg.msg">statusMsg.msg</li>
+      <li v-for="statusMsg in status.statuses" :key="statusMsg.msg">
+        <b>{{statusMsg.system_name}}</b>: {{ statusMsg.msg }}
+      </li>
     </ul>
   </div>
 </template>
@@ -19,11 +28,11 @@ export default {
       },
     },
     system: {
-        type: String,
-        default: function() {
-            return ""
-        }
-    }
+      type: String,
+      default: function () {
+        return "";
+      },
+    },
   },
 };
 </script>

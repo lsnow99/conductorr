@@ -17,9 +17,13 @@ type LogMessage struct {
 	Timestamp time.Time
 }
 
+type getLogsReq struct {
+	logsChan chan []LogMessage
+}
+
 type logsContainer struct {
 	sendChan    chan LogMessage
-	recvChan    chan []LogMessage
+	recvChan    chan getLogsReq
 	logMessages []LogMessage
 }
 
@@ -27,21 +31,25 @@ var logs logsContainer
 
 func init() {
 	logs.sendChan = make(chan LogMessage)
-	logs.recvChan = make(chan []LogMessage)
+	logs.recvChan = make(chan getLogsReq)
 	go func ()  {
 		for {
 			select {
 			case log := <-logs.sendChan:
 				logs.logMessages = append(logs.logMessages, log)
-			case <-logs.recvChan:
-				logs.recvChan <- logs.logMessages
+			case req := <-logs.recvChan:
+				req.logsChan <- logs.logMessages
 			}
 		}
 	}()
 }
 
 func GetLogs() []LogMessage {
-	return <-logs.recvChan
+	req := getLogsReq{
+		logsChan: make(chan []LogMessage),
+	}
+	logs.recvChan <- req
+	return <-req.logsChan
 }
 
 func LogToStdout(err error) {

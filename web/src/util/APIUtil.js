@@ -157,11 +157,15 @@ const getReleaseProfileCfg = () => {
   });
 };
 
-const addMedia = (imdb_id) => {
+const addMedia = (imdb_id, profile_id, path_id) => {
   return doAPIReq(
     `/api/v1/add/${imdb_id}`,
     {
       method: "POST",
+      body: JSON.stringify({
+        profile_id,
+        path_id
+      })
     },
     `Error adding media`
   );
@@ -273,11 +277,12 @@ const deletePath = (id) => {
   })
 }
 
-const updateMedia = (id, profile_id) => {
+const updateMedia = (id, profile_id, path_id) => {
   return doAPIReq(`/api/v1/media/${id}`, {
     method: "PUT",
     body: JSON.stringify({
-      profile_id
+      profile_id,
+      path_id
     })
   })
 }
@@ -338,6 +343,12 @@ const getStatus = () => {
   })
 }
 
+const getLogs = () => {
+  return doAPIReq(`/api/v1/logs`, {
+    method: "GET"
+  })
+}
+
 export default {
   signIn,
   signUp,
@@ -371,5 +382,6 @@ export default {
   updateDownloader,
   deleteDownloader,
   downloadMediaRelease,
-  getStatus
+  getStatus,
+  getLogs
 };

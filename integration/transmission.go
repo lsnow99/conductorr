@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/hekmon/transmissionrpc"
+	"github.com/lsnow99/conductorr/constant"
 )
 
 type Transmission struct {
@@ -127,25 +128,31 @@ func (t *Transmission) PollDownloads(hashes []string) error {
 
 		switch *torrent.Status {
 		case transmissionrpc.TorrentStatusStopped:
-			d.Status = Paused
+			d.Status = constant.StatusPaused
 		case transmissionrpc.TorrentStatusCheckWait:
-			d.Status = Waiting
+			d.Status = constant.StatusWaiting
 		case transmissionrpc.TorrentStatusCheck:
-			d.Status = Processing
+			d.Status = constant.StatusProcessing
 		case transmissionrpc.TorrentStatusDownloadWait:
-			d.Status = Waiting
+			d.Status = constant.StatusWaiting
 		case transmissionrpc.TorrentStatusDownload:
-			d.Status = Downloading
+			d.Status = constant.StatusDownloading
 		case transmissionrpc.TorrentStatusSeedWait:
-			d.Status = Done
+			d.Status = constant.StatusComplete
 		case transmissionrpc.TorrentStatusSeed:
-			d.Status = Done
+			d.Status = constant.StatusComplete
 		case transmissionrpc.TorrentStatusIsolated:
-			d.Status = Error
+			d.Status = constant.StatusError
 		}
+
+		if d.Status == constant.StatusComplete {
+			d.FinalDir = *torrent.DownloadDir
+		}
+
 		d.BytesLeft = uint64(*torrent.LeftUntilDone)
 		d.FullSize = uint64(*torrent.TotalSize)
 		d.FriendlyName = *torrent.Name
+		d.Identifier = *torrent.HashString
 		downloads = append(downloads, d)
 	}
 

@@ -59,3 +59,9 @@ func DeleteDownloader(id int) error {
 	_, err := db.Exec(`DELETE FROM downloader WHERE id = ?`, id)
 	return err
 }
+
+func GetDownloader(id int) (Downloader, error) {
+	row := db.QueryRow(`SELECT id, downloader_type, name, config FROM downloader WHERE id = ?`, id)
+	downloader := Downloader{}
+	return downloader, row.Scan(&downloader.ID, &downloader.DownloaderType, &downloader.Name, &downloader.Config)
+}

@@ -144,6 +144,12 @@
   </div>
 </template>
 
+<style scoped>
+:deep(.o-field) {
+  @apply flex-grow-0;
+}
+</style>
+
 <script>
 import APIUtil from "../util/APIUtil";
 import { RESOLUTION_TYPES, RIP_TYPES, ENCODING_TYPES } from "../util/Constants";
@@ -277,6 +283,7 @@ export default {
   mounted() {
     APIUtil.getIndexers().then((indexers) => {
       this.indexers = indexers;
+      this.randomize()
     });
     const screenWidth = window.innerWidth;
     if (screenWidth < 768) {

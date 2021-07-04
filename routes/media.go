@@ -31,6 +31,7 @@ type MediaInput struct {
 	ImdbRating    int        `json:"imdb_rating,omitempty"`
 	Runtime       int        `json:"runtime,omitempty"`
 	ProfileID     int        `json:"profile_id,omitempty"`
+	PathID     int        `json:"path_id,omitempty"`
 }
 
 func NewIntegrationMediaFromDBMedia(media dbstore.Media) (m integration.Media) {
@@ -44,8 +45,19 @@ func NewIntegrationMediaFromDBMedia(media dbstore.Media) (m integration.Media) {
 	return m
 }
 
+type AddMediaInput struct {
+	ProfileID int `json:"profile_id,omitempty"`
+	PathID    int `json:"path_id,omitempty"`
+}
+
 func AddMedia(w http.ResponseWriter, r *http.Request) {
 	imdbID := mux.Vars(r)["imdb_id"]
+
+	mi := AddMediaInput{}
+	if err := json.NewDecoder(r.Body).Decode(&mi); err != nil {
+		Respond(w, r.Host, err, nil, true)
+		return
+	}
 
 	result, err := omdb.SearchByImdbID(imdbID)
 	if err != nil {
@@ -72,7 +84,7 @@ func AddMedia(w http.ResponseWriter, r *http.Request) {
 
 	id, err := dbstore.AddMedia(&result.Title, &result.Plot, &result.ReleasedAt, &result.EndedAt,
 		&result.Type, nil, nil, &result.ImdbID, nil, &imdbRating, &result.Runtime,
-		&poster, genres)
+		&poster, genres, mi.ProfileID, mi.PathID)
 	Respond(w, r.Host, err, id, true)
 }
 
@@ -119,7 +131,7 @@ func UpdateMedia(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = dbstore.UpdateMedia(idInt, media.ProfileID)
+	err = dbstore.UpdateMedia(idInt, media.ProfileID, media.PathID)
 	Respond(w, r.Host, err, nil, true)
 }
 

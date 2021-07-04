@@ -97,7 +97,7 @@
             >
               <release-builder title="Release A" v-model="releaseA" />
               <release-builder
-                v-if="activeFunction == 'sorter'"
+                v-show="activeFunction == 'sorter'"
                 title="Release B"
                 v-model="releaseB"
               />
@@ -139,38 +139,7 @@
               </div>
             </div>
             <div ref="outputScroller" class="h-full overflow-y-scroll">
-              <div
-                v-for="output in outputs"
-                :key="output.timestamp"
-                :class="outputClass(output.variant)"
-                class="p-2 text-lg font-semibold relative"
-              >
-                <div
-                  v-if="output.variant == 'success'"
-                  class="absolute mt-1 ml-1"
-                >
-                  <o-icon icon="check-circle" />
-                </div>
-                <div
-                  v-if="output.variant == 'danger'"
-                  class="absolute mt-1 ml-1"
-                >
-                  <o-icon icon="exclamation-circle" />
-                </div>
-                <div
-                  v-if="output.variant == 'warning'"
-                  class="absolute mt-1 ml-1"
-                >
-                  <o-icon icon="exclamation-triangle" />
-                </div>
-                <div v-if="output.variant == ''" class="absolute mt-1 ml-1">
-                  <o-icon icon="info-circle" />
-                </div>
-                <div class="mr-3 ml-8 float-left">
-                  {{ formatTime(output.timestamp) }}
-                </div>
-                <div class="text-gray-100">{{ output.msg }}</div>
-              </div>
+              <LogPane :logs="outputs" />
             </div>
           </div>
         </div>
@@ -227,6 +196,7 @@ import Split from "split.js";
 import "../util/wasm_exec.js";
 import { DateTime } from "luxon";
 import ReleaseBuilder from "../components/ReleaseBuilder.vue";
+import LogPane from "../components/LogPane.vue";
 
 export default {
   data() {
@@ -244,7 +214,7 @@ export default {
       editingName: false,
     };
   },
-  components: { CSLEditor, ReleaseBuilder },
+  components: { CSLEditor, ReleaseBuilder, LogPane },
   methods: {
     pushOutput(msg, variant) {
       const output = {
@@ -264,9 +234,6 @@ export default {
       }
 
       return sizes;
-    },
-    formatTime(timestamp) {
-      return timestamp.toLocaleString(DateTime.TIME_WITH_SECONDS);
     },
     initSplits(reset = false) {
       // Initialize the split panels
@@ -339,17 +306,6 @@ export default {
           this.pushOutput("Script returned null", "warning");
         }
       });
-    },
-    outputClass(variant) {
-      if (variant == "success") {
-        return `bg-green-600 text-green-300`;
-      } else if (variant == "danger") {
-        return `bg-red-600 text-red-300`;
-      } else if (variant == "warning") {
-        return `bg-yellow-600 text-yellow-300`;
-      } else {
-        return `bg-gray-600 text-gray-300`;
-      }
     },
     scrollOutput() {
       this.$refs.outputScroller.scrollTop =

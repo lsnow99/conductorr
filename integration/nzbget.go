@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/lsnow99/conductorr/constant"
 )
 
 type NZBGet struct {
@@ -182,21 +183,29 @@ func (n *NZBGet) PollDownloads(names []string) error {
 		d := Download{}
 		switch entry.Status {
 		case "PAUSED":
-			d.Status = Paused
+			d.Status = constant.StatusPaused
 		case "DOWNLOADING":
-			d.Status = Downloading
+			d.Status = constant.StatusDownloading
 		case "FETCHING":
+			d.Status = constant.StatusWaiting
 		case "QUEUED":
+			d.Status = constant.StatusWaiting
 		case "PP_QUEUED":
-			d.Status = Waiting
+			d.Status = constant.StatusWaiting
 		case "PP_FINISHED":
-			d.Status = Done
+			d.Status = constant.StatusComplete
+			if entry.FinalDir != "" {
+				d.FinalDir = entry.FinalDir
+			} else {
+				d.FinalDir = entry.DestDir
+			}
 		default:
-			d.Status = Processing
+			d.Status = constant.StatusProcessing
 		}
 		d.FriendlyName = entry.NZBName
 		d.BytesLeft = convertLoHi(entry.RemainingSizeLo, entry.RemainingSizeHi)
 		d.FullSize = convertLoHi(entry.FileSizeLo, entry.FileSizeHi)
+		d.Identifier = entry.NZBFilename
 		downloads = append(downloads, d)
 	}
 	n.downloads = downloads

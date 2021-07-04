@@ -2,10 +2,16 @@ package app
 
 import (
 	"errors"
+	"fmt"
+	"io"
+	"io/fs"
+	"os"
+	"path/filepath"
 	"sync"
 	"time"
 
 	"github.com/lsnow99/conductorr/constant"
+	"github.com/lsnow99/conductorr/dbstore"
 	"github.com/lsnow99/conductorr/integration"
 	"github.com/lsnow99/conductorr/logger"
 )
@@ -20,7 +26,6 @@ type ManagedDownloader struct {
 type DownloaderManager struct {
 	*sync.RWMutex
 	downloaders        []ManagedDownloader
-	downloadsToMonitor []string
 	downloads          []integration.Download
 }
 
@@ -29,12 +34,15 @@ func (md ManagedDownloader) GetName() string {
 }
 
 func (dm *DownloaderManager) DoTask() {
+	downloads := make([]integration.Download, 0)
 	for _, dlr := range dm.downloaders {
-		if err := dlr.PollDownloads(dm.downloadsToMonitor); err != nil {
+		downloadsToMonitor := dm.getDownloadsToMonitor()
+		if err := dlr.PollDownloads(downloadsToMonitor); err != nil {
 			logger.LogWarn(err)
 		}
-		dm.downloads = dlr.GetDownloads()
+		downloads = append(downloads, dlr.GetDownloads()...)
 	}
+	dm.processDownloads(downloads)
 }
 
 func (dm *DownloaderManager) GetFrequency() time.Duration {
@@ -82,8 +90,17 @@ func (dm *DownloaderManager) Download(media integration.Media, release integrati
 		}
 		if dlType == release.DownloadType {
 			if err := downloader.AddRelease(&release); err == nil {
-				dm.downloadsToMonitor = append(dm.downloadsToMonitor, release.Identifier)
-				return nil
+				dm.downloads = append(dm.downloads, integration.Download{
+					Media: &media,
+					FriendlyName: release.FriendlyName,
+					Identifier: release.Identifier,
+					Status: constant.StatusWaiting,
+				})
+				_, err := dbstore.NewDownload(media.ID, downloader.ID, release.Identifier, constant.StatusWaiting, release.FriendlyName)
+				if err != nil {
+					logger.LogDanger(fmt.Errorf("database error! could not save download: %v", err))
+				}
+				return err
 			} else {
 				hadError = true
 				logger.LogDanger(err)
@@ -98,6 +115,15 @@ func (dm *DownloaderManager) Download(media integration.Media, release integrati
 	return errors.New("no downloaders for this type of release")
 }
 
+func (dm *DownloaderManager) RegisterDownload(media integration.Media, friendlyName, status, identifier string) {
+	dm.downloads = append(dm.downloads, integration.Download{
+		Media: &media,
+		FriendlyName: friendlyName,
+		Identifier: identifier,
+		Status: status,
+	})
+}
+
 func (dm *DownloaderManager) DeleteDownloader(id int) {
 	for i, downloader := range dm.downloaders {
 		if downloader.ID == id {
@@ -105,4 +131,102 @@ func (dm *DownloaderManager) DeleteDownloader(id int) {
 			return
 		}
 	}
+}
+
+func (dm *DownloaderManager) processDownloads(curState []integration.Download) {
+	for _, curStateDL := range curState {
+		var found bool
+		for i, prevStateDL := range dm.downloads {
+			if curStateDL.Identifier == prevStateDL.Identifier {
+				found = true
+				if curStateDL.Status != prevStateDL.Status {
+					err := dbstore.UpdateDownloadStatusByIdentifier(curStateDL.Identifier, curStateDL.Status)
+					if err != nil {
+						logger.LogDanger(err)
+						continue
+					}
+					dm.downloads[i].Status = curStateDL.Status
+					switch curStateDL.Status {
+					case constant.StatusError:
+						// TODO Trigger re-download
+					case constant.StatusComplete:
+						// Trigger conductorr post processing
+						dm.downloads[i].Status = constant.StatusCProcessing
+						go handleCompletedDownload(curStateDL)
+					// Do nothing for these statuses
+					case constant.StatusCError:
+						logger.LogDanger(fmt.Errorf("conductorr had an error processing %v", curStateDL))
+					// case constant.StatusCProcessing:
+					case constant.StatusDone:
+						// Remove download from the list of monitored downloads
+						dm.downloads = append(dm.downloads[:i], dm.downloads[i+1:]...)
+					}
+				}
+				break
+			}
+		}
+		if !found {
+			logger.LogDanger(fmt.Errorf("did not find a previous state for download %v", curStateDL))
+		}
+	}
+}
+
+func handleCompletedDownload(download integration.Download) {
+	dbPath, err := dbstore.GetPath(download.Media.PathID)
+	if err != nil {
+		logger.LogDanger(err)
+		return
+	}
+	// Find completed download file from directory
+	dlPath := download.FinalDir
+	var candidates []string
+	filepath.WalkDir(dlPath, func(s string, d fs.DirEntry, e error) error {
+		if e != nil {
+			return e
+		}
+		if filepath.Ext(d.Name()) == "mkv" || filepath.Ext(d.Name()) == "mp4" {
+			candidates = append(candidates, s)
+		}
+		return nil
+	})
+	var bestCandidate string
+	var largestSize int64 = -1
+	for _, candidate := range candidates {
+		fi, err := os.Stat(candidate)
+		if err != nil {
+			continue
+		}
+		size := fi.Size()
+		if size > largestSize {
+			bestCandidate = candidate
+			largestSize = size
+		}
+	}
+	if bestCandidate == "" {
+		logger.LogDanger(fmt.Errorf("could not find output file for %v", download.FriendlyName))
+		return
+	}
+	destFile, err := os.OpenFile(filepath.Join(dbPath.Path, "testout"), os.O_CREATE | os.O_TRUNC | os.O_WRONLY, os.ModePerm)
+	if err != nil {
+		logger.LogDanger(err)
+		return
+	}
+	srcFile, err := os.OpenFile(bestCandidate, os.O_RDONLY, os.ModePerm)
+	if err != nil {
+		logger.LogDanger(err)
+		return
+	}
+	n, err := io.Copy(destFile, srcFile)
+	if err != nil {
+		logger.LogDanger(fmt.Errorf("got error after copying %d bytes: %v", n, err))
+		return
+	}
+	logger.LogInfo(fmt.Errorf("successfully copied %s", download.FriendlyName))
+}
+
+func (dm *DownloaderManager) getDownloadsToMonitor() (monitoring []string) {
+	for _, dl := range dm.downloads {
+		monitoring = append(monitoring, dl.Identifier)
+	}
+	return
 }

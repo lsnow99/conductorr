@@ -9,6 +9,7 @@ import (
 	"github.com/lsnow99/conductorr"
 	"github.com/lsnow99/conductorr/app"
 	"github.com/lsnow99/conductorr/dbstore"
+	"github.com/lsnow99/conductorr/integration"
 	_ "github.com/lsnow99/conductorr/internal/csl"
 	"github.com/lsnow99/conductorr/logger"
 	"github.com/lsnow99/conductorr/routes"
@@ -32,6 +33,23 @@ func main() {
 		if err := app.DM.RegisterDownloader(downloader.ID, downloader.DownloaderType, downloader.Name, downloader.Config); err != nil {
 			logger.LogDanger(err)
 		}
+	}
+
+	// Initialize the downloads
+	downloads, err := dbstore.GetActiveDownloads()
+	if err != nil {
+		logger.LogToStdout(err)
+		os.Exit(1)
+	}
+	for _, download := range downloads {
+		media, err := dbstore.GetMediaByID(download.MediaID)
+		if err != nil {
+			logger.LogToStdout(err)
+			os.Exit(1)
+		}
+		app.DM.RegisterDownload(integration.Media{
+			ID: media.ID,
+		}, download.FriendlyName, download.Status, download.Identifier)
 	}
 
 	// Initialize indexers

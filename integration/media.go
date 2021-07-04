@@ -3,21 +3,13 @@ package integration
 import "fmt"
 
 const (
-	Paused = iota
-	Waiting
-	Downloading
-	Processing
-	Error
-	Done
-)
-
-const (
 	Movie = iota
 	TVShow
 )
 
 type Media struct {
 	ID int
+	PathID int
 	// Title of the content
 	Title string
 	// Year of the content

@@ -1,20 +1,19 @@
 package dbstore
 
-import "context"
+import (
+	"context"
+	"database/sql"
+)
 
-type Path struct {
-	ID            int
-	Path          string
-	MoviesDefault bool
-	SeriesDefault bool
-}
 
 func GetPaths() ([]Path, error) {
 	paths := make([]Path, 0)
 
 	rows, err := db.Query(`SELECT id, path, movies_default, series_default FROM path;`)
-	if err != nil {
+	if err != nil && err != sql.ErrNoRows {
 		return nil, err
+	} else if err == sql.ErrNoRows {
+		return paths, nil
 	}
 
 	for rows.Next() {
@@ -56,4 +55,10 @@ func UpdatePaths(ctx context.Context, paths []Path) error {
 func DeletePath(id int) error {
 	_, err := db.Exec(`DELETE FROM path WHERE id = ?`, id)
 	return err
+}
+
+func GetPath(id int) (Path, error) {
+	row := db.QueryRow(`SELECT id, path, movies_default, series_default WHERE id = ?`, id)
+	path := Path{}
+	return path, row.Scan(&path.ID, &path.Path, &path.MoviesDefault, &path.SeriesDefault)
 }

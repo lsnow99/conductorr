@@ -25,11 +25,7 @@ func SearchReleasesManual(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !dbMedia.ProfileID.Valid {
-		Respond(w, r.Host, fmt.Errorf("media must have profile assigned in order to search"), nil, true)
-		return
-	}
-	profile, err := dbstore.GetProfileByID(int(dbMedia.ProfileID.Int32))
+	profile, err := dbstore.GetProfileByID(dbMedia.ProfileID)
 	if err != nil {
 		Respond(w, r.Host, fmt.Errorf("error loading profile for media"), nil, true)
 		return

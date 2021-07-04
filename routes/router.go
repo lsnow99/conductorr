@@ -46,6 +46,7 @@ func GetRouter() http.Handler {
 	r.HandleFunc("/api/v1/downloader/{id}", DeleteDownloader).Methods("DELETE")
 	r.HandleFunc("/api/v1/media/{id}/download", DownloadMediaRelease).Methods("POST")
 	r.HandleFunc("/api/v1/status", GetStatus).Methods("GET")
+	r.HandleFunc("/api/v1/logs", GetLogs).Methods("GET")
 	
 	r.Use(AuthMiddleware)
 

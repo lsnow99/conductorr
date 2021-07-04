@@ -278,10 +278,10 @@
     "@nodelib/fs.scandir" "2.1.4"
     fastq "^1.6.0"
 
-"@oruga-ui/oruga-next@^0.4.0":
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/@oruga-ui/oruga-next/-/oruga-next-0.4.0.tgz#4228bb05d59031cf10e96a5eff2be0e9f4550ef1"
-  integrity sha512-8njMH1LdpwilKxZb+2HY+b5mYK0uAGJgxxkwBFt0M5jRqOxz0kZqlP9FrXcz5Vo9SvakhpydsXjQTe5+bx28kw==
+"@oruga-ui/oruga-next@^0.4.3":
+  version "0.4.3"
+  resolved "https://registry.yarnpkg.com/@oruga-ui/oruga-next/-/oruga-next-0.4.3.tgz#cc9a8fb37f329d953a4255ceae915754830e632e"
+  integrity sha512-ClcLlr4g+4QJycSziwhk5C5Fm3OAFz2kr397M8OS2CnLythuEN2GVjp5W+Q2O4Ybjv0sqCYWtH2xMK2+xZQ3zQ==
 
 "@stylelint/postcss-css-in-js@^0.37.2":
   version "0.37.2"

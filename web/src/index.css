@@ -334,10 +334,6 @@
   @apply bg-gray-900;
 }
 
-.o-table {
-  @apply h-40;
-}
-
 .o-table__td {
   @apply break-all;
 }
