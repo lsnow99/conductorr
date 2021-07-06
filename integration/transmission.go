@@ -3,6 +3,7 @@ package integration
 import (
 	"errors"
 	"net/url"
+	"path/filepath"
 	"strconv"
 
 	"github.com/hekmon/transmissionrpc"
@@ -50,7 +51,7 @@ func NewTransmission(username, password, baseUrl string) (*Transmission, error) 
 		username: username,
 		password: password,
 		baseUrl:  baseUrl,
-		client: client,
+		client:   client,
 	}, nil
 }
 
@@ -66,7 +67,7 @@ func NewTransmissionFromConfig(configuration map[string]interface{}) (*Transmiss
 }
 
 func (t *Transmission) Init() error {
-	
+
 	return nil
 }
 
@@ -146,7 +147,7 @@ func (t *Transmission) PollDownloads(hashes []string) error {
 		}
 
 		if d.Status == constant.StatusComplete {
-			d.FinalDir = *torrent.DownloadDir
+			d.FinalDir = filepath.Join(*torrent.DownloadDir, *torrent.Name)
 		}
 
 		d.BytesLeft = uint64(*torrent.LeftUntilDone)

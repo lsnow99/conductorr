@@ -109,13 +109,13 @@ func SearchNewByTitle(w http.ResponseWriter, r *http.Request) {
 
 	page, err := strconv.Atoi(pageStr)
 	if err != nil {
-		Respond(w, r.Host, err, nil, true)
+		Respond(w, r.Header.Get("hostname"), err, nil, true)
 		return
 	}
 
 	omdbResults, err := omdb.SearchByTitle(query, contentType, page)
 	if err != nil {
-		Respond(w, r.Host, err, nil, true)
+		Respond(w, r.Header.Get("hostname"), err, nil, true)
 		return
 	}
 
@@ -124,7 +124,7 @@ func SearchNewByTitle(w http.ResponseWriter, r *http.Request) {
 		var media MediaResponse
 		dbMedia, err := dbstore.GetMediaByImdbID(omdbResult.ImdbID)
 		if err != nil && err != sql.ErrNoRows {
-			Respond(w, r.Host, err, nil, true)
+			Respond(w, r.Header.Get("hostname"), err, nil, true)
 			return
 		} else if err == sql.ErrNoRows {
 			media = NewMediaResponseFromOmdbSearch(omdbResult)
@@ -141,7 +141,7 @@ func SearchNewByTitle(w http.ResponseWriter, r *http.Request) {
 		Results:      medias,
 	}
 
-	Respond(w, r.Host, err, sr, true)
+	Respond(w, r.Header.Get("hostname"), err, sr, true)
 }
 
 func SearchLibraryByTitle(w http.ResponseWriter, r *http.Request) {
@@ -151,7 +151,7 @@ func SearchLibraryByTitle(w http.ResponseWriter, r *http.Request) {
 
 	page, err := strconv.Atoi(pageStr)
 	if err != nil {
-		Respond(w, r.Host, err, nil, true)
+		Respond(w, r.Header.Get("hostname"), err, nil, true)
 		return
 	}
 
@@ -171,5 +171,5 @@ func SearchLibraryByTitle(w http.ResponseWriter, r *http.Request) {
 		Results:      results,
 	}
 
-	Respond(w, r.Host, err, resp, true)
+	Respond(w, r.Header.Get("hostname"), err, resp, true)
 }

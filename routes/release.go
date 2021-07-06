@@ -22,21 +22,21 @@ func SearchReleasesManual(w http.ResponseWriter, r *http.Request) {
 
 	dbMedia, err := dbstore.GetMediaByID(mediaID)
 	if err != nil {
-		Respond(w, r.Host, err, nil, true)
+		Respond(w, r.Header.Get("hostname"), err, nil, true)
 		return
 	}
 
 	if !dbMedia.ProfileID.Valid {
-		Respond(w, r.Host, errors.New("no profile assigned"), nil, true)
+		Respond(w, r.Header.Get("hostname"), errors.New("no profile assigned"), nil, true)
 		return
 	}
 	profile, err := dbstore.GetProfileByID(int(dbMedia.ProfileID.Int32))
 	if err != nil {
-		Respond(w, r.Host, fmt.Errorf("error loading profile for media"), nil, true)
+		Respond(w, r.Header.Get("hostname"), fmt.Errorf("error loading profile for media"), nil, true)
 		return
 	}
 	if !profile.Filter.Valid || !profile.Sorter.Valid {
-		Respond(w, r.Host, fmt.Errorf("profile must have sorter and filter defined"), nil, true)
+		Respond(w, r.Header.Get("hostname"), fmt.Errorf("profile must have sorter and filter defined"), nil, true)
 		return
 	}
 
@@ -53,13 +53,13 @@ func SearchReleasesManual(w http.ResponseWriter, r *http.Request) {
 
 	results, err := app.IM.Search(&media)
 	if err != nil {
-		Respond(w, r.Host, err, nil, true)
+		Respond(w, r.Header.Get("hostname"), err, nil, true)
 		return
 	}
 
 	included, excluded, err := integration.FilterReleases(results, profile.Filter.String)
 	if err != nil {
-		Respond(w, r.Host, err, nil, true)
+		Respond(w, r.Header.Get("hostname"), err, nil, true)
 		return
 	}
 	for index := range excluded {
@@ -69,9 +69,9 @@ func SearchReleasesManual(w http.ResponseWriter, r *http.Request) {
 	releases := append(included, excluded...)
 	err = integration.SortReleases(&releases, profile.Sorter.String)
 	if err != nil {
-		Respond(w, r.Host, err, nil, true)
+		Respond(w, r.Header.Get("hostname"), err, nil, true)
 		return
 	}
 
-	Respond(w, r.Host, nil, releases, true)
+	Respond(w, r.Header.Get("hostname"), nil, releases, true)
 }

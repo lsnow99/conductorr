@@ -9,6 +9,7 @@
         icon-right-clickable
         @icon-right-click="clear"
         placeholder="Title or IMDB id"
+        ref="searchbar"
       />
     </o-field>
     <div class="flex my-2 md:my-0 self-end md:ml-4 justify-center">
@@ -120,6 +121,9 @@ export default {
     },
   },
   mounted() {
+    setTimeout(() => {
+      this.$refs.searchbar.$el.firstChild.focus()
+    }, 100)
     this.search();
   },
   watch: {

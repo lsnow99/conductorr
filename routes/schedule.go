@@ -16,7 +16,7 @@ type Event struct {
 func GetSchedule(w http.ResponseWriter, r *http.Request) {
 	medias, err := dbstore.GetAllMedia()
 	if err != nil {
-		Respond(w, r.Host, err, nil, true)
+		Respond(w, r.Header.Get("hostname"), err, nil, true)
 		return
 	}
 
@@ -31,5 +31,5 @@ func GetSchedule(w http.ResponseWriter, r *http.Request) {
 			Timestamp: media.ReleasedAt.Time,
 		}
 	}
-	Respond(w, r.Host, nil, events, true)
+	Respond(w, r.Header.Get("hostname"), nil, events, true)
 }

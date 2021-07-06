@@ -38,50 +38,50 @@ func UpdatePath(w http.ResponseWriter, r *http.Request) {
 	idStr := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		Respond(w, r.Host, err, nil, true)
+		Respond(w, r.Header.Get("hostname"), err, nil, true)
 		return
 	}
 
 	path := Path{}
 	if err := json.NewDecoder(r.Body).Decode(&path); err != nil {
-		Respond(w, r.Host, err, nil, true)
+		Respond(w, r.Header.Get("hostname"), err, nil, true)
 		return
 	}
 	err = dbstore.UpdatePath(id, path.Path, path.MoviesDefault, path.SeriesDefault)
-	Respond(w, r.Host, err, nil, true)
+	Respond(w, r.Header.Get("hostname"), err, nil, true)
 }
 
 func NewPath(w http.ResponseWriter, r *http.Request) {
 	path := Path{}
 	if err := json.NewDecoder(r.Body).Decode(&path); err != nil {
-		Respond(w, r.Host, err, nil, true)
+		Respond(w, r.Header.Get("hostname"), err, nil, true)
 		return
 	}
 	err := dbstore.NewPath(path.Path, path.MoviesDefault, path.SeriesDefault)
-	Respond(w, r.Host, err, nil, true)
+	Respond(w, r.Header.Get("hostname"), err, nil, true)
 }
 
 func GetPaths(w http.ResponseWriter, r *http.Request) {
 	dbPaths, err := dbstore.GetPaths()
 	if err != nil && err != sql.ErrNoRows {
-		Respond(w, r.Host, err, nil, true)
+		Respond(w, r.Header.Get("hostname"), err, nil, true)
 		return
 	}
 	paths := make([]Path, len(dbPaths))
 	for i, path := range dbPaths {
 		paths[i] = NewPathFromDBPath(path)
 	}
-	Respond(w, r.Host, nil, paths, true)
+	Respond(w, r.Header.Get("hostname"), nil, paths, true)
 }
 
 func DeletePath(w http.ResponseWriter, r *http.Request) {
 	idStr := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		Respond(w, r.Host, err, nil, true)
+		Respond(w, r.Header.Get("hostname"), err, nil, true)
 		return
 	}
 
 	err = dbstore.DeletePath(id)
-	Respond(w, r.Host, err, nil, true)
+	Respond(w, r.Header.Get("hostname"), err, nil, true)
 }

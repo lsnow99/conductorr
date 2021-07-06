@@ -14,6 +14,7 @@ import (
 	"github.com/lsnow99/conductorr/dbstore"
 	"github.com/lsnow99/conductorr/integration"
 	"github.com/lsnow99/conductorr/logger"
+	"github.com/mholt/archiver/v3"
 )
 
 type ManagedDownloader struct {
@@ -25,8 +26,8 @@ type ManagedDownloader struct {
 
 type DownloaderManager struct {
 	*sync.RWMutex
-	downloaders        []ManagedDownloader
-	downloads          []integration.Download
+	downloaders []ManagedDownloader
+	downloads   []integration.Download
 }
 
 func (md ManagedDownloader) GetName() string {
@@ -63,6 +64,7 @@ func (dm *DownloaderManager) RegisterDownloader(id int, downloaderType, name str
 		return err
 	}
 	md := ManagedDownloader{
+		ID:             id,
 		Name:           name,
 		DownloaderType: downloaderType,
 		Downloader:     dlr,
@@ -91,10 +93,10 @@ func (dm *DownloaderManager) Download(mediaID int, release integration.Release, 
 		if dlType == release.DownloadType {
 			if err := downloader.AddRelease(&release); err == nil {
 				dm.downloads = append(dm.downloads, integration.Download{
-					MediaID: mediaID,
+					MediaID:      mediaID,
 					FriendlyName: release.FriendlyName,
-					Identifier: release.Identifier,
-					Status: constant.StatusWaiting,
+					Identifier:   release.Identifier,
+					Status:       constant.StatusWaiting,
 				})
 				_, err := dbstore.NewDownload(mediaID, downloader.ID, release.Identifier, constant.StatusWaiting, release.FriendlyName)
 				if err != nil {
@@ -117,10 +119,10 @@ func (dm *DownloaderManager) Download(mediaID int, release integration.Release, 
 
 func (dm *DownloaderManager) RegisterDownload(mediaID int, friendlyName, status, identifier string) {
 	dm.downloads = append(dm.downloads, integration.Download{
-		MediaID: mediaID,
+		MediaID:      mediaID,
 		FriendlyName: friendlyName,
-		Identifier: identifier,
-		Status: status,
+		Identifier:   identifier,
+		Status:       status,
 	})
 }
 
@@ -138,8 +140,9 @@ func (dm *DownloaderManager) processDownloads(curState []integration.Download) {
 		var found bool
 		for i, prevStateDL := range dm.downloads {
 			if curStateDL.Identifier == prevStateDL.Identifier {
+				dm.downloads[i].FinalDir = curStateDL.FinalDir
 				found = true
-				if curStateDL.Status != prevStateDL.Status {
+				// if curStateDL.Status != prevStateDL.Status {
 					err := dbstore.UpdateDownloadStatusByIdentifier(curStateDL.Identifier, curStateDL.Status)
 					if err != nil {
 						logger.LogDanger(err)
@@ -161,7 +164,7 @@ func (dm *DownloaderManager) processDownloads(curState []integration.Download) {
 						// Remove download from the list of monitored downloads
 						dm.downloads = append(dm.downloads[:i], dm.downloads[i+1:]...)
 					}
-				}
+				// }
 				break
 			}
 		}
@@ -188,39 +191,21 @@ func handleCompletedDownload(download integration.Download) {
 	}
 	// Find completed download file from directory
 	dlPath := download.FinalDir
-	var candidates []string
-	filepath.WalkDir(dlPath, func(s string, d fs.DirEntry, e error) error {
-		if e != nil {
-			return e
-		}
-		if filepath.Ext(d.Name()) == "mkv" || filepath.Ext(d.Name()) == "mp4" {
-			candidates = append(candidates, s)
-		}
-		return nil
-	})
-	var bestCandidate string
-	var largestSize int64 = -1
-	for _, candidate := range candidates {
-		fi, err := os.Stat(candidate)
-		if err != nil {
-			continue
-		}
-		size := fi.Size()
-		if size > largestSize {
-			bestCandidate = candidate
-			largestSize = size
-		}
+	videoPath, err := getVideoPath(dlPath)
+	if err != nil {
+		logger.LogDanger(err)
 	}
-	if bestCandidate == "" {
+
+	if videoPath == "" {
 		logger.LogDanger(fmt.Errorf("could not find output file for %v", download.FriendlyName))
 		return
 	}
-	destFile, err := os.OpenFile(filepath.Join(dbPath.Path, "testout"), os.O_CREATE | os.O_TRUNC | os.O_WRONLY, os.ModePerm)
+	destFile, err := os.OpenFile(filepath.Join(dbPath.Path, "testout"), os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
 	if err != nil {
 		logger.LogDanger(err)
 		return
 	}
-	srcFile, err := os.OpenFile(bestCandidate, os.O_RDONLY, os.ModePerm)
+	srcFile, err := os.OpenFile(videoPath, os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		logger.LogDanger(err)
 		return
@@ -238,4 +223,75 @@ func (dm *DownloaderManager) getDownloadsToMonitor() (monitoring []string) {
 		monitoring = append(monitoring, dl.Identifier)
 	}
 	return
+}
+
+func getVideoPath(dlPath string) (string, error) {
+	fmt.Println("getting videos in ", dlPath)
+	var rarfile string
+	err := filepath.WalkDir(dlPath, func(s string, d fs.DirEntry, e error) error {
+		fmt.Println(s, d.Name(), filepath.Ext(d.Name()))
+		if e != nil {
+			return e
+		}
+		if filepath.Ext(d.Name()) == ".rar" {
+			rarfile = s
+		}
+		return nil
+	})
+	if err != nil {
+		return "", err
+	}
+
+	candidates, err := getVideoCandidates(dlPath)
+	if err != nil {
+		return "", err
+	}
+
+	if rarfile != "" {
+		tDir, err := os.MkdirTemp("", "conductorr")
+		if err != nil {
+			return "", err
+		}
+		err = archiver.Unarchive(rarfile, tDir)
+		if err != nil {
+			return "", err
+		}
+		unarchivedCandidates, err := getVideoCandidates(tDir)
+		if err != nil {
+			return "", err
+		}
+		candidates = append(candidates, unarchivedCandidates...)
+	}
+
+	var bestCandidate string
+	var largestSize int64 = -1
+	for _, candidate := range candidates {
+		fi, err := os.Stat(candidate)
+		if err != nil {
+			continue
+		}
+		size := fi.Size()
+		if size > largestSize {
+			bestCandidate = candidate
+			largestSize = size
+		}
+	}
+	return bestCandidate, nil
+}
+
+func getVideoCandidates(dlPath string) ([]string, error) {
+	candidates := make([]string, 0)
+	err := filepath.WalkDir(dlPath, func(s string, d fs.DirEntry, e error) error {
+		if e != nil {
+			return e
+		}
+		if filepath.Ext(d.Name()) == ".mkv" || filepath.Ext(d.Name()) == ".mp4" {
+			candidates = append(candidates, s)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return candidates, nil
 }

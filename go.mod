@@ -11,6 +11,7 @@ require (
 	github.com/hekmon/transmissionrpc v1.1.1-0.20210523080628-42bb8f04fdc8
 	github.com/jackc/pgx/v4 v4.11.0
 	github.com/mattn/go-sqlite3 v1.14.7
+	github.com/mholt/archiver/v3 v3.5.0
 	github.com/mrobinsn/go-newznab v1.1.0
 	github.com/ybbus/jsonrpc/v2 v2.1.6
 	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a // indirect

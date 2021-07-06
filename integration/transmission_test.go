@@ -7,7 +7,7 @@ import (
 )
 
 func TestTransmissionConnection(t *testing.T) {
-	transmission, err := NewTransmission("username", "password", "http://localhost:9091")
+	transmission, err := NewTransmission("transmission", "transmission", "http://localhost:9091")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -21,7 +21,7 @@ func TestTransmissionConnection(t *testing.T) {
 }
 
 func TestTransmissionGetDownload(t *testing.T) {
-	hash := "82d5abffb68a17f37ae0b0d51171a2e8dd45e6fe"
+	hash := "bfecf6cc9720da45b18e28f5a08c169bbd279840"
 
 	client, err := transmissionrpc.New("localhost", "transmission", "transmission", &transmissionrpc.AdvancedConfig{
 		HTTPS: false,
@@ -37,5 +37,7 @@ func TestTransmissionGetDownload(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	t.Log(torrents)
+	for _, torrent := range torrents {
+		t.Logf("%v", *torrent.DownloadDir)
+	}
 }

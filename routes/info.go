@@ -11,14 +11,14 @@ func GetReleaseProfileCfg(w http.ResponseWriter, r *http.Request) {
 		"rip_types":        constant.RipTypes,
 		"resolution_types": constant.ResolutionTypes,
 	}
-	Respond(w, r.Host, nil, response, true)
+	Respond(w, r.Header.Get("hostname"), nil, response, true)
 }
 
 func CheckAuth(w http.ResponseWriter, r *http.Request) {
 	tok, err := r.Cookie(UserAuthKey)
 	if err != nil {
-		Respond(w, r.Host, nil, false, false)
+		Respond(w, r.Header.Get("hostname"), nil, false, false)
 		return
 	}
-	Respond(w, r.Host, nil, checkToken(tok.Value), false)
+	Respond(w, r.Header.Get("hostname"), nil, checkToken(tok.Value), false)
 }

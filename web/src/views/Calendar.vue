@@ -175,7 +175,7 @@ export default {
           dates.unshift({
             day: curDate.day,
             gray: true,
-            events: [],
+            events: this.getEventsForDatetime(curDate),
           });
         }
         for (let i = 0; i < daysInMonth; i++) {
@@ -191,7 +191,7 @@ export default {
           dates.push({
             day: curDate.day,
             gray: true,
-            events: [],
+            events: this.getEventsForDatetime(curDate),
           });
         }
       } else if (this.viewType === "weekly") {
@@ -202,39 +202,14 @@ export default {
           dates.push({
             day: curDate.day,
             gray: false,
-            events: [
-              {
-                time: "5:00pm",
-                title: "Westworld",
-              },
-              {
-                time: "7:00pm",
-                title: "Family Guy",
-              },
-              {
-                time: "9:00pm",
-                title: "Bloodline",
-              },
-              {
-                time: "10:00pm",
-                title: "Invincible",
-              },
-              {
-                time: "10:00pm",
-                title: "True Detective",
-              },
-              {
-                time: "11:00pm",
-                title: "Watchmen",
-              },
-            ],
+            events: this.getEventsForDatetime(curDate),
           });
         }
       } else if (this.viewType === "daily") {
         dates.push({
           day: this.selectedDate.day,
           gray: false,
-          events: [],
+          events: this.getEventsForDatetime(this.selectedDate),
         });
       }
       return dates;

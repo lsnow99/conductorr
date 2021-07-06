@@ -7,5 +7,5 @@ import (
 )
 
 func GetStatus(w http.ResponseWriter, r *http.Request) {
-	Respond(w, r.Host, nil, app.Monitor.GetStatus(), true)
+	Respond(w, r.Header.Get("hostname"), nil, app.Monitor.GetStatus(), true)
 }

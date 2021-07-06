@@ -93,7 +93,7 @@
           <div id="split5" class="flex flex-col">
             <div class="titlebar">Test Cases</div>
             <div
-              class="px-16 h-full overflow-y-scroll overflow-x-scroll w-full"
+              class="px-16 h-full overflow-y-scroll overflow-x-scroll w-full w-94"
             >
               <release-builder title="Release A" v-model="releaseA" />
               <release-builder
