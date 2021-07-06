@@ -60,7 +60,7 @@ func Init() error {
 		return err
 	}
 
-	m, err := migrate.NewWithDatabaseInstance("file://"+migrationPath, "conductorrdb", driver)
+	m, err := migrate.NewWithDatabaseInstance("file://"+migrationPath, "conductorrdb?_foreign_keys=on", driver)
 	if err != nil {
 		return err
 	}

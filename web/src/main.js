@@ -57,6 +57,7 @@ import {
   faWrench,
   faChevronDown,
   faChevronUp,
+  faCloudDownloadAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
@@ -77,6 +78,11 @@ Import Vue Prism
 */
 import { PrismEditor } from 'vue-prism-editor';
 import 'vue-prism-editor/dist/prismeditor.min.css';
+
+/*
+Import VueX devtools fix from https://github.com/erdemefe07/vuex4-devtools-support
+*/
+import { addDevtools } from "./vuexdev";
 
 const globalOptions = {
   debug: 'info',
@@ -136,6 +142,7 @@ library.add(faEdit);
 library.add(faBolt);
 library.add(faDice);
 library.add(faWrench);
+library.add(faCloudDownloadAlt);
 
 const app = createApp(App);
 app.use(store);
@@ -149,8 +156,6 @@ app.component("vue-fontawesome", FontAwesomeIcon);
 app.component("PrismEditor", PrismEditor)
 app.mount("#app");
 
-/*
-Import VueX devtools fix from https://github.com/erdemefe07/vuex4-devtools-support
-*/
-import { addDevtools } from "./vuexdev";
-addDevtools(app, store);
+if (import.meta.env.DEV) {
+  addDevtools(app, store);
+}

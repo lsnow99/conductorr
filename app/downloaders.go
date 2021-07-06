@@ -80,7 +80,7 @@ func (dm *DownloaderManager) RegisterDownloader(id int, downloaderType, name str
 	return nil
 }
 
-func (dm *DownloaderManager) Download(media integration.Media, release integration.Release, highPriority bool) error {
+func (dm *DownloaderManager) Download(mediaID int, release integration.Release, highPriority bool) error {
 
 	var hadError bool
 	for _, downloader := range dm.downloaders {
@@ -91,12 +91,12 @@ func (dm *DownloaderManager) Download(media integration.Media, release integrati
 		if dlType == release.DownloadType {
 			if err := downloader.AddRelease(&release); err == nil {
 				dm.downloads = append(dm.downloads, integration.Download{
-					Media: &media,
+					MediaID: mediaID,
 					FriendlyName: release.FriendlyName,
 					Identifier: release.Identifier,
 					Status: constant.StatusWaiting,
 				})
-				_, err := dbstore.NewDownload(media.ID, downloader.ID, release.Identifier, constant.StatusWaiting, release.FriendlyName)
+				_, err := dbstore.NewDownload(mediaID, downloader.ID, release.Identifier, constant.StatusWaiting, release.FriendlyName)
 				if err != nil {
 					logger.LogDanger(fmt.Errorf("database error! could not save download: %v", err))
 				}
@@ -115,9 +115,9 @@ func (dm *DownloaderManager) Download(media integration.Media, release integrati
 	return errors.New("no downloaders for this type of release")
 }
 
-func (dm *DownloaderManager) RegisterDownload(media integration.Media, friendlyName, status, identifier string) {
+func (dm *DownloaderManager) RegisterDownload(mediaID int, friendlyName, status, identifier string) {
 	dm.downloads = append(dm.downloads, integration.Download{
-		Media: &media,
+		MediaID: mediaID,
 		FriendlyName: friendlyName,
 		Identifier: identifier,
 		Status: status,
@@ -152,7 +152,7 @@ func (dm *DownloaderManager) processDownloads(curState []integration.Download) {
 					case constant.StatusComplete:
 						// Trigger conductorr post processing
 						dm.downloads[i].Status = constant.StatusCProcessing
-						go handleCompletedDownload(curStateDL)
+						go handleCompletedDownload(dm.downloads[i])
 					// Do nothing for these statuses
 					case constant.StatusCError:
 						logger.LogDanger(fmt.Errorf("conductorr had an error processing %v", curStateDL))
@@ -172,7 +172,16 @@ func (dm *DownloaderManager) processDownloads(curState []integration.Download) {
 }
 
 func handleCompletedDownload(download integration.Download) {
-	dbPath, err := dbstore.GetPath(download.Media.PathID)
+	media, err := dbstore.GetMediaByID(download.MediaID)
+	if err != nil {
+		logger.LogDanger(err)
+		return
+	}
+	if !media.PathID.Valid {
+		logger.LogDanger(fmt.Errorf("no path assigned for %v", media))
+		return
+	}
+	dbPath, err := dbstore.GetPath(int(media.PathID.Int32))
 	if err != nil {
 		logger.LogDanger(err)
 		return

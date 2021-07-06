@@ -28,35 +28,35 @@ type Media struct {
 	Status        string
 	Path          sql.NullString
 	Size          sql.NullInt64
-	ProfileID	  int
-	PathID		  int
+	ProfileID     sql.NullInt32
+	PathID        sql.NullInt32
 }
 
 type Indexer struct {
-	ID      int
-	Name    string
-	UserID int
-	BaseUrl string
-	ApiKey  string
-	ForMovies bool
-	ForSeries bool
+	ID           int
+	Name         string
+	UserID       int
+	BaseUrl      string
+	ApiKey       string
+	ForMovies    bool
+	ForSeries    bool
 	DownloadType string
 }
 
 type Downloader struct {
-	ID int
-	Name string
+	ID             int
+	Name           string
 	DownloaderType string
-	Config map[string]interface{}
+	Config         map[string]interface{}
 }
 
 type Download struct {
-	ID int
-	MediaID int
-	DownloaderID int
-	Status string
+	ID           int
+	MediaID      sql.NullInt32
+	DownloaderID sql.NullInt32
+	Status       string
 	FriendlyName string
-	Identifier string
+	Identifier   string
 }
 
 type Path struct {

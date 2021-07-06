@@ -14,6 +14,7 @@ import (
 	"github.com/lsnow99/conductorr/dbstore"
 	"github.com/lsnow99/conductorr/integration"
 	"github.com/lsnow99/conductorr/services/omdb"
+	"github.com/lsnow99/conductorr/services/series"
 )
 
 type MediaInput struct {
@@ -82,10 +83,53 @@ func AddMedia(w http.ResponseWriter, r *http.Request) {
 
 	genres := strings.Split(result.Genre, ", ")
 
-	id, err := dbstore.AddMedia(&result.Title, &result.Plot, &result.ReleasedAt, &result.EndedAt,
-		&result.Type, nil, nil, &result.ImdbID, nil, &imdbRating, &result.Runtime,
-		&poster, genres, mi.ProfileID, mi.PathID)
-	Respond(w, r.Host, err, id, true)
+	var id int
+	// If tv show, add all the episodes and seasons
+	if result.Type == "series" {
+		episodes, err := series.GetEpisodes(result.ImdbID)
+		if err != nil {
+			Respond(w, r.Host, err, 0, true)
+			return
+		}
+		id, err = dbstore.AddMedia(&result.Title, &result.Plot, &result.ReleasedAt, &result.EndedAt,
+			&result.Type, nil, nil, &result.ImdbID, nil, &imdbRating, &result.Runtime,
+			&poster, genres, &mi.ProfileID, &mi.PathID)
+		if err != nil {
+			Respond(w, r.Host, err, id, true)
+			return
+		}
+	
+		insertedSeasons := make(map[int]int)
+		for _, episode := range episodes {
+			seasonID, ok := insertedSeasons[episode.Season]
+			if !ok {
+				seasonStr := "Season " + strconv.Itoa(episode.Season)
+				contentType := "season"
+				seasonID, err = dbstore.AddMedia(&seasonStr, nil, &episode.Aired, nil, &contentType, &id, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+				if err != nil {
+					Respond(w, r.Host, err, 0, true)
+					return
+				}
+				insertedSeasons[episode.Season] = seasonID
+			}
+			contentType := "episode"
+			_, err = dbstore.AddMedia(&episode.Title, &episode.Description, &episode.Aired, nil, &contentType, &seasonID, nil, nil, nil, nil, &episode.Runtime, nil, nil, nil, nil)
+			if err != nil {
+				Respond(w, r.Host, err, 0, true)
+				return
+			}
+		}
+	} else {
+		id, err = dbstore.AddMedia(&result.Title, &result.Plot, &result.ReleasedAt, &result.EndedAt,
+			&result.Type, nil, nil, &result.ImdbID, nil, &imdbRating, &result.Runtime,
+			&poster, genres, &mi.ProfileID, &mi.PathID)
+		if err != nil {
+			Respond(w, r.Host, err, id, true)
+			return
+		}
+	}
+
+	Respond(w, r.Host, nil, id, true)
 }
 
 func GetPoster(w http.ResponseWriter, r *http.Request) {
@@ -116,6 +160,17 @@ func GetMedia(w http.ResponseWriter, r *http.Request) {
 	}
 	media, err := dbstore.GetMediaByID(mediaID)
 	Respond(w, r.Host, err, NewMediaResponseFromDB(media), true)
+}
+
+func DeleteMedia(w http.ResponseWriter, r *http.Request) {
+	mediaIDStr := mux.Vars(r)["id"]
+	mediaID, err := strconv.Atoi(mediaIDStr)
+	if err != nil {
+		Respond(w, r.Host, err, nil, true)
+		return
+	}
+	err = dbstore.DeleteMedia(mediaID)
+	Respond(w, r.Host, err, nil, true)
 }
 
 func UpdateMedia(w http.ResponseWriter, r *http.Request) {
@@ -155,6 +210,6 @@ func DownloadMediaRelease(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = app.DM.Download(NewIntegrationMediaFromDBMedia(media), release, true)
+	err = app.DM.Download(media.ID, release, true)
 	Respond(w, r.Host, err, nil, true)
 }

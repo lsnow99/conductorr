@@ -8,30 +8,28 @@
       <div class="flex flex-1">
         <o-field addons grouped label="Library Path" class="w-full">
           <o-input
+            disabled
             v-model="pathConfig.path"
             expanded
             placeholder="/library/movies"
           />
-          <o-button @click="testPath(pathConfig)"
-            ><action-button>Test</action-button></o-button
-          >
         </o-field>
       </div>
       <div class="flex flex-row items-center mt-6">
-        <o-switch
-          @input="moviesDefaultChanged(index)"
-          v-model="pathConfig.movies_default"
-          class="mx-3"
+        <o-switch disabled v-model="pathConfig.movies_default" class="mx-3"
           >Default for Movies</o-switch
         >
-        <o-switch
-          @input="seriesDefaultChanged(index)"
-          v-model="pathConfig.series_default"
-          class="mx-3"
+        <o-switch disabled v-model="pathConfig.series_default" class="mx-3"
           >Default for TV</o-switch
         >
         <o-button
-          @click="deletePath(pathConfig, index)"
+          @click="editPath(pathConfig)"
+          class="mr-3"
+          variant="primary"
+          icon-right="edit"
+        />
+        <o-button
+          @click="deletePath(pathConfig)"
           class="mr-3"
           variant="danger"
           icon-right="trash"
@@ -41,82 +39,94 @@
     <div class="flex flex-row justify-between">
       <div />
       <div>
-        <o-button class="mr-3" @click="pathConfigs.push({})">New Path</o-button
-        ><o-button variant="primary" @click="savePaths">Save Paths</o-button>
+        <o-button class="mr-3" @click="newPath">New Path</o-button>
       </div>
     </div>
   </section>
+  <o-modal v-model:active="showNewPathModal">
+    <edit-path
+      @close="showNewPathModal = false"
+      @submitted="newPathSubmitted"
+    />
+  </o-modal>
+  <o-modal v-model:active="showEditPathModal">
+    <edit-path
+      :path="editingPath"
+      @close="showEditPathModal = false"
+      @submitted="editPathSubmitted"
+    />
+  </o-modal>
 </template>
 
 <script>
 import ActionButton from "../components/ActionButton.vue";
+import EditPath from "../components/EditPath.vue";
 import APIUtil from "../util/APIUtil";
+
 export default {
-  components: { ActionButton },
+  components: { ActionButton, EditPath },
   data() {
     return {
       pathConfigs: [],
+      editingPath: {},
+      showNewPathModal: false,
+      showEditPathModal: false,
     };
   },
   methods: {
-    testPath(pathConfig) {
-      APIUtil.testPath(pathConfig.path).then((resp) => {
-        if (resp.success) {
-          this.$oruga.notification.open({
-            duration: 3000,
-            message: `Path is OK`,
-            position: "bottom-right",
-            variant: "success",
-            closable: false,
-          });
-        } else {
-          this.$oruga.notification.open({
-            duration: 5000,
-            message: `Test failed: ${resp.msg}`,
-            position: "bottom-right",
-            variant: "danger",
-            closable: false,
-          });
-        }
-      });
-    },
-    deletePath(pathConfig, index) {
-      if (pathConfig && pathConfig.id) {
-        APIUtil.deletePath(pathConfig.id).then(() => {
-          this.loadPaths();
-        });
-      } else {
-        this.pathConfigs.splice(index, 1);
-      }
-    },
-    moviesDefaultChanged(index) {
-      for (let i = 0; i < this.pathConfigs.length; i++) {
-        this.pathConfigs[i].movies_default = false;
-      }
-        this.pathConfigs[index].movies_default = true;
-    },
-    seriesDefaultChanged(index) {
-      for (let i = 0; i < this.pathConfigs.length; i++) {
-        this.pathConfigs[i].series_default = false;
-      }
-      this.pathConfigs[index].series_default = true;
-    },
     loadPaths() {
       APIUtil.getPaths().then((paths) => {
         this.pathConfigs = paths;
       });
     },
-    savePaths() {
-      APIUtil.updatePaths(this.pathConfigs).then(() => {
+    deletePath(pathConfig) {
+      APIUtil.deletePath(pathConfig.id).then(() => {
         this.loadPaths();
-        this.$oruga.notification.open({
-          duration: 3000,
-          message: `Successfully saved paths`,
-          position: "bottom-right",
-          variant: "success",
-          closable: false,
-        });
       });
+    },
+    editPath(pathConfig) {
+      this.editingPath = pathConfig;
+      this.showEditPathModal = true;
+    },
+    editPathSubmitted(path) {
+      APIUtil.updatePath(
+        this.editingPath.id,
+        path.path,
+        path.moviesDefault,
+        path.seriesDefault
+      )
+        .then(() => {
+          this.$oruga.notification.open({
+            duration: 3000,
+            message: `Updated path ${path.path}`,
+            position: "bottom-right",
+            variant: "success",
+            closable: false,
+          });
+        })
+        .finally(() => {
+          this.showEditPathModal = false;
+          this.loadPaths();
+        });
+    },
+    newPath() {
+      this.showNewPathModal = true;
+    },
+    newPathSubmitted(path) {
+      APIUtil.createNewPath(path.path, path.moviesDefault, path.seriesDefault)
+        .then(() => {
+          this.$oruga.notification.open({
+            duration: 3000,
+            message: `Created path ${path.path}`,
+            position: "bottom-right",
+            variant: "success",
+            closable: false,
+          });
+        })
+        .finally(() => {
+          this.showNewPathModal = false;
+          this.loadPaths();
+        });
     },
   },
   mounted() {

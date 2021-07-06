@@ -2,9 +2,10 @@ package dbstore
 
 import "database/sql"
 
-func CreateIndexer(name string, userID int, baseUrl, apiKey string, forMovies, forSeries bool, downloadType string) error {
-	_, err := db.Exec(`INSERT INTO indexer (name, user_id, base_url, api_key, for_movies, for_series, download_type) VALUES (?, ?, ?, ?, ?, ?, ?)`, name, userID, baseUrl, apiKey, forMovies, forSeries, downloadType)
-	return err
+func CreateIndexer(name string, userID int, baseUrl, apiKey string, forMovies, forSeries bool, downloadType string) (id int, err error) {
+	row := db.QueryRow(`INSERT INTO indexer (name, user_id, base_url, api_key, for_movies, for_series, download_type) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id`, name, userID, baseUrl, apiKey, forMovies, forSeries, downloadType)
+	err = row.Scan(&id)
+	return id, err
 }
 
 func GetIndexers() (indexers []Indexer, err error) {

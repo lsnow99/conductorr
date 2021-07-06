@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -25,7 +26,11 @@ func SearchReleasesManual(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	profile, err := dbstore.GetProfileByID(dbMedia.ProfileID)
+	if !dbMedia.ProfileID.Valid {
+		Respond(w, r.Host, errors.New("no profile assigned"), nil, true)
+		return
+	}
+	profile, err := dbstore.GetProfileByID(int(dbMedia.ProfileID.Int32))
 	if err != nil {
 		Respond(w, r.Host, fmt.Errorf("error loading profile for media"), nil, true)
 		return

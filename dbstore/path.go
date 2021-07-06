@@ -5,7 +5,6 @@ import (
 	"database/sql"
 )
 
-
 func GetPaths() ([]Path, error) {
 	paths := make([]Path, 0)
 
@@ -28,28 +27,70 @@ func GetPaths() ([]Path, error) {
 	return paths, nil
 }
 
-func UpdatePaths(ctx context.Context, paths []Path) error {
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return err
-	}
-	_, err = tx.Exec(`DELETE FROM path WHERE true;`)
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-	for _, path := range paths {
-		_, err := tx.Exec(`
-			INSERT INTO path (path, movies_default, series_default)
-			VALUES(?, ?, ?)
-			`, path.Path, path.MoviesDefault, path.SeriesDefault)
+func NewPath(path string, moviesDefault, seriesDefault bool) error {
+	tx, err := db.BeginTx(context.TODO(), nil)
+	defer func() {
 		if err != nil {
 			tx.Rollback()
+		}
+	}()
+
+	if moviesDefault {
+		_, err = tx.Exec(`UPDATE path SET movies_default = ? WHERE true`, false)
+		if err != nil {
 			return err
 		}
 	}
-	tx.Commit()
-	return nil
+
+	if seriesDefault {
+		_, err = tx.Exec(`UPDATE path SET series_default = ? WHERE true`, false)
+		if err != nil {
+			return err
+		}
+	}
+
+	_, err = tx.Exec(`
+	INSERT INTO path (path, movies_default, series_default)
+	VALUES(?, ?, ?)`, path, moviesDefault, seriesDefault)
+	if err != nil {
+		return err
+	}
+
+	err = tx.Commit()
+	return err
+}
+
+func UpdatePath(id int, path string, moviesDefault, seriesDefault bool) error {
+	tx, err := db.BeginTx(context.TODO(), nil)
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if moviesDefault {
+		_, err = tx.Exec(`UPDATE path SET movies_default = ? WHERE true`, false)
+		if err != nil {
+			return err
+		}
+	}
+
+	if seriesDefault {
+		_, err = tx.Exec(`UPDATE path SET series_default = ? WHERE true`, false)
+		if err != nil {
+			return err
+		}
+	}
+
+	_, err = tx.Exec(`
+	UPDATE path SET path = ?, movies_default = ?, series_default = ?
+	WHERE id = ?`, path, moviesDefault, seriesDefault, id)
+	if err != nil {
+		return err
+	}
+
+	err = tx.Commit()
+	return err
 }
 
 func DeletePath(id int) error {
@@ -58,7 +99,7 @@ func DeletePath(id int) error {
 }
 
 func GetPath(id int) (Path, error) {
-	row := db.QueryRow(`SELECT id, path, movies_default, series_default WHERE id = ?`, id)
+	row := db.QueryRow(`SELECT id, path, movies_default, series_default FROM path WHERE id = ?`, id)
 	path := Path{}
 	return path, row.Scan(&path.ID, &path.Path, &path.MoviesDefault, &path.SeriesDefault)
 }

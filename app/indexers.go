@@ -1,6 +1,7 @@
 package app
 
 import (
+	"errors"
 	"time"
 
 	"github.com/lsnow99/conductorr/integration"
@@ -8,7 +9,7 @@ import (
 )
 
 type ManagedIndexer struct {
-	ID int
+	ID        int
 	Name      string
 	ForMovies bool
 	ForSeries bool
@@ -61,6 +62,9 @@ func (im *IndexerManager) RegisterIndexer(id int, downloadType string, userID in
 
 func (im *IndexerManager) Search(media *integration.Media) ([]integration.Release, error) {
 	results := make([]integration.Release, 0)
+	if len(im.indexers) == 0 {
+		return results, errors.New("no indexers registered")
+	}
 	for _, indexer := range im.indexers {
 		indexer.TestConnection()
 		indexerResults, err := indexer.Search(media)

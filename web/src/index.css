@@ -316,6 +316,11 @@
   @apply border-4;
   @apply border-opacity-50;
   @apply text-lg;
+  @apply w-full;
+}
+
+.o-sel--danger {
+  @apply border-red-400;
 }
 
 .o-sel--placeholder {

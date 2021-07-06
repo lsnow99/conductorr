@@ -38,8 +38,6 @@ func CheckUser(ctx context.Context, username, password string) error {
 	defer func() {
 		if err != nil {
 			tx.Rollback()
-		} else {
-			tx.Commit()
 		}
 	}()
 	if err != nil {
@@ -57,5 +55,6 @@ func CheckUser(ctx context.Context, username, password string) error {
 		return errors.New("credentials don't match")
 	}
 
-	return nil
+	err = tx.Commit()
+	return err
 }

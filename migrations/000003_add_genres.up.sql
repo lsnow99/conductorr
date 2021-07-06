@@ -9,8 +9,8 @@ CREATE TABLE media_genre (
     id INTEGER PRIMARY KEY,
     media_id INTEGER NOT NULL,
     genre_id INTEGER NOT NULL,
-    FOREIGN KEY(media_id) REFERENCES media(id),
-    FOREIGN KEY(genre_id) REFERENCES genre(id) 
+    FOREIGN KEY(media_id) REFERENCES media(id) ON DELETE CASCADE,
+    FOREIGN KEY(genre_id) REFERENCES genre(id) ON DELETE CASCADE
 );
 
 COMMIT;

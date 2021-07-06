@@ -2,7 +2,7 @@
   <page-wrapper>
     <section class="flex flex-row">
       <img class="hidden md:block" :src="media.poster" />
-      <div class="ml-4">
+      <div class="ml-4 flex flex-1 flex-col">
         <h1 class="text-4xl lg:text-6xl">{{ media.title }}</h1>
         <div
           class="
@@ -34,6 +34,17 @@
             </a>
           </div>
           <div class="flex self-end">
+            <o-tooltip
+              variant="info"
+              :position="tooltipPosition"
+              label="Delete Media"
+            >
+              <div class="text-2xl mx-2 text-gray-300">
+                <div @click="showConfirmDeleteModal = true">
+                  <o-icon class="cursor-pointer" icon="trash" />
+                </div>
+              </div>
+            </o-tooltip>
             <o-tooltip
               variant="info"
               :position="tooltipPosition"
@@ -74,96 +85,7 @@
         <p class="text-lg">{{ media.description }}</p>
       </div>
     </section>
-    <section class="mt-4">
-      <o-table
-        :height="loading ? '400px' : ''"
-        :data="releases"
-        narrowed
-        hoverable
-        :loading="loadingManualSearch"
-        mobile-cards
-      >
-        <o-table-column
-          field="download_type"
-          label="Type"
-          v-slot="props"
-          position="centered"
-        >
-          <div
-            v-if="props.row.download_type == 'torrent'"
-            class="font-bold bg-green-500"
-          >
-            torrent
-          </div>
-          <div
-            v-if="props.row.download_type == 'nzb'"
-            class="font-bold bg-blue-500"
-          >
-            nzb
-          </div>
-        </o-table-column>
-
-        <o-table-column field="title" label="Title" v-slot="props">
-          {{ props.row.title }}
-        </o-table-column>
-
-        <o-table-column field="resolution" label="Resolution" v-slot="props">
-          {{ props.row.resolution }}
-        </o-table-column>
-
-        <o-table-column field="rip_type" label="Rip Type" v-slot="props">
-          {{ props.row.rip_type }}
-        </o-table-column>
-
-        <o-table-column field="encoding" label="Encoding" v-slot="props">
-          {{ props.row.encoding }}
-        </o-table-column>
-
-        <o-table-column sortable field="size" label="Size" v-slot="props">
-          {{ niceSize(props.row.size) }}
-        </o-table-column>
-
-        <o-table-column
-          field="age"
-          label="Age"
-          sortable
-          position="centered"
-          v-slot="props"
-        >
-          {{ `${props.row.age} days` }}
-        </o-table-column>
-
-        <o-table-column
-          field="warnings"
-          label="Warnings"
-          position="centered"
-          v-slot="props"
-        >
-          <o-tooltip variant="info" position="bottom">
-            <template v-slot:content>
-              <div v-for="(warning, index) in props.row.warnings" :key="index">
-                {{ warning }}
-              </div>
-            </template>
-            <o-icon
-              class="text-red-500"
-              v-if="props.row.warnings && props.row.warnings.length > 0"
-              icon="exclamation-circle"
-            />
-          </o-tooltip>
-        </o-table-column>
-
-        <o-table-column label="Download" position="centered" v-slot="props">
-          <o-icon v-if="props.row.search" spin icon="sync-alt" />
-          <o-icon
-            v-else
-            class="cursor-pointer"
-            @click="download(props.row)"
-            icon="download"
-          />
-        </o-table-column>
-      </o-table>
-    </section>
+    <section class="mt-4"></section>
     <o-modal
       v-model:active="showEditMediaModal"
       @close="showEditMediaModal = false"
@@ -174,6 +96,28 @@
         @close="showEditMediaModal = false"
       />
     </o-modal>
+    <o-modal
+      v-model:active="showConfirmDeleteModal"
+      @close="showConfirmDeleteModal = false"
+    >
+      <ConfirmDelete
+        @delete="doDelete"
+        @close="showConfirmDeleteModal = false"
+        :delete-message="`Are you sure you want to delete '${media.title}'?`"
+      />
+    </o-modal>
+
+    <o-modal
+    full-screen 
+      v-model:active="showManualReleasesModal"
+      @close="showManualReleasesModal = false"
+    >
+      <manual-search-results
+        :releases="releases"
+        :loading="loadingManualSearch"
+        :mediaID="mediaID"
+      />
+    </o-modal>
   </page-wrapper>
 </template>
 
@@ -181,8 +125,9 @@
 import PageWrapper from "../components/PageWrapper.vue";
 import APIUtil from "../util/APIUtil";
 import MediaUtil from "../util/MediaUtil";
-import Helpers from "../util/Helpers";
 import EditMedia from "../components/EditMedia.vue";
+import ConfirmDelete from "../components/ConfirmDelete.vue";
+import ManualSearchResults from "../components/ManualSearchResults.vue";
 
 export default {
   data() {
@@ -194,16 +139,19 @@ export default {
       loadingAutoSearch: false,
       tooltipPosition: "bottom",
       showEditMediaModal: false,
+      showConfirmDeleteModal: false,
+      showManualReleasesModal: false,
     };
   },
   mixins: [MediaUtil],
-  components: { PageWrapper, EditMedia },
+  components: { PageWrapper, EditMedia, ConfirmDelete, ManualSearchResults },
   methods: {
     searchManual() {
       this.loadingManualSearch = true;
       APIUtil.searchReleasesManual(this.mediaID)
         .then((releases) => {
           this.releases = releases;
+          this.showManualReleasesModal = true;
         })
         .catch((err) => {
           this.$oruga.notification.open({
@@ -218,27 +166,17 @@ export default {
           this.loadingManualSearch = false;
         });
     },
-    download(release) {
-      let index = this.releases.findIndex((elem) => elem.download_url == release.download_url);
-      if (index >= 0) {
-        this.releases[index].search = true;
-        APIUtil.downloadMediaRelease(this.mediaID, release)
-          .then(() => {})
-          .finally(() => {
-            let index = this.releases.findIndex(
-              (elem) => elem.download_url == release.download_url
-            );
-            this.releases[index].search = false;
-          });
-      }
-    },
-    niceSize: Helpers.niceSize,
     editMedia() {
       this.showEditMediaModal = true;
     },
-    updateMedia(profileID, pathID) {
+    updateMedia({ profileID, pathID }) {
       APIUtil.updateMedia(this.mediaID, profileID, pathID).then(() => {
         this.showEditMediaModal = false;
+      });
+    },
+    doDelete() {
+      APIUtil.deleteMedia(this.mediaID).then(() => {
+        this.$router.push({ name: "library" });
       });
     },
   },

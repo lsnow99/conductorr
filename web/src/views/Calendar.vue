@@ -45,10 +45,10 @@
               v-for="(event, index) in date.events"
               :key="index"
               :class="eventClass(index)"
-              class="text-lg p-2"
+              class="text-md p-1"
             >
-              <span class="font-bold">{{ event.time }}</span>
-              <span class="font-semibold">{{ event.title }}</span>
+              <span class="text-sm font-bold float-left">{{ event.time }}</span>
+              <span class="font-semibold ml-2">{{ event.title }}</span>
             </div>
           </div>
         </div>
@@ -86,6 +86,7 @@
 <script>
 import PageWrapper from "../components/PageWrapper.vue";
 import { DateTime } from "luxon";
+import APIUtil from '../util/APIUtil';
 
 const EVENT_BACKGROUNDS = [
   "bg-red-500",
@@ -100,6 +101,7 @@ export default {
     return {
       selectedDate: DateTime.now(),
       viewType: "monthly",
+      events: []
     };
   },
   components: {
@@ -130,6 +132,20 @@ export default {
     eventClass(index) {
       return EVENT_BACKGROUNDS[index % EVENT_BACKGROUNDS.length];
     },
+    getEventsForDatetime(datetime) {
+      let evts = []
+      for(let i = 0; i < this.events.length; i++) {
+        const evt = this.events[i]
+        const evtDatetime = DateTime.fromJSDate(new Date(evt.timestamp))
+        if (evtDatetime.hasSame(datetime, 'day')) {
+          evts.push({
+            time: evtDatetime.toLocaleString(DateTime.TIME_SIMPLE),
+            title: evt.title
+          })
+        }
+      }
+      return evts
+    }
   },
   mounted() {
     const screenWidth = window.innerWidth;
@@ -140,6 +156,9 @@ export default {
     } else {
       this.viewType = "monthly";
     }
+    APIUtil.getSchedule().then(events => {
+      this.events = events
+    })
   },
   computed: {
     dates() {
@@ -164,32 +183,7 @@ export default {
           dates.push({
             day: curDate.day,
             gray: false,
-            events: [
-              {
-                time: "5:00pm",
-                title: "Westworld",
-              },
-              {
-                time: "7:00pm",
-                title: "Family Guy",
-              },
-              {
-                time: "9:00pm",
-                title: "Bloodline",
-              },
-              {
-                time: "10:00pm",
-                title: "Invincible",
-              },
-              {
-                time: "10:00pm",
-                title: "True Detective",
-              },
-              {
-                time: "11:00pm",
-                title: "Watchmen",
-              },
-            ],
+            events: this.getEventsForDatetime(curDate),
           });
         }
         for (let i = monthEndDoW; i < 6; i++) {

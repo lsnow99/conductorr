@@ -9,7 +9,6 @@ import (
 	"github.com/lsnow99/conductorr"
 	"github.com/lsnow99/conductorr/app"
 	"github.com/lsnow99/conductorr/dbstore"
-	"github.com/lsnow99/conductorr/integration"
 	_ "github.com/lsnow99/conductorr/internal/csl"
 	"github.com/lsnow99/conductorr/logger"
 	"github.com/lsnow99/conductorr/routes"
@@ -42,14 +41,19 @@ func main() {
 		os.Exit(1)
 	}
 	for _, download := range downloads {
-		media, err := dbstore.GetMediaByID(download.MediaID)
 		if err != nil {
 			logger.LogToStdout(err)
 			os.Exit(1)
 		}
-		app.DM.RegisterDownload(integration.Media{
-			ID: media.ID,
-		}, download.FriendlyName, download.Status, download.Identifier)
+		if download.MediaID.Valid {
+			app.DM.RegisterDownload(int(download.MediaID.Int32), download.FriendlyName, download.Status, download.Identifier)
+		} else {
+			// This download was registered with a downloader that no longer exists. Record it as an error
+			err = dbstore.UpdateDownloadStatusByIdentifier(download.Identifier, "error")
+			if err != nil {
+				logger.LogToStdout(err)
+			}
+		}
 	}
 
 	// Initialize indexers

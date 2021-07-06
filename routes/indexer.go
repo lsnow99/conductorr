@@ -71,8 +71,15 @@ func CreateIndexer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := dbstore.CreateIndexer(indexer.Name, indexer.UserID, indexer.BaseUrl, indexer.ApiKey, indexer.ForMovies, indexer.ForSeries, indexer.DownloadType)
-	Respond(w, r.Host, err, nil, true)
+	id, err := dbstore.CreateIndexer(indexer.Name, indexer.UserID, indexer.BaseUrl, indexer.ApiKey, indexer.ForMovies, indexer.ForSeries, indexer.DownloadType)
+	if err != nil {
+		Respond(w, r.Host, err, nil, true)
+		return
+	}
+
+	app.IM.RegisterIndexer(id, indexer.DownloadType, indexer.UserID, indexer.Name, indexer.ApiKey, indexer.BaseUrl, indexer.ForMovies, indexer.ForSeries)
+
+	Respond(w, r.Host, nil, nil, true)
 }
 
 func UpdateIndexer(w http.ResponseWriter, r *http.Request) {

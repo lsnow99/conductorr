@@ -349,6 +349,40 @@ const getLogs = () => {
   })
 }
 
+const createNewPath = (path, movies_default, series_default) => {
+  return doAPIReq(`/api/v1/path`, {
+    method: "POST",
+    body: JSON.stringify({
+      path,
+      movies_default,
+      series_default
+    })
+  })
+}
+
+const updatePath = (id, path, movies_default, series_default) => {
+  return doAPIReq(`/api/v1/path/${id}`, {
+    method: "PUT",
+    body: JSON.stringify({
+      path,
+      movies_default,
+      series_default
+    })
+  })
+}
+
+const deleteMedia = (id) => {
+  return doAPIReq(`/api/v1/media/${id}`, {
+    method: "DELETE",
+  })
+}
+
+const getSchedule = () => {
+  return doAPIReq(`/api/v1/schedule`, {
+    method: "GET",
+  })
+}
+
 export default {
   signIn,
   signUp,
@@ -383,5 +417,9 @@ export default {
   deleteDownloader,
   downloadMediaRelease,
   getStatus,
-  getLogs
+  getLogs,
+  createNewPath,
+  updatePath,
+  deleteMedia,
+  getSchedule
 };

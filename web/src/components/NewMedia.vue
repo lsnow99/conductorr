@@ -95,7 +95,7 @@ export default {
       this.showNewMediaModal = true;
       this.media = media;
     },
-    addMedia(profileID, pathID) {
+    addMedia({profileID, pathID}) {
       APIUtil.addMedia(this.media.imdb_id, profileID, pathID).then(id => {
         this.$router.push({name: 'media', params: {media_id: id}})
       }).catch(err => {

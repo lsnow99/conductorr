@@ -18,7 +18,7 @@ type Downloader interface {
 }
 
 type Download struct {
-	Media *Media
+	MediaID int
 	FriendlyName string
 	Identifier string
 	FinalDir string

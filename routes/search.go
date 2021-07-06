@@ -68,8 +68,12 @@ func NewMediaResponseFromDB(media dbstore.Media) (m MediaResponse) {
 	if media.ImdbRating.Valid {
 		m.ImdbRating = int(media.ImdbRating.Int32)
 	}
-	m.ProfileID = media.ProfileID
-	m.PathID = media.PathID
+	if media.ProfileID.Valid {
+		m.ProfileID = int(media.ProfileID.Int32)
+	}
+	if media.PathID.Valid {
+		m.PathID = int(media.PathID.Int32)
+	}
 	return m
 }
 

@@ -70,7 +70,7 @@ func init() {
 	if os.Getenv("DB_PATH") != "" {
 		DBPath = os.Getenv("DB_PATH")
 	} else {
-		DBPath = "./conductorr.db"
+		DBPath = "./conductorr.db?_foreign_keys=on"
 	}
 
 	if os.Getenv("OMDB_API_KEY") != "" {

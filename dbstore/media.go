@@ -1,6 +1,7 @@
 package dbstore
 
 import (
+	"context"
 	"strings"
 	"time"
 )
@@ -12,6 +13,7 @@ func SearchMedia(title string, contentType string, page int) ([]*Media, int, err
 		FROM media
 		WHERE UPPER(title) LIKE '%' || ? || '%'
 		AND content_type LIKE '%' || ? || '%'
+		AND content_type NOT IN ('episode', 'season')
 		`, title, contentType)
 
 	var count int
@@ -27,6 +29,7 @@ func SearchMedia(title string, contentType string, page int) ([]*Media, int, err
 		FROM media
 		WHERE UPPER(title) LIKE '%' || ? || '%' 
 		AND content_type LIKE '%' || ? || '%'
+		AND content_type NOT IN ('episode', 'season')
 		LIMIT 10 
 		OFFSET ?
 		`, title, contentType, (page-1)*10)
@@ -51,11 +54,44 @@ func SearchMedia(title string, contentType string, page int) ([]*Media, int, err
 	return medias, count, nil
 }
 
+func GetAllMedia() ([]*Media, error) {
+	rows, err := db.Query(`
+		SELECT id, title, description, released_at, ended_at, content_type,
+			parent_media_id, tmdb_id, imdb_id, tmdb_rating, imdb_rating,
+			runtime, profile_id, path_id
+		FROM media
+		WHERE content_type in ('episode', 'movie')
+		`)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	medias := make([]*Media, 0, 10)
+	for rows.Next() {
+		media := Media{}
+		if err := rows.Scan(&media.ID, &media.Title, &media.Description, &media.ReleasedAt,
+			&media.EndedAt, &media.ContentType, &media.ParentMediaID,
+			&media.TmdbID, &media.ImdbID, &media.TmdbRating, &media.ImdbRating,
+			&media.Runtime, &media.ProfileID, &media.PathID); err != nil {
+			return nil, err
+		}
+		medias = append(medias, &media)
+	}
+	return medias, nil
+}
+
 func AddMedia(title *string, description *string, releasedAt *time.Time, endedAt *time.Time,
 	contentType *string, parentMediaID *int, tmdbID *int, imdbID *string,
-	tmdbRating *int, imdbRating *int, runtime *int, poster *[]byte, genres []string, profileID, pathID int) (id int, err error) {
+	tmdbRating *int, imdbRating *int, runtime *int, poster *[]byte, genres []string, profileID, pathID *int) (id int, err error) {
 
-	tx, err := db.Begin()
+	tx, err := db.BeginTx(context.TODO(), nil)
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
 	if err != nil {
 		return 0, err
 	}
@@ -90,7 +126,8 @@ func AddMedia(title *string, description *string, releasedAt *time.Time, endedAt
 			return 0, err
 		}
 	}
-	return id, tx.Commit()
+	err = tx.Commit()
+	return id, err
 }
 
 func GetMediaByImdbID(imdbID string) (media Media, err error) {
@@ -137,6 +174,14 @@ func GetMediaByID(id int) (media Media, err error) {
 		&media.Runtime, &media.ProfileID, &media.PathID)
 
 	return media, err
+}
+
+func DeleteMedia(id int) error {
+	_, err := db.Exec(`
+		DELETE FROM media
+		WHERE id = ?
+		`, id)
+	return err
 }
 
 func UpdateMedia(id int, profileID, pathID int) (err error) {
