@@ -35,18 +35,8 @@ jobs:
       - name: Run build script
         run: |
           bash build.sh
-      # Requires adding a GITHUB_TOKEN secret
-      - name: Create GitHub release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          cd bin
-          TAG="$(git describe --tags)"
-          ASSETS=()
-          for ASSET in *; do
-            ASSETS+=("--attach" "$ASSET")
-          done
-          hub release create \
-            "${ASSETS[@]}" \
-            --message "Compiled binaries for conductorr $TAG" \
-            "$TAG"
+      - name: Update release
+        uses: johnwbyrd/update-release@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: ./bin/*
