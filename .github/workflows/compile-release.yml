@@ -39,4 +39,4 @@ jobs:
         uses: johnwbyrd/update-release@v1.0.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          files: ./bin/conductorr-windows_x86.exe /bin/conductorr-windows_x64.exe /bin/conductorr-osx_arm64 /bin/conductorr-osx_amd64 /bin/conductorr-linux_x86 /bin/conductorr-linux_x64 /bin/conductorr-linux_arm64 /bin/conductorr-linux_arm
+          files: ./bin/conductorr-windows_x86.exe ./bin/conductorr-windows_x64.exe ./bin/conductorr-osx_arm64 ./bin/conductorr-osx_amd64 ./bin/conductorr-linux_x86 ./bin/conductorr-linux_x64 ./bin/conductorr-linux_arm64 ./bin/conductorr-linux_arm
