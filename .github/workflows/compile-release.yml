@@ -35,12 +35,8 @@ jobs:
       - name: Run build script
         run: |
           bash build.sh
-      - name: Retrieve version
-        run: |
-          echo ::set-env name=TAG_NAME::$(git describe --tags)
       - name: Update release
         uses: johnwbyrd/update-release@v1.0.0
         with:
-          token: ${{ env.TAG_NAME }}
-          release: $()
+          token: ${{ secrets.GITHUB_TOKEN }}
           files: ./bin/conductorr-windows_x86.exe ./bin/conductorr-windows_x64.exe ./bin/conductorr-osx_arm64 ./bin/conductorr-osx_amd64 ./bin/conductorr-linux_x86 ./bin/conductorr-linux_x64 ./bin/conductorr-linux_arm64 ./bin/conductorr-linux_arm
