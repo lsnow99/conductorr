@@ -19,6 +19,7 @@ var whitelistPaths = []string{
 	"/api/v1/checkAuth",
 	"/api/csl.wasm",
 	"/api/v1/logout",
+	// Also whitelisted are any paths not beginning with /api/v1
 }
 
 var errAuth = errors.New("token failed validation")
@@ -105,7 +106,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			}
 		}
 
-		if shouldAuth {
+		if shouldAuth && strings.HasPrefix(r.URL.Path, "/api/v1") {
 			tok, err := r.Cookie(UserAuthKey)
 			if err != nil || !checkToken(tok.Value) {
 				Respond(w, "", errAuth, nil, false)

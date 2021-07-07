@@ -79,6 +79,9 @@ export default {
     loadProfiles() {
       APIUtil.getProfiles().then((profiles) => {
         this.profiles = profiles;
+        if(this.media.profile_id) {
+          this.profileID = this.media.profile_id
+        }
       });
     },
     loadPaths() {
@@ -95,6 +98,8 @@ export default {
               this.pathID = elem.id;
             }
           });
+        } else {
+          this.pathID = this.media.path_id
         }
       });
     },

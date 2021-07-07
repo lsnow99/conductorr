@@ -1,6 +1,6 @@
 <template>
   <section class="mt-3">
-    <o-button class="mr-3" variant="primary" @click="newPath">New Path</o-button>
+    <o-button variant="primary" @click="newPath">New Path</o-button>
     <div
       v-for="(pathConfig, index) in pathConfigs"
       :key="index"

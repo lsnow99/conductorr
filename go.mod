@@ -3,6 +3,7 @@ module github.com/lsnow99/conductorr
 go 1.16
 
 require (
+	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/ethereum/go-ethereum v1.10.3
 	github.com/golang-migrate/migrate v3.5.4+incompatible

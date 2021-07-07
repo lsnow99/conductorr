@@ -1,6 +1,6 @@
 <template>
   <header class="modal-card-header">
-    <p class="modal-card-title">Configure Transmission</p>
+    <p class="modal-card-title">Configure Plex</p>
   </header>
   <section class="modal-card-content">
     <div>
@@ -15,21 +15,21 @@
       <o-field label="Base URL">
         <o-input
           type="text"
-          v-model="computedTransmission.base_url"
+          v-model="computedPlex.base_url"
           placeholder="Base URL"
         />
       </o-field>
       <o-field label="Username">
         <o-input
           type="text"
-          v-model="computedTransmission.username"
+          v-model="computedPlex.username"
           placeholder="transmission"
         />
       </o-field>
       <o-field label="Password">
         <o-input
           type="password"
-          v-model="computedTransmission.password"
+          v-model="computedPlex.password"
           placeholder="transmission"
         />
       </o-field>
@@ -88,7 +88,7 @@ export default {
         return;
       }
       this.testingMode = "loading";
-      APIUtil.testDownloader("transmission", this.computedTransmission)
+      APIUtil.testDownloader("transmission", this.computedPlex)
         .then((resp) => {
           if (resp.success) {
             this.$oruga.notification.open({
@@ -120,24 +120,24 @@ export default {
       this.computedName = this.computedName
         ? this.computedName.trim()
         : undefined;
-      this.computedTransmission.base_url = this.computedTransmission.base_url
-        ? this.computedTransmission.base_url.trim()
+      this.computedPlex.base_url = this.computedPlex.base_url
+        ? this.computedPlex.base_url.trim()
         : undefined;
     },
     validate() {
       if (!this.computedName) {
         return "Name is required";
-      } else if (!this.computedTransmission.base_url) {
+      } else if (!this.computedPlex.base_url) {
         return "Base URL is required";
-      } else if (!this.computedTransmission.username) {
+      } else if (!this.computedPlex.username) {
         return "Username is required";
-      } else if (!this.computedTransmission.password) {
+      } else if (!this.computedPlex.password) {
         return "Password is required";
       }
     },
   },
   computed: {
-    computedTransmission: {
+    computedPlex: {
       get() {
         if (this.newTransmission == null) {
           if (this.transmission) {

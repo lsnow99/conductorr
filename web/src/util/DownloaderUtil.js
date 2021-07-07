@@ -14,7 +14,6 @@ export default {
         return this.name;
       },
       set(newVal) {
-        console.log('updating name to ', newVal)
         this.$emit("update:name", newVal);
       },
     },

@@ -3,5 +3,6 @@ migrate.linux-amd64
 conductorr.db
 conductorr.db-journal
 /dist
+/bin
 web/src/util/wasm_exec.js
 /conductorr

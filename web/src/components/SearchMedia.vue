@@ -116,7 +116,6 @@ export default {
     },
     clear() {
       this.computedQuery = ''
-      console.log('computedQuery', this.computedQuery)
       this.search();
     },
   },

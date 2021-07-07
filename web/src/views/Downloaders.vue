@@ -19,7 +19,7 @@
         </code>
       </div>
     </config-item>
-    <o-modal v-model:active="showNewDownloaderModal" @close="close">
+    <o-modal v-model:active="showNewDownloaderModal" @close="closeNewDownloaderModal">
       <new-downloader
         v-if="downloaderType == ''"
         @close="closeNewDownloaderModal"

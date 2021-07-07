@@ -1,28 +1,6 @@
 <template>
   <page-wrapper>
     <o-tabs type="boxed" ref="tabs" v-model="currentTab">
-      <!-- <o-tab-item>
-        <template v-slot:header>
-          <span class="text-2xl flex flex-row items-center">
-            <vue-fontawesome icon="film"></vue-fontawesome
-            ><span style="white-space: nowrap" class="flex ml-2"
-              >Movies</span
-            >
-          </span>
-        </template>
-        <section></section>
-      </o-tab-item>
-      <o-tab-item>
-        <template v-slot:header>
-          <span class="text-2xl flex flex-row items-center">
-            <vue-fontawesome icon="tv"></vue-fontawesome
-            ><span style="white-space: nowrap" class="flex ml-2"
-              >TV Shows</span
-            >
-          </span>
-        </template>
-        <section></section>
-      </o-tab-item> -->
       <o-tab-item>
         <template v-slot:header>
           <span class="text-2xl flex flex-row items-center">
@@ -74,7 +52,7 @@
             >
           </span>
         </template>
-        <section></section>
+        <media-servers />
       </o-tab-item>
     </o-tabs>
   </page-wrapper>
@@ -87,6 +65,7 @@ import PageWrapper from "../components/PageWrapper.vue";
 import ReleaseProfiles from "./ReleaseProfiles.vue";
 import Downloaders from "./Downloaders.vue";
 import PostProcessing from "./PostProcessing.vue";
+import MediaServers from "./MediaServers.vue";
 
 export default {
   data() {
@@ -101,10 +80,10 @@ export default {
     NewDownloader,
     Downloaders,
     PostProcessing,
+    MediaServers
   },
   methods: {
     tabsChanged(newTab) {
-      console.log(newTab)
       this.$refs.tabs.childItems[newTab-1].scrollIntoView
     }
   },

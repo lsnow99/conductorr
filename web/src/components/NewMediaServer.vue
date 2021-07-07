@@ -1,14 +1,19 @@
 <template>
   <header class="modal-card-header">
-    <p class="modal-card-title">New Downloader</p>
+    <p class="modal-card-title">New Media Server</p>
   </header>
   <section class="modal-card-content">
-    <service-options :services="downloaderTypes" v-model="selectedDownloader" v-if="!showNext" />
+    <service-options :services="mediaServerTypes" v-model="selectedMediaServer" v-if="!selectedMediaServer" />
+    <div v-else>
+        <div v-if="selectedMediaServer == 'transmission'">
+            <edit-plex />
+        </div>
+    </div>
   </section>
   <footer class="modal-card-footer">
     <o-button @click="$emit('close')">Cancel</o-button>
     <div>
-      <o-button variant="primary" :disabled="selectedDownloader == ''" @click="next"
+      <o-button variant="primary" :disabled="selectedMediaServer == ''" @click="next"
         >Next</o-button
       >
     </div>
@@ -16,29 +21,26 @@
 </template>
 
 <script>
-import EditTransmission from "./EditTransmission.vue"
+import EditPlex from "./EditPlex.vue"
 import ServiceOptions from "./ServiceOptions.vue"
 
-const downloaderTypes = [
+const mediaServerTypes = [
   {
-    name: "Transmission",
-    value: "transmission",
-  },
-  {
-    name: "NZBGet",
-    value: "nzbget",
+    name: "Plex",
+    value: "plex",
   },
 ];
 
 export default {
   data() {
     return {
-      downloaderTypes,
-      selectedDownloader: ''
+      mediaServerTypes,
+      selectedMediaServer: '',
+      showNext: false
     };
   },
   components: {
-      EditTransmission,
+      EditPlex,
       ServiceOptions
   },
   emits: ['close', 'selected'],

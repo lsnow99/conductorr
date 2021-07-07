@@ -7,7 +7,6 @@ const doAPIReq = (url, options, errMsg = undefined) => {
     fetch(url, options)
       .then((re) => re.json())
       .then((resp) => {
-        console.log(resp)
         if (resp.success) {
           if (resp.data !== undefined) {
             resolve(resp.data);

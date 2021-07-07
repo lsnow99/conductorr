@@ -6,7 +6,6 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/lsnow99/conductorr"
 	"github.com/lsnow99/conductorr/app"
 	"github.com/lsnow99/conductorr/dbstore"
 	_ "github.com/lsnow99/conductorr/internal/csl"
@@ -15,6 +14,9 @@ import (
 	"github.com/lsnow99/conductorr/scheduler"
 	"github.com/lsnow99/conductorr/settings"
 )
+
+var Version string
+var Mode string
 
 func main() {
 	if err := dbstore.Init(); err != nil {
@@ -73,13 +75,9 @@ func main() {
 
 func serveRoutes(port int) error {
 
-	http.Handle("/", routes.GetRouter())
+	http.Handle("/", routes.GetRouter(Mode == "binary"))
 
-	if !settings.DebugMode {
-		var staticFS = http.FS(conductorr.WebDist)
-		fs := http.FileServer(staticFS)
-		http.Handle("/", fs)
-	} else {
+	if settings.DebugMode {
 		log.Println("Warning: starting in debug mode")
 	}
 
