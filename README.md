@@ -8,7 +8,7 @@ To develop on Conductorr, first clone the repository.
 
 ### Backend Development
 
-Conductorr backend requires [go](https://golang.org/) version 1.16 to be installed.
+Conductorr backend requires [go](https://golang.org/) to be installed. For development, any stable Go version should do fine. However, to build the production binaries Conductorr requires Go version ^1.16.0. This is because the production binary uses the [embed](https://golang.org/pkg/embed/) package which was introduced in Go v1.16.0.
 
 Within VS Code, select "Launch Backend" from the debug menu. You can set breakpoints and debug as usual within VS Code. To run the backend without VS Code, use the command `CONDUCTORR_DEBUG=true go run ./cmd/conductorr`
 

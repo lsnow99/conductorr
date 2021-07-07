@@ -5,7 +5,9 @@ name: Compile and Release
 
 on:
   push:
-    branches: [master]
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
   workflow_dispatch:
 
 jobs:
@@ -15,28 +17,24 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      # Dudu requires Go version 1.16+
+      # Conductorr requires Go version 1.16+
       - uses: actions/setup-go@v2
         with:
           go-version: '^1.16.0'
+      # Conductorr requires node (for yarn/web)
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
 
+      - name: Install Build Dependencies
+        run : |
+          sudo apt update -y && sudo apt install -y brotli && sudo apt install -y yarn
       - name: Setup
         run: |
           mkdir -p bin
-      - name: Compile for Windows
+      - name: Run build script
         run: |
-          GOOS=windows GOARCH=386 go build -o bin/dudu-windows_x86.exe -ldflags="-X 'main.Version=$(git describe --tags)'" github.com/lsnow99/dudu/cmd/dudu
-          GOOS=windows GOARCH=amd64 go build -o bin/dudu-windows_x64.exe -ldflags="-X 'main.Version=$(git describe --tags)'" github.com/lsnow99/dudu/cmd/dudu
-      - name: Compile for OS X
-        run: |
-          GOOS=darwin GOARCH=amd64 go build -o bin/dudu-osx_amd64 -ldflags="-X 'main.Version=$(git describe --tags)'" github.com/lsnow99/dudu/cmd/dudu
-          GOOS=darwin GOARCH=arm64 go build -o bin/dudu-osx_arm64 -ldflags="-X 'main.Version=$(git describe --tags)'" github.com/lsnow99/dudu/cmd/dudu
-      - name: Compile for Linux
-        run: |
-          GOOS=linux GOARCH=386 go build -o bin/dudu-linux_x86 -ldflags="-X 'main.Version=$(git describe --tags)'" github.com/lsnow99/dudu/cmd/dudu
-          GOOS=linux GOARCH=amd64 go build -o bin/dudu-linux_x64 -ldflags="-X 'main.Version=$(git describe --tags)'" github.com/lsnow99/dudu/cmd/dudu
-          GOOS=linux GOARCH=arm go build -o bin/dudu-linux_arm -ldflags="-X 'main.Version=$(git describe --tags)'" github.com/lsnow99/dudu/cmd/dudu
-          GOOS=linux GOARCH=arm64 go build -o bin/dudu-linux_arm64 -ldflags="-X 'main.Version=$(git describe --tags)'" github.com/lsnow99/dudu/cmd/dudu
+          bash build.sh
       # Requires adding a GITHUB_TOKEN secret
       - name: Create GitHub release
         env:
