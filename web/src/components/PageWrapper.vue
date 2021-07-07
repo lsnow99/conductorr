@@ -1,20 +1,16 @@
 <template>
   <div class="flex flex-col min-h-screen">
   <section class="container mx-auto mt-4 pb-4">
-    <section class="menu" :class="expandMenu ? 'expanded' : ''">
-      <div class="visible lg:hidden pl-5 pr-5 pt-6 pb-6 text-xl">
+    <section class="menu" :class="expandMenu ? 'expanded' : ''" @click="expandMenu = !expandMenu">
+      <div class="visible lg:hidden pl-5 pr-5 py-4 text-xl" >
         <div
           class="
-            border-solid border-4
             rounded-md
             cursor-pointer
             inline-block
-            pt-1
-            pb-1
-            pl-3
-            pr-3
+            py-px
+            px-2
           "
-          @click="expandMenu = !expandMenu"
         >
           <vue-fontawesome icon="bars" class="text-white" />
         </div>
@@ -34,7 +30,7 @@
         class="route-item ml-auto logout flex items-center"
       >
         <vue-fontawesome icon="sign-out-alt" />
-        Logout
+        <span class="ml-1">Logout</span>
       </router-link>
     </section>
     <section :class="class" class="mt-10">

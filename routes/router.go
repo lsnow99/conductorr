@@ -16,6 +16,7 @@ func GetRouter() http.Handler {
 	r.HandleFunc("/api/v1/signin", SignIn).Methods("POST")
 	r.HandleFunc("/api/v1/firstTime", FirstTime).Methods("GET")
 	r.HandleFunc("/api/v1/checkAuth", CheckAuth).Methods("GET")
+	r.HandleFunc("/api/v1/logout", InvalidateAuthCookie).Methods("GET")
 
 	r.HandleFunc("/api/v1/releaseProfileCfg", GetReleaseProfileCfg).Methods("GET")
 	r.HandleFunc("/api/v1/profile", CreateProfile).Methods("POST")
@@ -32,6 +33,7 @@ func GetRouter() http.Handler {
 	r.HandleFunc("/api/v1/media/{id}", DeleteMedia).Methods("DELETE")
 	r.HandleFunc("/api/v1/media/{id}/searchReleasesManual", SearchReleasesManual).Methods("GET")
 	r.HandleFunc("/api/v1/media/{id}/download", DownloadMediaRelease).Methods("POST")
+	r.HandleFunc("/api/v1/media/{id}/monitoring", SetMonitoringMedia).Methods("PUT")
 	r.HandleFunc("/api/v1/testIndexer", TestIndexer).Methods("POST")
 	r.HandleFunc("/api/v1/indexer", CreateIndexer).Methods("POST")
 	r.HandleFunc("/api/v1/indexer", GetIndexers).Methods("GET")

@@ -7,6 +7,7 @@ import Library from "./views/Library.vue";
 import Media from "./views/Media.vue";
 import Calendar from "./views/Calendar.vue";
 import System from "./views/System.vue";
+import Logout from "./views/Logout.vue";
 import AuthUtil from "./util/AuthUtil.js";
 import store from "./store"
 
@@ -79,8 +80,9 @@ const routes = [
   {
     path: "/logout",
     name: 'logout',
+    component: Logout,
     meta: {
-      logout: true
+      requiresAuth: false
     }
   }
 ];
@@ -91,18 +93,6 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  /*
-      If navigating to a special route with the meta.logout property set,
-      we log out the user and bring them to the sign in page.
-      */
-  if (to.matched.some((record) => record.meta.logout)) {
-    // TODO: Do logout
-    AuthUtil.logout();
-    next({
-      name: "auth"
-    })
-    return
-  }
   /*
       If a path requires authentication, we first check that the user is logged in
       and if the check fails, send them to the login page.

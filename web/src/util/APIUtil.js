@@ -1,4 +1,3 @@
-import store from "../store";
 import AuthUtil from "./AuthUtil";
 import EventBus from "./EventBus";
 
@@ -384,6 +383,21 @@ const getSchedule = () => {
   })
 }
 
+const logout = () => {
+  return doAPIReq(`/api/v1/logout`, {
+    method: "GET"
+  })
+}
+
+const setMonitoringMedia = (id, monitoring) => {
+  return doAPIReq(`/api/v1/media/${id}/monitoring`, {
+    method: "PUT",
+    body: JSON.stringify({
+      monitoring
+    })
+  })
+}
+
 export default {
   signIn,
   signUp,
@@ -422,5 +436,7 @@ export default {
   createNewPath,
   updatePath,
   deleteMedia,
-  getSchedule
+  getSchedule,
+  logout,
+  setMonitoringMedia
 };

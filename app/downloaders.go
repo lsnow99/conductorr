@@ -26,6 +26,7 @@ type ManagedDownloader struct {
 
 type DownloaderManager struct {
 	*sync.RWMutex
+	didFirstRun bool
 	downloaders []ManagedDownloader
 	downloads   []integration.Download
 }
@@ -44,6 +45,7 @@ func (dm *DownloaderManager) DoTask() {
 		downloads = append(downloads, dlr.GetDownloads()...)
 	}
 	dm.processDownloads(downloads)
+	dm.didFirstRun = true
 }
 
 func (dm *DownloaderManager) GetFrequency() time.Duration {
@@ -142,7 +144,7 @@ func (dm *DownloaderManager) processDownloads(curState []integration.Download) {
 			if curStateDL.Identifier == prevStateDL.Identifier {
 				dm.downloads[i].FinalDir = curStateDL.FinalDir
 				found = true
-				// if curStateDL.Status != prevStateDL.Status {
+				if curStateDL.Status != prevStateDL.Status && !dm.didFirstRun {
 					err := dbstore.UpdateDownloadStatusByIdentifier(curStateDL.Identifier, curStateDL.Status)
 					if err != nil {
 						logger.LogDanger(err)
@@ -164,7 +166,7 @@ func (dm *DownloaderManager) processDownloads(curState []integration.Download) {
 						// Remove download from the list of monitored downloads
 						dm.downloads = append(dm.downloads[:i], dm.downloads[i+1:]...)
 					}
-				// }
+				}
 				break
 			}
 		}
@@ -216,6 +218,7 @@ func handleCompletedDownload(download integration.Download) {
 		return
 	}
 	logger.LogInfo(fmt.Errorf("successfully copied %s", download.FriendlyName))
+	dbstore.UpdateDownloadStatusByIdentifier(download.Identifier, constant.StatusDone)
 }
 
 func (dm *DownloaderManager) getDownloadsToMonitor() (monitoring []string) {

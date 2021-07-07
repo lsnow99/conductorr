@@ -2,7 +2,9 @@ package routes
 
 import (
 	"database/sql"
+	"errors"
 	"net/http"
+	"sort"
 	"strconv"
 	"time"
 
@@ -26,8 +28,50 @@ type MediaResponse struct {
 	Runtime       int        `json:"runtime,omitempty"`
 	ProfileID     int        `json:"profile_id,omitempty"`
 	PathID        int        `json:"path_id,omitempty"`
+	Number        int        `json:"number,omitempty"`
+	Monitoring bool `json:"monitoring"`
+
+	Children []MediaResponse `json:"children,omitempty"`
+
+	// to prevent an infinite loop in Expand()
+	visited map[int]bool `json:"-"`
 
 	InLibrary bool `json:"in_library,omitempty"`
+}
+
+// Expand a media response with all the recursively referenced children
+func (mr *MediaResponse) Expand() error {
+	if mr.visited == nil {
+		mr.visited = make(map[int]bool)
+	}
+	mr.visited[mr.ID] = true
+	children, err := dbstore.GetMediaReferencing(mr.ID)
+	if err != nil {
+		return err
+	}
+	medias := make([]MediaResponse, 0)
+	for _, child := range children {
+		if _, ok := mr.visited[child.ID]; ok {
+			return errors.New("self referential media loop")
+		}
+		if child == nil {
+			continue
+		}
+		media := NewMediaResponseFromDB(*child)
+		medias = append(medias, media)
+	}
+	for _, media := range medias {
+		media.visited = mr.visited
+		err = media.Expand()
+		if err != nil {
+			return err
+		}
+		mr.Children = append(mr.Children, media)
+	}
+	sort.Slice(mr.Children, func(i, j int) bool {
+		return mr.Children[i].Number < mr.Children[j].Number
+	})
+	return nil
 }
 
 type SearchResponse struct {
@@ -74,6 +118,10 @@ func NewMediaResponseFromDB(media dbstore.Media) (m MediaResponse) {
 	if media.PathID.Valid {
 		m.PathID = int(media.PathID.Int32)
 	}
+	if media.Number.Valid {
+		m.Number = int(media.Number.Int32)
+	}
+	m.Monitoring = media.Monitoring
 	return m
 }
 

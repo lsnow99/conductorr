@@ -35,6 +35,10 @@ type MediaInput struct {
 	PathID     int        `json:"path_id,omitempty"`
 }
 
+type MonitoringInput struct {
+	Monitoring bool `json:"monitoring"`
+}
+
 func NewIntegrationMediaFromDBMedia(media dbstore.Media) (m integration.Media) {
 	m.ID = media.ID
 	if media.Title.Valid {
@@ -49,6 +53,7 @@ func NewIntegrationMediaFromDBMedia(media dbstore.Media) (m integration.Media) {
 type AddMediaInput struct {
 	ProfileID int `json:"profile_id,omitempty"`
 	PathID    int `json:"path_id,omitempty"`
+	Monitoring bool `json:"monitoring"`
 }
 
 func AddMedia(w http.ResponseWriter, r *http.Request) {
@@ -93,7 +98,7 @@ func AddMedia(w http.ResponseWriter, r *http.Request) {
 		}
 		id, err = dbstore.AddMedia(&result.Title, &result.Plot, &result.ReleasedAt, &result.EndedAt,
 			&result.Type, nil, nil, &result.ImdbID, nil, &imdbRating, &result.Runtime,
-			&poster, genres, &mi.ProfileID, &mi.PathID)
+			&poster, genres, &mi.ProfileID, &mi.PathID, nil, mi.Monitoring)
 		if err != nil {
 			Respond(w, r.Header.Get("hostname"), err, id, true)
 			return
@@ -105,7 +110,7 @@ func AddMedia(w http.ResponseWriter, r *http.Request) {
 			if !ok {
 				seasonStr := "Season " + strconv.Itoa(episode.Season)
 				contentType := "season"
-				seasonID, err = dbstore.AddMedia(&seasonStr, nil, &episode.Aired, nil, &contentType, &id, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+				seasonID, err = dbstore.AddMedia(&seasonStr, nil, &episode.Aired, nil, &contentType, &id, nil, nil, nil, nil, nil, nil, nil, nil, nil, &episode.Season, mi.Monitoring)
 				if err != nil {
 					Respond(w, r.Header.Get("hostname"), err, 0, true)
 					return
@@ -113,7 +118,7 @@ func AddMedia(w http.ResponseWriter, r *http.Request) {
 				insertedSeasons[episode.Season] = seasonID
 			}
 			contentType := "episode"
-			_, err = dbstore.AddMedia(&episode.Title, &episode.Description, &episode.Aired, nil, &contentType, &seasonID, nil, nil, nil, nil, &episode.Runtime, nil, nil, nil, nil)
+			_, err = dbstore.AddMedia(&episode.Title, &episode.Description, &episode.Aired, nil, &contentType, &seasonID, nil, nil, nil, nil, &episode.Runtime, nil, nil, nil, nil, &episode.Episode, mi.Monitoring)
 			if err != nil {
 				Respond(w, r.Header.Get("hostname"), err, 0, true)
 				return
@@ -122,7 +127,7 @@ func AddMedia(w http.ResponseWriter, r *http.Request) {
 	} else {
 		id, err = dbstore.AddMedia(&result.Title, &result.Plot, &result.ReleasedAt, &result.EndedAt,
 			&result.Type, nil, nil, &result.ImdbID, nil, &imdbRating, &result.Runtime,
-			&poster, genres, &mi.ProfileID, &mi.PathID)
+			&poster, genres, &mi.ProfileID, &mi.PathID, nil, mi.Monitoring)
 		if err != nil {
 			Respond(w, r.Header.Get("hostname"), err, id, true)
 			return
@@ -159,7 +164,17 @@ func GetMedia(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	media, err := dbstore.GetMediaByID(mediaID)
-	Respond(w, r.Header.Get("hostname"), err, NewMediaResponseFromDB(media), true)
+	if err != nil {
+		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		return
+	}
+	mr := NewMediaResponseFromDB(media)
+	err = mr.Expand()
+	if err != nil {
+		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		return
+	}
+	Respond(w, r.Header.Get("hostname"), nil, mr, true)
 }
 
 func DeleteMedia(w http.ResponseWriter, r *http.Request) {
@@ -211,5 +226,23 @@ func DownloadMediaRelease(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = app.DM.Download(media.ID, release, true)
+	Respond(w, r.Header.Get("hostname"), err, nil, true)
+}
+
+func SetMonitoringMedia(w http.ResponseWriter, r *http.Request) {
+	mediaIDStr := mux.Vars(r)["id"]
+	mediaID, err := strconv.Atoi(mediaIDStr)
+	if err != nil {
+		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		return
+	}
+
+	mi := MonitoringInput{}
+	if err := json.NewDecoder(r.Body).Decode(&mi); err != nil {
+		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		return
+	}
+
+	err = dbstore.UpdateMediaMonitoring(mediaID, mi.Monitoring)
 	Respond(w, r.Header.Get("hostname"), err, nil, true)
 }

@@ -26,11 +26,17 @@ func SearchReleasesManual(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !dbMedia.ProfileID.Valid {
+	profileID, err := getProfileID(mediaID)
+	if err != nil {
+		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		return
+	}
+
+	if profileID < 1 {
 		Respond(w, r.Header.Get("hostname"), errors.New("no profile assigned"), nil, true)
 		return
 	}
-	profile, err := dbstore.GetProfileByID(int(dbMedia.ProfileID.Int32))
+	profile, err := dbstore.GetProfileByID(profileID)
 	if err != nil {
 		Respond(w, r.Header.Get("hostname"), fmt.Errorf("error loading profile for media"), nil, true)
 		return
@@ -45,7 +51,7 @@ func SearchReleasesManual(w http.ResponseWriter, r *http.Request) {
 	}
 	if dbMedia.ContentType.String == "movie" {
 		media.ContentType = integration.Movie
-	} else if dbMedia.ContentType.String == "series" {
+	} else if dbMedia.ContentType.String == "series" || dbMedia.ContentType.String == "episode" || dbMedia.ContentType.String == "season" {
 		media.ContentType = integration.TVShow
 	}
 	media.ImdbID = dbMedia.ImdbID.String
@@ -74,4 +80,15 @@ func SearchReleasesManual(w http.ResponseWriter, r *http.Request) {
 	}
 
 	Respond(w, r.Header.Get("hostname"), nil, releases, true)
+}
+
+func getProfileID(mediaID int) (int, error) {
+	media, err := dbstore.GetMediaByID(mediaID)
+	if err != nil {
+		return 0, err
+	}
+	if media.ParentMediaID.Valid {
+		return getProfileID(int(media.ParentMediaID.Int32))
+	}
+	return int(media.ProfileID.Int32), nil
 }

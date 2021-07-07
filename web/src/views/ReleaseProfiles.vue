@@ -2,36 +2,61 @@
   <section class="mt-3">
     <div class="flex flex-col sm:flex-row justify-between">
       <div class="flex justify-center">
-        <o-button variant="primary" @click="showNewProfileModal = true">New Profile</o-button>
+        <o-button variant="primary" @click="showNewProfileModal = true"
+          >New Profile</o-button
+        >
       </div>
       <div class="flex justify-center mt-4 sm:mt-0">
-        <o-button variant="primary" icon-left="plus-square" @click="expandAll" class="mr-3"
+        <o-button
+          variant="primary"
+          icon-left="plus-square"
+          @click="expandAll"
+          class="mr-3"
           >Expand All</o-button
-        ><o-button variant="primary" icon-left="minus-square" @click="collapseAll"
+        ><o-button
+          variant="primary"
+          icon-left="minus-square"
+          @click="collapseAll"
           >Collapse All</o-button
         >
       </div>
     </div>
-    <release-profile
+    <config-item
+      collapsible
+      v-for="profile in profiles"
+      :key="profile.id"
+      @delete="deleteProfile(profile)"
+      @edit="edit(profile)"
+      :title="profile.name"
+    >
+      <div class="p-4">
+        Filter
+        <CSLEditor readonly v-model="profile.filter" />
+        Sorter
+        <CSLEditor readonly v-model="profile.sorter" />
+      </div>
+    </config-item>
+    <!-- <release-profile
       v-for="(profile, index) in profiles"
-      :ripTypes="ripTypes"
-      :qualityTypes="qualityTypes"
-      :resolutionTypes="resolutionTypes"
       v-model="profiles[index]"
       v-model:expanded="profile.expanded"
       @reload="loadProfiles"
       :key="index"
-    />
+    /> -->
     <o-modal v-model:active="showNewProfileModal">
-      <new-profile @close="showNewProfileModal = false" @submitted="newProfileSubmitted" />
+      <new-profile
+        @close="showNewProfileModal = false"
+        @submitted="newProfileSubmitted"
+      />
     </o-modal>
   </section>
 </template>
 
 <script>
 import APIUtil from "../util/APIUtil";
-import ReleaseProfile from "../components/ReleaseProfile.vue";
 import NewProfile from "../components/NewProfile.vue";
+import ConfigItem from "../components/ConfigItem.vue";
+import CSLEditor from "../components/CSLEditor.vue";
 
 export default {
   data() {
@@ -40,12 +65,13 @@ export default {
       qualityTypes: [],
       resolutionTypes: [],
       showNewProfileModal: false,
-      profiles: []
+      profiles: [],
     };
   },
   components: {
-    ReleaseProfile,
     NewProfile,
+    ConfigItem,
+    CSLEditor,
   },
   methods: {
     expandAll() {
@@ -60,16 +86,39 @@ export default {
     },
     newProfileSubmitted() {
       this.showNewProfileModal = false;
-      this.loadProfiles()
+      this.loadProfiles();
     },
     loadProfiles() {
       APIUtil.getProfiles().then((data) => {
-        this.profiles = data
-      })
-    }
+        this.profiles = data;
+      });
+    },
+    edit(profile) {
+      this.$router.push({
+        name: "editProfile",
+        params: { profile_id: profile.id },
+      });
+    },
+    deleteProfile(profile) {
+      this.loadingDelete = true;
+      APIUtil.deleteProfile(profile.id)
+        .then(() => {
+          this.$oruga.notification.open({
+            duration: 3000,
+            message: `Deleted profile ${profile.name}`,
+            position: "bottom-right",
+            variant: "success",
+            closable: false,
+          });
+          this.loadProfiles();
+        })
+        .finally(() => {
+          this.loadingDelete = false;
+        });
+    },
   },
   mounted() {
-    this.loadProfiles()
+    this.loadProfiles();
 
     APIUtil.getReleaseProfileCfg().then((data) => {
       this.ripTypes = data.rip_types;

@@ -1,9 +1,16 @@
 <template>
   <page-wrapper>
     <section class="flex flex-row">
-      <img class="hidden md:block" :src="media.poster" />
-      <div class="ml-4 flex flex-1 flex-col">
-        <h1 class="text-4xl lg:text-6xl">{{ media.title }}</h1>
+      <img class="hidden md:block rounded-md" :src="media.poster" />
+      <div class="ml-4 flex flex-1 flex-col" v-show="media.id">
+        <h1 class="text-4xl lg:text-6xl">
+          <monitoring-toggle
+            class="text-3xl lg:text-5xl"
+            :monitoring="media.monitoring"
+            @toggle="toggleMonitoring(media)"
+          />
+          {{ media.title }}
+        </h1>
         <div
           class="
             py-4
@@ -56,36 +63,49 @@
                 </div>
               </div>
             </o-tooltip>
-            <o-tooltip
-              variant="info"
-              :position="tooltipPosition"
-              label="Search/Download Automatically"
-            >
-              <div class="text-2xl mx-2 text-gray-300">
-                <div v-if="!loadingAutoSearch" @click="searchManual">
-                  <o-icon class="cursor-pointer" icon="bolt" />
-                </div>
-                <o-icon v-else icon="sync-alt" spin />
-              </div>
-            </o-tooltip>
-            <o-tooltip
-              variant="info"
-              :position="tooltipPosition"
-              label="Search Manually"
-            >
-              <div class="text-2xl mx-2 text-gray-300">
-                <div v-if="!loadingManualSearch" @click="searchManual">
-                  <o-icon class="cursor-pointer" icon="search" />
-                </div>
-                <o-icon v-else icon="sync-alt" spin />
-              </div>
-            </o-tooltip>
+            <search-actions :mediaID="mediaID" size="large" />
           </div>
         </div>
         <p class="text-lg">{{ media.description }}</p>
       </div>
     </section>
-    <section class="mt-4"></section>
+    <section class="mt-4">
+      <div
+        class="p-5 bg-gray-600 cursor-pointer rounded-md my-4"
+        v-for="season in media.children"
+        :key="season.id"
+        @click="expandedCfg[season.id] = !expandedCfg[season.id]"
+      >
+        <div class="text-2xl">
+          <monitoring-toggle
+            @click.stop
+            class="text-xl"
+            :monitoring="season.monitoring"
+            :disabled="!media.monitoring"
+            @toggle="toggleMonitoring(season)"
+          />
+          {{ season.title }}
+        </div>
+        <transition name="fade">
+          <div
+            @click.prevent
+            @click.stop
+            class="bg-gray-800 rounded-md p-1 cursor-default"
+            v-show="expandedCfg[season.id]"
+          >
+            <episode-list @reload="loadMedia" :monitoring-disabled="!season.monitoring || !media.monitoring" :episodes="season.children" />
+          </div>
+        </transition>
+        <div class="text-center mt-2">
+          <o-icon
+            v-if="expandedCfg[season.id]"
+            size="large"
+            icon="chevron-up"
+          />
+          <o-icon v-else size="large" icon="chevron-down" />
+        </div>
+      </div>
+    </section>
     <o-modal
       v-model:active="showEditMediaModal"
       @close="showEditMediaModal = false"
@@ -106,18 +126,7 @@
         :delete-message="`Are you sure you want to delete '${media.title}'?`"
       />
     </o-modal>
-
-    <o-modal
-    full-screen 
-      v-model:active="showManualReleasesModal"
-      @close="showManualReleasesModal = false"
-    >
-      <manual-search-results
-        :releases="releases"
-        :loading="loadingManualSearch"
-        :mediaID="mediaID"
-      />
-    </o-modal>
+    <o-loading v-model:active="loading" is-full-page />
   </page-wrapper>
 </template>
 
@@ -128,6 +137,9 @@ import MediaUtil from "../util/MediaUtil";
 import EditMedia from "../components/EditMedia.vue";
 import ConfirmDelete from "../components/ConfirmDelete.vue";
 import ManualSearchResults from "../components/ManualSearchResults.vue";
+import EpisodeList from "../components/EpisodeList.vue";
+import SearchActions from "../components/SearchActions.vue";
+import MonitoringToggle from "../components/MonitoringToggle.vue";
 
 export default {
   data() {
@@ -137,34 +149,29 @@ export default {
       releases: [],
       loadingManualSearch: false,
       loadingAutoSearch: false,
+      loading: true,
       tooltipPosition: "bottom",
       showEditMediaModal: false,
       showConfirmDeleteModal: false,
       showManualReleasesModal: false,
+      expandedCfg: {},
     };
   },
   mixins: [MediaUtil],
-  components: { PageWrapper, EditMedia, ConfirmDelete, ManualSearchResults },
+  components: {
+    PageWrapper,
+    EditMedia,
+    ConfirmDelete,
+    ManualSearchResults,
+    EpisodeList,
+    SearchActions,
+    MonitoringToggle,
+  },
   methods: {
-    searchManual() {
-      this.loadingManualSearch = true;
-      APIUtil.searchReleasesManual(this.mediaID)
-        .then((releases) => {
-          this.releases = releases;
-          this.showManualReleasesModal = true;
-        })
-        .catch((err) => {
-          this.$oruga.notification.open({
-            duration: 3000,
-            message: `Error searching: ${err}`,
-            variant: "danger",
-            closable: false,
-            position: "bottom-right",
-          });
-        })
-        .finally(() => {
-          this.loadingManualSearch = false;
-        });
+    toggleMonitoring(media) {
+      APIUtil.setMonitoringMedia(media.id, !media.monitoring).then(() => {
+        this.loadMedia();
+      });
     },
     editMedia() {
       this.showEditMediaModal = true;
@@ -179,14 +186,21 @@ export default {
         this.$router.push({ name: "library" });
       });
     },
+    loadMedia() {
+      APIUtil.getMedia(this.mediaID)
+        .then((media) => {
+          this.media = media;
+        })
+        .finally(() => {
+          this.loading = false;
+        });
+    },
   },
   created() {
     this.mediaID = parseInt(this.$route.params.media_id);
   },
   mounted() {
-    APIUtil.getMedia(this.mediaID).then((media) => {
-      this.media = media;
-    });
+    this.loadMedia();
     const screenWidth = window.innerWidth;
     if (screenWidth < 768) {
       this.tooltipPosition = "left";

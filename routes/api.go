@@ -18,6 +18,7 @@ var whitelistPaths = []string{
 	"/api/v1/firstTime",
 	"/api/v1/checkAuth",
 	"/api/csl.wasm",
+	"/api/v1/logout",
 }
 
 var errAuth = errors.New("token failed validation")
@@ -115,6 +116,40 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		// Call the next handler, which can be another middleware in the chain, or the final handler.
 		next.ServeHTTP(w, r)
 	})
+}
+
+func InvalidateAuthCookie(w http.ResponseWriter, r *http.Request) {
+	reqHost := r.Header.Get("hostname")
+	if i := strings.Index(reqHost, ":"); i > 0 {
+		reqHost = reqHost[:i]
+	}
+	var cookieDomain string
+	addr := net.ParseIP(reqHost)
+	if addr == nil && reqHost != "localhost" {
+		cookieDomain = "." + reqHost
+	} else {
+		cookieDomain = reqHost
+	}
+
+	cookie := http.Cookie{
+		Name:     UserAuthKey,
+		Value:    "loggedout",
+		Path:     "/",
+		Domain:   cookieDomain,
+		Expires:  time.Now().Add(time.Second * MaxCookieAgeSecs),
+		Secure:   !settings.DebugMode,
+		HttpOnly: true,
+	}
+
+	if settings.DebugMode {
+		cookie.SameSite = http.SameSiteLaxMode
+	} else {
+		cookie.SameSite = http.SameSiteStrictMode
+	}
+
+	http.SetCookie(w, &cookie)
+
+	Respond(w, r.Header.Get("hostname"), nil, nil, false)
 }
 
 func checkToken(tok string) bool {

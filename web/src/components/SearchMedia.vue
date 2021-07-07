@@ -121,9 +121,13 @@ export default {
     },
   },
   mounted() {
+
+    const screenWidth = window.innerWidth;
+    if (screenWidth >= 768) {
     setTimeout(() => {
       this.$refs.searchbar.$el.firstChild.focus()
     }, 100)
+    }
     this.search();
   },
   watch: {

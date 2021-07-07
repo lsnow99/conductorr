@@ -30,6 +30,8 @@ type Media struct {
 	Size          sql.NullInt64
 	ProfileID     sql.NullInt32
 	PathID        sql.NullInt32
+	Number        sql.NullInt32
+	Monitoring    bool
 }
 
 type Indexer struct {

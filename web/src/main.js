@@ -58,10 +58,14 @@ import {
   faChevronDown,
   faChevronUp,
   faCloudDownloadAlt,
+  faBookmark,
+  faCircleNotch,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
 import { faGitAlt, faImdb } from "@fortawesome/free-brands-svg-icons";
+
+import { faBookmark as faBookmarkRegular } from "@fortawesome/free-regular-svg-icons";
 
 /*
 Import our router
@@ -76,8 +80,8 @@ import store from "./store";
 /*
 Import Vue Prism
 */
-import { PrismEditor } from 'vue-prism-editor';
-import 'vue-prism-editor/dist/prismeditor.min.css';
+import { PrismEditor } from "vue-prism-editor";
+import "vue-prism-editor/dist/prismeditor.min.css";
 
 /*
 Import VueX devtools fix from https://github.com/erdemefe07/vuex4-devtools-support
@@ -85,14 +89,14 @@ Import VueX devtools fix from https://github.com/erdemefe07/vuex4-devtools-suppo
 import { addDevtools } from "./vuexdev";
 
 const globalOptions = {
-  debug: 'info',
+  debug: "info",
   modules: {
     syntax: true,
-    toolbar: [['code-block']]
+    toolbar: [["code-block"]],
   },
   readOnly: false,
-  theme: 'snow'
-}
+  theme: "snow",
+};
 
 library.add(faSyncAlt);
 library.add(faTimes);
@@ -143,6 +147,9 @@ library.add(faBolt);
 library.add(faDice);
 library.add(faWrench);
 library.add(faCloudDownloadAlt);
+library.add(faBookmark);
+library.add(faBookmarkRegular);
+library.add(faCircleNotch);
 
 const app = createApp(App);
 app.use(store);
@@ -153,7 +160,7 @@ app.use(Oruga, {
   statusIcon: false,
 });
 app.component("vue-fontawesome", FontAwesomeIcon);
-app.component("PrismEditor", PrismEditor)
+app.component("PrismEditor", PrismEditor);
 app.mount("#app");
 
 if (import.meta.env.DEV) {

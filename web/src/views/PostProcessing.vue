@@ -1,9 +1,10 @@
 <template>
   <section class="mt-3">
+    <o-button class="mr-3" variant="primary" @click="newPath">New Path</o-button>
     <div
       v-for="(pathConfig, index) in pathConfigs"
       :key="index"
-      class="flex flex-col md:flex-row items-center my-6"
+      class="flex flex-col md:flex-row items-center my-3"
     >
       <div class="flex flex-1">
         <o-field addons grouped label="Library Path" class="w-full">
@@ -34,12 +35,6 @@
           variant="danger"
           icon-right="trash"
         />
-      </div>
-    </div>
-    <div class="flex flex-row justify-between">
-      <div />
-      <div>
-        <o-button class="mr-3" @click="newPath">New Path</o-button>
       </div>
     </div>
   </section>

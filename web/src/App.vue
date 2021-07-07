@@ -58,7 +58,7 @@ export default {
   watch: {
     loggedIn: function (newVal) {
       if (!newVal) {
-        this.$router.push({ name: "logout" });
+        this.$router.push({ name: "home" });
       }
     },
   },
