@@ -15,9 +15,6 @@ import (
 	"github.com/lsnow99/conductorr/settings"
 )
 
-var Version string
-var Mode string
-
 func main() {
 	if err := dbstore.Init(); err != nil {
 		log.Fatal(err)
@@ -75,7 +72,7 @@ func main() {
 
 func serveRoutes(port int) error {
 
-	http.Handle("/", routes.GetRouter(Mode == "binary"))
+	http.Handle("/", routes.GetRouter())
 
 	if settings.DebugMode {
 		log.Println("Warning: starting in debug mode")

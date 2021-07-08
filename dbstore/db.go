@@ -3,7 +3,9 @@ package dbstore
 import (
 	"database/sql"
 	"fmt"
+	"io"
 	"net/url"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -13,6 +15,7 @@ import (
 	"github.com/golang-migrate/migrate/v4/database/sqlite3"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/jackc/pgx/v4"
+	"github.com/lsnow99/conductorr"
 	"github.com/lsnow99/conductorr/constant"
 	"github.com/lsnow99/conductorr/settings"
 	_ "github.com/mattn/go-sqlite3"
@@ -60,6 +63,39 @@ func Init() error {
 		return err
 	}
 
+	if settings.BuildMode == "binary" {
+		path, err := os.MkdirTemp("", "conductorr_migrations")
+		if err != nil {
+			return err
+		}
+		migrationsFS := conductorr.Migrations
+		files, err := migrationsFS.ReadDir("migrations")
+		if err != nil {
+			return err
+		}
+		for _, migration := range files {
+			outFile, err := os.Create(filepath.Join(path, migration.Name()))
+			if err != nil {
+				return err
+			}
+			inFile, err := migrationsFS.Open(filepath.Join("migrations", migration.Name()))
+			if err != nil {
+				return err
+			}
+			_, err = io.Copy(outFile, inFile)
+			if err != nil {
+				return err
+			}
+			if err := inFile.Close(); err != nil {
+				return err
+			}
+			if err := outFile.Close(); err != nil {
+				return err
+			}
+		}
+		migrationPath = path
+	}
+
 	m, err := migrate.NewWithDatabaseInstance("file://"+migrationPath, "conductorrdb?_foreign_keys=on", driver)
 	if err != nil {
 		return err
@@ -68,6 +104,13 @@ func Init() error {
 	err = m.Up()
 	if err != nil && err != migrate.ErrNoChange {
 		return err
+	}
+
+	// cleanup temporary directory if created
+	if settings.BuildMode == "binary" {
+		if err := os.RemoveAll(migrationPath); err != nil {
+			return err
+		}
 	}
 
 	if err := initUser(); err != nil {

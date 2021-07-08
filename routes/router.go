@@ -14,7 +14,7 @@ import (
 	"github.com/lsnow99/conductorr/settings"
 )
 
-func GetRouter(serveStatic bool) http.Handler {
+func GetRouter() http.Handler {
 	r := mux.NewRouter()
 
 	// Unauthenticated routes (whitelist is in api.go)
@@ -30,7 +30,7 @@ func GetRouter(serveStatic bool) http.Handler {
 			}
 		}
 		w.Header().Add("Content-Type", "application/wasm")
-		if serveStatic {
+		if settings.BuildMode == "binary" {
 			file, err := cslFS.Open(filename)
 			if err != nil {
 				w.WriteHeader(http.StatusNotFound)
@@ -91,7 +91,7 @@ func GetRouter(serveStatic bool) http.Handler {
 
 	r.Use(AuthMiddleware)
 
-	if serveStatic {
+	if settings.BuildMode == "binary" {
 		sfs, err := fs.Sub(conductorr.WebDist, "web/build/dist")
 		if err != nil {
 			panic(err)

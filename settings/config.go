@@ -2,6 +2,7 @@ package settings
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net"
 	"os"
@@ -24,8 +25,11 @@ var MigrationsPath string
 var OmdbApiKey string
 var ServerHost string
 var CookieDomain string
+var BuildMode string
+var Version string
 
 func init() {
+	fmt.Println(BuildMode)
 
 	if os.Getenv("CONDUCTORR_DEBUG") != "" {
 		DebugMode = true
@@ -37,7 +41,7 @@ func init() {
 		// In debug mode just use a stupid JWT secret
 		JWTSecret = "abcdefghijklmnopqrstuvwxyz0123456789"
 	} else {
-		log.Fatal(errors.New("required environment variable JWT_SECRET not provided, or was not at least 64 characters. Set JWT_SECRET to a random string of 64+ characters."))
+		log.Fatal(errors.New("required environment variable JWT_SECRET not provided, or was not at least 64 characters. Set JWT_SECRET to a random string of 64+ characters"))
 	}
 
 	if os.Getenv("JWT_EXP_DAYS") != "" {
@@ -99,10 +103,7 @@ func init() {
 
 	if os.Getenv("MIGRATIONS_PATH") != "" {
 		MigrationsPath = os.Getenv("MIGRATIONS_PATH")
-	} else if DebugMode {
-		MigrationsPath = "./migrations"
 	} else {
-		// TODO: use embed fs
 		MigrationsPath = "./migrations"
 	}
 }
