@@ -22,6 +22,7 @@
       </div>
     </div>
     <config-item
+      :delete-message="`Are you sure you want to delete profile '${profile.name}'`"
       collapsible
       v-for="profile in profiles"
       :key="profile.id"

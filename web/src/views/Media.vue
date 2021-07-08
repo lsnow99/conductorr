@@ -178,6 +178,7 @@ export default {
     },
     updateMedia({ profileID, pathID }) {
       APIUtil.updateMedia(this.mediaID, profileID, pathID).then(() => {
+        this.loadMedia();
         this.showEditMediaModal = false;
       });
     },

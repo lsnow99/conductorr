@@ -66,6 +66,9 @@ export default {
     EventBus.on("notification", (data) => {
       this.$oruga.notification.open(data);
     });
+    EventBus.on("forceLogout", () => {
+      this.$router.push({name: "auth"})
+    });
   },
   beforeUnmount() {
     clearInterval(this.interval);

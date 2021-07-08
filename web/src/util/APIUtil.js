@@ -16,6 +16,7 @@ const doAPIReq = (url, options, errMsg = undefined) => {
         } else {
           if (resp.failed_auth) {
             AuthUtil.logout();
+            EventBus.emit('forceLogout')
             EventBus.emit('notification', {
               duration: 3000,
               message: `Authentication error`,
