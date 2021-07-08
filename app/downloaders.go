@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strconv"
 	"sync"
 	"time"
 
@@ -144,7 +145,7 @@ func (dm *DownloaderManager) processDownloads(curState []integration.Download) {
 			if curStateDL.Identifier == prevStateDL.Identifier {
 				dm.downloads[i].FinalDir = curStateDL.FinalDir
 				found = true
-				if curStateDL.Status != prevStateDL.Status && !dm.didFirstRun {
+				if curStateDL.Status != prevStateDL.Status || !dm.didFirstRun {
 					err := dbstore.UpdateDownloadStatusByIdentifier(curStateDL.Identifier, curStateDL.Status)
 					if err != nil {
 						logger.LogDanger(err)
@@ -155,6 +156,9 @@ func (dm *DownloaderManager) processDownloads(curState []integration.Download) {
 					case constant.StatusError:
 						// TODO Trigger re-download
 					case constant.StatusComplete:
+						if prevStateDL.Status == constant.StatusCProcessing || prevStateDL.Status == constant.StatusDone {
+							continue
+						}
 						// Trigger conductorr post processing
 						dm.downloads[i].Status = constant.StatusCProcessing
 						go handleCompletedDownload(dm.downloads[i])
@@ -177,19 +181,45 @@ func (dm *DownloaderManager) processDownloads(curState []integration.Download) {
 }
 
 func handleCompletedDownload(download integration.Download) {
+	var outputFile string
+	var dbPath dbstore.Path
 	media, err := dbstore.GetMediaByID(download.MediaID)
 	if err != nil {
 		logger.LogDanger(err)
 		return
 	}
-	if !media.PathID.Valid {
-		logger.LogDanger(fmt.Errorf("no path assigned for %v", media))
-		return
-	}
-	dbPath, err := dbstore.GetPath(int(media.PathID.Int32))
-	if err != nil {
-		logger.LogDanger(err)
-		return
+	if media.ParentMediaID.Valid {
+		season, err := dbstore.GetMediaByID(int(media.ParentMediaID.Int32))
+		if err != nil {
+			logger.LogDanger(err)
+			return
+		}
+		if season.ParentMediaID.Valid {
+			series, err := dbstore.GetMediaByID(int(season.ParentMediaID.Int32))
+			if err != nil {
+				logger.LogDanger(err)
+				return
+			}
+			dbPath, err = dbstore.GetPath(int(series.PathID.Int32))
+			if err != nil {
+				logger.LogDanger(err)
+				return
+			}
+			outputFile = series.Title.String + " (" + strconv.Itoa(series.ReleasedAt.Time.Year()) + ")"
+			outputFile = filepath.Join(outputFile, season.Title.String)
+			outputFile = filepath.Join(outputFile, media.Title.String + " S0" + strconv.Itoa(int(season.Number.Int32)) + "E" + strconv.Itoa(int(media.Number.Int32)))
+		} else {
+			logger.LogDanger(fmt.Errorf("bad hierarchy"))
+			return
+		}
+	} else {
+		dbPath, err = dbstore.GetPath(int(media.PathID.Int32))
+		if err != nil {
+			logger.LogDanger(err)
+			return
+		}
+		outputFile = media.Title.String + " (" + strconv.Itoa(media.ReleasedAt.Time.Year()) + ")"
+		outputFile = filepath.Join(outputFile, outputFile)
 	}
 	// Find completed download file from directory
 	dlPath := download.FinalDir
@@ -202,7 +232,14 @@ func handleCompletedDownload(download integration.Download) {
 		logger.LogDanger(fmt.Errorf("could not find output file for %v", download.FriendlyName))
 		return
 	}
-	destFile, err := os.OpenFile(filepath.Join(dbPath.Path, "testout"), os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
+
+	destFilepath := filepath.Join(dbPath.Path, outputFile) + filepath.Ext(videoPath)
+	destFiledir := filepath.Dir(destFilepath)
+	if err := os.MkdirAll(destFiledir, 0700); err != nil {
+		logger.LogDanger(err)
+		return
+	}
+	destFile, err := os.OpenFile(destFilepath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
 	if err != nil {
 		logger.LogDanger(err)
 		return

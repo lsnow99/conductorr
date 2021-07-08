@@ -51,10 +51,23 @@ func SearchReleasesManual(w http.ResponseWriter, r *http.Request) {
 	}
 	if dbMedia.ContentType.String == "movie" {
 		media.ContentType = integration.Movie
-	} else if dbMedia.ContentType.String == "series" || dbMedia.ContentType.String == "episode" || dbMedia.ContentType.String == "season" {
+		media.ImdbID = dbMedia.ImdbID.String
+	} else if dbMedia.ContentType.String == "episode" {
+		dbSeason, err := dbstore.GetMediaByID(int(dbMedia.ParentMediaID.Int32))
+		if err != nil {
+			Respond(w, r.Header.Get("hostname"), fmt.Errorf("episode has no parent"), nil, true)
+			return
+		}
+		dbSeries, err := dbstore.GetMediaByID(int(dbSeason.ParentMediaID.Int32))
+		if err != nil {
+			Respond(w, r.Header.Get("hostname"), fmt.Errorf("episode has no parent"), nil, true)
+			return
+		}
+		media.Title = dbSeries.Title.String
+		media.Episode = int(dbMedia.Number.Int32)
+		media.Season = int(dbSeason.Number.Int32)
 		media.ContentType = integration.TVShow
 	}
-	media.ImdbID = dbMedia.ImdbID.String
 	media.Year = dbMedia.ReleasedAt.Time.Year()
 
 	results, err := app.IM.Search(&media)

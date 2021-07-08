@@ -1,5 +1,25 @@
 # Conductorr
 
+## Usage
+
+Conductorr targets both SQLite and PostgreSQL as databases. Currently, PostgreSQL support is untested and may be unstable. For the time being it is recommended to use SQLite (no extra action is required, simply do not set the `PG_` environment variables).
+
+Conductorr has a public [Docker image](https://hub.docker.com/r/logansnow/conductorr-pre), but it can also be run as a regular executable. To build the executable for your system, simply clone the repository and run the `build.sh` script to generate cross-platform binaries in the `bin` folder.
+
+### Environment Variables
+
+- `JWT_SECRET` Secret string that JWTs will be signed with. (**required**)
+- `OMDB_API_KEY` API Key for [The Open Movie Database](https://omdbapi.com/). (**required** for searching new content)
+- `CONDUCTORR_DEBUG` Run Conductorr in debug mode if this environment variable is set to anything other than the empty string (optional, default is empty string)
+- `JWT_EXP_DAYS` Number of days you want a session to stay valid for (optional, default 7)
+- `RESET_USER` If you forgot your password, set this environment variable to a non empty string and Conductorr will prompt you to set up a new user.
+- `PG_USER` PostgreSQL user. If set, Conductorr will not use SQLite and will instead use PostgreSQL (optional - required for postgres support, default is empty string)
+- `PG_PASS` PostgreSQL user password (optional - required for postgres support, default is empty string)
+- `PG_NAME` PostgreSQL database name (optional - required for postgres support, default is empty string)
+- `PG_PORT` PostgreSQL database port (optional - required for postgres support, default is empty string)
+- `PG_SSL` If set to anything other than the empty string, Conductorr will force SSL for PostgreSQL connections (optional)
+- `DB_PATH` When using SQLite, this is the path for the database file. Do not append any URL parameters to the end.
+
 ## Developing
 
 To develop on Conductorr, first clone the repository.
@@ -48,4 +68,3 @@ In order to write effective migrations, abide by the following conventions:
 #### Dealing with a Failed Migration
 
 When developing, sometimes you might write a migration and run Conductorr to test it, and it fails. `go-migrate` will still increase the version of the database and mark it dirty (When starting Conductorr again it will fail due to a dirty database). In general the only thing you will need to do to fix a dirty database is to run this command: `go run ./cmd/migrate force 0 -path migrations/ -database sqlite3://conductorr.db` (replace 0 with one less than the version the database just got bumped to - in other words, if Conductorr outputs "Dirty database version 12. Fix and force version" after a failed up migration, then run `go run ./cmd/migrate force 11 -path migrations/ -database sqlite3://conductorr.db`). Note that these instructions are for when Conductorr tries to perform the up migration. If for some reason you see this error during a down migration, then you'll want to increase the version number by one instead of decreasing it.
-

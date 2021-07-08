@@ -25,7 +25,6 @@ var whitelistPaths = []string{
 var errAuth = errors.New("token failed validation")
 
 const UserAuthKey = "id_token"
-const MaxCookieAgeSecs = 60 * 60 * 24 * 14
 
 type response struct {
 	Success    bool        `json:"success"`
@@ -66,7 +65,7 @@ func Respond(w http.ResponseWriter, reqHost string, err error, data interface{},
 				Value:    tok,
 				Path:     "/",
 				Domain:   cookieDomain,
-				Expires:  time.Now().Add(time.Second * MaxCookieAgeSecs),
+				Expires:  time.Now().Add(time.Hour * 24 * time.Duration(settings.JWTExpDays)),
 				Secure:   !settings.DebugMode,
 				HttpOnly: true,
 			}
@@ -137,7 +136,7 @@ func InvalidateAuthCookie(w http.ResponseWriter, r *http.Request) {
 		Value:    "loggedout",
 		Path:     "/",
 		Domain:   cookieDomain,
-		Expires:  time.Now().Add(time.Second * MaxCookieAgeSecs),
+		Expires:  time.Now().Add(time.Hour * 24),
 		Secure:   !settings.DebugMode,
 		HttpOnly: true,
 	}

@@ -51,6 +51,8 @@ func init() {
 			log.Fatalf("error parsing JWT_EXP_DAYS (%s) as integer", jwtExpDaysStr)
 		}
 		JWTExpDays = jwtExpDaysInt
+	} else {
+		JWTExpDays = 7
 	}
 
 	if os.Getenv("RESET_USER") != "" {
@@ -72,7 +74,7 @@ func init() {
 	}
 
 	if os.Getenv("DB_PATH") != "" {
-		DBPath = os.Getenv("DB_PATH")
+		DBPath = os.Getenv("DB_PATH") + "?_foreign_keys=on"
 	} else {
 		DBPath = "./conductorr.db?_foreign_keys=on"
 	}
