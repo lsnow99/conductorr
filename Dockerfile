@@ -19,7 +19,7 @@ COPY go.mod .
 COPY go.sum .
 RUN go mod download
 COPY --from=csl-build-env /build .
-COPY --from=vue-build-env . web/build
+COPY --from=vue-build-env web/build web/build
 RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o /build/conductorr -ldflags="-s -w -X 'github.com/lsnow99/conductorr/settings.Version=$(git describe --tags)' -X 'github.com/lsnow99/conductorr/settings.BuildMode=binary'" ./cmd/conductorr
 
 FROM alpine
