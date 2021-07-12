@@ -140,11 +140,9 @@ func (dm *DownloaderManager) DeleteDownloader(id int) {
 
 func (dm *DownloaderManager) processDownloads(curState []integration.Download) {
 	for _, curStateDL := range curState {
-		var found bool
 		for i, prevStateDL := range dm.downloads {
 			if curStateDL.Identifier == prevStateDL.Identifier {
 				dm.downloads[i].FinalDir = curStateDL.FinalDir
-				found = true
 				if curStateDL.Status != prevStateDL.Status || !dm.didFirstRun {
 					err := dbstore.UpdateDownloadStatusByIdentifier(curStateDL.Identifier, curStateDL.Status)
 					if err != nil {
@@ -173,9 +171,6 @@ func (dm *DownloaderManager) processDownloads(curState []integration.Download) {
 				}
 				break
 			}
-		}
-		if !found {
-			logger.LogDanger(fmt.Errorf("did not find a previous state for download %v", curStateDL))
 		}
 	}
 }
