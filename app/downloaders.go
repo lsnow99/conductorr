@@ -87,8 +87,6 @@ func (dm *DownloaderManager) RegisterDownloader(id int, downloaderType, name str
 
 func (dm *DownloaderManager) Download(mediaID int, release integration.Release, highPriority bool) error {
 
-	fmt.Println("Downloading ", release)
-	fmt.Println(release.DownloadURL)
 	var hadError bool
 	for _, downloader := range dm.downloaders {
 		dlType, ok := constant.DownloaderTypes[downloader.DownloaderType]

@@ -1,7 +1,10 @@
 package integration
 
 import (
+	"encoding/base64"
 	"errors"
+	"io/ioutil"
+	"net/http"
 	"net/url"
 	"path/filepath"
 	"strconv"
@@ -87,8 +90,21 @@ func (t *Transmission) AddRelease(release *Release) error {
 		return errors.New("release passed to transmission was nil")
 	}
 	falseVal := false
+
+	resp, err := http.Get(release.DownloadURL)
+	if err != nil {
+		return err
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	torrentContent := base64.StdEncoding.EncodeToString(body)
+
 	addPayload := transmissionrpc.TorrentAddPayload{
-		Filename: &release.DownloadURL,
+		MetaInfo: &torrentContent,
 		Paused:   &falseVal,
 	}
 	torrent, err := t.client.TorrentAdd(&addPayload)
