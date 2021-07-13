@@ -177,19 +177,21 @@ func (ir *IndividualResult) Sanitize() error {
 	/*
 		Parse the runtime into a number of minutes
 	*/
-	matches := runtimePattern.FindAllStringSubmatch(ir.RuntimeStr, -1)
-	if len(matches) != 1 {
-		return fmt.Errorf("got %d matches expected 1", len(matches))
+	if ir.RuntimeStr != "N/A" {
+		matches := runtimePattern.FindAllStringSubmatch(ir.RuntimeStr, -1)
+		if len(matches) != 1 {
+			return fmt.Errorf("got %d matches expected 1", len(matches))
+		}
+		if len(matches[0]) != 2 {
+			return fmt.Errorf("got %d groups expected 2", len(matches[0]))
+		}
+		minsStr := matches[0][1]
+		mins, err := strconv.Atoi(minsStr)
+		if err != nil {
+			return err
+		}
+		ir.Runtime = mins
 	}
-	if len(matches[0]) != 2 {
-		return fmt.Errorf("got %d groups expected 2", len(matches[0]))
-	}
-	minsStr := matches[0][1]
-	mins, err := strconv.Atoi(minsStr)
-	if err != nil {
-		return err
-	}
-	ir.Runtime = mins
 
 	/*
 		Parse the released string into a date

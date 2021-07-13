@@ -249,7 +249,7 @@ func handleCompletedDownload(download integration.Download) {
 		logger.LogDanger(fmt.Errorf("got error after copying %d bytes: %v", n, err))
 		return
 	}
-	logger.LogInfo(fmt.Errorf("successfully copied %s", download.FriendlyName))
+	logger.LogInfo(fmt.Errorf("successfully copied %s to %s", videoPath, destFilepath))
 	dbstore.UpdateDownloadStatusByIdentifier(download.Identifier, constant.StatusDone)
 }
 
