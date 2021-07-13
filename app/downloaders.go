@@ -264,10 +264,11 @@ func getVideoPath(dlPath string) (string, error) {
 	fmt.Println("getting videos in ", dlPath)
 	var rarfile string
 	err := filepath.WalkDir(dlPath, func(s string, d fs.DirEntry, e error) error {
-		fmt.Println(s, d.Name(), filepath.Ext(d.Name()))
 		if e != nil {
+			fmt.Println(e)
 			return e
 		}
+		fmt.Println(s, d.Name(), filepath.Ext(d.Name()))
 		if filepath.Ext(d.Name()) == ".rar" {
 			rarfile = s
 		}
