@@ -88,6 +88,7 @@ func GetRouter() http.Handler {
 	r.HandleFunc("/api/v1/schedule", GetSchedule).Methods("GET")
 	r.HandleFunc("/api/v1/status", GetStatus).Methods("GET")
 	r.HandleFunc("/api/v1/logs", GetLogs).Methods("GET")
+	r.HandleFunc("/api/v1/download", GetDownloads).Methods("GET")
 
 	r.Use(AuthMiddleware)
 

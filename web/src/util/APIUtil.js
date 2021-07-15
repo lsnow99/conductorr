@@ -398,6 +398,12 @@ const setMonitoringMedia = (id, monitoring) => {
   })
 }
 
+const getDownloads = () => {
+  return doAPIReq(`/api/v1/download`, {
+    method: "GET",
+  })
+}
+
 export default {
   signIn,
   signUp,
@@ -438,5 +444,6 @@ export default {
   deleteMedia,
   getSchedule,
   logout,
-  setMonitoringMedia
+  setMonitoringMedia,
+  getDownloads
 };

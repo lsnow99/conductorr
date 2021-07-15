@@ -15,6 +15,7 @@ func GetIndexers() (indexers []Indexer, err error) {
 	} else if err == sql.ErrNoRows {
 		return indexers, nil
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		indexer := Indexer{}

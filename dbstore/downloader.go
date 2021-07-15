@@ -29,6 +29,7 @@ func GetDownloaders() (downloaders []Downloader, err error) {
 	} else if err == sql.ErrNoRows {
 		return downloaders, nil
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		downloader := Downloader{}
