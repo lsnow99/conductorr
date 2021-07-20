@@ -14,6 +14,7 @@ func GetPaths() ([]Path, error) {
 	} else if err == sql.ErrNoRows {
 		return paths, nil
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		path := Path{}

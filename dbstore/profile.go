@@ -12,6 +12,7 @@ func GetProfiles() ([]*Profile, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		profile := Profile{}

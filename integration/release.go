@@ -34,8 +34,6 @@ type Release struct {
 	Identifier string `json:"identifier,omitempty"`
 	// HighPriority whether to download with high priority
 	HighPriority bool `json:"high_priority,omitempty"`
-	// FriendlyName friendly name from indexer
-	FriendlyName string `json:"friendly_name,omitempty"`
 }
 
 func NewRelease(id, title, description, downloadURL string, categories []string, size, seeders int64, airDate, pubDate time.Time, media *Media, indexer *Xnab) Release {

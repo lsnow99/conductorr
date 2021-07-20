@@ -97,11 +97,11 @@ func (dm *DownloaderManager) Download(mediaID int, release integration.Release, 
 			if err := downloader.AddRelease(&release); err == nil {
 				dm.downloads = append(dm.downloads, integration.Download{
 					MediaID:      mediaID,
-					FriendlyName: release.FriendlyName,
+					FriendlyName: release.Title,
 					Identifier:   release.Identifier,
 					Status:       constant.StatusWaiting,
 				})
-				_, err := dbstore.NewDownload(mediaID, downloader.ID, release.Identifier, constant.StatusWaiting, release.FriendlyName)
+				_, err := dbstore.NewDownload(mediaID, downloader.ID, release.Identifier, constant.StatusWaiting, release.Title)
 				if err != nil {
 					logger.LogDanger(fmt.Errorf("database error! could not save download: %v", err))
 				}
@@ -139,10 +139,14 @@ func (dm *DownloaderManager) DeleteDownloader(id int) {
 }
 
 func (dm *DownloaderManager) processDownloads(curState []integration.Download) {
+
 	for _, curStateDL := range curState {
 		for i, prevStateDL := range dm.downloads {
 			if curStateDL.Identifier == prevStateDL.Identifier {
 				dm.downloads[i].FinalDir = curStateDL.FinalDir
+				dm.downloads[i].BytesLeft = curStateDL.BytesLeft
+				dm.downloads[i].FullSize = curStateDL.FullSize
+				dm.downloads[i].Started = curStateDL.Started
 				if curStateDL.Status != prevStateDL.Status || !dm.didFirstRun {
 					err := dbstore.UpdateDownloadStatusByIdentifier(curStateDL.Identifier, curStateDL.Status)
 					if err != nil {
