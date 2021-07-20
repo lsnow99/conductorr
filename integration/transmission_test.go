@@ -11,10 +11,6 @@ func TestTransmissionConnection(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = transmission.Init()
-	if err != nil {
-		t.Fatal(err)
-	}
 	if err := transmission.TestConnection(); err != nil {
 		t.Fatal(err)
 	}

@@ -5,8 +5,7 @@ import (
 )
 
 func TestNZBGetConnection(t *testing.T) {
-	nzbget := NewNZBGet("nzbget", "tegbzn6789", "http://localhost:6789")
-	err := nzbget.Init()
+	nzbget, err := NewNZBGet("nzbget", "tegbzn6789", "http://localhost:6789")
 	if err != nil {
 		t.Fatal(err)
 	}

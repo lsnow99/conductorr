@@ -31,6 +31,12 @@
         @submit="newTransmission"
         @close="closeNewDownloaderModal"
       />
+      <EditNZBGet
+        v-if="downloaderType == 'nzbget'"
+        v-model:name="editingName"
+        @submit="newNZBGet"
+        @close="closeNewDownloaderModal"
+      />
     </o-modal>
     <o-modal
       v-model:active="showEditDownloaderModal"
@@ -49,6 +55,7 @@
 <script>
 import NewDownloader from "../components/NewDownloader.vue";
 import EditTransmission from "../components/EditTransmission.vue";
+import EditNZBGet from "../components/EditNZBGet.vue";
 import APIUtil from "../util/APIUtil";
 import ConfigItem from "../components/ConfigItem.vue";
 
@@ -66,6 +73,7 @@ export default {
   components: {
     NewDownloader,
     EditTransmission,
+    EditNZBGet,
     ConfigItem,
   },
   methods: {
@@ -128,6 +136,9 @@ export default {
     },
     newTransmission(config) {
       this.newDownloader("transmission", this.editingName, config);
+    },
+    newNZBGet(config) {
+      this.newDownloader("nzbget", this.editingName, config);
     },
     updateTransmission(config) {
       this.updateDownloader(

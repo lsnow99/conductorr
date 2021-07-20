@@ -69,11 +69,6 @@ func NewTransmissionFromConfig(configuration map[string]interface{}) (*Transmiss
 	return NewTransmission(username, password, baseUrl)
 }
 
-func (t *Transmission) Init() error {
-
-	return nil
-}
-
 func (t *Transmission) TestConnection() error {
 	ok, _, _, err := t.client.RPCVersion()
 	if err != nil {

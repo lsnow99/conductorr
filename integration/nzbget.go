@@ -1,9 +1,14 @@
 package integration
 
 import (
+	"encoding/base64"
 	"errors"
+	"io/ioutil"
+	"mime"
+	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/lsnow99/conductorr/constant"
@@ -77,14 +82,27 @@ type DownloadEntry struct {
 	PostInfoText     string
 }
 
-func NewNZBGet(username, password, baseUrl string) *NZBGet {
+func NewNZBGet(username, password, baseUrl string) (*NZBGet, error) {
 	n := &NZBGet{
 		username: username,
 		password: password,
 		baseUrl:  baseUrl,
 	}
 
-	return n
+	endpoint, err := url.Parse(baseUrl)
+	if err != nil {
+		return nil, err
+	}
+	endpoint.Path = "jsonrpc"
+	endpoint.User = url.UserPassword(username, password)
+
+	rpcClient, err := rpc.Dial(endpoint.String())
+	if err != nil {
+		return nil, err
+	}
+	n.rpcClient = rpcClient
+
+	return n, nil
 }
 
 func NewNZBGetFromConfig(configuration map[string]interface{}) (*NZBGet, error) {
@@ -95,21 +113,7 @@ func NewNZBGetFromConfig(configuration map[string]interface{}) (*NZBGet, error) 
 		return nil, errors.New("failed to parse nzbget configuration")
 	}
 
-	return NewNZBGet(username, password, baseUrl), nil
-}
-
-func (n *NZBGet) Init() error {
-	endpoint, _ := url.Parse(n.baseUrl)
-	endpoint.Path = "jsonrpc"
-	endpoint.User = url.UserPassword(n.username, n.password)
-
-	rpcClient, err := rpc.Dial(endpoint.String())
-	if err != nil {
-		return err
-	}
-	n.rpcClient = rpcClient
-
-	return nil
+	return NewNZBGet(username, password, baseUrl)
 }
 
 // func (n *NZBGet) GetConfig() string {
@@ -137,11 +141,31 @@ func (n *NZBGet) AddRelease(release *Release) error {
 	if release.HighPriority {
 		priority = 100
 	}
+
+	resp, err := http.Get(release.DownloadURL)
+	if err != nil {
+		return err
+	}
+
+	_, params, err := mime.ParseMediaType(resp.Header.Get("Content-Disposition"))
+	if err != nil {
+		return err
+	}
+
+	filename := params["filename"]
+
+	bod, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	nzbContent := base64.StdEncoding.EncodeToString(bod)
+
 	if err := n.rpcClient.Call(&code,
 		"append",
+		filename,
+		nzbContent,
 		"",
-		release.DownloadURL,
-		release.Indexer,
 		priority,
 		release.HighPriority,
 		false,
@@ -168,6 +192,13 @@ func (n *NZBGet) PollDownloads(names []string) error {
 		return err
 	}
 
+	history := make([]DownloadEntry, 0)
+	if err := n.rpcClient.Call(&history, "history"); err != nil {
+		return nil
+	}
+
+	entries = append(entries, history...)
+
 	downloads := make([]Download, 0)
 	for _, entry := range entries {
 		found := false
@@ -181,35 +212,43 @@ func (n *NZBGet) PollDownloads(names []string) error {
 		}
 
 		d := Download{}
-		switch entry.Status {
-		case "PAUSED":
+		if contains([]string{"PAUSED"}, entry.Status) {
 			d.Status = constant.StatusPaused
-		case "DOWNLOADING":
+		} else if contains([]string{"DOWNLOADING"}, entry.Status) {
 			d.Status = constant.StatusDownloading
-		case "FETCHING":
+		} else if contains([]string{"FETCHING", "QUEUED", "PP_QUEUED"}, entry.Status) {
 			d.Status = constant.StatusWaiting
-		case "QUEUED":
-			d.Status = constant.StatusWaiting
-		case "PP_QUEUED":
-			d.Status = constant.StatusWaiting
-		case "PP_FINISHED":
+		} else if strings.Contains(entry.Status, "SUCCESS") {
 			d.Status = constant.StatusComplete
-			if entry.FinalDir != "" {
-				d.FinalDir = entry.FinalDir
-			} else {
-				d.FinalDir = entry.DestDir
-			}
-		default:
+		} else if strings.Contains(entry.Status, "FAILURE") || strings.Contains(entry.Status, "WARNING") || strings.Contains(entry.Status, "DELETED") {
+			d.Status = constant.StatusError
+		} else {
 			d.Status = constant.StatusProcessing
+		}			
+		
+		if entry.FinalDir != "" {
+			d.FinalDir = entry.FinalDir
+		} else {
+			d.FinalDir = entry.DestDir
 		}
 		d.FriendlyName = entry.NZBName
 		d.BytesLeft = convertLoHi(entry.RemainingSizeLo, entry.RemainingSizeHi)
 		d.FullSize = convertLoHi(entry.FileSizeLo, entry.FileSizeHi)
 		d.Identifier = entry.NZBFilename
+		
 		downloads = append(downloads, d)
 	}
 	n.downloads = downloads
 	return nil
+}
+
+func contains(arr []string, s string) bool {
+	for _, str := range arr {
+		if s == str {
+			return true
+		}
+	}
+	return false
 }
 
 func (n *NZBGet) GetDownloads() []Download {

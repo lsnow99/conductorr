@@ -234,11 +234,11 @@ func handleCompletedDownload(download integration.Download) {
 
 	destFilepath := filepath.Join(dbPath.Path, outputFile) + filepath.Ext(videoPath)
 	destFiledir := filepath.Dir(destFilepath)
-	if err := os.MkdirAll(destFiledir, 0700); err != nil {
+	if err := os.MkdirAll(destFiledir, 0777); err != nil {
 		logger.LogDanger(err)
 		return
 	}
-	destFile, err := os.OpenFile(destFilepath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
+	destFile, err := os.OpenFile(destFilepath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0777)
 	if err != nil {
 		logger.LogDanger(err)
 		return
