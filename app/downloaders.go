@@ -157,6 +157,7 @@ func (dm *DownloaderManager) processDownloads(curState []integration.Download) {
 					switch curStateDL.Status {
 					case constant.StatusError:
 						// TODO Trigger re-download
+						logger.LogWarn(fmt.Errorf("release failed to download for %s", curStateDL.FriendlyName))
 					case constant.StatusComplete:
 						if prevStateDL.Status == constant.StatusCProcessing || prevStateDL.Status == constant.StatusDone {
 							continue

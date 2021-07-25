@@ -2,9 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+.btn-padding--default {
+  @apply py-1;
+  @apply px-3;
+}
+
 .o-btn {
-  @apply py-2;
-  @apply px-4;
+  @apply btn-padding--default;
   @apply rounded-lg;
   @apply text-lg;
   @apply font-bold;
@@ -31,7 +35,6 @@
 
 .o-input:not(.o-inputit__input) {
   @apply text-gray-900;
-  @apply py-1;
   @apply px-2;
   @apply text-lg;
   @apply rounded-lg;
@@ -92,8 +95,7 @@
 .o-radio {
   @apply bg-yellow-500;
   @apply border-yellow-600;
-  @apply py-2;
-  @apply px-4;
+  @apply btn-padding--default;
   @apply text-lg;
   @apply font-bold;
   @apply uppercase;
@@ -122,7 +124,8 @@
 
 .o-tabs__nav-item-boxed {
   @apply text-gray-400;
-  @apply p-2;
+  @apply px-2;
+  @apply pt-1;
   @apply border-t-2;
   @apply border-l-2;
   @apply border-r-2;
@@ -309,7 +312,6 @@
 
 .o-sel {
   @apply text-gray-900;
-  @apply py-1;
   @apply pl-2;
   @apply pr-8;
   @apply rounded-lg;

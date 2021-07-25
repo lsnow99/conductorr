@@ -71,6 +71,12 @@ func NewRelease(id, title, description, downloadURL string, categories []string,
 		release.RipType = "DVDRip"
 	}
 
+	if release.DownloadType == "nzb" {
+		release.Identifier = release.Title + ".nzb"
+	} else {
+		release.Identifier = release.ID
+	}
+
 	return release
 }
 

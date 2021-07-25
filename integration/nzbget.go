@@ -7,7 +7,6 @@ import (
 	"mime"
 	"net/http"
 	"net/url"
-	"strconv"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/rpc"
@@ -22,7 +21,7 @@ type NZBGet struct {
 	downloads []Download
 }
 
-type DownloadEntry struct {
+type ItemEntry struct {
 	NZBID              int
 	NZBFilename        string
 	NZBName            string
@@ -65,16 +64,11 @@ type DownloadEntry struct {
 		Name  string
 		Value string
 	}
-	ParStatus    string
-	UnpackStatus string
-	MoveStatus   string
-	ScriptStatus []struct {
-		Name   string
-		Status string
-	}
+	ParStatus        string
+	UnpackStatus     string
+	MoveStatus       string
 	DeleteStatus     string
 	MarkStatus       string
-	ScriptStatuses   string
 	PostTotalTimeSec int
 	ParTimeSec       int
 	RepairTimeSec    int
@@ -180,21 +174,19 @@ func (n *NZBGet) AddRelease(release *Release) error {
 		return errors.New("error adding media to nzbget")
 	}
 
-	release.Identifier = strconv.Itoa(code)
-
 	return nil
 }
 
 func (n *NZBGet) PollDownloads(names []string) error {
-	entries := make([]DownloadEntry, 0)
+	entries := make([]ItemEntry, 0)
 
 	if err := n.rpcClient.Call(&entries, "listgroups"); err != nil {
 		return err
 	}
 
-	history := make([]DownloadEntry, 0)
+	history := make([]ItemEntry, 0)
 	if err := n.rpcClient.Call(&history, "history"); err != nil {
-		return nil
+		return err
 	}
 
 	entries = append(entries, history...)
@@ -220,12 +212,12 @@ func (n *NZBGet) PollDownloads(names []string) error {
 			d.Status = constant.StatusWaiting
 		} else if strings.Contains(entry.Status, "SUCCESS") {
 			d.Status = constant.StatusComplete
-		} else if strings.Contains(entry.Status, "FAILURE") || strings.Contains(entry.Status, "WARNING") || strings.Contains(entry.Status, "DELETED") {
+		} else if strings.Contains(entry.Status, "FAILURE") || strings.Contains(entry.Status, "WARNING") || strings.Contains(entry.Status, "DELETED") && !strings.Contains(entry.Status, "DELETED/COPY") {
 			d.Status = constant.StatusError
 		} else {
 			d.Status = constant.StatusProcessing
-		}			
-		
+		}
+
 		if entry.FinalDir != "" {
 			d.FinalDir = entry.FinalDir
 		} else {
@@ -235,7 +227,7 @@ func (n *NZBGet) PollDownloads(names []string) error {
 		d.BytesLeft = convertLoHi(entry.RemainingSizeLo, entry.RemainingSizeHi)
 		d.FullSize = convertLoHi(entry.FileSizeLo, entry.FileSizeHi)
 		d.Identifier = entry.NZBFilename
-		
+
 		downloads = append(downloads, d)
 	}
 	n.downloads = downloads

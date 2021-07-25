@@ -2,7 +2,7 @@
   <div class="flex flex-col min-h-screen">
   <section class="container mx-auto mt-4 pb-4">
     <section class="menu" :class="expandMenu ? 'expanded' : ''" @click="expandMenu = !expandMenu">
-      <div class="visible lg:hidden pl-5 pr-5 py-4 text-xl" >
+      <div class="visible lg:hidden px-3 py-2 text-xl" >
         <div
           class="
             rounded-md
@@ -33,7 +33,7 @@
         <span class="ml-1">Logout</span>
       </router-link>
     </section>
-    <section :class="class" class="mt-10">
+    <section :class="class" class="mt-4">
       <slot />
     </section>
   </section>
@@ -69,7 +69,7 @@
 }
 
 .route-item {
-  @apply px-5 py-4 text-xl cursor-pointer hover:bg-yellow-400 focus:bg-yellow-400 uppercase text-white;
+  @apply px-3 py-2 text-xl cursor-pointer hover:bg-yellow-400 focus:bg-yellow-400 uppercase text-white;
 }
 
 .reg-route {
