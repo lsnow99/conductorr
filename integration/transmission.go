@@ -80,20 +80,17 @@ func (t *Transmission) TestConnection() error {
 	return nil
 }
 
-func (t *Transmission) AddRelease(release *Release) error {
-	if release == nil {
-		return errors.New("release passed to transmission was nil")
-	}
+func (t *Transmission) AddRelease(release Release) (string, error) {
 	falseVal := false
 
 	resp, err := http.Get(release.DownloadURL)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	torrentContent := base64.StdEncoding.EncodeToString(body)
@@ -104,21 +101,20 @@ func (t *Transmission) AddRelease(release *Release) error {
 	}
 	torrent, err := t.client.TorrentAdd(&addPayload)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	if torrent.HashString == nil {
-		return errors.New("transmission did not return a hash string")
+		return "", errors.New("transmission did not return a hash string")
 	}
-	release.Identifier = *torrent.HashString
 
-	return nil
+	return *torrent.HashString, nil
 }
 
-func (t *Transmission) PollDownloads(hashes []string) error {
+func (t *Transmission) PollDownloads(hashes []string) ([]Download, error) {
 	torrents, err := t.client.TorrentGetAllForHashes(hashes)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	downloads := make([]Download, 0)
@@ -168,10 +164,5 @@ func (t *Transmission) PollDownloads(hashes []string) error {
 		downloads = append(downloads, d)
 	}
 
-	t.downloads = downloads
-	return nil
-}
-
-func (t *Transmission) GetDownloads() []Download {
-	return t.downloads
+	return downloads, nil
 }

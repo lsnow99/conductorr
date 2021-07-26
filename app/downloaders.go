@@ -40,10 +40,11 @@ func (dm *DownloaderManager) DoTask() {
 	downloads := make([]integration.Download, 0)
 	for _, dlr := range dm.downloaders {
 		downloadsToMonitor := dm.getDownloadsToMonitor()
-		if err := dlr.PollDownloads(downloadsToMonitor); err != nil {
+		updatedDownloads, err := dlr.PollDownloads(downloadsToMonitor)
+		if err != nil {
 			logger.LogWarn(err)
 		}
-		downloads = append(downloads, dlr.GetDownloads()...)
+		downloads = append(downloads, updatedDownloads...)
 	}
 	dm.processDownloads(downloads)
 	dm.didFirstRun = true
@@ -94,14 +95,14 @@ func (dm *DownloaderManager) Download(mediaID int, release integration.Release, 
 			return errors.New("internal error. Downloader has no registered type")
 		}
 		if dlType == release.DownloadType {
-			if err := downloader.AddRelease(&release); err == nil {
+			if identifier, err := downloader.AddRelease(release); err == nil {
 				dm.downloads = append(dm.downloads, integration.Download{
 					MediaID:      mediaID,
 					FriendlyName: release.Title,
-					Identifier:   release.Identifier,
+					Identifier:   identifier,
 					Status:       constant.StatusWaiting,
 				})
-				_, err := dbstore.NewDownload(mediaID, downloader.ID, release.Identifier, constant.StatusWaiting, release.Title)
+				_, err := dbstore.NewDownload(mediaID, downloader.ID, identifier, constant.StatusWaiting, release.Title)
 				if err != nil {
 					logger.LogDanger(fmt.Errorf("database error! could not save download: %v", err))
 				}

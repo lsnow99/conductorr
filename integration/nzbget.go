@@ -7,6 +7,7 @@ import (
 	"mime"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/rpc"
@@ -126,10 +127,7 @@ func (n *NZBGet) TestConnection() error {
 	return n.rpcClient.Call(&ver, "version")
 }
 
-func (n *NZBGet) AddRelease(release *Release) error {
-	if release == nil {
-		return errors.New("release is null, cannot add to nzbget")
-	}
+func (n *NZBGet) AddRelease(release Release) (string, error) {
 	var code, priority int
 
 	if release.HighPriority {
@@ -138,19 +136,19 @@ func (n *NZBGet) AddRelease(release *Release) error {
 
 	resp, err := http.Get(release.DownloadURL)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	_, params, err := mime.ParseMediaType(resp.Header.Get("Content-Disposition"))
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	filename := params["filename"]
 
 	bod, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	nzbContent := base64.StdEncoding.EncodeToString(bod)
@@ -167,26 +165,26 @@ func (n *NZBGet) AddRelease(release *Release) error {
 		0,
 		"all",
 		[]string{"conductorr", "true"}); err != nil {
-		return err
+		return "", err
 	}
 
 	if code <= 0 {
-		return errors.New("error adding media to nzbget")
+		return "", errors.New("error adding media to nzbget")
 	}
 
-	return nil
+	return strconv.Itoa(code), nil
 }
 
-func (n *NZBGet) PollDownloads(names []string) error {
+func (n *NZBGet) PollDownloads(names []string) ([]Download, error) {
 	entries := make([]ItemEntry, 0)
 
 	if err := n.rpcClient.Call(&entries, "listgroups"); err != nil {
-		return err
+		return nil, err
 	}
 
 	history := make([]ItemEntry, 0)
 	if err := n.rpcClient.Call(&history, "history"); err != nil {
-		return err
+		return nil, err
 	}
 
 	entries = append(entries, history...)
@@ -230,8 +228,8 @@ func (n *NZBGet) PollDownloads(names []string) error {
 
 		downloads = append(downloads, d)
 	}
-	n.downloads = downloads
-	return nil
+	
+	return downloads, nil
 }
 
 func contains(arr []string, s string) bool {
@@ -241,10 +239,6 @@ func contains(arr []string, s string) bool {
 		}
 	}
 	return false
-}
-
-func (n *NZBGet) GetDownloads() []Download {
-	return n.downloads
 }
 
 func convertLoHi(lo, hi uint) uint64 {

@@ -30,8 +30,6 @@ type Release struct {
 	Media        *Media    `json:"media,omitempty"`
 	IndexerID    int       `json:"indexer_id,omitempty"`
 
-	// Identifier for the media, could be the hash or the nzb name
-	Identifier string `json:"identifier,omitempty"`
 	// HighPriority whether to download with high priority
 	HighPriority bool `json:"high_priority,omitempty"`
 }
@@ -69,12 +67,6 @@ func NewRelease(id, title, description, downloadURL string, categories []string,
 
 	if release.RipType == "" && release.Encoding == "Xvid" {
 		release.RipType = "DVDRip"
-	}
-
-	if release.DownloadType == "nzb" {
-		release.Identifier = release.Title + ".nzb"
-	} else {
-		release.Identifier = release.ID
 	}
 
 	return release
