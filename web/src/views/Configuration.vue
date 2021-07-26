@@ -58,6 +58,12 @@
   </page-wrapper>
 </template>
 
+<style scoped>
+:deep(.o-tab-item__content) {
+  min-height: 70vh;
+}
+</style>
+
 <script>
 import Indexers from "./Indexers.vue";
 import NewDownloader from "../components/NewDownloader.vue";

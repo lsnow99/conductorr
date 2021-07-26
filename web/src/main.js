@@ -60,6 +60,7 @@ import {
   faCloudDownloadAlt,
   faBookmark,
   faCircleNotch,
+  faSort,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
@@ -150,6 +151,7 @@ library.add(faCloudDownloadAlt);
 library.add(faBookmark);
 library.add(faBookmarkRegular);
 library.add(faCircleNotch);
+library.add(faSort);
 
 const app = createApp(App);
 app.use(store);

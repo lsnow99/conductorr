@@ -28,22 +28,30 @@
         <div class="w-32 hidden sm:flex"></div>
       </div>
       <div class="flex flex-col sm:flex-row justify-between">
-        <div class="flex flex-row w-full">
-          <div
-            class="tabitem"
-            @click="activeFunction = 'filter'"
-            :class="activeFunction == 'filter' ? 'tabitem-active' : ''"
-          >
-            Filter
-          </div>
-          <div
-            class="tabitem"
-            @click="activeFunction = 'sorter'"
-            :class="activeFunction == 'sorter' ? 'tabitem-active' : ''"
-          >
-            Sorter
-          </div>
-        </div>
+        <o-tabs type="boxed" ref="tabs" v-model="currentTab" class="mt-4">
+          <o-tab-item>
+            <template v-slot:header>
+              <span class="text-2xl flex flex-row items-center">
+                <vue-fontawesome icon="filter"></vue-fontawesome
+                ><span style="white-space: nowrap" class="flex ml-2"
+                  >Filter</span
+                >
+              </span>
+            </template>
+            <div />
+          </o-tab-item>
+          <o-tab-item>
+            <template v-slot:header>
+              <span class="text-2xl flex flex-row items-center">
+                <vue-fontawesome icon="sort"></vue-fontawesome
+                ><span style="white-space: nowrap" class="flex ml-2"
+                  >Sorter</span
+                >
+              </span>
+            </template>
+            <div />
+          </o-tab-item>
+        </o-tabs>
         <div class="p-2 flex flex-row justify-center">
           <o-button class="mx-1 my-1 sm:my-0" @click="initSplits(true)"
             >Reset View</o-button
@@ -70,10 +78,7 @@
             <div class="titlebar flex flex-row justify-between">
               <div>Editor</div>
               <div>
-                <o-button
-                  size="small"
-                  class="mx-1"
-                  @click="validate"
+                <o-button size="small" class="mx-1" @click="validate"
                   >Validate</o-button
                 >
                 <o-button
@@ -206,6 +211,7 @@ export default {
       split34: null,
       split56: null,
       profile: {},
+      uneditedProfile: {},
       profileID: 0,
       code: "",
       outputs: [],
@@ -213,6 +219,7 @@ export default {
       releaseA: {},
       releaseB: {},
       editingName: false,
+      currentTab: 1,
     };
   },
   components: { CSLEditor, ReleaseBuilder, LogPane },
@@ -314,7 +321,8 @@ export default {
     },
     renderedCode(release, releaseVar) {
       return `(define ${releaseVar}
-  ("${release.title}" 
+  (
+    "${release.title}" 
     "${release.indexer}" 
     "${release.download_type}" 
     "${release.content_type}" 
@@ -345,6 +353,11 @@ export default {
           variant: "success",
           closable: false,
         });
+        this.setUneditedProfile(
+          this.profile.name,
+          this.profile.filter,
+          this.profile.sorter
+        );
       });
     },
     initCSL() {
@@ -358,16 +371,51 @@ export default {
         this.initCSL();
       });
     },
+    loadProfile() {
+      APIUtil.getProfile(this.profileID).then((profile) => {
+        this.profile = profile;
+        this.setUneditedProfile(profile.name, profile.filter, profile.sorter);
+      });
+    },
+    setUneditedProfile(name, filter, sorter) {
+      this.uneditedProfile.name = name;
+      this.uneditedProfile.filter = filter;
+      this.uneditedProfile.sorter = sorter;
+    },
+    beforeWindowUnload(e) {
+      if (this.isProfileModified) {
+        e.preventDefault();
+        return "Profile has been modified, are you sure you want to leave without saving?";
+      }
+      return null;
+    },
   },
   created() {
     this.profileID = parseInt(this.$route.params.profile_id);
   },
+  beforeRouteLeave(to, from, next) {
+    if (this.isProfileModified) {
+      const answer = window.confirm(
+        "Profile has been modified, are you sure you want to leave without saving?"
+      );
+      if (answer) {
+        next();
+      } else {
+        next(false);
+      }
+    } else {
+      next();
+    }
+  },
   mounted() {
-    APIUtil.getProfile(this.profileID).then((profile) => {
-      this.profile = profile;
-    });
+    this.loadProfile();
     this.initSplits();
     this.initCSL();
+    window.addEventListener("beforeunload", this.beforeWindowUnload);
+  },
+  unmounted() {
+    console.log("unmounted");
+    window.removeEventListener("beforeunload", this.beforeWindowUnload);
   },
   watch: {
     outputs: {
@@ -377,6 +425,14 @@ export default {
         }, 10);
       },
       deep: true,
+    },
+    currentTab(newVal) {
+      console.log(newVal);
+      if (newVal === 2) {
+        this.activeFunction = "sorter";
+      } else {
+        this.activeFunction = "filter";
+      }
     },
   },
   computed: {
@@ -388,6 +444,13 @@ export default {
     },
     releaseABCode() {
       return this.releaseACode + "\n" + this.releaseBCode;
+    },
+    isProfileModified() {
+      return (
+        this.profile.filter != this.uneditedProfile.filter ||
+        this.profile.sorter != this.uneditedProfile.sorter ||
+        this.profile.name != this.uneditedProfile.name
+      );
     },
     computedCode: {
       get() {

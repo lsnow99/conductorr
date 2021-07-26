@@ -31,7 +31,7 @@
     </div>
     <div class="flex flex-row">
       <div class="flex flex-1 flex-col p-4">
-        <o-field label="Title" class="w-40 min-w-full">
+        <o-field label="Title" class="min-w-full">
           <o-input
             type="text"
             placeholder="Release title"

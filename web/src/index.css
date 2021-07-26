@@ -352,10 +352,6 @@
   @apply font-bold;
 }
 
-.o-tab-item__content {
-  min-height: 70vh;
-}
-
 .o-table--hoverable tr:hover {
   @apply bg-gray-900;
 }
