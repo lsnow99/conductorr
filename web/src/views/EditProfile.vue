@@ -314,9 +314,16 @@ export default {
     },
     renderedCode(release, releaseVar) {
       return `(define ${releaseVar}
-  ("${release.title}" "${release.indexer}" "${release.download_type}" 
-    "${release.content_type}" "${release.rip_type}" "${release.resolution}" 
-    "${release.encoding}" ${release.seeders} ${release.age} ${release.size} 
+  ("${release.title}" 
+    "${release.indexer}" 
+    "${release.download_type}" 
+    "${release.content_type}" 
+    "${release.rip_type}" 
+    "${release.resolution}" 
+    "${release.encoding}" 
+    ${release.seeders} 
+    ${release.age} 
+    ${release.size} 
     ${release.runtime}
   )
 )`;
