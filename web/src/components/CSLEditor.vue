@@ -29,7 +29,7 @@
 } */
 
 /* attempt to remove word-wrap */
-:deep(.prism-editor__textarea) {
+/* :deep(.prism-editor__textarea) {
   width: 5000px !important;
 }
 :deep(.prism-editor__editor) {
@@ -37,7 +37,7 @@
 }
 :deep(.prism-editor__container) {
   overflow-x: scroll !important;
-}
+} */
 </style>
 
 <script>

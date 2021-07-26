@@ -314,6 +314,7 @@
   @apply text-gray-900;
   @apply pl-2;
   @apply pr-8;
+  @apply mr-4;
   @apply rounded-lg;
   @apply border-gray-900;
   @apply border-4;

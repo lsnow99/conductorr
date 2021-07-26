@@ -93,7 +93,8 @@
           <div id="split5" class="flex flex-col">
             <div class="titlebar">Test Cases</div>
             <div
-              class="px-16 h-full overflow-y-scroll overflow-x-scroll w-full w-94"
+              class="px-16 h-full overflow-y-scroll overflow-x-hidden"
+              style="width: 100%"
             >
               <release-builder title="Release A" v-model="releaseA" />
               <release-builder
@@ -312,7 +313,13 @@ export default {
         this.$refs.outputScroller.scrollHeight;
     },
     renderedCode(release, releaseVar) {
-      return `(define ${releaseVar} ("${release.title}" "${release.indexer}" "${release.download_type}" "${release.content_type}" "${release.rip_type}" "${release.resolution}" "${release.encoding}" ${release.seeders} ${release.age} ${release.size} ${release.runtime}))`;
+      return `(define ${releaseVar}
+  ("${release.title}" "${release.indexer}" "${release.download_type}" 
+    "${release.content_type}" "${release.rip_type}" "${release.resolution}" 
+    "${release.encoding}" ${release.seeders} ${release.age} ${release.size} 
+    ${release.runtime}
+  )
+)`;
     },
     editName() {
       this.editingName = true;
