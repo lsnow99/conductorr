@@ -224,7 +224,7 @@ func (n *NZBGet) PollDownloads(names []string) ([]Download, error) {
 		d.FriendlyName = entry.NZBName
 		d.BytesLeft = convertLoHi(entry.RemainingSizeLo, entry.RemainingSizeHi)
 		d.FullSize = convertLoHi(entry.FileSizeLo, entry.FileSizeHi)
-		d.Identifier = entry.NZBFilename
+		d.Identifier = strconv.Itoa(entry.NZBID)
 
 		downloads = append(downloads, d)
 	}

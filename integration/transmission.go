@@ -121,15 +121,8 @@ func (t *Transmission) PollDownloads(hashes []string) ([]Download, error) {
 	for _, torrent := range torrents {
 		d := Download{}
 
-		if torrent.Status == nil {
-			// Warning
-			continue
-		}
-		if torrent.LeftUntilDone == nil {
-			// Warning
-			continue
-		}
-		if torrent.Name == nil {
+		if torrent.Status == nil || torrent.LeftUntilDone == nil || torrent.Name == nil || torrent.HashString == nil || 
+			torrent.DownloadDir == nil || torrent.TotalSize == nil {
 			// Warning
 			continue
 		}
