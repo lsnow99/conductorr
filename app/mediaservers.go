@@ -2,6 +2,7 @@ package app
 
 import (
 	"errors"
+	"fmt"
 	"sync"
 
 	"github.com/lsnow99/conductorr/integration"
@@ -45,8 +46,10 @@ func (msm *MediaServerManager) RegisterMediaServer(id int, mediaServerType, name
 }
 
 func (msm *MediaServerManager) ImportMedia(path string) error {
+	fmt.Printf("importing %s\n", path)
 	var hadError bool
 	for _, mediaServer := range msm.mediaServers {
+		fmt.Printf("importing on %v\n", mediaServer.Name)
 		err := mediaServer.ImportMedia(path)
 		if err != nil {
 			hadError = true
