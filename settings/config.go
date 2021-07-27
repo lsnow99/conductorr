@@ -2,7 +2,6 @@ package settings
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"net"
 	"os"
