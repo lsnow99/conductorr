@@ -208,7 +208,7 @@ func handleCompletedDownload(download integration.Download) {
 			}
 			outputFile = fmt.Sprintf("%s (%d)", series.Title.String, series.ReleasedAt.Time.Year())
 			outputFile = filepath.Join(outputFile, fmt.Sprintf("Season %02d", season.Number.Int32))
-			outputFile = filepath.Join(outputFile, fmt.Sprintf("%s S%2dE%2d", media.Title.String, season.Number.Int32,media.Number.Int32))
+			outputFile = filepath.Join(outputFile, fmt.Sprintf("%s S%02dE%02d", media.Title.String, season.Number.Int32,media.Number.Int32))
 		} else {
 			logger.LogDanger(fmt.Errorf("bad hierarchy"))
 			return

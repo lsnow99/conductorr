@@ -29,8 +29,6 @@ var BuildMode string
 var Version string
 
 func init() {
-	fmt.Println(BuildMode)
-
 	if os.Getenv("CONDUCTORR_DEBUG") != "" {
 		DebugMode = true
 	}
