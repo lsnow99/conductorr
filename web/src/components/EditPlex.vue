@@ -4,13 +4,8 @@
   </header>
   <section class="modal-card-content">
     <div>
-      {{computedTest}}
       <o-field label="Name">
-        <o-input
-          type="text"
-          v-model="computedName"
-          placeholder="Name"
-        />
+        <o-input type="text" v-model="computedName" placeholder="Name" />
       </o-field>
       <o-field label="Base URL">
         <o-input
@@ -19,19 +14,14 @@
           placeholder="Base URL"
         />
       </o-field>
-      <o-field label="Username">
+      <o-field label="Auth Token">
         <o-input
+          expanded
           type="text"
-          v-model="computedPlex.username"
-          placeholder="transmission"
+          v-model="computedPlex.token"
+          placeholder="Auth Token"
         />
-      </o-field>
-      <o-field label="Password">
-        <o-input
-          type="password"
-          v-model="computedPlex.password"
-          placeholder="transmission"
-        />
+        <o-button @click="showFetchAuthTokenModal = true">Fetch New</o-button>
       </o-field>
     </div>
   </section>
@@ -44,35 +34,63 @@
       <o-button variant="primary" @click="save">Save</o-button>
     </div>
   </footer>
+  <o-modal
+    v-model:active="showFetchAuthTokenModal"
+    @close="showFetchAuthTokenModal = false"
+  >
+    <header class="modal-card-header">
+      <p class="modal-card-title">Fetch Plex Auth Token</p>
+    </header>
+    <section class="modal-card-content">
+      <div>
+        <o-field label="Username">
+          <o-input type="text" v-model="username" placeholder="Username" />
+        </o-field>
+        <o-field label="Password">
+          <o-input type="password" v-model="password" placeholder="Password" />
+        </o-field>
+      </div>
+    </section>
+    <footer class="modal-card-footer">
+      <o-button @click="showFetchAuthTokenModal = false">Cancel</o-button>
+      <o-button variant="primary" @click="fetchAuthToken">
+        <action-button :mode="fetchTestingMode"> Fetch </action-button>
+      </o-button>
+    </footer>
+  </o-modal>
 </template>
 
 <script>
-import APIUtil from '../util/APIUtil';
+import APIUtil from "../util/APIUtil";
 import ActionButton from "./ActionButton.vue";
-import DownloaderUtil from "../util/DownloaderUtil";
+import DownloaderUtil from "../util/EditServiceUtil";
 
 export default {
   data() {
     return {
-      newTransmission: null,
+      newPlex: null,
       testingMode: "",
+      fetchTestingMode: "",
+      showFetchAuthTokenModal: false,
+      username: "",
+      password: "",
     };
   },
   props: {
-    transmission: {
+    plex: {
       type: Object,
       default: function () {
         return {};
       },
     },
   },
-  mixins: [ DownloaderUtil ],
+  mixins: [DownloaderUtil],
   components: {
     ActionButton,
   },
   methods: {
     save() {
-      this.$emit("submit", this.newTransmission);
+      this.$emit("submit", this.newPlex);
     },
     test() {
       this.sanitize();
@@ -88,7 +106,7 @@ export default {
         return;
       }
       this.testingMode = "loading";
-      APIUtil.testDownloader("transmission", this.computedPlex)
+      APIUtil.testMediaServer("plex", this.computedPlex)
         .then((resp) => {
           if (resp.success) {
             this.$oruga.notification.open({
@@ -129,25 +147,49 @@ export default {
         return "Name is required";
       } else if (!this.computedPlex.base_url) {
         return "Base URL is required";
-      } else if (!this.computedPlex.username) {
-        return "Username is required";
-      } else if (!this.computedPlex.password) {
-        return "Password is required";
+      } else if (!this.computedPlex.token) {
+        return "Token is required";
       }
+    },
+    fetchAuthToken() {
+      this.fetchTestingMode = "loading";
+      APIUtil.getPlexAuthToken(this.username, this.password)
+        .then((response) => {
+          this.computedPlex.token = response.token;
+          this.showFetchAuthTokenModal = false;
+          this.fetchTestingMode = "";
+          this.$oruga.notification.open({
+            duration: 5000,
+            message: `Successfully fetched Plex auth token`,
+            position: "bottom-right",
+            variant: "success",
+            closable: false,
+          });
+        })
+        .catch((err) => {
+          this.fetchTestingMode = "danger";
+          this.$oruga.notification.open({
+            duration: 5000,
+            message: `Plex login failed: ${err}`,
+            position: "bottom-right",
+            variant: "danger",
+            closable: false,
+          });
+        });
     },
   },
   computed: {
     computedPlex: {
       get() {
-        if (this.newTransmission == null) {
-          if (this.transmission) {
-            this.newTransmission = this.transmission;
+        if (this.newPlex == null) {
+          if (this.plex) {
+            this.newPlex = this.plex;
           }
         }
-        return this.newTransmission;
+        return this.newPlex;
       },
       set(newVal) {
-        this.newTransmission = newVal;
+        this.newPlex = newVal;
       },
     },
   },

@@ -47,12 +47,12 @@ func GetDownloaders() (downloaders []Downloader, err error) {
 	return downloaders, nil
 }
 
-func UpdateDownloader(id int, downloaderType, name string, config map[string]interface{}) error {
+func UpdateDownloader(id int, name string, config map[string]interface{}) error {
 	configStr, err := json.Marshal(config)
 	if err != nil {
 		return err
 	}
-	_, err = db.Exec(`UPDATE downloader SET config = ?, name = ? downloader_type = ? WHERE id = ?`, configStr, name, downloaderType, id)
+	_, err = db.Exec(`UPDATE downloader SET config = ?, name = ? WHERE id = ?`, configStr, name, id)
 	return err
 }
 
@@ -61,8 +61,14 @@ func DeleteDownloader(id int) error {
 	return err
 }
 
-func GetDownloader(id int) (Downloader, error) {
+func GetDownloader(id int) (downloader Downloader, err error) {
 	row := db.QueryRow(`SELECT id, downloader_type, name, config FROM downloader WHERE id = ?`, id)
-	downloader := Downloader{}
-	return downloader, row.Scan(&downloader.ID, &downloader.DownloaderType, &downloader.Name, &downloader.Config)
+	var configStr string
+	if err = row.Scan(&downloader.ID, &downloader.DownloaderType, &downloader.Name, &configStr); err != nil {
+		return
+	}
+	if err = json.Unmarshal([]byte(configStr), &downloader.Config); err != nil {
+		return
+	}
+	return
 }

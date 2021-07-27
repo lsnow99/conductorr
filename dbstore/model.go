@@ -52,6 +52,13 @@ type Downloader struct {
 	Config         map[string]interface{}
 }
 
+type MediaServer struct {
+	ID              int
+	Name            string
+	MediaServerType string
+	Config          map[string]interface{}
+}
+
 type Download struct {
 	ID           int
 	MediaID      sql.NullInt32

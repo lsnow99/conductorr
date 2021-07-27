@@ -93,12 +93,17 @@ func UpdateDownloader(w http.ResponseWriter, r *http.Request) {
 		Respond(w, r.Header.Get("hostname"), err, nil, true)
 		return
 	}
-	err = dbstore.UpdateDownloader(id, downloaderInput.DownloaderType, downloaderInput.Name, downloaderInput.Config)
+	err = dbstore.UpdateDownloader(id, downloaderInput.Name, downloaderInput.Config)
 	if err != nil {
 		Respond(w, r.Header.Get("hostname"), err, nil, true)
 		return
 	}
-	err = app.DM.RegisterDownloader(id, downloaderInput.DownloaderType, downloaderInput.Name, downloaderInput.Config)
+	downloader, err := dbstore.GetDownloader(id)
+	if err != nil {
+		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		return
+	}
+	err = app.DM.RegisterDownloader(id, downloader.DownloaderType, downloader.Name, downloader.Config)
 	Respond(w, r.Header.Get("hostname"), err, nil, true)
 }
 

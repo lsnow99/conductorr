@@ -115,7 +115,7 @@ func (dm *DownloaderManager) Download(mediaID int, release integration.Release, 
 	}
 
 	if hadError {
-		return errors.New("could not add release to downloader. See logs for details")
+		return errors.New("could not add release to one or more downloaders. See logs for details")
 	}
 
 	return errors.New("no downloaders for this type of release")
@@ -206,9 +206,9 @@ func handleCompletedDownload(download integration.Download) {
 				logger.LogDanger(err)
 				return
 			}
-			outputFile = series.Title.String + " (" + strconv.Itoa(series.ReleasedAt.Time.Year()) + ")"
-			outputFile = filepath.Join(outputFile, season.Title.String)
-			outputFile = filepath.Join(outputFile, media.Title.String + " S0" + strconv.Itoa(int(season.Number.Int32)) + "E" + strconv.Itoa(int(media.Number.Int32)))
+			outputFile = fmt.Sprintf("%s (%d)", series.Title.String, series.ReleasedAt.Time.Year())
+			outputFile = filepath.Join(outputFile, fmt.Sprintf("Season %02d", season.Number.Int32))
+			outputFile = filepath.Join(outputFile, fmt.Sprintf("%s S%2dE%2d", media.Title.String, season.Number.Int32,media.Number.Int32))
 		} else {
 			logger.LogDanger(fmt.Errorf("bad hierarchy"))
 			return
@@ -256,7 +256,14 @@ func handleCompletedDownload(download integration.Download) {
 		return
 	}
 	logger.LogInfo(fmt.Errorf("successfully copied %s to %s", videoPath, destFilepath))
-	dbstore.UpdateDownloadStatusByIdentifier(download.Identifier, constant.StatusDone)
+	err = dbstore.UpdateDownloadStatusByIdentifier(download.Identifier, constant.StatusDone)
+	if err != nil {
+		logger.LogDanger(err)
+	}
+	err = MSM.ImportMedia(destFiledir)
+	if err != nil {
+		logger.LogDanger(err)
+	}
 }
 
 func (dm *DownloaderManager) getDownloadsToMonitor() (monitoring []string) {

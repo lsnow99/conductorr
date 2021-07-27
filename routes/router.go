@@ -89,6 +89,12 @@ func GetRouter() http.Handler {
 	r.HandleFunc("/api/v1/status", GetStatus).Methods("GET")
 	r.HandleFunc("/api/v1/logs", GetLogs).Methods("GET")
 	r.HandleFunc("/api/v1/download", GetDownloads).Methods("GET")
+	r.HandleFunc("/api/v1/plexAuthToken", FetchPlexAuthToken).Methods("POST")
+	r.HandleFunc("/api/v1/testMediaServer", TestMediaServer).Methods("POST")
+	r.HandleFunc("/api/v1/mediaServer", NewMediaServer).Methods("POST")
+	r.HandleFunc("/api/v1/mediaServer", GetMediaServers).Methods("GET")
+	r.HandleFunc("/api/v1/mediaServer/{id}", UpdateMediaServer).Methods("PUT")
+	r.HandleFunc("/api/v1/mediaServer/{id}", DeleteMediaServer).Methods("DELETE")
 
 	r.Use(AuthMiddleware)
 

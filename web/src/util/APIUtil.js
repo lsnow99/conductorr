@@ -404,6 +404,59 @@ const getDownloads = () => {
   })
 }
 
+const getPlexAuthToken = (username, password) => {
+  return doAPIReq(`/api/v1/plexAuthToken`, {
+    method: "POST",
+    body: JSON.stringify({
+      username,
+      password
+    })
+  })
+}
+
+const testMediaServer = (media_server_type, config) => {
+  return doAPIReq(`/api/v1/testMediaServer`, {
+    method: "POST",
+    body: JSON.stringify({
+      media_server_type,
+      config,
+    })
+  })
+}
+
+const newMediaServer = (media_server_type, name, config) => {
+  return doAPIReq(`/api/v1/mediaServer`, {
+    method: "POST",
+    body: JSON.stringify({
+      name,
+      media_server_type,
+      config
+    })
+  })
+}
+
+const getMediaServers = () => {
+  return doAPIReq(`/api/v1/mediaServer`, {
+    method: "GET",
+  })
+}
+
+const updateMediaServer = (id, name, config) => {
+  return doAPIReq(`/api/v1/mediaServer/${id}`, {
+    method: "PUT",
+    body: JSON.stringify({
+      name,
+      config
+    })
+  })
+}
+
+const deleteMediaServer = (id) => {
+  return doAPIReq(`/api/v1/mediaServer/${id}`, {
+    method: "DELETE",
+  })
+}
+
 export default {
   signIn,
   signUp,
@@ -445,5 +498,11 @@ export default {
   getSchedule,
   logout,
   setMonitoringMedia,
-  getDownloads
+  getDownloads,
+  getPlexAuthToken,
+  testMediaServer,
+  newMediaServer,
+  getMediaServers,
+  updateMediaServer,
+  deleteMediaServer
 };

@@ -111,17 +111,6 @@ func NewNZBGetFromConfig(configuration map[string]interface{}) (*NZBGet, error) 
 	return NewNZBGet(username, password, baseUrl)
 }
 
-// func (n *NZBGet) GetConfig() string {
-// 	cfg := NZBGetConfig{
-// 		Username: n.username,
-// 		Password: n.password,
-// 		URL:      n.baseUrl,
-// 	}
-// 	data, _ := json.Marshal(cfg)
-
-// 	return string(data)
-// }
-
 func (n *NZBGet) TestConnection() error {
 	var ver string
 	return n.rpcClient.Call(&ver, "version")

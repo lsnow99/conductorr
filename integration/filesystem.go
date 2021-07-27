@@ -12,5 +12,6 @@ func CheckPath(path string) error {
 	}
 	f, err := ioutil.TempFile(path, "access_check")
 	f.Close()
+	os.Remove(f.Name())
 	return err
 }

@@ -6,6 +6,7 @@ import (
 
 var DM DownloaderManager
 var IM IndexerManager
+var MSM MediaServerManager
 var Monitor SystemMonitor
 
 func init() {

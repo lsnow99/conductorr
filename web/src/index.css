@@ -314,13 +314,17 @@
   @apply text-gray-900;
   @apply pl-2;
   @apply pr-8;
-  @apply mr-4;
+  /* @apply mr-4; */
   @apply rounded-lg;
   @apply border-gray-900;
   @apply border-4;
   @apply border-opacity-50;
   @apply text-lg;
   @apply w-full;
+}
+
+.o-ctrl-sel {
+  min-width: 75px;
 }
 
 .o-sel--danger {

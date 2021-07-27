@@ -3,7 +3,7 @@
     <p class="modal-card-title">New Downloader</p>
   </header>
   <section class="modal-card-content">
-    <service-options :services="downloaderTypes" v-model="selectedDownloader" v-if="!showNext" />
+    <service-options :services="downloaderTypes" v-model="selectedDownloader" />
   </section>
   <footer class="modal-card-footer">
     <o-button @click="$emit('close')">Cancel</o-button>
@@ -16,7 +16,6 @@
 </template>
 
 <script>
-import EditTransmission from "./EditTransmission.vue"
 import ServiceOptions from "./ServiceOptions.vue"
 
 const downloaderTypes = [
@@ -38,7 +37,6 @@ export default {
     };
   },
   components: {
-      EditTransmission,
       ServiceOptions
   },
   emits: ['close', 'selected'],

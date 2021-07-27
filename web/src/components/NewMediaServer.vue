@@ -3,12 +3,7 @@
     <p class="modal-card-title">New Media Server</p>
   </header>
   <section class="modal-card-content">
-    <service-options :services="mediaServerTypes" v-model="selectedMediaServer" v-if="!selectedMediaServer" />
-    <div v-else>
-        <div v-if="selectedMediaServer == 'transmission'">
-            <edit-plex />
-        </div>
-    </div>
+    <service-options :services="mediaServerTypes" v-model="selectedMediaServer" />
   </section>
   <footer class="modal-card-footer">
     <o-button @click="$emit('close')">Cancel</o-button>
@@ -35,8 +30,7 @@ export default {
   data() {
     return {
       mediaServerTypes,
-      selectedMediaServer: '',
-      showNext: false
+      selectedMediaServer: ''
     };
   },
   components: {
@@ -46,7 +40,7 @@ export default {
   emits: ['close', 'selected'],
   methods: {
     next() {
-      this.$emit('selected', this.selectedDownloader)
+      this.$emit('selected', this.selectedMediaServer)
     },
   },
 };

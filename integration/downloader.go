@@ -1,7 +1,7 @@
 package integration
 
 import (
-	"errors"
+	"fmt"
 	"time"
 )
 
@@ -27,10 +27,10 @@ type Downloader interface {
 }
 
 type Download struct {
-	MediaID int
+	MediaID      int
 	FriendlyName string
-	Identifier string
-	FinalDir string
+	Identifier   string
+	FinalDir     string
 	// Status of the media
 	Status string
 	// Started time
@@ -48,5 +48,5 @@ func NewDownloaderFromConfig(downloaderType string, config map[string]interface{
 	case "nzbget":
 		return NewNZBGetFromConfig(config)
 	}
-	return nil, errors.New("no such downloader registered")
+	return nil, fmt.Errorf("unrecognized downloader type: %s", downloaderType)
 }

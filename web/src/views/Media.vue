@@ -20,18 +20,18 @@
             px-4
           "
         >
-          <div class="flex flex-row items-center">
-            <div class="text-2xl mr-4 text-gray-300">
+          <div class="flex flex-row justify-evenly md:items-center">
+            <div class="text-2xl md:mr-4 text-gray-300">
               {{ mediaYear(media) }}
             </div>
-            <div class="text-2xl mx-4 text-gray-300">
+            <div class="text-2xl md:mx-4 text-gray-300">
               <o-icon class="text-lg" icon="star" />
               {{ media.imdb_rating }}%
             </div>
             <a
               :href="`https://www.imdb.com/title/${media.imdb_id}`"
               target="_blank"
-              class="inline-block pt-1 mx-4"
+              class="inline-block pt-1 md:mx-4"
             >
               <o-icon
                 class="text-4xl text-gray-300 hover:text-yellow-300"
@@ -40,13 +40,13 @@
               />
             </a>
           </div>
-          <div class="flex self-end">
+          <div class="flex flex-row justify-evenly md:self-end">
             <o-tooltip
               variant="info"
               :position="tooltipPosition"
               label="Delete Media"
             >
-              <div class="text-2xl mx-2 text-gray-300">
+              <div class="text-2xl md:mx-2 text-gray-300">
                 <div @click="showConfirmDeleteModal = true">
                   <o-icon class="cursor-pointer" icon="trash" />
                 </div>
@@ -57,7 +57,7 @@
               :position="tooltipPosition"
               label="Edit Media"
             >
-              <div class="text-2xl mx-2 text-gray-300">
+              <div class="text-2xl md:mx-2 text-gray-300">
                 <div @click="editMedia">
                   <o-icon class="cursor-pointer" icon="wrench" />
                 </div>

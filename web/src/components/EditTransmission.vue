@@ -4,7 +4,6 @@
   </header>
   <section class="modal-card-content">
     <div>
-      {{computedTest}}
       <o-field label="Name">
         <o-input
           type="text"
@@ -49,7 +48,7 @@
 <script>
 import APIUtil from '../util/APIUtil';
 import ActionButton from "./ActionButton.vue";
-import DownloaderUtil from "../util/DownloaderUtil";
+import EditServiceUtil from "../util/EditServiceUtil";
 
 export default {
   data() {
@@ -66,7 +65,7 @@ export default {
       },
     },
   },
-  mixins: [ DownloaderUtil ],
+  mixins: [ EditServiceUtil ],
   components: {
     ActionButton,
   },

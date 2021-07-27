@@ -19,7 +19,10 @@
         </code>
       </div>
     </config-item>
-    <o-modal v-model:active="showNewDownloaderModal" @close="closeNewDownloaderModal">
+    <o-modal
+      v-model:active="showNewDownloaderModal"
+      @close="closeNewDownloaderModal"
+    >
       <new-downloader
         v-if="downloaderType == ''"
         @close="closeNewDownloaderModal"
@@ -43,9 +46,17 @@
       @close="showEditDownloaderModal = false"
     >
       <edit-transmission
+        v-if="editingDownloader.downloader_type == 'transmission'"
         :transmission="editingDownloader.config"
         v-model:name="editingName"
         @submit="updateTransmission"
+        @close="showEditDownloaderModal = false"
+      />
+      <EditNZBGet
+        v-if="editingDownloader.downloader_type == 'nzbget'"
+        :nzbget="editingDownloader.config"
+        v-model:name="editingName"
+        @submit="updateNZBGet"
         @close="showEditDownloaderModal = false"
       />
     </o-modal>
@@ -105,8 +116,8 @@ export default {
           variant: "success",
           closable: false,
         });
-        this.loadDownloaders()
-      })
+        this.loadDownloaders();
+      });
     },
     updateDownloader(id, name, config) {
       APIUtil.updateDownloader(id, name, config).then(() => {
@@ -147,11 +158,14 @@ export default {
         config
       );
     },
+    updateNZBGet(config) {
+      this.updateNZBGet(this.editingDownloader.id, this.editingName, config);
+    },
     showNewDownloader() {
-      this.downloaderType = ""
-      this.editingName = ""
-      this.showNewDownloaderModal = true
-    }
+      this.downloaderType = "";
+      this.editingName = "";
+      this.showNewDownloaderModal = true;
+    },
   },
   mounted() {
     this.loadDownloaders();
