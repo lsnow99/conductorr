@@ -11,6 +11,17 @@ type MediaServer interface {
 		TestConnection returns a non-nil error if the media server fails to connect
 	*/
 	TestConnection() error
+	/*
+		GetMediaPaths returns a slice of all media paths available on the server
+	*/
+	GetMediaPaths() ([]MediaPath, error)
+}
+
+type MediaPath struct {
+	Title string
+	ParentTitle string
+	GrandparentTitle string
+	Path string
 }
 
 func NewMediaServerFromConfig(mediaServerType string, config map[string]interface{}) (MediaServer, error) {

@@ -3,6 +3,7 @@ package app
 import (
 	"errors"
 	"sync"
+	"time"
 
 	"github.com/lsnow99/conductorr/integration"
 	"github.com/lsnow99/conductorr/logger"
@@ -18,6 +19,23 @@ type ManagedMediaServer struct {
 type MediaServerManager struct {
 	sync.RWMutex
 	mediaServers []ManagedMediaServer
+}
+
+func (msm *MediaServerManager) GetFrequency() time.Duration {
+	return time.Minute * 10
+}
+
+func (msm *MediaServerManager) DoTask() {
+	msm.syncMediaPaths()
+}
+
+func (msm *MediaServerManager) syncMediaPaths() {
+	msm.Lock()
+	defer msm.Unlock()
+
+	for _, mediaServer := range msm.mediaServers {
+		mediaServer.GetMediaPaths()
+	}
 }
 
 func (msm *MediaServerManager) RegisterMediaServer(id int, mediaServerType, name string, configuration map[string]interface{}) error {
@@ -54,7 +72,7 @@ func (msm *MediaServerManager) getMediaServers() []ManagedMediaServer {
 }
 
 func (msm *MediaServerManager) ImportMedia(path string) error {
-	
+
 	mediaServers := msm.getMediaServers()
 
 	var hadError bool

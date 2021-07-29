@@ -3,10 +3,7 @@
     <div class="flex flex-col lg:flex-row">
       <section class="flex-1">
         <div class="text-xl flex flex-row justify-between">
-          Active Downloads<o-icon
-            @click="refreshDownloads"
-            icon="sync-alt cursor-pointer"
-          />
+          Active Downloads
         </div>
         <div class="h-96 overflow-y-scroll p-2">
           <DownloadStatus
@@ -20,7 +17,9 @@
         <div class="text-xl flex flex-row justify-between">
           Recently Completed Downloads<o-icon
             @click="refreshDownloads"
-            icon="sync-alt cursor-pointer"
+            class="cursor-pointer"
+            icon="sync-alt"
+            :spin="loadingDownloads"
           />
         </div>
         <div class="h-96 overflow-y-scroll p-2">
@@ -45,16 +44,27 @@ export default {
     return {
       activeDownloads: [],
       doneDownloads: [],
+      refreshInterval: -1
     };
   },
   components: { PageWrapper, DownloadStatus },
   methods: {
     refreshDownloads() {
+      this.loadingDownloads = true;
+      let requestsCompleted = 0;
       APIUtil.getActiveDownloads().then((downloads) => {
         this.activeDownloads = downloads;
+        requestsCompleted++
+        if (requestsCompleted == 2) {
+          this.loadingDownloads = false;
+        }
       });
       APIUtil.getDoneDownloads().then((downloads) => {
         this.doneDownloads = downloads;
+        requestsCompleted++
+        if (requestsCompleted == 2) {
+          this.loadingDownloads = false;
+        }
       })
     },
     getDownloadInfo(download) {
@@ -110,11 +120,14 @@ export default {
       }
     },
     sortDownloads(a, b) {
-      return a.id - b.id
+      return b.id - a.id
     }
   },
   mounted() {
-    this.refreshDownloads();
+    this.refreshInterval = setInterval(this.refreshDownloads, 3000)
+  },
+  unmounted() {
+    clearInterval(this.refreshInterval)
   },
   computed: {
     orderedDoneDownloads() {

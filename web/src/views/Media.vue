@@ -106,7 +106,7 @@
           >
             <episode-list
               @reload="loadMedia"
-              :monitoring-disabled="!season.monitoring || !media.monitoring"
+              :monitoring-disabled="!media.monitoring"
               :episodes="season.children"
             />
           </div>

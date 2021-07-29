@@ -131,6 +131,7 @@ export default {
   },
   watch: {
     contentType: function () {
+      this.page = 0;
       this.search();
     },
     current: function (newVal) {

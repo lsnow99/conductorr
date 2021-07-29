@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./web/public/logo.svg" alt="Conductorr logo image" width="200px" /> 
+  <img src="./web/public/logo-rect.svg" alt="Conductorr logo image" width="200px" /> 
 </p>
 
 # Conductorr
@@ -21,11 +21,11 @@ Conductorr is a PVR for BitTorrent and Usenet that aims to strike a balance betw
 - [Transmission](https://github.com/transmission/transmission) - **YES**
 - [qBittorrent](https://github.com/qbittorrent/qBittorrent) - **NO/PLANNED**
 - [rTorrent/ruTorrent](https://github.com/rakshasa/rtorrent) - **NO/PLANNED**
-- [Deluge]() - **NO/PLANNED**
-- [Plex]() - **YES**
-- [JellyFin]() - **NO/PLANNED**
-- [Emby]() - **NO/PLANNED**
-- [Kodi]() - **NO/PLANNED**
+- [Deluge](https://github.com/deluge-torrent/deluge) - **NO/PLANNED**
+- [Plex](https://plex.tv) - **YES**
+- [JellyFin](https://github.com/deluge-torrent/deluge) - **NO/PLANNED**
+- [Emby](https://emby.media/) - **NO/PLANNED**
+- [Kodi](https://github.com/xbmc/xbmc) - **NO/PLANNED**
 
 If the service you use is not yet supported or planned, please feel free to request it in a Feature Request. Pull requests are also welcome. New downloaders simply need to implement the interface specified in `integration/downloaders.go` and pass testing.
 

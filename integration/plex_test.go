@@ -23,3 +23,16 @@ func TestPlexBasic(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestPlexGetPaths(t *testing.T) {
+	token, err := plex.RetrievePlexToken("jschuler99@gmail.com", "%3PeAIO$d&l9")
+	if err != nil {
+		t.Fatal(err)
+	}
+	plex := NewPlex(token, "https://n0tflix.mediaserver.pro")
+	paths, err := plex.GetMediaPaths()
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(paths)
+}

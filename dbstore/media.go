@@ -228,7 +228,8 @@ func GetMediaReferencing(parentID int) ([]*Media, error) {
 
 func UpdateMediaMonitoring(mediaID int, monitoring bool) error {
 	_, err := db.Exec(`
-	UPDATE media SET monitoring = ? WHERE id = ?
-	`, monitoring, mediaID)
+	UPDATE media SET monitoring = ? WHERE id = ?;
+	UPDATE media SET monitoring = ? WHERE parent_media_id = ? AND EXISTS (SELECT * FROM media WHERE id = ? AND content_type = 'season')
+	`, monitoring, mediaID, monitoring, mediaID, mediaID)
 	return err
 }

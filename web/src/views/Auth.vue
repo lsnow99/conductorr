@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-row justify-center">
     <section class="max-w-lg mt-40">
-      <img src="/logo.svg" width="100" class="m-auto pb-16" />
+      <img src="/logo-rect-transparent.svg" width="100" class="m-auto pb-16" />
       <div v-if="first_time" class="text-2xl">Create User</div>
       <div v-else class="text-2xl">Login</div>
       <o-field label="Username">

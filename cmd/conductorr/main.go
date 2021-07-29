@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -78,8 +77,6 @@ func main() {
 			os.Exit(1)
 		}
 	}
-
-	fmt.Println(app.DM.GetDownloads())
 
 	scheduler.StartTasks()
 
