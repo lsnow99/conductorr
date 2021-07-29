@@ -21,6 +21,9 @@ type MediaServerManager struct {
 }
 
 func (msm *MediaServerManager) RegisterMediaServer(id int, mediaServerType, name string, configuration map[string]interface{}) error {
+	msm.Lock()
+	defer msm.Unlock()
+
 	msvr, err := integration.NewMediaServerFromConfig(mediaServerType, configuration)
 	if err != nil {
 		return err
@@ -44,9 +47,18 @@ func (msm *MediaServerManager) RegisterMediaServer(id int, mediaServerType, name
 	return nil
 }
 
+func (msm *MediaServerManager) getMediaServers() []ManagedMediaServer {
+	msm.RLock()
+	defer msm.RUnlock()
+	return msm.mediaServers
+}
+
 func (msm *MediaServerManager) ImportMedia(path string) error {
+	
+	mediaServers := msm.getMediaServers()
+
 	var hadError bool
-	for _, mediaServer := range msm.mediaServers {
+	for _, mediaServer := range mediaServers {
 		err := mediaServer.ImportMedia(path)
 		if err != nil {
 			hadError = true
