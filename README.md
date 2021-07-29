@@ -1,6 +1,33 @@
-[Conductorr logo image](/web/public/logo.svg)
+<p align="center">
+  <img src="./web/public/logo.svg" alt="Conductorr logo image" width="200px" /> 
+</p>
 
 # Conductorr
+
+Conductorr is a PVR for BitTorrent and Usenet that aims to strike a balance between lightweight, powerful, and easy to use. It supports both TV Shows and Movies, and allows you to fine tune exactly which releases to prefer via the custom scripting language CSL.
+
+## Overview
+
+### Major Features Include:
+- Search for movies and TV shows to add them to your library, along with descriptions, posters, and ratings.
+- Monitor new releases for pisodes, seasons, full shows, and movies for automatic download
+- Ability to add media servers (plex, jellyfin - WIP) which will be notified of new content to scan automatically.
+- Sync availability status from media servers for visibility in your Conductorr library
+- Accessible and pleasant UI
+- Highly-advanced customization for release filtering and priortiziation via CSL scripts
+
+### Status of Support for External Services:
+- [NZBGet](https://github.com/nzbget/nzbget) - **YES**
+- [Transmission](https://github.com/transmission/transmission) - **YES**
+- [qBittorrent](https://github.com/qbittorrent/qBittorrent) - **NO/PLANNED**
+- [rTorrent/ruTorrent](https://github.com/rakshasa/rtorrent) - **NO/PLANNED**
+- [Deluge]() - **NO/PLANNED**
+- [Plex]() - **YES**
+- [JellyFin]() - **NO/PLANNED**
+- [Emby]() - **NO/PLANNED**
+- [Kodi]() - **NO/PLANNED**
+
+If the service you use is not yet supported or planned, please feel free to request it in a Feature Request. Pull requests are also welcome. New downloaders simply need to implement the interface specified in `integration/downloaders.go` and pass testing.
 
 ## Usage
 
@@ -22,6 +49,11 @@ Conductorr has a public [Docker image](https://hub.docker.com/r/logansnow/conduc
 - `PG_SSL` If set to anything other than the empty string, Conductorr will force SSL for PostgreSQL connections (optional)
 - `DB_PATH` When using SQLite, this is the path for the database file. Do not append any URL parameters to the end.
 
+## FAQ
+
+### Why is Conductorr Needed and How Does it Differ from Other PVRs?
+Conductorr actually began as an entirely [different project]() that glued together Radarr, Sonarr, Filebot, and Plex to process downloads, specifically in Kubernetes where a library is mounted over NFS. After growing frustrated of managing this array of different services, I thought it would be a fun project to build a replacement to this pipeline that handled everything in one elegant service. Other more mature PVRs like Sonarr and Radarr are great choices for most users, however, Conductorr differs in a few key ways that may make it more desirable for certain setups. For one, Conductorr supports both movies and tv series all in one interface. Conductorr also behaves nicely in containerized environments. For power users, CSL scripts can be customized very precisely to ensure the correct releases are always downloaded.
+
 ## Developing
 
 To develop on Conductorr, first clone the repository.
@@ -30,13 +62,13 @@ To develop on Conductorr, first clone the repository.
 
 ### Backend Development
 
-Conductorr backend requires [go](https://golang.org/) to be installed. For development, any stable Go version should do fine. However, to build the production binaries Conductorr requires Go version ^1.16.0. This is because the production binary uses the [embed](https://golang.org/pkg/embed/) package which was introduced in Go v1.16.0.
+Conductorr backend requires [go](https://golang.org/) to be installed. For development, any stable Go version should be fine. However, to build the production binaries Conductorr requires Go version ^1.16.0. This is because the production binary uses the [embed](https://golang.org/pkg/embed/) package which was introduced in Go v1.16.0.
 
 Within VS Code, select "Launch Backend" from the debug menu. You can set breakpoints and debug as usual within VS Code. To run the backend without VS Code, use the command `CONDUCTORR_DEBUG=true go run ./cmd/conductorr`
 
 ### WebAssembly CSL Module
 
-Conductorr's profile editor page uses a WebAssembly module to do client-side validation and parsing of CSL scripts. Before developing on the frontend, you must generate this module using `./build_csl.sh` (For Windows, you can either run this in WSL or just run the equivalent commands in cmd/PowerShell). This script assumes you have [Brotli](https://github.com/google/brotli) installed and available in your PATH.
+Conductorr's profile editor page uses a WebAssembly module to do client-side validation and evaluationmsm.mediaServers of CSL scripts. Before developing on the frontend, you must generate this module using `./build_csl.sh` (For Windows, you can either run this in WSL or just run the equivalent commands in cmd/PowerShell). This script assumes you have [Brotli](https://github.com/google/brotli) installed and available in your PATH.
 
 > NOTE: If you skip this step, it is likely you will run into an issue where `wasm_exec.js` is not found when testing locally in the frontend, or when building for production.
 
