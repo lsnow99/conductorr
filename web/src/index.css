@@ -359,3 +359,8 @@
 .o-table--hoverable tr:hover {
   @apply bg-gray-900;
 }
+
+* {
+  scrollbar-color: #090e19 rgba(0,0,0,0);
+  scrollbar-width: thin;
+}

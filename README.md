@@ -1,3 +1,5 @@
+[Conductorr logo image](/web/public/logo.svg)
+
 # Conductorr
 
 ## Usage

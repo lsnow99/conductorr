@@ -1,20 +1,36 @@
 <template>
   <page-wrapper>
     <div class="flex flex-col lg:flex-row">
-      <section class="flex-1 p-2">
+      <section class="flex-1">
         <div class="text-xl flex flex-row justify-between">
-          Downloads<o-icon
+          Active Downloads<o-icon
             @click="refreshDownloads"
             icon="sync-alt cursor-pointer"
           />
         </div>
-        <DownloadStatus
-          v-for="download in downloads"
-          :key="download.identifier"
-          :download="download"
-        />
+        <div class="h-96 overflow-y-scroll p-2">
+          <DownloadStatus
+            v-for="download in orderedActiveDownloads"
+            :key="download.identifier"
+            :download="download"
+          />
+        </div>
       </section>
-      <div class="flex-1"></div>
+      <section class="flex-1">
+        <div class="text-xl flex flex-row justify-between">
+          Recently Completed Downloads<o-icon
+            @click="refreshDownloads"
+            icon="sync-alt cursor-pointer"
+          />
+        </div>
+        <div class="h-96 overflow-y-scroll p-2">
+          <DownloadStatus
+            v-for="download in orderedDoneDownloads"
+            :key="download.identifier"
+            :download="download"
+          />
+        </div>
+      </section>
     </div>
   </page-wrapper>
 </template>
@@ -27,67 +43,19 @@ import APIUtil from "../util/APIUtil";
 export default {
   data() {
     return {
-      downloads: [],
+      activeDownloads: [],
+      doneDownloads: [],
     };
   },
   components: { PageWrapper, DownloadStatus },
   methods: {
     refreshDownloads() {
-      APIUtil.getDownloads().then((downloads) => {
-        this.downloads = downloads;
-        // this.downloads = [
-        //   {
-        //     status: "waiting",
-        //     friendly_name: "Sopranos s01e01"
-        //   },
-        //   {
-        //     status: "paused",
-        //     friendly_name: "Rick and Morty s02e04",
-        //   },
-        //   {
-        //     status: "downloading",
-        //     friendly_name: "Bloodline s02e09",
-        //     full_size: 10,
-        //     bytes_left: 3,
-        //   },
-        //   {
-        //     status: "downloading",
-        //     friendly_name: "Lord of the Rings s02e09",
-        //     full_size: 10,
-        //     bytes_left: 4,
-        //   },
-        //   {
-        //     status: "downloading",
-        //     friendly_name: "Tarzan s02e09",
-        //     full_size: 10,
-        //     bytes_left: 9,
-        //   },
-        //   {
-        //     status: "downloading",
-        //     friendly_name: "Moana s02e09",
-        //     full_size: 10,
-        //     bytes_left: 8,
-        //   },
-        //   {
-        //     status: "downloading",
-        //     friendly_name: "Frozen s02e09",
-        //     full_size: 10,
-        //     bytes_left: 1,
-        //   },
-        //   {
-        //     status: "processing",
-        //     friendly_name: "Kevin can Fuck Himself",
-        //   },
-        //   {
-        //     status: "done",
-        //     friendly_name: "The Hobbit"
-        //   },
-        //   {
-        //     status: "error",
-        //     friendly_name: "The Desolation of Smaug"
-        //   }
-        // ]
+      APIUtil.getActiveDownloads().then((downloads) => {
+        this.activeDownloads = downloads;
       });
+      APIUtil.getDoneDownloads().then((downloads) => {
+        this.doneDownloads = downloads;
+      })
     },
     getDownloadInfo(download) {
       if (!download.status) {
@@ -141,9 +109,30 @@ export default {
           };
       }
     },
+    sortDownloads(a, b) {
+      return a.id - b.id
+    }
   },
   mounted() {
     this.refreshDownloads();
   },
+  computed: {
+    orderedDoneDownloads() {
+      return this.doneDownloads.sort(this.sortDownloads)
+    },
+    orderedActiveDownloads() {
+      let processing = this.activeDownloads.filter((elem) => (elem.status == 'cprocessing' || elem.status == 'processing'))
+      let downloading = this.activeDownloads.filter((elem) => elem.status == 'downloading')
+      let waiting = this.activeDownloads.filter((elem) => elem.status == 'waiting')
+      let paused = this.activeDownloads.filter((elem) => elem.status == 'paused')
+
+      processing = processing.sort(this.sortDownloads)
+      downloading = downloading.sort(this.sortDownloads)
+      waiting = waiting.sort(this.sortDownloads)
+      paused = paused.sort(this.sortDownloads)
+
+      return [...processing, ...downloading, ...waiting, ...paused]
+    }
+  }
 };
 </script>

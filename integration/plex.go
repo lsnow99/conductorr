@@ -6,9 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"path/filepath"
-
-	"github.com/lsnow99/conductorr/logger"
 )
 
 type Plex struct {
@@ -45,60 +42,36 @@ func (p *Plex) TestConnection() error {
 }
 
 func (p *Plex) ImportMedia(path string) error {
-	fmt.Println("importing on plex")
 	libraries, err := p.getLibraries()
 	if err != nil {
 		return err
 	}
-	fmt.Printf("got libraries %v\n", libraries)
 	for _, library := range libraries {
-		fmt.Printf("checking library %v\n", library)
-		for _, location := range library.Locations {
-			fmt.Printf("checking location %v with path %s\n", location, location.Path)
-			pattern := location.Path + string(filepath.Separator) + "*"
-			matched, err := filepath.Match(pattern, path)
-			if err != nil {
-				fmt.Println("got error 1 ", err)
-				logger.LogDanger(err)
-				continue
-			}
-			if matched {
-				fmt.Printf("path %s is a match for %v", path, location.Path)
-				u, err := url.Parse(p.baseUrl)
-				if err != nil {
-					fmt.Println("got error 2 ", err)
-					return err
-				}
-				q := url.Values{}
-				q.Add("X-Plex-Token", p.token)
-				q.Add("path", path)
-				u.Path = "/library/sections/" + library.Key + "/refresh"
-				u.RawQuery = q.Encode()
-
-				req, err := http.NewRequest("GET", u.String(), nil)
-				if err != nil {
-					fmt.Println("got error 3 ", err)
-					return err
-				}
-
-				resp, err := http.DefaultClient.Do(req)
-				if err != nil {
-					fmt.Println("got error 4 ", err)
-					return err
-				}
-
-				if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-					fmt.Println("got error 5 ", resp.StatusCode)
-					return fmt.Errorf("received non-200 level status code %d", resp.StatusCode)
-				} else {
-					fmt.Println("refresh success")
-				}
-
-				resp.Body.Close()
-			} else {
-				fmt.Printf("path %s is not a match for %v", path, location.Path)
-			}
+		u, err := url.Parse(p.baseUrl)
+		if err != nil {
+			return err
 		}
+		q := url.Values{}
+		q.Add("X-Plex-Token", p.token)
+		q.Add("path", path)
+		u.Path = "/library/sections/" + library.Key + "/refresh"
+		u.RawQuery = q.Encode()
+
+		req, err := http.NewRequest("GET", u.String(), nil)
+		if err != nil {
+			return err
+		}
+
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return err
+		}
+
+		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+			return fmt.Errorf("received non-200 level status code %d", resp.StatusCode)
+		}
+
+		resp.Body.Close()
 	}
 	return nil
 }

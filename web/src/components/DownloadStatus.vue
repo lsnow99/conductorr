@@ -69,6 +69,7 @@ export default {
           (this.download.full_size - this.download.bytes_left) /
           this.download.full_size;
       }
+      fraction = Math.round(fraction * 100) / 100
       return fraction;
     },
   },

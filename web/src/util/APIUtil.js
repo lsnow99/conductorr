@@ -17,13 +17,6 @@ const doAPIReq = (url, options, errMsg = undefined) => {
           if (resp.failed_auth) {
             AuthUtil.logout();
             EventBus.emit('forceLogout')
-            EventBus.emit('notification', {
-              duration: 3000,
-              message: `Authentication error`,
-              position: "bottom-right",
-              variant: "danger",
-              closable: false,
-            })
           } else if (errMsg) {
             EventBus.emit('notification', {
               duration: 3000,
@@ -58,7 +51,6 @@ const signIn = (username, password) => {
         password,
       }),
     },
-    "Authentication error"
   );
 };
 
@@ -398,8 +390,14 @@ const setMonitoringMedia = (id, monitoring) => {
   })
 }
 
-const getDownloads = () => {
-  return doAPIReq(`/api/v1/download`, {
+const getActiveDownloads = () => {
+  return doAPIReq(`/api/v1/activeDownloads`, {
+    method: "GET",
+  })
+}
+
+const getDoneDownloads = () => {
+  return doAPIReq(`/api/v1/doneDownloads`, {
     method: "GET",
   })
 }
@@ -498,7 +496,8 @@ export default {
   getSchedule,
   logout,
   setMonitoringMedia,
-  getDownloads,
+  getActiveDownloads,
+  getDoneDownloads,
   getPlexAuthToken,
   testMediaServer,
   newMediaServer,

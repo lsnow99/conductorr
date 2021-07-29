@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -64,6 +65,21 @@ func main() {
 	for _, indexer := range indexers {
 		app.IM.RegisterIndexer(indexer.ID, indexer.DownloadType, indexer.UserID, indexer.Name, indexer.ApiKey, indexer.BaseUrl, indexer.ForMovies, indexer.ForSeries)
 	}
+
+	// Initialize media servers
+	mediaServers, err := dbstore.GetMediaServers()
+	if err != nil {
+		logger.LogToStdout(err)
+		os.Exit(1)
+	}
+	for _, mediaServer := range mediaServers {
+		if err := app.MSM.RegisterMediaServer(mediaServer.ID, mediaServer.MediaServerType, mediaServer.Name, mediaServer.Config); err != nil {
+			logger.LogToStdout(err)
+			os.Exit(1)
+		}
+	}
+
+	fmt.Println(app.DM.GetDownloads())
 
 	scheduler.StartTasks()
 

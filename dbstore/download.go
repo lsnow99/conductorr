@@ -23,6 +23,28 @@ func UpdateDownloadStatusByIdentifier(identifier, status string) error {
 	return err
 }
 
+func GetDoneDownloads() ([]Download, error) {
+	rows, err := db.Query(`
+		SELECT id, media_id, downloader_id, status, friendly_name, identifier
+		FROM download
+		WHERE status = ?
+	`, constant.StatusDone)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	downloads := make([]Download, 0)
+	for rows.Next() {
+		download := Download{}
+		if err := rows.Scan(&download.ID, &download.MediaID, &download.DownloaderID, &download.Status, &download.FriendlyName, &download.Identifier); err != nil {
+			return nil, err
+		}
+		downloads = append(downloads, download)
+	}
+	return downloads, nil
+}
+
 func GetDownloads() ([]Download, error) {
 	rows, err := db.Query(`
 		SELECT id, media_id, downloader_id, status, friendly_name, identifier

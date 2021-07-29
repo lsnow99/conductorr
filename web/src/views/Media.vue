@@ -1,7 +1,12 @@
 <template>
   <page-wrapper>
     <section class="flex flex-row">
-      <img class="hidden md:block rounded-md" :src="media.poster" />
+      <img
+        v-if="media.poster"
+        class="hidden md:block rounded-md"
+        :src="media.poster"
+        :alt="`Poster for ${media.title}`"
+      />
       <div class="ml-4 flex flex-1 flex-col" v-show="media.id">
         <h1 class="text-4xl lg:text-6xl">
           <monitoring-toggle
@@ -32,6 +37,7 @@
               :href="`https://www.imdb.com/title/${media.imdb_id}`"
               target="_blank"
               class="inline-block pt-1 md:mx-4"
+              :aria-label="`Link to IMDB page for ${media.title}`"
             >
               <o-icon
                 class="text-4xl text-gray-300 hover:text-yellow-300"
@@ -47,7 +53,12 @@
               label="Delete Media"
             >
               <div class="text-2xl md:mx-2 text-gray-300">
-                <div @click="showConfirmDeleteModal = true">
+                <div
+                  @click="showConfirmDeleteModal = true"
+                  role="button"
+                  aria-label="Delete media"
+                  tabindex="0"
+                >
                   <o-icon class="cursor-pointer" icon="trash" />
                 </div>
               </div>
@@ -58,7 +69,7 @@
               label="Edit Media"
             >
               <div class="text-2xl md:mx-2 text-gray-300">
-                <div @click="editMedia">
+                <div @click="editMedia" role="button" aria-label="Edit media">
                   <o-icon class="cursor-pointer" icon="wrench" />
                 </div>
               </div>
@@ -93,7 +104,11 @@
             class="bg-gray-800 rounded-md p-1 cursor-default"
             v-show="expandedCfg[season.id]"
           >
-            <episode-list @reload="loadMedia" :monitoring-disabled="!season.monitoring || !media.monitoring" :episodes="season.children" />
+            <episode-list
+              @reload="loadMedia"
+              :monitoring-disabled="!season.monitoring || !media.monitoring"
+              :episodes="season.children"
+            />
           </div>
         </transition>
         <div class="text-center mt-2">

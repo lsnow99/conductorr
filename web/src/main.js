@@ -154,6 +154,11 @@ library.add(faCircleNotch);
 library.add(faSort);
 
 const app = createApp(App);
+
+if (import.meta.env.DEV) {
+  app.config.performance = true;
+}
+
 app.use(store);
 app.use(router);
 app.use(Oruga, {

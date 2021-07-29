@@ -5,7 +5,7 @@
     label="Search/Download Automatically"
   >
     <div :class="fontSize" class="mx-2 text-gray-300">
-      <div v-if="!loadingAutoSearch" @click="searchManual">
+      <div v-if="!loadingAutoSearch" @click="searchManual" role="button" aria-label="Search automatically">
         <o-icon class="cursor-pointer" icon="bolt" />
       </div>
       <o-icon v-else icon="sync-alt" spin />
@@ -13,7 +13,7 @@
   </o-tooltip>
   <o-tooltip variant="info" :position="tooltipPosition" label="Search Manually">
     <div :class="fontSize" class="mx-2 text-gray-300">
-      <div v-if="!loadingManualSearch" @click="searchManual">
+      <div v-if="!loadingManualSearch" @click="searchManual" role="button" aria-label="Search manually">
         <o-icon class="cursor-pointer" icon="search" />
       </div>
       <o-icon v-else icon="sync-alt" spin />

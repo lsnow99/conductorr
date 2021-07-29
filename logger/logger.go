@@ -32,7 +32,7 @@ var logs logsContainer
 func init() {
 	logs.sendChan = make(chan LogMessage)
 	logs.recvChan = make(chan getLogsReq)
-	go func ()  {
+	go func() {
 		for {
 			select {
 			case log := <-logs.sendChan:
@@ -65,6 +65,7 @@ func LogWarn(err error) {
 }
 
 func LogDanger(err error) {
+	log.Println(err)
 	addLog(err, Danger)
 }
 
