@@ -2,6 +2,7 @@ package app
 
 import (
 	"errors"
+	"sync"
 	"time"
 
 	"github.com/lsnow99/conductorr/integration"
@@ -18,6 +19,7 @@ type ManagedIndexer struct {
 
 type IndexerManager struct {
 	indexers []ManagedIndexer
+	sync.RWMutex
 }
 
 func (mi ManagedIndexer) GetName() string {
@@ -33,6 +35,8 @@ func (im *IndexerManager) GetFrequency() time.Duration {
 }
 
 func (im *IndexerManager) getIndexers() []ManagedIndexer {
+	im.RLock()
+	defer im.RUnlock()
 	return im.indexers
 }
 
@@ -48,6 +52,10 @@ func (im *IndexerManager) RegisterIndexer(id int, downloadType string, userID in
 	if err != nil {
 		logger.LogWarn(err)
 	}
+
+	im.Lock()
+	defer im.Unlock()
+	
 	var added bool
 	for i, indexer := range im.indexers {
 		if indexer.ID == id {
@@ -62,10 +70,12 @@ func (im *IndexerManager) RegisterIndexer(id int, downloadType string, userID in
 
 func (im *IndexerManager) Search(media *integration.Media) ([]integration.Release, error) {
 	results := make([]integration.Release, 0)
-	if len(im.indexers) == 0 {
+	indexers := im.getIndexers()
+
+	if len(indexers) == 0 {
 		return results, errors.New("no indexers registered")
 	}
-	for _, indexer := range im.indexers {
+	for _, indexer := range indexers {
 		indexer.TestConnection()
 		indexerResults, err := indexer.Search(media)
 		if err != nil {
@@ -77,6 +87,8 @@ func (im *IndexerManager) Search(media *integration.Media) ([]integration.Releas
 }
 
 func (im *IndexerManager) DeleteIndexer(id int) {
+	im.Lock()
+	defer im.Unlock()
 	for i, indexer := range im.indexers {
 		if indexer.ID == id {
 			im.indexers = append(im.indexers[:i], im.indexers[i+1:]...)

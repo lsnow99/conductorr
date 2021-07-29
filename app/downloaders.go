@@ -56,38 +56,21 @@ func (dm *DownloaderManager) GetFrequency() time.Duration {
 }
 
 func (dm *DownloaderManager) GetDownloads() []integration.Download {
-	fmt.Println("Locking 2")
 	dm.RLock()
-	fmt.Println("Locked 2")
-	defer func() {
-		fmt.Println("Unlocking 2")
-		dm.RUnlock()
-		fmt.Println("Unlocked 2")
-	}()
+	defer dm.RUnlock()
 	return dm.downloads
 }
 
 func (dm *DownloaderManager) getDownloaders() []ManagedDownloader {
-	fmt.Println("Locking 3")
 	dm.RLock()
-	fmt.Println("Locked 3")
-	defer func() {
-		fmt.Println("Unlocking 3")
-		dm.RUnlock()
-		fmt.Println("Unlocked 3")
-	}()
+	defer dm.RUnlock()
 	return dm.downloaders
 }
 
 func (dm *DownloaderManager) RegisterDownloader(id int, downloaderType, name string, configuration map[string]interface{}) error {
-	fmt.Println("Locking 4")
 	dm.Lock()
-	fmt.Println("Locked 4")
-	defer func() {
-		fmt.Println("Unlocking 4")
-		dm.Unlock()
-		fmt.Println("Unlocked 4")
-	}()
+	defer dm.Unlock()
+
 	dlr, err := integration.NewDownloaderFromConfig(downloaderType, configuration)
 	if err != nil {
 		return err
@@ -123,18 +106,14 @@ func (dm *DownloaderManager) Download(mediaID int, release integration.Release, 
 		}
 		if dlType == release.DownloadType {
 			if identifier, err := downloader.AddRelease(release); err == nil {
-				fmt.Println("Locking 5")
 				dm.Lock()
-				fmt.Println("Locked 5")
 				dm.downloads = append(dm.downloads, integration.Download{
 					MediaID:      mediaID,
 					FriendlyName: release.Title,
 					Identifier:   identifier,
 					Status:       constant.StatusWaiting,
 				})
-				fmt.Println("Unlocking 5")
 				dm.Unlock()
-				fmt.Println("Unlocked 5")
 				_, err := dbstore.NewDownload(mediaID, downloader.ID, identifier, constant.StatusWaiting, release.Title)
 				if err != nil {
 					logger.LogDanger(fmt.Errorf("database error! could not save download: %v", err))
@@ -155,14 +134,9 @@ func (dm *DownloaderManager) Download(mediaID int, release integration.Release, 
 }
 
 func (dm *DownloaderManager) RegisterDownload(mediaID int, friendlyName, status, identifier string) {
-	fmt.Println("Locking 6")
 	dm.Lock()
-	fmt.Println("Locked 6")
-	defer func() {
-		fmt.Println("Unlocking 6")
-		dm.Unlock()
-		fmt.Println("Unlocked 6")
-	}()
+	defer dm.Unlock()
+
 	dm.downloads = append(dm.downloads, integration.Download{
 		MediaID:      mediaID,
 		FriendlyName: friendlyName,
@@ -172,14 +146,8 @@ func (dm *DownloaderManager) RegisterDownload(mediaID int, friendlyName, status,
 }
 
 func (dm *DownloaderManager) DeleteDownloader(id int) {
-	fmt.Println("Locking 7")
 	dm.Lock()
-	fmt.Println("Locked 7")
-	defer func() {
-		fmt.Println("Unlocking 7")
-		dm.Unlock()
-		fmt.Println("Unlocked 7")
-	}()
+	defer dm.Unlock()
 	for i, downloader := range dm.downloaders {
 		if downloader.ID == id {
 			dm.downloaders = append(dm.downloaders[:i], dm.downloaders[i+1:]...)
@@ -192,14 +160,8 @@ func (dm *DownloaderManager) DeleteDownloader(id int) {
 // Assumes exclusive lock has been acquired
 func (dm *DownloaderManager) processDownloads(curState []integration.Download) {
 
-	fmt.Println("Locking 15")
 	dm.Lock()
-	fmt.Println("Locked 15")
-	defer func() {
-		fmt.Println("Unlocking 15")
-		dm.Unlock()
-		fmt.Println("Unlocked 15")
-	}()
+	defer dm.Unlock()
 
 	for _, curStateDL := range curState {
 		for i, prevStateDL := range dm.downloads {
@@ -212,12 +174,12 @@ func (dm *DownloaderManager) processDownloads(curState []integration.Download) {
 					continue
 				}
 				if curStateDL.Status != prevStateDL.Status || !dm.didFirstRun {
-					go func() {
-						err := dbstore.UpdateDownloadStatusByIdentifier(curStateDL.Identifier, curStateDL.Status)
+					go func(identifier, status string) {
+						err := dbstore.UpdateDownloadStatusByIdentifier(identifier, status)
 						if err != nil {
 							logger.LogDanger(err)
 						}
-					}()
+					}(curStateDL.Identifier, curStateDL.Status)
 					dm.downloads[i].Status = curStateDL.Status
 					switch curStateDL.Status {
 					case constant.StatusError:
@@ -320,9 +282,7 @@ func (dm *DownloaderManager) handleCompletedDownload(download integration.Downlo
 	}
 	logger.LogInfo(fmt.Errorf("successfully copied %s to %s", videoPath, destFilepath))
 
-	fmt.Println("Locking 9")
 	dm.Lock()
-	fmt.Println("Locked 9")
 
 	for i, dmdl := range dm.downloads {
 		if download.Identifier == dmdl.Identifier {
@@ -331,9 +291,7 @@ func (dm *DownloaderManager) handleCompletedDownload(download integration.Downlo
 		}
 	}
 
-	fmt.Println("Unlocking 9")
 	dm.Unlock()
-	fmt.Println("Unlocked 9")
 
 	err = dbstore.UpdateDownloadStatusByIdentifier(download.Identifier, constant.StatusDone)
 	if err != nil {
