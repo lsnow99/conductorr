@@ -75,13 +75,25 @@ func (im *IndexerManager) Search(media *integration.Media) ([]integration.Releas
 	if len(indexers) == 0 {
 		return results, errors.New("no indexers registered")
 	}
-	for _, indexer := range indexers {
-		indexer.TestConnection()
-		indexerResults, err := indexer.Search(media)
-		if err != nil {
-			return nil, err
+	var wg sync.WaitGroup
+	resultsArrs := make([]*[]integration.Release, len(indexers))
+	for i, indexer := range indexers {
+		resultsArrs[i] = &[]integration.Release{}
+		wg.Add(1)
+		go func (wg *sync.WaitGroup, indexer integration.Indexer, results *[]integration.Release)  {
+			indexerResults, err := indexer.Search(media)
+			if err != nil {
+				logger.LogWarn(err)
+			}
+			*results = indexerResults
+			defer wg.Done()
+		}(&wg, indexer, resultsArrs[i])
+	}
+	wg.Wait()
+	for _, resultsArr := range resultsArrs {
+		if resultsArr != nil {
+			results = append(results, *resultsArr...)
 		}
-		results = append(results, indexerResults...)
 	}
 	return results, nil
 }
