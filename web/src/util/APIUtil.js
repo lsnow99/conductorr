@@ -396,8 +396,8 @@ const getActiveDownloads = () => {
   })
 }
 
-const getDoneDownloads = () => {
-  return doAPIReq(`/api/v1/doneDownloads`, {
+const getFinishedDownloads = () => {
+  return doAPIReq(`/api/v1/finishedDownloads`, {
     method: "GET",
   })
 }
@@ -497,7 +497,7 @@ export default {
   logout,
   setMonitoringMedia,
   getActiveDownloads,
-  getDoneDownloads,
+  getFinishedDownloads,
   getPlexAuthToken,
   testMediaServer,
   newMediaServer,

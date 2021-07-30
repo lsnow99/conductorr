@@ -102,3 +102,35 @@ In order to write effective migrations, abide by the following conventions:
 #### Dealing with a Failed Migration
 
 When developing, sometimes you might write a migration and run Conductorr to test it, and it fails. `go-migrate` will still increase the version of the database and mark it dirty (When starting Conductorr again it will fail due to a dirty database). In general the only thing you will need to do to fix a dirty database is to run this command: `go run ./cmd/migrate force 0 -path migrations/ -database sqlite3://conductorr.db` (replace 0 with one less than the version the database just got bumped to - in other words, if Conductorr outputs "Dirty database version 12. Fix and force version" after a failed up migration, then run `go run ./cmd/migrate force 11 -path migrations/ -database sqlite3://conductorr.db`). Note that these instructions are for when Conductorr tries to perform the up migration. If for some reason you see this error during a down migration, then you'll want to increase the version number by one instead of decreasing it.
+
+## Open Source
+
+### Attributions
+Like most software, Conductorr is built upon the backs of many open source projects.
+The direct dependencies of Conductorr are listed here:
+- [Oruga](https://oruga.io/) - CSS agnostic Vue components
+- [Font Awesome](https://fontawesome.com/) - Free, regular, brands, and core icon packages
+- [Luxon](https://moment.github.io/luxon/) - Successor to Moment.js; a utility to deal with dates and times in JavaScript
+- [Vue Prism Editor](https://github.com/koca/vue-prism-editor) - Vue component for code editing
+- [prism.js](https://prismjs.com) - Code editor syntax highlighting
+- [split.js](https://split.js.org) - Utility to split html views
+- [Vue](https://v3.vuejs.org/) - Frontend framework
+- [Vite](https://vitejs.dev/) - Frontend tooling with HMR and building via Rollup
+- [mitt](https://github.com/developit/mitt) - Lightweight JavaScript event emitter/pubsub
+- [PostCSS](https://postcss.org/) - Transform CSS with JavaScript
+- [TailwindCSS](https://tailwindcss.com) - CSS framework
+- [semver for golang](https://github.com/blang/semver) - Semantic Versioning library written in golang
+- [jwt-go](https://github.com/golang-jwt/jwt) - JWT package for Go
+- [go-ethereum](https://github.com/ethereum/go-ethereum) Golang implementation of the Ethereum protocol - used for it's implementation of rpc
+- [migrate](https://github.com/golang-migrate/migrate) - Database migrations for Go
+- [gorilla/mux](https://github.com/gorilla/mux) - HTTP request multiplexer for Go
+- [TransmissionRPC](https://github.com/hekmon/transmissionrpc) - Golang bindings to Transmission (bittorrent) RPC interface
+- [pgx](https://github.com/jackc/pgx) - Pure Go driver for PostgreSQL
+- [go sqlite]() - *PLACEHOLDER*
+- [archiver](https://github.com/mholt/archiver) - Pure Go utility to interface with common archive formats
+- [go-newznab](https://github.com/mrobinsn/go-newznab) - Newznab/Torznab bindings for Go
+
+For a full list of packages used and their versions/licenses, please refer to the [go.mod](./go.mod) and [package.json](./web/package.json) files
+
+### License
+- [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.html)

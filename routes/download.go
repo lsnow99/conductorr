@@ -6,10 +6,10 @@ import (
 
 	"github.com/lsnow99/conductorr/app"
 	"github.com/lsnow99/conductorr/dbstore"
-	"github.com/lsnow99/conductorr/integration"
 )
 
 type DownloadResponse struct {
+	ID           int       `json:"id,omitempty"`
 	MediaID      int       `json:"media_id,omitempty"`
 	FriendlyName string    `json:"friendly_name,omitempty"`
 	Identifier   string    `json:"identifier,omitempty"`
@@ -20,7 +20,8 @@ type DownloadResponse struct {
 	FullSize     uint64    `json:"full_size,omitempty"`
 }
 
-func NewDownloadResponseFromIntegrationDownload(dl integration.Download) (dlr DownloadResponse) {
+func NewDownloadResponseFromManagedDownload(dl app.ManagedDownload) (dlr DownloadResponse) {
+	dlr.ID = dl.ID
 	dlr.MediaID = dl.MediaID
 	dlr.Identifier = dl.Identifier
 	dlr.FriendlyName = dl.FriendlyName
@@ -32,6 +33,7 @@ func NewDownloadResponseFromIntegrationDownload(dl integration.Download) (dlr Do
 }
 
 func NewDownloadResponseFromDBDownload(dl dbstore.Download) (dlr DownloadResponse) {
+	dlr.ID = dl.ID
 	dlr.MediaID = int(dl.MediaID.Int32)
 	dlr.Identifier = dl.Identifier
 	dlr.FriendlyName = dl.FriendlyName
@@ -43,13 +45,13 @@ func GetActiveDownloads(w http.ResponseWriter, r *http.Request) {
 	downloads := app.DM.GetDownloads()
 	downloadsResponse := make([]DownloadResponse, len(downloads))
 	for i, download := range downloads {
-		downloadsResponse[i] = NewDownloadResponseFromIntegrationDownload(download)
+		downloadsResponse[i] = NewDownloadResponseFromManagedDownload(download)
 	}
 	Respond(w, r.Header.Get("hostname"), nil, downloadsResponse, true)
 }
 
 func GetDoneDownloads(w http.ResponseWriter, r *http.Request) {
-	downloads, err := dbstore.GetDoneDownloads()
+	downloads, err := dbstore.GetFinishedDownloads()
 	if err != nil {
 		Respond(w, r.Header.Get("hostname"), err, nil, true)
 	}

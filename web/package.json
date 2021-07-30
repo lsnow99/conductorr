@@ -23,7 +23,7 @@
   "devDependencies": {
     "@fortawesome/vue-fontawesome": "^3.0.0-3",
     "@vitejs/plugin-vue": "^1.2.2",
-    "@vue/compiler-sfc": "^3.0.5",
+    "@vue/compiler-sfc": "^3.1.5",
     "autoprefixer": "^10.2.5",
     "mitt": "^3.0.0",
     "postcss": "^8.2.15",

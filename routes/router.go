@@ -89,7 +89,7 @@ func GetRouter() http.Handler {
 	r.HandleFunc("/api/v1/status", GetStatus).Methods("GET")
 	r.HandleFunc("/api/v1/logs", GetLogs).Methods("GET")
 	r.HandleFunc("/api/v1/activeDownloads", GetActiveDownloads).Methods("GET")
-	r.HandleFunc("/api/v1/doneDownloads", GetDoneDownloads).Methods("GET")
+	r.HandleFunc("/api/v1/finishedDownloads", GetDoneDownloads).Methods("GET")
 	r.HandleFunc("/api/v1/plexAuthToken", FetchPlexAuthToken).Methods("POST")
 	r.HandleFunc("/api/v1/testMediaServer", TestMediaServer).Methods("POST")
 	r.HandleFunc("/api/v1/mediaServer", NewMediaServer).Methods("POST")

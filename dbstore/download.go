@@ -23,12 +23,12 @@ func UpdateDownloadStatusByIdentifier(identifier, status string) error {
 	return err
 }
 
-func GetDoneDownloads() ([]Download, error) {
+func GetFinishedDownloads() ([]Download, error) {
 	rows, err := db.Query(`
 		SELECT id, media_id, downloader_id, status, friendly_name, identifier
 		FROM download
-		WHERE status = ?
-	`, constant.StatusDone)
+		WHERE status in ('done', 'cerror', 'error')
+	`)
 	if err != nil {
 		return nil, err
 	}

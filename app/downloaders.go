@@ -18,6 +18,11 @@ import (
 	"github.com/mholt/archiver/v3"
 )
 
+type ManagedDownload struct {
+	ID int
+	integration.Download
+}
+
 type ManagedDownloader struct {
 	ID             int
 	Name           string
@@ -29,7 +34,7 @@ type DownloaderManager struct {
 	sync.RWMutex
 	didFirstRun bool
 	downloaders []ManagedDownloader
-	downloads   []integration.Download
+	downloads   []ManagedDownload
 }
 
 func (md ManagedDownloader) GetName() string {
@@ -55,7 +60,7 @@ func (dm *DownloaderManager) GetFrequency() time.Duration {
 	return time.Second * 7
 }
 
-func (dm *DownloaderManager) GetDownloads() []integration.Download {
+func (dm *DownloaderManager) GetDownloads() []ManagedDownload {
 	dm.RLock()
 	defer dm.RUnlock()
 	return dm.downloads
@@ -106,18 +111,19 @@ func (dm *DownloaderManager) Download(mediaID int, release integration.Release, 
 		}
 		if dlType == release.DownloadType {
 			if identifier, err := downloader.AddRelease(release); err == nil {
-				dm.Lock()
-				dm.downloads = append(dm.downloads, integration.Download{
-					MediaID:      mediaID,
-					FriendlyName: release.Title,
-					Identifier:   identifier,
-					Status:       constant.StatusWaiting,
-				})
-				dm.Unlock()
-				_, err := dbstore.NewDownload(mediaID, downloader.ID, identifier, constant.StatusWaiting, release.Title)
+				id, err := dbstore.NewDownload(mediaID, downloader.ID, identifier, constant.StatusWaiting, release.Title)
 				if err != nil {
 					logger.LogDanger(fmt.Errorf("database error! could not save download: %v", err))
 				}
+				dm.Lock()
+				md := ManagedDownload{}
+				md.ID = id
+				md.MediaID = mediaID
+				md.FriendlyName = release.Title
+				md.Identifier = identifier
+				md.Status = constant.StatusWaiting
+				dm.downloads = append(dm.downloads, md)
+				dm.Unlock()
 				return err
 			} else {
 				hadError = true
@@ -133,16 +139,17 @@ func (dm *DownloaderManager) Download(mediaID int, release integration.Release, 
 	return errors.New("no downloaders for this type of release")
 }
 
-func (dm *DownloaderManager) RegisterDownload(mediaID int, friendlyName, status, identifier string) {
+func (dm *DownloaderManager) RegisterDownload(id int, mediaID int, friendlyName, status, identifier string) {
 	dm.Lock()
 	defer dm.Unlock()
 
-	dm.downloads = append(dm.downloads, integration.Download{
-		MediaID:      mediaID,
-		FriendlyName: friendlyName,
-		Identifier:   identifier,
-		Status:       status,
-	})
+	md := ManagedDownload{}
+	md.ID = id
+	md.MediaID = mediaID
+	md.FriendlyName = friendlyName
+	md.Identifier = identifier
+	md.Status = status
+	dm.downloads = append(dm.downloads, md)
 }
 
 func (dm *DownloaderManager) DeleteDownloader(id int) {
@@ -204,7 +211,7 @@ func (dm *DownloaderManager) processDownloads(curState []integration.Download) {
 	}
 }
 
-func (dm *DownloaderManager) handleCompletedDownload(download integration.Download) {
+func (dm *DownloaderManager) handleCompletedDownload(download ManagedDownload) {
 	var outputFile string
 	var dbPath dbstore.Path
 	media, err := dbstore.GetMediaByID(download.MediaID)
@@ -305,7 +312,7 @@ func (dm *DownloaderManager) handleCompletedDownload(download integration.Downlo
 }
 
 // getDownloadsToMonitor convert a slice of downloads to a slice of identifiers
-func getDownloadsToMonitor(downloads []integration.Download) (monitoring []string) {
+func getDownloadsToMonitor(downloads []ManagedDownload) (monitoring []string) {
 	for _, dl := range downloads {
 		monitoring = append(monitoring, dl.Identifier)
 	}

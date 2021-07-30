@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/lsnow99/conductorr/dbstore"
 	"github.com/lsnow99/conductorr/integration"
 	"github.com/lsnow99/conductorr/logger"
 )
@@ -29,13 +30,32 @@ func (msm *MediaServerManager) DoTask() {
 	msm.syncMediaPaths()
 }
 
-func (msm *MediaServerManager) syncMediaPaths() {
-	msm.Lock()
-	defer msm.Unlock()
+func (msm *MediaServerManager) syncMediaPaths() error {
+	msm.RLock()
+	mediaServers := msm.mediaServers
+	msm.RUnlock()
 
-	for _, mediaServer := range msm.mediaServers {
-		mediaServer.GetMediaPaths()
+	mediaPaths := make([]integration.MediaPath, 0)
+	for _, mediaServer := range mediaServers {
+		paths, err := mediaServer.GetMediaPaths()
+		if err != nil {
+			return err
+		}
+		mediaPaths = append(mediaPaths, paths...)
 	}
+
+	_, err := dbstore.GetAllMedia()
+	if err != nil {
+		return err
+	}
+
+	// for _, media := range medias {
+	// 	sort.Slice(mediaPaths, func(i, j int) bool {
+	// 		return mediaPaths[i] < mediaPaths[j]
+	// 	})
+	// }
+
+	return nil
 }
 
 func (msm *MediaServerManager) RegisterMediaServer(id int, mediaServerType, name string, configuration map[string]interface{}) error {

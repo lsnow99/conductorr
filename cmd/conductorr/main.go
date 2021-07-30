@@ -45,7 +45,7 @@ func main() {
 			os.Exit(1)
 		}
 		if download.MediaID.Valid {
-			app.DM.RegisterDownload(int(download.MediaID.Int32), download.FriendlyName, download.Status, download.Identifier)
+			app.DM.RegisterDownload(download.ID, int(download.MediaID.Int32), download.FriendlyName, download.Status, download.Identifier)
 		} else {
 			// This download was registered with a downloader that no longer exists. Record it as an error
 			err = dbstore.UpdateDownloadStatusByIdentifier(download.Identifier, "error")

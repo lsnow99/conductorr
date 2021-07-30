@@ -16,7 +16,7 @@ func SearchReleasesManual(w http.ResponseWriter, r *http.Request) {
 	mediaIDStr := mux.Vars(r)["id"]
 	mediaID, err := strconv.Atoi(mediaIDStr)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		Respond(w, r.Header.Get("hostname"), err, nil, true)
 		return
 	}
 

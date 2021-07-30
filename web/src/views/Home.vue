@@ -24,7 +24,7 @@
         </div>
         <div class="h-96 overflow-y-scroll p-2">
           <DownloadStatus
-            v-for="download in orderedDoneDownloads"
+            v-for="download in orderedFinishedDownloads"
             :key="download.identifier"
             :download="download"
           />
@@ -43,8 +43,9 @@ export default {
   data() {
     return {
       activeDownloads: [],
-      doneDownloads: [],
-      refreshInterval: -1
+      finishedDownloads: [],
+      refreshInterval: -1,
+      loadingDownloads: false
     };
   },
   components: { PageWrapper, DownloadStatus },
@@ -59,8 +60,8 @@ export default {
           this.loadingDownloads = false;
         }
       });
-      APIUtil.getDoneDownloads().then((downloads) => {
-        this.doneDownloads = downloads;
+      APIUtil.getFinishedDownloads().then((downloads) => {
+        this.finishedDownloads = downloads;
         requestsCompleted++
         if (requestsCompleted == 2) {
           this.loadingDownloads = false;
@@ -124,14 +125,16 @@ export default {
     }
   },
   mounted() {
+    this.refreshDownloads()
     this.refreshInterval = setInterval(this.refreshDownloads, 3000)
+    console.log('returning from mounted')
   },
   unmounted() {
     clearInterval(this.refreshInterval)
   },
   computed: {
-    orderedDoneDownloads() {
-      return this.doneDownloads.sort(this.sortDownloads)
+    orderedFinishedDownloads() {
+      return this.finishedDownloads.sort(this.sortDownloads)
     },
     orderedActiveDownloads() {
       let processing = this.activeDownloads.filter((elem) => (elem.status == 'cprocessing' || elem.status == 'processing'))
