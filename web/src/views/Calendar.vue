@@ -19,13 +19,13 @@
           </div>
         </div>
         <div class="flex flex-row justify-between mt-4">
-          <o-button variant="primary" @click="goPrev">
+          <o-button variant="primary" @click="goPrev" :aria-label="`Previous ${computedRangeType}`">
             <vue-fontawesome icon="chevron-left" />
           </o-button>
           <div class="text-2xl font-semibold text-center">
             {{ niceDateRange }}
           </div>
-          <o-button variant="primary" @click="goNext">
+          <o-button variant="primary" @click="goNext" :aria-label="`Next ${computedRangeType}`">
             <vue-fontawesome icon="chevron-right" />
           </o-button>
         </div>
@@ -239,6 +239,17 @@ export default {
         return this.selectedDate.toLocaleString(DateTime.DATE_FULL);
       }
     },
+    computedRangeType() {
+      switch (this.viewType) {
+        case "monthly":
+          return "monnth"
+        case "weekly":
+          return "week"
+        case "daily":
+          return "day"
+      }
+      return ""
+    }
   },
 };
 </script>

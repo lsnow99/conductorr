@@ -214,19 +214,20 @@ func (dm *DownloaderManager) processDownloads(curState []integration.Download) {
 func (dm *DownloaderManager) handleCompletedDownload(download ManagedDownload) {
 	var outputFile string
 	var dbPath dbstore.Path
+	var season, series dbstore.Media
 	media, err := dbstore.GetMediaByID(download.MediaID)
 	if err != nil {
 		logger.LogDanger(err)
 		return
 	}
 	if media.ParentMediaID.Valid {
-		season, err := dbstore.GetMediaByID(int(media.ParentMediaID.Int32))
+		season, err = dbstore.GetMediaByID(int(media.ParentMediaID.Int32))
 		if err != nil {
 			logger.LogDanger(err)
 			return
 		}
 		if season.ParentMediaID.Valid {
-			series, err := dbstore.GetMediaByID(int(season.ParentMediaID.Int32))
+			series, err = dbstore.GetMediaByID(int(season.ParentMediaID.Int32))
 			if err != nil {
 				logger.LogDanger(err)
 				return
@@ -306,6 +307,21 @@ func (dm *DownloaderManager) handleCompletedDownload(download ManagedDownload) {
 	}
 
 	err = MSM.ImportMedia(destFiledir)
+	if err != nil {
+		logger.LogDanger(err)
+	}
+
+	if series.ID > 0 {
+		err = dbstore.SetMediaPath(series.ID, filepath.Dir(destFiledir))
+		if err != nil {
+			logger.LogDanger(err)
+		}
+		err = dbstore.SetMediaPath(season.ID, destFiledir)
+		if err != nil {
+			logger.LogDanger(err)
+		}
+	}
+	err = dbstore.SetMediaPath(media.ID, destFilepath)
 	if err != nil {
 		logger.LogDanger(err)
 	}

@@ -109,6 +109,8 @@ func GetRouter() http.Handler {
 		r.PathPrefix("/").Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			path := r.URL.Path
 
+			w.Header().Add("Cache-Control", "max-age=31536000")
+
 			// static files
 			if strings.Contains(path, ".") || path == "/" {
 				fs.ServeHTTP(w, r)
@@ -117,7 +119,7 @@ func GetRouter() http.Handler {
 
 			// default to serve index.html
 			f, _ := staticFS.Open("index.html")
-			http.ServeContent(w, r, "index.html", time.Now().Add(time.Duration(24*365*10)*time.Hour), f)
+			http.ServeContent(w, r, "index.html", time.Time{}, f)
 		}))
 	}
 

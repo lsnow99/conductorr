@@ -17,7 +17,7 @@ RUN cp $(go env GOROOT)/misc/wasm/wasm_exec.js /build/web/src/util
 FROM node:lts-alpine AS vue-build-env
 COPY --from=csl-build-env /build/web .
 RUN yarn install
-RUN yarn build
+RUN yarn build --emptyOutDir
 
 # Build the full binary
 FROM golang:1.16-alpine AS svr-build-env

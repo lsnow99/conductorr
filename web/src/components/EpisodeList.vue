@@ -33,6 +33,16 @@
       {{ formatDate(props.row.released_at) }}
     </o-table-column>
 
+    <o-table-column label="File" position="right" width="5%" v-slot="props">
+      <div class="flex flex-row">
+        <o-icon
+          v-if="props.row.path_ok"
+          icon="check-circle"
+          class="text-green-600"
+        />
+      </div>
+    </o-table-column>
+
     <o-table-column label="Actions" position="right" v-slot="props">
       <div class="flex flex-row justify-between">
         <div />
@@ -48,7 +58,7 @@
 import { DateTime } from "luxon";
 import SearchActions from "./SearchActions.vue";
 import MonitoringToggle from "./MonitoringToggle.vue";
-import APIUtil from '../util/APIUtil';
+import APIUtil from "../util/APIUtil";
 
 export default {
   props: {
@@ -60,12 +70,12 @@ export default {
     },
     monitoringDisabled: {
       type: Boolean,
-      default: function() {
-        return false
-      }
-    }
+      default: function () {
+        return false;
+      },
+    },
   },
-  emits: ['reload'],
+  emits: ["reload"],
   components: { SearchActions, MonitoringToggle },
   methods: {
     formatDate(timestamp) {
@@ -75,7 +85,7 @@ export default {
     },
     toggleMonitoring(media) {
       APIUtil.setMonitoringMedia(media.id, !media.monitoring).then(() => {
-        this.$emit('reload')
+        this.$emit("reload");
       });
     },
   },

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"net/http"
+	"os"
 	"sort"
 	"strconv"
 	"time"
@@ -29,7 +30,10 @@ type MediaResponse struct {
 	ProfileID     int        `json:"profile_id,omitempty"`
 	PathID        int        `json:"path_id,omitempty"`
 	Number        int        `json:"number,omitempty"`
-	Monitoring bool `json:"monitoring"`
+	Monitoring    bool       `json:"monitoring"`
+	Path          string     `json:"path"`
+	PathOK        bool       `json:"path_ok"`
+	Size          int64        `json:"size"`
 
 	Children []MediaResponse `json:"children,omitempty"`
 
@@ -44,6 +48,9 @@ func (mr *MediaResponse) Expand() error {
 	if mr.visited == nil {
 		mr.visited = make(map[int]bool)
 	}
+	ok, size := CheckMediaPath(mr.Path)
+	mr.PathOK = ok
+	mr.Size = size
 	mr.visited[mr.ID] = true
 	children, err := dbstore.GetMediaReferencing(mr.ID)
 	if err != nil {
@@ -72,6 +79,14 @@ func (mr *MediaResponse) Expand() error {
 		return mr.Children[i].Number < mr.Children[j].Number
 	})
 	return nil
+}
+
+func CheckMediaPath(path string) (bool, int64) {
+	fi, err := os.Stat(path)
+	if err != nil {
+		return false, 0
+	}
+	return true, fi.Size()
 }
 
 type SearchResponse struct {
@@ -120,6 +135,9 @@ func NewMediaResponseFromDB(media dbstore.Media) (m MediaResponse) {
 	}
 	if media.Number.Valid {
 		m.Number = int(media.Number.Int32)
+	}
+	if media.Path.Valid {
+		m.Path = media.Path.String
 	}
 	m.Monitoring = media.Monitoring
 	return m

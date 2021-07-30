@@ -1,5 +1,7 @@
 <template>
   <prism-editor
+    aria-label="Edit CSL"
+    label="edit csl"
     class="my-editor h-full"
     v-model="computedValue"
     @keydown.enter.ctrl="enterPressed"

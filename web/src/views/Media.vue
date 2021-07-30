@@ -16,6 +16,10 @@
           />
           {{ media.title }}
         </h1>
+        <div class="text-xl flex flex-row">
+          <div class="w-1 h-full" :class="media.path_ok?'bg-green-600':'bg-red-600'" />
+          <span class="ml-2">{{ media.path }}</span>
+        </div>
         <div
           class="
             py-4
