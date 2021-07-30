@@ -17,7 +17,10 @@
           {{ media.title }}
         </h1>
         <div class="text-xl flex flex-row">
-          <div class="w-1 h-full" :class="media.path_ok?'bg-green-600':'bg-red-600'" />
+          <div
+            class="w-1 h-full"
+            :class="media.path_ok ? 'bg-green-600' : 'bg-red-600'"
+          />
           <span class="ml-2">{{ media.path }}</span>
         </div>
         <div
@@ -89,7 +92,7 @@
         class="p-5 bg-gray-600 cursor-pointer rounded-md my-4"
         v-for="season in media.children"
         :key="season.id"
-        @click="expandedCfg[season.id] = !expandedCfg[season.id]"
+        @click="expand(season.id)"
       >
         <div class="text-2xl">
           <monitoring-toggle
@@ -109,6 +112,7 @@
             v-show="expandedCfg[season.id]"
           >
             <episode-list
+              :load="loadedCfg[season.id]"
               @reload="loadMedia"
               :monitoring-disabled="!media.monitoring"
               :episodes="season.children"
@@ -117,11 +121,20 @@
         </transition>
         <div class="text-center mt-2">
           <o-icon
-            v-if="expandedCfg[season.id]"
+            v-if="loadingCfg[season.id]"
+            size="large"
+            icon="hourglass-start"
+          />
+          <o-icon
+            v-if="!loadingCfg[season.id] && expandedCfg[season.id]"
             size="large"
             icon="chevron-up"
           />
-          <o-icon v-else size="large" icon="chevron-down" />
+          <o-icon
+            v-if="!loadingCfg[season.id] && !expandedCfg[season.id]"
+            size="large"
+            icon="chevron-down"
+          />
         </div>
       </div>
     </section>
@@ -174,6 +187,8 @@ export default {
       showConfirmDeleteModal: false,
       showManualReleasesModal: false,
       expandedCfg: {},
+      loadedCfg: {},
+      loadingCfg: {},
     };
   },
   mixins: [MediaUtil],
@@ -214,6 +229,14 @@ export default {
         .finally(() => {
           this.loading = false;
         });
+    },
+    expand(id) {
+      this.expandedCfg[id] = !this.expandedCfg[id];
+      this.loadingCfg[id] = true;
+      setTimeout(() => {
+        this.loadedCfg[id] = true;
+        this.loadingCfg[id] = false;
+      }, 0);
     },
   },
   created() {

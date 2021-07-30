@@ -1,5 +1,5 @@
 <template>
-  <o-table :data="episodes" narrowed hoverable :mobile-cards="true">
+  <o-table v-if="load" :data="formattedEpisodes" narrowed hoverable :mobile-cards="true">
     <o-table-column field="monitoring" label="" v-slot="props" position="left">
       <monitoring-toggle
         :monitoring="props.row.monitoring"
@@ -30,7 +30,7 @@
       v-slot="props"
       position="right"
     >
-      {{ formatDate(props.row.released_at) }}
+      {{ props.row.formattedDate }}
     </o-table-column>
 
     <o-table-column label="File" position="right" width="5%" v-slot="props">
@@ -74,6 +74,12 @@ export default {
         return false;
       },
     },
+    load: {
+      type: Boolean,
+      default: function() {
+        return false;
+      }
+    }
   },
   emits: ["reload"],
   components: { SearchActions, MonitoringToggle },
@@ -89,5 +95,13 @@ export default {
       });
     },
   },
+  computed: {
+    formattedEpisodes() {
+      return this.episodes.map((elem) => {
+        elem.formattedDate = this.formatDate(elem.released_at)
+        return elem
+      })
+    }
+  }
 };
 </script>

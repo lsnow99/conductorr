@@ -32,13 +32,12 @@
   </section>
   <footer class="modal-card-footer">
     <o-button @click="$emit('close')">Cancel</o-button>
-    <o-button variant="primary" @click="save">Save</o-button>
   </footer>
   <o-modal
     v-model:active="showNewMediaModal"
     @close="showNewMediaModal = false"
   >
-    <edit-media @submit="addMedia" :media="media" @close="showNewMediaModal = false" />
+    <edit-media :loading="loadingNewMedia" @submit="addMedia" :media="media" @close="showNewMediaModal = false" />
   </o-modal>
 </template>
 
@@ -57,6 +56,7 @@ export default {
       query: "",
       media: {},
       showNewMediaModal: false,
+      loadingNewMedia: false
     };
   },
   props: {
@@ -96,10 +96,13 @@ export default {
       this.media = media;
     },
     addMedia({profileID, pathID}) {
+      this.loadingNewMedia = true;
       APIUtil.addMedia(this.media.imdb_id, profileID, pathID).then(id => {
         this.$router.push({name: 'media', params: {media_id: id}})
       }).catch(err => {
         console.log(err)
+      }).finally(() => {
+        this.loadingNewMedia = false;
       })
     }
   },

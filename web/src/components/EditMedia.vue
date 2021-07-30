@@ -3,7 +3,11 @@
     <p class="modal-card-title">{{ media.title }}</p>
   </header>
   <section class="modal-card-content w-96 min-w-full">
-    <o-field label="Profile" :variant="profileVariant" :message="profileVariant?'A profile is required':''">
+    <o-field
+      label="Profile"
+      :variant="profileVariant"
+      :message="profileVariant ? 'A profile is required' : ''"
+    >
       <o-select expanded v-model="profileID" placeholder="Profile">
         <option
           v-for="profileOption in profiles"
@@ -15,8 +19,16 @@
       </o-select>
       <o-button @click="newProfile">New</o-button>
     </o-field>
-    <o-field label="Root Path" :variant="pathVariant" :message="pathVariant?'A root path is required':''">
-      <o-select expanded v-model="pathID" :placeholder="`/media/library/${media.content_type}`">
+    <o-field
+      label="Root Path"
+      :variant="pathVariant"
+      :message="pathVariant ? 'A root path is required' : ''"
+    >
+      <o-select
+        expanded
+        v-model="pathID"
+        :placeholder="`/media/library/${media.content_type}`"
+      >
         <option
           v-for="pathOption in paths"
           :key="pathOption.id"
@@ -31,21 +43,32 @@
   <footer class="modal-card-footer">
     <o-button @click="$emit('close')">Cancel</o-button>
     <div>
-      <o-button variant="primary" @click="save">Save</o-button>
+      <o-button variant="primary" @click="save"
+        ><action-button :mode="loading ? 'loading' : ''"
+          >Save</action-button
+        ></o-button
+      >
     </div>
   </footer>
   <o-modal v-model:active="showNewProfileModal">
-    <new-profile @close="showNewProfileModal = false" @submitted="newProfileSubmitted" />
+    <new-profile
+      @close="showNewProfileModal = false"
+      @submitted="newProfileSubmitted"
+    />
   </o-modal>
   <o-modal v-model:active="showNewPathModal">
-    <edit-path @close="showNewPathModal = false" @submitted="newPathSubmitted" />
+    <edit-path
+      @close="showNewPathModal = false"
+      @submitted="newPathSubmitted"
+    />
   </o-modal>
 </template>
 
 <script>
 import APIUtil from "../util/APIUtil";
-import NewProfile from "../components/NewProfile.vue"
-import EditPath from "../components/EditPath.vue"
+import NewProfile from "../components/NewProfile.vue";
+import EditPath from "../components/EditPath.vue";
+import ActionButton from "../components/ActionButton.vue"
 
 export default {
   data() {
@@ -66,21 +89,30 @@ export default {
         return {};
       },
     },
+    loading: {
+      type: Boolean,
+      default: function () {
+        return false;
+      },
+    },
   },
-  components: {NewProfile, EditPath},
+  components: { NewProfile, EditPath, ActionButton },
   emits: ["close", "submit"],
   methods: {
     save() {
-      this.submittedOnce = true
-      if(this.profileID && this.pathID) {
-        this.$emit("submit", {profileID: this.profileID, pathID: this.pathID});
+      this.submittedOnce = true;
+      if (this.profileID && this.pathID) {
+        this.$emit("submit", {
+          profileID: this.profileID,
+          pathID: this.pathID,
+        });
       }
     },
     loadProfiles() {
       APIUtil.getProfiles().then((profiles) => {
         this.profiles = profiles;
-        if(this.media.profile_id) {
-          this.profileID = this.media.profile_id
+        if (this.media.profile_id) {
+          this.profileID = this.media.profile_id;
         }
       });
     },
@@ -99,12 +131,12 @@ export default {
             }
           });
         } else {
-          this.pathID = this.media.path_id
+          this.pathID = this.media.path_id;
         }
       });
     },
     newPath() {
-      this.showNewPathModal = true
+      this.showNewPathModal = true;
     },
     newPathSubmitted(path) {
       APIUtil.createNewPath(path.path, path.moviesDefault, path.seriesDefault)
@@ -123,12 +155,12 @@ export default {
         });
     },
     newProfile() {
-      this.showNewProfileModal = true
+      this.showNewProfileModal = true;
     },
     newProfileSubmitted() {
-      this.loadProfiles()
-      this.showNewProfileModal = false
-    }
+      this.loadProfiles();
+      this.showNewProfileModal = false;
+    },
   },
   mounted() {
     this.loadProfiles();
@@ -137,20 +169,20 @@ export default {
   computed: {
     profileVariant() {
       if (!this.submittedOnce) {
-        return ''
+        return "";
       }
       if (!this.profileID) {
-        return 'danger'
+        return "danger";
       }
     },
     pathVariant() {
       if (!this.submittedOnce) {
-        return ''
+        return "";
       }
       if (!this.pathID) {
-        return 'danger'
+        return "danger";
       }
-    }
-  }
+    },
+  },
 };
 </script>

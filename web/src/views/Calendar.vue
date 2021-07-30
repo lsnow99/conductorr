@@ -136,10 +136,9 @@ export default {
       let evts = []
       for(let i = 0; i < this.events.length; i++) {
         const evt = this.events[i]
-        const evtDatetime = DateTime.fromJSDate(new Date(evt.timestamp))
-        if (evtDatetime.hasSame(datetime, 'day')) {
+        if (evt.timestamp.hasSame(datetime, 'day')) {
           evts.push({
-            time: evtDatetime.toLocaleString(DateTime.TIME_SIMPLE),
+            time: evt.timestamp.toLocaleString(DateTime.TIME_SIMPLE),
             title: evt.title
           })
         }
@@ -157,6 +156,9 @@ export default {
       this.viewType = "monthly";
     }
     APIUtil.getSchedule().then(events => {
+      for(let i = 0; i < events.length; i++) {
+        events[i].timestamp = DateTime.fromJSDate(new Date(events[i].timestamp))
+      }
       this.events = events
     })
   },

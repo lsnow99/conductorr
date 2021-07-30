@@ -14,7 +14,7 @@ func ScanMediaFiles(id int) error {
 	if !media.ContentType.Valid {
 		return fmt.Errorf("media has null content type")
 	}
-	dbPath, err := dbstore.GetPath(int(media.PathID.Int32))
+	_, err = dbstore.GetPath(int(media.PathID.Int32))
 	if err != nil {
 		return err
 	}
