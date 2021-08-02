@@ -19,13 +19,21 @@
           </div>
         </div>
         <div class="flex flex-row justify-between mt-4">
-          <o-button variant="primary" @click="goPrev" :aria-label="`Previous ${computedRangeType}`">
+          <o-button
+            variant="primary"
+            @click="goPrev"
+            :aria-label="`Previous ${computedRangeType}`"
+          >
             <vue-fontawesome icon="chevron-left" />
           </o-button>
           <div class="text-2xl font-semibold text-center">
             {{ niceDateRange }}
           </div>
-          <o-button variant="primary" @click="goNext" :aria-label="`Next ${computedRangeType}`">
+          <o-button
+            variant="primary"
+            @click="goNext"
+            :aria-label="`Next ${computedRangeType}`"
+          >
             <vue-fontawesome icon="chevron-right" />
           </o-button>
         </div>
@@ -42,7 +50,7 @@
           </div>
           <div class="overflow-y-auto height-full">
             <div
-              v-for="(event, index) in date.events"
+              v-for="(event, index) in eventMap[date.dayStart]"
               :key="index"
               :class="eventClass(index)"
               class="text-md p-1"
@@ -86,7 +94,7 @@
 <script>
 import PageWrapper from "../components/PageWrapper.vue";
 import { DateTime } from "luxon";
-import APIUtil from '../util/APIUtil';
+import APIUtil from "../util/APIUtil";
 
 const EVENT_BACKGROUNDS = [
   "bg-red-500",
@@ -101,7 +109,8 @@ export default {
     return {
       selectedDate: DateTime.now(),
       viewType: "monthly",
-      events: []
+      events: [],
+      eventMap: {},
     };
   },
   components: {
@@ -132,19 +141,6 @@ export default {
     eventClass(index) {
       return EVENT_BACKGROUNDS[index % EVENT_BACKGROUNDS.length];
     },
-    getEventsForDatetime(datetime) {
-      let evts = []
-      for(let i = 0; i < this.events.length; i++) {
-        const evt = this.events[i]
-        if (evt.timestamp.hasSame(datetime, 'day')) {
-          evts.push({
-            time: evt.timestamp.toLocaleString(DateTime.TIME_SIMPLE),
-            title: evt.title
-          })
-        }
-      }
-      return evts
-    }
   },
   mounted() {
     const screenWidth = window.innerWidth;
@@ -155,12 +151,21 @@ export default {
     } else {
       this.viewType = "monthly";
     }
-    APIUtil.getSchedule().then(events => {
-      for(let i = 0; i < events.length; i++) {
-        events[i].timestamp = DateTime.fromJSDate(new Date(events[i].timestamp))
+    APIUtil.getSchedule().then((events) => {
+      for (let i = 0; i < events.length; i++) {
+        events[i].timestamp = DateTime.fromJSDate(
+          new Date(events[i].timestamp)
+        );
+        events[i].time = events[i].timestamp.toLocaleString(DateTime.TIME_SIMPLE)
+        const dayStart = events[i].timestamp.startOf("day");
+        if (!this.eventMap[dayStart]) {
+          this.eventMap[dayStart] = [events[i]];
+        } else {
+          this.eventMap[dayStart].push(events[i]);
+        }
       }
-      this.events = events
-    })
+      this.events = events;
+    });
   },
   computed: {
     dates() {
@@ -176,24 +181,24 @@ export default {
           const curDate = monthStart.minus({ days: i + 1 });
           dates.unshift({
             day: curDate.day,
+            dayStart: curDate.startOf("day"),
             gray: true,
-            events: this.getEventsForDatetime(curDate),
           });
         }
         for (let i = 0; i < daysInMonth; i++) {
           const curDate = monthStart.plus({ days: i });
           dates.push({
             day: curDate.day,
+            dayStart: curDate.startOf("day"),
             gray: false,
-            events: this.getEventsForDatetime(curDate),
           });
         }
         for (let i = monthEndDoW; i < 6; i++) {
           const curDate = monthEnd.plus({ days: i - monthEndDoW + 1 });
           dates.push({
             day: curDate.day,
+            dayStart: curDate.startOf("day"),
             gray: true,
-            events: this.getEventsForDatetime(curDate),
           });
         }
       } else if (this.viewType === "weekly") {
@@ -203,15 +208,15 @@ export default {
           const curDate = weekStart.plus({ days: i });
           dates.push({
             day: curDate.day,
+            dayStart: curDate.startOf("day"),
             gray: false,
-            events: this.getEventsForDatetime(curDate),
           });
         }
       } else if (this.viewType === "daily") {
         dates.push({
           day: this.selectedDate.day,
+          dayStart: this.selectedDate.startOf("day"),
           gray: false,
-          events: this.getEventsForDatetime(this.selectedDate),
         });
       }
       return dates;
@@ -244,14 +249,14 @@ export default {
     computedRangeType() {
       switch (this.viewType) {
         case "monthly":
-          return "monnth"
+          return "monnth";
         case "weekly":
-          return "week"
+          return "week";
         case "daily":
-          return "day"
+          return "day";
       }
-      return ""
-    }
+      return "";
+    },
   },
 };
 </script>
