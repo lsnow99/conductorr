@@ -215,7 +215,8 @@ func (ir *IndividualResult) Sanitize() error {
 	*/
 	imdbRating, err := strconv.ParseFloat(ir.ImdbRatingStr, 32)
 	if err != nil {
-		return err
+		imdbRating = 0
+		// return err
 	}
 	ir.ImdbRating = float32(imdbRating)
 
