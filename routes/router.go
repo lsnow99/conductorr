@@ -109,10 +109,11 @@ func GetRouter() http.Handler {
 		r.PathPrefix("/").Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			path := r.URL.Path
 
-			w.Header().Add("Cache-Control", "max-age=31536000")
-
 			// static files
 			if strings.Contains(path, ".") || path == "/" {
+				if path != "/" {
+					w.Header().Add("Cache-Control", "max-age=31536000")
+				}
 				fs.ServeHTTP(w, r)
 				return
 			}

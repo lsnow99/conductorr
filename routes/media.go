@@ -15,6 +15,7 @@ import (
 	"github.com/lsnow99/conductorr/integration"
 	"github.com/lsnow99/conductorr/services/omdb"
 	"github.com/lsnow99/conductorr/services/series"
+	"golang.org/x/net/html"
 )
 
 type MediaInput struct {
@@ -32,7 +33,7 @@ type MediaInput struct {
 	ImdbRating    int        `json:"imdb_rating,omitempty"`
 	Runtime       int        `json:"runtime,omitempty"`
 	ProfileID     int        `json:"profile_id,omitempty"`
-	PathID     int        `json:"path_id,omitempty"`
+	PathID        int        `json:"path_id,omitempty"`
 }
 
 type MonitoringInput struct {
@@ -51,8 +52,8 @@ func NewIntegrationMediaFromDBMedia(media dbstore.Media) (m integration.Media) {
 }
 
 type AddMediaInput struct {
-	ProfileID int `json:"profile_id,omitempty"`
-	PathID    int `json:"path_id,omitempty"`
+	ProfileID  int  `json:"profile_id,omitempty"`
+	PathID     int  `json:"path_id,omitempty"`
 	Monitoring bool `json:"monitoring"`
 }
 
@@ -103,7 +104,7 @@ func AddMedia(w http.ResponseWriter, r *http.Request) {
 			Respond(w, r.Header.Get("hostname"), err, id, true)
 			return
 		}
-	
+
 		insertedSeasons := make(map[int]int)
 		for _, episode := range episodes {
 			seasonID, ok := insertedSeasons[episode.Season]
@@ -117,8 +118,10 @@ func AddMedia(w http.ResponseWriter, r *http.Request) {
 				}
 				insertedSeasons[episode.Season] = seasonID
 			}
+
+			description := getTextFromHTML(episode.Description)
 			contentType := "episode"
-			_, err = dbstore.AddMedia(&episode.Title, &episode.Description, &episode.Aired, nil, &contentType, &seasonID, nil, nil, nil, nil, &episode.Runtime, nil, nil, nil, nil, &episode.Episode, mi.Monitoring)
+			_, err = dbstore.AddMedia(&episode.Title, &description, &episode.Aired, nil, &contentType, &seasonID, nil, nil, nil, nil, &episode.Runtime, nil, nil, nil, nil, &episode.Episode, mi.Monitoring)
 			if err != nil {
 				Respond(w, r.Header.Get("hostname"), err, 0, true)
 				return
@@ -135,6 +138,28 @@ func AddMedia(w http.ResponseWriter, r *http.Request) {
 	}
 
 	Respond(w, r.Header.Get("hostname"), nil, id, true)
+}
+
+func getTextFromHTML(markup string) string {
+	domDocTest := html.NewTokenizer(strings.NewReader(markup))
+	previousStartTokenTest := domDocTest.Token()
+	text := ""
+loopDomTest:
+	for {
+		tt := domDocTest.Next()
+		switch {
+		case tt == html.ErrorToken:
+			break loopDomTest // End of the document,  done
+		case tt == html.StartTagToken:
+			previousStartTokenTest = domDocTest.Token()
+		case tt == html.TextToken:
+			if previousStartTokenTest.Data == "script" {
+				continue
+			}
+			text += strings.TrimSpace(html.UnescapeString(string(domDocTest.Text())))
+		}
+	}
+	return text
 }
 
 func GetPoster(w http.ResponseWriter, r *http.Request) {

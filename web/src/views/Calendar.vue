@@ -45,23 +45,59 @@
           class="date overflow-hidden flex flex-col"
           :class="calDateClass + ' ' + (date.gray ? 'opacity-80' : '')"
         >
-          <div class="bg-gray-600 inline-block py-1 w-8 text-center">
+          <div class="bg-gray-600 inline-block py-px w-7 text-center">
             {{ date.day }}
           </div>
-          <div class="overflow-y-auto height-full">
+          <div class="height-full overflow-y-auto">
             <div
               v-for="(event, index) in eventMap[date.dayStart]"
               :key="index"
-              :class="eventClass(index)"
-              class="text-md p-1"
+              :class="eventClass(event)"
+              @click="selectedMediaEvent = event"
+              @keydown.enter="selectedMediaEvent = event"
+              @keydown.space="selectedMediaEvent = event"
+              aria-role="button"
+              tabindex="0"
+              class="cursor-pointer focus:bg-opacity-30 focus:outline-white"
             >
-              <span class="text-sm font-bold float-left">{{ event.time }}</span>
-              <span class="font-semibold ml-2">{{ event.title }}</span>
+              <span
+                class="
+                  p-1
+                  bg-gray-900 bg-opacity-30
+                  text-sm
+                  font-bold
+                  inline-block
+                  min-h-full
+                "
+                style="width: 70px"
+                >{{ event.time.slice(0, -3)
+                }}<span class="text-xs">{{ event.time.slice(-3) }}</span></span
+              >
+              <span class="text-sm font-semibold ml-2 break-words">{{
+                eventTitle(event)
+              }}</span>
             </div>
           </div>
         </div>
       </div>
     </section>
+
+    <o-modal v-model:active="mediaEvent">
+      <header v-if="mediaEvent" class="modal-card-header">
+        <p class="modal-card-title">
+          {{
+            eventTitle(mediaEvent) +
+            (mediaEvent.content_type == "episode"
+              ? " - " + mediaEvent.title
+              : "")
+          }}
+        </p>
+      </header>
+      <section v-if="mediaEvent" class="modal-card-content">
+        {{ mediaEvent.description }}
+      </section>
+      <footer v-if="mediaEvent" class="modal-card-footer"></footer>
+    </o-modal>
   </page-wrapper>
 </template>
 
@@ -111,6 +147,7 @@ export default {
       viewType: "monthly",
       events: [],
       eventMap: {},
+      mediaEvent: null,
     };
   },
   components: {
@@ -138,8 +175,19 @@ export default {
     resetDate() {
       this.selectedDate = DateTime.now();
     },
-    eventClass(index) {
-      return EVENT_BACKGROUNDS[index % EVENT_BACKGROUNDS.length];
+    eventClass(event) {
+      return `bg-red-600`;
+    },
+    eventTitle(event) {
+      if (event.content_type == "movie") {
+        return event.title;
+      } else if (event.content_type == "episode") {
+        let numStr = "x" + event.episode_num;
+        if (numStr.length == 2) {
+          numStr = "x0" + event.episode_num;
+        }
+        return event.series_title + " " + event.season_num + numStr;
+      }
     },
   },
   mounted() {
@@ -156,7 +204,9 @@ export default {
         events[i].timestamp = DateTime.fromJSDate(
           new Date(events[i].timestamp)
         );
-        events[i].time = events[i].timestamp.toLocaleString(DateTime.TIME_SIMPLE)
+        events[i].time = events[i].timestamp.toLocaleString(
+          DateTime.TIME_SIMPLE
+        );
         const dayStart = events[i].timestamp.startOf("day");
         if (!this.eventMap[dayStart]) {
           this.eventMap[dayStart] = [events[i]];
@@ -168,6 +218,18 @@ export default {
     });
   },
   computed: {
+    selectedMediaEvent: {
+      get() {
+        return this.mediaEvent;
+      },
+      set(newVal) {
+        if (!newVal) {
+          this.mediaEvent = null;
+        } else {
+          this.mediaEvent = newVal;
+        }
+      },
+    },
     dates() {
       let dates = [];
       if (this.viewType === "monthly") {

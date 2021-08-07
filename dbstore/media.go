@@ -87,6 +87,35 @@ func GetAllMedia() ([]*Media, error) {
 	return medias, nil
 }
 
+func GetAllMediaMap() (map[int]*Media, error) {
+	rows, err := db.Query(`
+		SELECT id, title, description, released_at, ended_at, content_type,
+			parent_media_id, tmdb_id, imdb_id, tmdb_rating, imdb_rating,
+			runtime, status, profile_id, path_id, size, item_number, monitoring, path
+		FROM media
+		`)
+
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+	defer rows.Close()
+
+	medias := make(map[int]*Media)
+	for rows.Next() {
+		media := Media{}
+		if err := rows.Scan(&media.ID, &media.Title, &media.Description, &media.ReleasedAt,
+			&media.EndedAt, &media.ContentType, &media.ParentMediaID,
+			&media.TmdbID, &media.ImdbID, &media.TmdbRating, &media.ImdbRating,
+			&media.Runtime, &media.Status, &media.ProfileID, &media.PathID, &media.Size, 
+			&media.Number, &media.Monitoring, &media.Path); 
+			err != nil {
+			return nil, err
+		}
+		medias[media.ID] = &media
+	}
+	return medias, nil
+}
+
 func AddMedia(title *string, description *string, releasedAt *time.Time, endedAt *time.Time,
 	contentType *string, parentMediaID *int, tmdbID *int, imdbID *string,
 	tmdbRating *int, imdbRating *int, runtime *int, poster *[]byte, genres []string, profileID,
