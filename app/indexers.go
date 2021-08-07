@@ -14,6 +14,7 @@ type ManagedIndexer struct {
 	Name      string
 	ForMovies bool
 	ForSeries bool
+	LastRSSID string
 	integration.Indexer
 }
 
@@ -28,6 +29,10 @@ func (mi ManagedIndexer) GetName() string {
 
 // TODO get rss feeds
 func (im *IndexerManager) DoTask() {
+	indexers := im.getIndexers()
+	for _, indexer := range indexers {
+		indexer.SyncRSS()
+	}
 }
 
 func (im *IndexerManager) GetFrequency() time.Duration {
