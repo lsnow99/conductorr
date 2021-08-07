@@ -56,6 +56,12 @@ func (x *Xnab) prepareResponse(nzbs []newznab.NZB, media *Media) []Release {
 	return releases
 }
 
+func (x *Xnab) SyncRSS(lastRSSID string) ([]Release, error) {
+	results, err := x.client.LoadRSSFeedUntilNZBID([]int{newznab.CategoryMovieAll, newznab.CategoryTVAll}, 50, lastRSSID, 20)
+	releases := x.prepareResponse(results, nil)
+	return releases, err
+}
+
 func (x *Xnab) Search(media *Media) ([]Release, error) {
 	if x.caps.Searching.Search.Available != "yes" {
 		return nil, fmt.Errorf("searching not enabled on indexer")
