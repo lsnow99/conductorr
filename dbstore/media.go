@@ -142,7 +142,7 @@ func AddMedia(title *string, description *string, releasedAt *time.Time, endedAt
 		RETURNING id
 		`, ptrToNullString(title), ptrToNullString(description), released,
 		ended, ptrToNullString(contentType), ptrToNullInt32(parentMediaID),
-		ptrToNullInt32(tmdbID), ptrToNullString(imdbID), ptrToNullInt32(tmdbID),
+		ptrToNullInt32(tmdbID), ptrToNullString(imdbID), ptrToNullInt32(tmdbRating),
 		ptrToNullInt32(imdbRating), ptrToNullInt32(runtime), poster, ptrToNullInt32(profileID), 
 		ptrToNullInt32(pathID), ptrToNullInt32(number), monitoring)
 
@@ -272,4 +272,39 @@ func SetMediaPath(id int, path string) error {
 	UPDATE media SET path = ? WHERE id = ?
 	`, path, id)
 	return err
+}
+
+func GetMonitoringMedia() (*[]Media, error) {
+	medias := make([]Media, 0, 100)
+	rows, err := db.Query(`
+		SELECT id, title, description, released_at, ended_at, content_type,
+			parent_media_id, tmdb_id, imdb_id, tmdb_rating, imdb_rating,
+			runtime, status, profile_id, path_id, size, item_number, monitoring, path
+		FROM media AS m
+		WHERE (monitoring = true AND content_type = 'movie')
+		OR (monitoring = true AND content_type = 'episode'
+			AND (SELECT monitoring FROM media AS g WHERE id = 
+				(SELECT parent_media_id FROM media AS p WHERE id = m.parent_media_id)
+			)
+		   )
+		`)
+	
+	if err != nil && err != sql.ErrNoRows{
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		media := Media{}
+		if err := rows.Scan(&media.ID, &media.Title, &media.Description, &media.ReleasedAt,
+			&media.EndedAt, &media.ContentType, &media.ParentMediaID,
+			&media.TmdbID, &media.ImdbID, &media.TmdbRating, &media.ImdbRating,
+			&media.Runtime, &media.Status, &media.ProfileID, &media.PathID, &media.Size, 
+			&media.Number, &media.Monitoring, &media.Path)
+			err != nil {
+			return nil, err
+		}
+		medias = append(medias, media)
+	}
+	return &medias, nil
 }

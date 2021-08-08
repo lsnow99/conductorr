@@ -9,7 +9,7 @@ func CreateIndexer(name string, userID int, baseUrl, apiKey string, forMovies, f
 }
 
 func GetIndexers() (indexers []Indexer, err error) {
-	rows, err := db.Query(`SELECT id, name, user_id, base_url, api_key, for_movies, for_series, download_type FROM indexer;`)
+	rows, err := db.Query(`SELECT id, name, user_id, base_url, api_key, for_movies, for_series, download_type, last_rss_id FROM indexer;`)
 	if err != nil && err != sql.ErrNoRows {
 		return nil, err
 	} else if err == sql.ErrNoRows {
@@ -19,7 +19,7 @@ func GetIndexers() (indexers []Indexer, err error) {
 
 	for rows.Next() {
 		indexer := Indexer{}
-		err := rows.Scan(&indexer.ID, &indexer.Name, &indexer.UserID, &indexer.BaseUrl, &indexer.ApiKey, &indexer.ForMovies, &indexer.ForSeries, &indexer.DownloadType)
+		err := rows.Scan(&indexer.ID, &indexer.Name, &indexer.UserID, &indexer.BaseUrl, &indexer.ApiKey, &indexer.ForMovies, &indexer.ForSeries, &indexer.DownloadType, &indexer.LastRSSID)
 		if err != nil {
 			return nil, err
 		}
@@ -31,10 +31,15 @@ func GetIndexers() (indexers []Indexer, err error) {
 
 func GetIndexerByID(id int) (Indexer, error) {
 	indexer := Indexer{}
-	row := db.QueryRow(`SELECT id, name, user_id, base_url, api_key, for_movies, for_series, download_type FROM indexer WHERE id = ?`, id)
+	row := db.QueryRow(`SELECT id, name, user_id, base_url, api_key, for_movies, for_series, download_type, last_rss_id FROM indexer WHERE id = ?`, id)
 
-	err := row.Scan(&indexer.ID, &indexer.Name, &indexer.UserID, &indexer.BaseUrl, &indexer.ApiKey, &indexer.ForMovies, &indexer.ForSeries, &indexer.DownloadType)
+	err := row.Scan(&indexer.ID, &indexer.Name, &indexer.UserID, &indexer.BaseUrl, &indexer.ApiKey, &indexer.ForMovies, &indexer.ForSeries, &indexer.DownloadType, &indexer.LastRSSID)
 	return indexer, err
+}
+
+func SetIndexerLastRSSID(id int, rssID string) error {
+	_, err := db.Exec(`UPDATE indexer SET last_rss_id = ? WHERE id = ?`, rssID, id)
+	return err
 }
 
 func UpdateIndexer(id int, name string, userID int, baseUrl, apiKey string, forMovies, forSeries bool) error {

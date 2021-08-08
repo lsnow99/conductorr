@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/lsnow99/conductorr/dbstore"
 	"github.com/lsnow99/conductorr/integration"
 	"github.com/lsnow99/conductorr/logger"
 )
@@ -27,12 +28,41 @@ func (mi ManagedIndexer) GetName() string {
 	return mi.Name
 }
 
-// TODO get rss feeds
+// sync rss feeds
 func (im *IndexerManager) DoTask() {
-	// indexers := im.getIndexers()
-	// for _, indexer := range indexers {
-	// 	indexer.SyncRSS("")
-	// }
+	indexers := im.getIndexers()
+	for _, indexer := range indexers {
+		results, err := indexer.SyncRSS(indexer.LastRSSID)
+		if err != nil {
+			logger.LogWarn(err)
+			continue
+		}
+		if len(results) > 0 {
+			im.updateIndexerLastRSSID(indexer.ID, results[len(results) - 1].ID)
+			monitoringMedia, err := dbstore.GetMonitoringMedia()
+			if err != nil || monitoringMedia == nil {
+				return
+			}
+			for _, result := range results {
+				for _, media := range *monitoringMedia {
+					if result.ImdbID == media.ImdbID.String && result.ImdbID != "" {
+						// Found matching release
+					}
+				}
+			}
+		}
+	}
+}
+
+func (im *IndexerManager) updateIndexerLastRSSID(indexerID int, rssID string) {
+	im.Lock()
+	defer im.Unlock()
+	for i, indexer := range im.indexers {
+		if indexer.ID == indexerID {
+			indexer.LastRSSID = rssID
+			im.indexers[i] = indexer
+		}
+	}
 }
 
 func (im *IndexerManager) GetFrequency() time.Duration {
@@ -45,7 +75,7 @@ func (im *IndexerManager) getIndexers() []ManagedIndexer {
 	return im.indexers
 }
 
-func (im *IndexerManager) RegisterIndexer(id int, downloadType string, userID int, name, apiKey, baseUrl string, forMovies, forSeries bool) {
+func (im *IndexerManager) RegisterIndexer(id int, downloadType string, userID int, name, apiKey, baseUrl string, forMovies, forSeries bool, lastRSSID string) {
 	indexer := integration.NewXnab(userID, apiKey, baseUrl, name, downloadType)
 	mi := ManagedIndexer{
 		Name:      name,
@@ -61,14 +91,16 @@ func (im *IndexerManager) RegisterIndexer(id int, downloadType string, userID in
 	im.Lock()
 	defer im.Unlock()
 	
-	var added bool
+	var updated bool
 	for i, indexer := range im.indexers {
 		if indexer.ID == id {
 			im.indexers[i] = mi
-			added = true
+			updated = true
 		}
 	}
-	if !added {
+	if !updated {
+		// Only use the provided last rss id if this is the first time we are registering the indexer
+		mi.LastRSSID = lastRSSID
 		im.indexers = append(im.indexers, mi)
 	}
 }

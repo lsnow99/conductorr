@@ -43,6 +43,7 @@ type Indexer struct {
 	ForMovies    bool
 	ForSeries    bool
 	DownloadType string
+	LastRSSID    string
 }
 
 type Downloader struct {

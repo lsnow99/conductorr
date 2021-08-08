@@ -29,12 +29,13 @@ type Release struct {
 	Warnings     []string  `json:"warnings,omitempty"`
 	Media        *Media    `json:"media,omitempty"`
 	IndexerID    int       `json:"indexer_id,omitempty"`
+	ImdbID       string    `json:"imdb_id,omitempty"`
 
 	// HighPriority whether to download with high priority
 	HighPriority bool `json:"high_priority,omitempty"`
 }
 
-func NewRelease(id, title, description, downloadURL string, categories []string, size, seeders int64, airDate, pubDate time.Time, media *Media, indexer *Xnab) Release {
+func NewRelease(id, title, description, downloadURL string, categories []string, size, seeders int64, airDate, pubDate time.Time, media *Media, indexer *Xnab, imdbID string) Release {
 	release := Release{
 		ID:           id,
 		Title:        title,
@@ -48,6 +49,7 @@ func NewRelease(id, title, description, downloadURL string, categories []string,
 		Media:        media,
 		DownloadType: indexer.downloadType,
 		Indexer:      indexer.name,
+		ImdbID:       imdbID,
 	}
 
 	// Calculate age in days

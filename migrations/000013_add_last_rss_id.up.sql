@@ -1,0 +1,5 @@
+BEGIN;
+
+ALTER TABLE indexer ADD COLUMN last_rss_id TEXT NOT NULL DEFAULT '';
+
+COMMIT;
