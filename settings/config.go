@@ -71,9 +71,9 @@ func init() {
 	}
 
 	if os.Getenv("DB_PATH") != "" {
-		DBPath = os.Getenv("DB_PATH") + "?_foreign_keys=on&cache=shared&mode=rwc"
+		DBPath = "file:" + os.Getenv("DB_PATH") + "?_foreign_keys=on&cache=shared&mode=rwc"
 	} else {
-		DBPath = "./conductorr.db?_foreign_keys=on&cache=shared&mode=rwc"
+		DBPath = "file:./conductorr.db?_foreign_keys=on&cache=shared&mode=rwc"
 	}
 
 	if os.Getenv("OMDB_API_KEY") != "" {
