@@ -1,7 +1,10 @@
-#!/bin/sh
+#!/bin/bash
 # Build script for Conductorr
 # Author Logan Snow
 # Last updated 08/03/2021
+
+# Set script to fail if any sub commands fail
+set -e
 
 # Terminal color definitions
 green=`tput setaf 2`
@@ -57,7 +60,7 @@ fi
 
 # Build CSL WASM module
 if [ $buildcsl == 1 ]; then
-    echo "===============[   Building CSL Module   ]==============="
+    echo "==============================[   Building CSL Module   ]=============================="
     echo "${cyan}→ Compiling to WASM${reset}"
     GOOS=js GOARCH=wasm go build -o dist/csl.wasm ./cmd/csl
     echo "${cyan}→ Compressing with brotli${reset}"
@@ -67,7 +70,7 @@ fi
 
 # Build web frontend
 if [ $buildweb == 1 ]; then
-    echo "===============[    Building Frontend    ]==============="
+    echo "==============================[    Building Frontend    ]=============================="
     echo "${cyan}→ Installing frontend dependencies${reset}"
     yarn --cwd ./web install
     echo "${cyan}→ Building frontend for distribution${reset}"
@@ -76,7 +79,7 @@ fi
 
 # Build the full binaries
 if [ $buildbin == 1 ]; then
-    echo "===============[ Compiling Full Binaries ]==============="
+    echo "==============================[ Compiling Full Binaries ]=============================="
     # Compile for Windows
     echo "${cyan}→ Compiling for Windows${reset}"
     GOOS=windows GOARCH=386 go build -o bin/conductorr-windows_x86.exe -ldflags="-s -w -X 'github.com/lsnow99/conductorr/settings.Version=$(git describe --tags)' -X 'github.com/lsnow99/conductorr/settings.BuildMode=binary'" ./cmd/conductorr
