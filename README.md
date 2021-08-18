@@ -70,7 +70,7 @@ Within VS Code, select "Launch Backend" from the debug menu. You can set breakpo
 
 Conductorr's profile editor page uses a WebAssembly module to do client-side validation and evaluationmsm.mediaServers of CSL scripts. Before developing on the frontend, you must generate this module using `./build.sh csl` (For Windows, you can either run this in WSL or just run the equivalent commands in cmd/PowerShell). This script assumes you have [Brotli](https://github.com/google/brotli) installed and available in your PATH.
 
-> NOTE: If you skip this step, it is likely you will run into an issue where `wasm_exec.js` is not found when testing locally in the frontend, or when building for production.
+> NOTE: If you skip this step, it is likely you will run into an issue where `wasm_exec.js` is not found when serving the frontend
 
 ### Frontend Development
 
