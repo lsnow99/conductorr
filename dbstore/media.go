@@ -116,7 +116,10 @@ func GetAllMediaMap() (map[int]*Media, error) {
 	return medias, nil
 }
 
-func AddMedia(title *string, description *string, releasedAt *time.Time, endedAt *time.Time,
+/* UpsertMedia inserts the new media described by the parameters, and on a conflict of the item_number
+and parent_media_id, it will only update the metadata
+*/
+func UpsertMedia(title *string, description *string, releasedAt *time.Time, endedAt *time.Time,
 	contentType *string, parentMediaID *int, tmdbID *int, imdbID *string,
 	tmdbRating *int, imdbRating *int, runtime *int, poster *[]byte, genres []string, profileID,
 	pathID *int, number *int, monitoring bool) (id int, err error) {
@@ -139,6 +142,13 @@ func AddMedia(title *string, description *string, releasedAt *time.Time, endedAt
 			parent_media_id, tmdb_id, imdb_id, tmdb_rating, imdb_rating, runtime, 
 			poster, profile_id, path_id, item_number, monitoring)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		ON CONFLICT (uq_child_num) DO UPDATE
+			SET title=EXCLUDED.title, description=EXCLUDED.description, 
+				released_at=EXCLUDED.released_at, ended_at=EXCLUDED.ended_at,
+				content_type=EXCLUDED.content_type,
+				tmdb_id=EXCLUDED.tmdb_id, imdb_id=EXCLUDED.imdb_id, 
+				tmdb_rating=EXCLUDED.tmdb_rating, imdb_rating=EXCLUDED.imdb_rating, 
+				runtime=EXCLUDED.runtime, poster=EXCLUDED.poster
 		RETURNING id
 		`, ptrToNullString(title), ptrToNullString(description), released,
 		ended, ptrToNullString(contentType), ptrToNullInt32(parentMediaID),

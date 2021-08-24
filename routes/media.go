@@ -3,6 +3,7 @@ package routes
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -66,10 +67,45 @@ func AddMedia(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := omdb.SearchByImdbID(imdbID)
+	id, err := doAddMedia(imdbID, &mi.ProfileID, &mi.PathID, mi.Monitoring)
 	if err != nil {
 		Respond(w, r.Header.Get("hostname"), err, nil, true)
 		return
+	}
+	Respond(w, r.Header.Get("hostname"), nil, id, true)
+}
+
+func RefreshMediaMetadata(w http.ResponseWriter, r *http.Request) {
+	mediaIDStr := mux.Vars(r)["id"]
+
+	mediaID, err := strconv.Atoi(mediaIDStr)
+	if err != nil {
+		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		return
+	}
+
+	media, err := dbstore.GetMediaByID(mediaID)
+	if err != nil {
+		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		return
+	}
+	if !media.ImdbID.Valid {
+		Respond(w, r.Header.Get("hostname"), errors.New("imdb id is nil for media"), nil, true)
+		return
+	}
+
+	id, err := doAddMedia(media.ImdbID.String, nil, nil, media.Monitoring)
+	if err != nil {
+		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		return
+	}
+	Respond(w, r.Header.Get("hostname"), nil, id, true)
+}
+
+func doAddMedia(imdbID string, profileID *int, pathID *int, monitor bool) (int, error) {
+	result, err := omdb.SearchByImdbID(imdbID)
+	if err != nil {
+		return 0, err
 	}
 
 	// Scale imdb rating
@@ -78,31 +114,28 @@ func AddMedia(w http.ResponseWriter, r *http.Request) {
 	// Fetch the poster
 	posterResp, err := http.Get(result.Poster)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
-		return
+		return 0, err
 	}
 	poster, err := ioutil.ReadAll(posterResp.Body)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
-		return
+		return 0, err
 	}
 
 	genres := strings.Split(result.Genre, ", ")
 
 	var id int
+
 	// If tv show, add all the episodes and seasons
 	if result.Type == "series" {
 		episodes, err := series.GetEpisodes(result.ImdbID)
 		if err != nil {
-			Respond(w, r.Header.Get("hostname"), err, 0, true)
-			return
+			return id, err
 		}
-		id, err = dbstore.AddMedia(&result.Title, &result.Plot, &result.ReleasedAt, &result.EndedAt,
+		id, err = dbstore.UpsertMedia(&result.Title, &result.Plot, &result.ReleasedAt, &result.EndedAt,
 			&result.Type, nil, nil, &result.ImdbID, nil, &imdbRating, &result.Runtime,
-			&poster, genres, &mi.ProfileID, &mi.PathID, nil, mi.Monitoring)
+			&poster, genres, profileID, pathID, nil, monitor)
 		if err != nil {
-			Respond(w, r.Header.Get("hostname"), err, id, true)
-			return
+			return id, err
 		}
 
 		insertedSeasons := make(map[int]int)
@@ -111,33 +144,29 @@ func AddMedia(w http.ResponseWriter, r *http.Request) {
 			if !ok {
 				seasonStr := "Season " + strconv.Itoa(episode.Season)
 				contentType := "season"
-				seasonID, err = dbstore.AddMedia(&seasonStr, nil, &episode.Aired, nil, &contentType, &id, nil, nil, nil, nil, nil, nil, nil, nil, nil, &episode.Season, mi.Monitoring)
+				seasonID, err = dbstore.UpsertMedia(&seasonStr, nil, &episode.Aired, nil, &contentType, &id, nil, nil, nil, nil, nil, nil, nil, nil, nil, &episode.Season, monitor)
 				if err != nil {
-					Respond(w, r.Header.Get("hostname"), err, 0, true)
-					return
+					return id, err
 				}
 				insertedSeasons[episode.Season] = seasonID
 			}
 
 			description := getTextFromHTML(episode.Description)
 			contentType := "episode"
-			_, err = dbstore.AddMedia(&episode.Title, &description, &episode.Aired, nil, &contentType, &seasonID, nil, nil, nil, nil, &episode.Runtime, nil, nil, nil, nil, &episode.Episode, mi.Monitoring)
+			_, err = dbstore.UpsertMedia(&episode.Title, &description, &episode.Aired, nil, &contentType, &seasonID, nil, nil, nil, nil, &episode.Runtime, nil, nil, nil, nil, &episode.Episode, monitor)
 			if err != nil {
-				Respond(w, r.Header.Get("hostname"), err, 0, true)
-				return
+				return id, err
 			}
 		}
 	} else {
-		id, err = dbstore.AddMedia(&result.Title, &result.Plot, &result.ReleasedAt, &result.EndedAt,
+		id, err = dbstore.UpsertMedia(&result.Title, &result.Plot, &result.ReleasedAt, &result.EndedAt,
 			&result.Type, nil, nil, &result.ImdbID, nil, &imdbRating, &result.Runtime,
-			&poster, genres, &mi.ProfileID, &mi.PathID, nil, mi.Monitoring)
+			&poster, genres, profileID, pathID, nil, monitor)
 		if err != nil {
-			Respond(w, r.Header.Get("hostname"), err, id, true)
-			return
+			return id, err
 		}
 	}
-
-	Respond(w, r.Header.Get("hostname"), nil, id, true)
+	return id, nil
 }
 
 func getTextFromHTML(markup string) string {
@@ -271,3 +300,13 @@ func SetMonitoringMedia(w http.ResponseWriter, r *http.Request) {
 	err = dbstore.UpdateMediaMonitoring(mediaID, mi.Monitoring)
 	Respond(w, r.Header.Get("hostname"), err, nil, true)
 }
+
+// func RefreshMediaMetadata(w http.ResponseWriter, r *http.Request) {
+// 	mediaIDStr := mux.Vars(r)["id"]
+// 	mediaID, err := strconv.Atoi(mediaIDStr)
+// 	if err != nil {
+// 		Respond(w, r.Header.Get("hostname"), err, nil, true)
+// 		return
+// 	}
+
+// }

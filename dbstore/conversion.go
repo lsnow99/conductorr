@@ -45,10 +45,26 @@ func CreatePGMigrations(inputDir string) (string, error) {
 	return outputDir, nil
 }
 
+const sqliteKey = "--sqlite--"
+const pgKey = "--postgresql--"
+const endKey = "--end--"
+
 // ConvertSQLite takes a sqlite sql string and returns a postgresql-compatible version
 func ConvertSQLite(sqlite string) string {
 	sqlite = strings.ToLower(sqlite)
 	postgresql := strings.ReplaceAll(sqlite, "integer primary key", "SERIAL PRIMARY KEY")
 	postgresql = strings.ReplaceAll(postgresql, "blob", "BYTEA")
+	
+	searching := postgresql
+	for sqliteIndex, pgIndex, endIndex := strings.Index(searching, "--sqlite--"), 
+		strings.Index(searching, "--postgresql--"), strings.Index(searching, "--end--");
+		(sqliteIndex >= 0 || pgIndex >= 0) && endIndex >= 0; {
+
+		if sqliteIndex < pgIndex && sqliteIndex >= 0 {
+			
+		} else {
+
+		}
+	}
 	return postgresql
 }

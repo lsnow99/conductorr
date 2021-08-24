@@ -81,6 +81,18 @@
                 </div>
               </div>
             </o-tooltip>
+            <o-tooltip
+              variant="info"
+              :position="tooltipPosition"
+              label="Refresh Metadata"
+            >
+              <div class="text-2xl md:mx-2 text-gray-300">
+                <div v-if="!loadingRefreshMetadata" @click="refreshMediaMetadata" role="button" aria-label="Refresh Metadata">
+                  <o-icon class="cursor-pointer" icon="sync-alt" />
+                </div>
+                <o-icon v-else icon="sync-alt" spin />
+              </div>
+            </o-tooltip>
             <search-actions :mediaID="mediaID" size="large" />
           </div>
         </div>
@@ -181,6 +193,7 @@ export default {
       releases: [],
       loadingManualSearch: false,
       loadingAutoSearch: false,
+      loadingRefreshMetadata: false,
       loading: true,
       tooltipPosition: "bottom",
       showEditMediaModal: false,
@@ -220,6 +233,14 @@ export default {
       APIUtil.deleteMedia(this.mediaID).then(() => {
         this.$router.push({ name: "library" });
       });
+    },
+    refreshMediaMetadata() {
+      this.loadingRefreshMetadata = true;
+      APIUtil.refreshMediaMetadata(this.mediaID).then(() => {
+        this.loadMedia();
+      }).finally(() => {
+        this.loadingRefreshMetadata = false;
+      })
     },
     loadMedia() {
       APIUtil.getMedia(this.mediaID)

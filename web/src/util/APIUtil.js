@@ -455,6 +455,12 @@ const deleteMediaServer = (id) => {
   })
 }
 
+const refreshMediaMetadata = (id) => {
+  return doAPIReq(`/api/v1/media/${id}/refresh`, {
+    method: "POST",
+  })
+}
+
 export default {
   signIn,
   signUp,
@@ -503,5 +509,6 @@ export default {
   newMediaServer,
   getMediaServers,
   updateMediaServer,
-  deleteMediaServer
+  deleteMediaServer,
+  refreshMediaMetadata
 };
