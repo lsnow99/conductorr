@@ -96,6 +96,11 @@ func Init() error {
 		migrationPath = path
 	}
 
+	migrationPath, err = CreateMigrationsFor(sqliteKey, migrationPath)
+	if err != nil {
+		return err
+	}
+
 	m, err := migrate.NewWithDatabaseInstance("file://"+migrationPath, "conductorrdb?_foreign_keys=on", driver)
 	if err != nil {
 		return err

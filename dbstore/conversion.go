@@ -1,6 +1,8 @@
 package dbstore
 
 import (
+	"bufio"
+	"fmt"
 	"io/fs"
 	"io/ioutil"
 	"os"
@@ -9,17 +11,17 @@ import (
 )
 
 /*
-Converts sqlite schema to postgresql compatible sql commands.
+Converts conductorr-annotated SQL to different dbms compatible sql commands.
 
-Is not guaranteed to handle all edge cases.
+See the README file for annotation syntax
 */
 
 /*
-CreatePGMigrations takes a path to a migrations folder. Outputs a
+CreateMigrationsFor takes a path to a migrations folder. Outputs a
 path to a temporary directory containing the same migrations but
-with the postgresql converstion applied.
+with the requested dbms's conversion applied
 */
-func CreatePGMigrations(inputDir string) (string, error) {
+func CreateMigrationsFor(dbmsKey, inputDir string) (string, error) {
 	outputDir := os.TempDir()
 
 	entries, err := os.ReadDir(inputDir)
@@ -35,8 +37,13 @@ func CreatePGMigrations(inputDir string) (string, error) {
 		}
 
 		outputFile := path.Join(outputDir, entry.Name())
-		postgresData := []byte(ConvertSQLite(string(sqliteData)))
-		err = ioutil.WriteFile(outputFile, postgresData, fs.ModePerm) 
+		sqlMap := ConvertSQL(string(sqliteData))
+		sql, ok := sqlMap[dbmsKey]
+		if !ok {
+			return "", fmt.Errorf("conversion not available for requested dbms %s", dbmsKey)
+		}
+		outData := []byte(sql)
+		err = ioutil.WriteFile(outputFile, outData, fs.ModePerm)
 		if err != nil {
 			return "", err
 		}
@@ -49,22 +56,57 @@ const sqliteKey = "--sqlite--"
 const pgKey = "--postgresql--"
 const endKey = "--end--"
 
-// ConvertSQLite takes a sqlite sql string and returns a postgresql-compatible version
-func ConvertSQLite(sqlite string) string {
-	sqlite = strings.ToLower(sqlite)
-	postgresql := strings.ReplaceAll(sqlite, "integer primary key", "SERIAL PRIMARY KEY")
-	postgresql = strings.ReplaceAll(postgresql, "blob", "BYTEA")
-	
-	searching := postgresql
-	for sqliteIndex, pgIndex, endIndex := strings.Index(searching, "--sqlite--"), 
-		strings.Index(searching, "--postgresql--"), strings.Index(searching, "--end--");
-		(sqliteIndex >= 0 || pgIndex >= 0) && endIndex >= 0; {
+var dbmsKeys = []string{sqliteKey, pgKey}
 
-		if sqliteIndex < pgIndex && sqliteIndex >= 0 {
-			
-		} else {
+type sqlMapBuilder struct {
+	sqlMap map[string]string
+	curStr string
+	curKey string
+}
 
+func (smb *sqlMapBuilder) flush(key string) {
+	if smb.curKey == "" {
+		for _, k := range dbmsKeys {
+			smb.sqlMap[k] += smb.curStr
+		}
+	} else {
+		smb.sqlMap[smb.curKey] += smb.curStr
+	}
+	smb.curStr = ""
+	smb.curKey = key
+}
+
+// ConvertSQL takes a commented SQL string and returns a map of DBMS systems to their respective sql
+func ConvertSQL(sql string) map[string]string {
+	builder := sqlMapBuilder{
+		sqlMap: map[string]string{},
+	}
+
+	scanner := bufio.NewScanner(strings.NewReader(sql))
+	for scanner.Scan() {
+		line := scanner.Text()
+		var found bool
+		for _, dbmsKey := range dbmsKeys {
+			if checkLineForKey(line, dbmsKey) {
+				builder.flush(dbmsKey)
+				found = true
+				break
+			}
+		}
+		if !found {
+			if checkLineForKey(line, endKey) {
+				builder.flush("")
+			} else {
+				builder.curStr += line + "\n"
+			}
 		}
 	}
-	return postgresql
+
+	builder.flush("")
+
+	return builder.sqlMap
+}
+
+func checkLineForKey(line, key string) bool {
+	return strings.HasPrefix(strings.TrimSpace(strings.ToLower(line)), key)
 }

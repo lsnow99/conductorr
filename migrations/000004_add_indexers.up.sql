@@ -1,7 +1,11 @@
 BEGIN;
 
 CREATE TABLE indexer(
+    --sqlite--
     id INTEGER PRIMARY KEY,
+    --postgresql--
+    id SERIAL PRIMARY KEY,
+    --end
     name VARCHAR(128) NOT NULL,
     user_id INTEGER NOT NULL,
     base_url TEXT NOT NULL,
