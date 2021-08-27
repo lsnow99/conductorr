@@ -142,7 +142,7 @@ func UpsertMedia(title *string, description *string, releasedAt *time.Time, ende
 			parent_media_id, tmdb_id, imdb_id, tmdb_rating, imdb_rating, runtime, 
 			poster, profile_id, path_id, item_number, monitoring)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-		ON CONFLICT (uq_child_num) DO UPDATE
+		ON CONFLICT DO UPDATE
 			SET title=EXCLUDED.title, description=EXCLUDED.description, 
 				released_at=EXCLUDED.released_at, ended_at=EXCLUDED.ended_at,
 				content_type=EXCLUDED.content_type,
