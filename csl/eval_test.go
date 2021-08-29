@@ -534,7 +534,7 @@ func TestSingleElemList(t *testing.T) {
 
 func TestNthString(t *testing.T) {
 	expr, err := Parse(`
-	(nth 4 "hello world")
+	(nths 4 "hello world")
 	`)
 	if err != nil {
 		t.Fatal(err)
@@ -545,7 +545,18 @@ func TestNthString(t *testing.T) {
 
 func TestLengthString(t *testing.T) {
 	expr, err := Parse(`
-	(len "hello world")
+	(lens "hello world")
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace := Eval(expr, nil)
+	checkResult(t, int64(11), res, trace)
+}
+
+func TestLengthStringNotList(t *testing.T) {
+	expr, err := Parse(`
+	(lens ("hello world"))
 	`)
 	if err != nil {
 		t.Fatal(err)
@@ -563,6 +574,163 @@ func TestLengthList(t *testing.T) {
 	}
 	res, trace := Eval(expr, nil)
 	checkResult(t, int64(4), res, trace)
+}
+
+func TestLengthListNotString(t *testing.T) {
+	expr, err := Parse(`
+	(len ("hello world"))
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace := Eval(expr, nil)
+	checkResult(t, int64(1), res, trace)
+}
+
+func TestAppend(t *testing.T) {
+	original := List{
+		Elems: []interface{}{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)},
+	}
+	env := make(map[string]interface{})
+	env["l"] = original
+	exprs, err := Parse(`
+	(append l 13)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace := Eval(exprs, env)
+	expected := List{
+		Elems: append(original.Elems, int64(13)),
+	}
+	checkResult(t, expected, res, trace)
+}
+
+func TestAppendMultiple(t *testing.T) {
+	original := List{
+		Elems: []interface{}{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)},
+	}
+	env := make(map[string]interface{})
+	env["l"] = original
+	exprs, err := Parse(`
+	(append l 13 21 34)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace := Eval(exprs, env)
+	expected := List{
+		Elems: append(original.Elems, int64(13), int64(21), int64(34)),
+	}
+	checkResult(t, expected, res, trace)
+}
+
+func TestAppendLeft(t *testing.T) {
+	original := List{
+		Elems: []interface{}{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)},
+	}
+	env := make(map[string]interface{})
+	env["l"] = original
+	exprs, err := Parse(`
+	(appendleft l 0)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace := Eval(exprs, env)
+	expected := List{
+		Elems: append([]interface{}{int64(0)}, original.Elems...),
+	}
+	checkResult(t, expected, res, trace)
+}
+
+func TestAppendLeftMultiple(t *testing.T) {
+	original := List{
+		Elems: []interface{}{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)},
+	}
+	env := make(map[string]interface{})
+	env["l"] = original
+	exprs, err := Parse(`
+	(appendleft l 0 0 0)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace := Eval(exprs, env)
+	expected := List{
+		Elems: append([]interface{}{int64(0), int64(0), int64(0)}, original.Elems...),
+	}
+	checkResult(t, expected, res, trace)
+}
+
+func TestPop(t *testing.T) {
+	original := List{
+		Elems: []interface{}{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)},
+	}
+	env := make(map[string]interface{})
+	env["l"] = original
+	exprs, err := Parse(`
+	(pop l)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace := Eval(exprs, env)
+	expected := List{
+		Elems: original.Elems[:len(original.Elems) - 1],
+	}
+	checkResult(t, expected, res, trace)
+}
+
+func TestPopLeft(t *testing.T) {
+	original := List{
+		Elems: []interface{}{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)},
+	}
+	env := make(map[string]interface{})
+	env["l"] = original
+	exprs, err := Parse(`
+	(popleft l)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace := Eval(exprs, env)
+	expected := List{
+		Elems: original.Elems[1:],
+	}
+	checkResult(t, expected, res, trace)
+}
+
+func TestPeek(t *testing.T) {
+	original := List{
+		Elems: []interface{}{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)},
+	}
+	env := make(map[string]interface{})
+	env["l"] = original
+	exprs, err := Parse(`
+	(peek l)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace := Eval(exprs, env)
+	checkResult(t, int64(8), res, trace)
+}
+
+func TestPeekLeft(t *testing.T) {
+	original := List{
+		Elems: []interface{}{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)},
+	}
+	env := make(map[string]interface{})
+	env["l"] = original
+	exprs, err := Parse(`
+	(peekleft l)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace := Eval(exprs, env)
+	checkResult(t, int64(1), res, trace)
 }
 
 func TestIfCondExpr(t *testing.T) {

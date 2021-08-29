@@ -83,6 +83,9 @@ func init() {
 			return nil, ErrMismatchOperandTypes
 		}
 		varName, ok := x.varName()
+		if !ok {
+			return nil, ErrBadType
+		}
 		env[varName] = args[1]
 		return nil, nil
 	})
@@ -275,20 +278,29 @@ func init() {
 		}
 		l, ok := args[1].(List)
 		if !ok {
-			if s, ok := args[1].(string); ok {
-				if i < 0 || i >= int64(len(s)) {
-					return nil, ErrOutOfBounds
-				}
-				return string(s[i]), nil
-			}
-			l = List{
-				Elems: []interface{}{args[1]},
-			}
+			l.Elems = []interface{}{args[1]}
 		}
 		if i < 0 || i >= int64(len(l.Elems)) {
 			return nil, ErrOutOfBounds
 		}
 		return l.Elems[i], nil
+	})
+	RegisterFunction("nths", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) != 2 {
+			return nil, ErrNumOperands
+		}
+		i, ok := args[0].(int64)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		s, ok := args[1].(string)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		if i < 0 || i >= int64(len(s)) {
+			return nil, ErrOutOfBounds
+		}
+		return string(s[i]), nil
 	})
 	RegisterFunction("eq", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
@@ -306,11 +318,75 @@ func init() {
 		if len(args) != 1 {
 			return nil, ErrNumOperands
 		}
+		if l, ok := args[0].(List); ok {
+			return int64(len(l.Elems)), nil
+		}
+		return int64(1), nil
+	})
+	RegisterFunction("lens", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) != 1 {
+			return nil, ErrNumOperands
+		}
 		if s, ok := args[0].(string); ok {
 			return int64(len(s)), nil
 		}
+		return nil, ErrMismatchOperandTypes
+	})
+	RegisterFunction("append", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) < 2 {
+			return nil, ErrNumOperands
+		}
 		if l, ok := args[0].(List); ok {
-			return int64(len(l.Elems)), nil
+			l.Elems = append(l.Elems, args[1:]...)
+			return l, nil
+		}
+		return nil, ErrMismatchOperandTypes
+	})
+	RegisterFunction("appendleft", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) < 2 {
+			return nil, ErrNumOperands
+		}
+		if l, ok := args[0].(List); ok {
+			l.Elems = append(args[1:], l.Elems...)
+			return l, nil
+		}
+		return nil, ErrMismatchOperandTypes
+	})
+	RegisterFunction("pop", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) != 1 {
+			return nil, ErrNumOperands
+		}
+		if l, ok := args[0].(List); ok {
+			l.Elems = l.Elems[:len(l.Elems) - 1]
+			return l, nil
+		}
+		return nil, ErrMismatchOperandTypes
+	})
+	RegisterFunction("popleft", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) != 1 {
+			return nil, ErrNumOperands
+		}
+		if l, ok := args[0].(List); ok {
+			l.Elems = l.Elems[1:]
+			return l, nil
+		}
+		return nil, ErrMismatchOperandTypes
+	})
+	RegisterFunction("peek", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) != 1 {
+			return nil, ErrNumOperands
+		}
+		if l, ok := args[0].(List); ok {
+			return l.Elems[len(l.Elems) - 1], nil
+		}
+		return nil, ErrMismatchOperandTypes
+	})
+	RegisterFunction("peekleft", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) != 1 {
+			return nil, ErrNumOperands
+		}
+		if l, ok := args[0].(List); ok {
+			return l.Elems[0], nil
 		}
 		return nil, ErrMismatchOperandTypes
 	})
