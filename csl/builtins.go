@@ -7,12 +7,16 @@ import (
 
 var builtins = map[string]operation{}
 
-func RegisterFunction(pattern string, fn func(env map[string]interface{}, args ...interface{}) (interface{}, error)) {
-	builtins[pattern] = fn
+func RegisterFunction(pattern string, lazy bool, fn eagerFnSig, lazyFn lazyFnSig) {
+	builtins[pattern] = operation{
+		fn: fn,
+		lazy: lazy,
+		lazyFn: lazyFn,
+	}
 }
 
 func init() {
-	RegisterFunction("+", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	RegisterFunction("+", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -25,8 +29,8 @@ func init() {
 			sum += x
 		}
 		return sum, nil
-	})
-	RegisterFunction("-", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	}, nil)
+	RegisterFunction("-", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -42,8 +46,8 @@ func init() {
 			difference -= x
 		}
 		return difference, nil
-	})
-	RegisterFunction("*", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	}, nil)
+	RegisterFunction("*", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -56,8 +60,8 @@ func init() {
 			product *= x
 		}
 		return product, nil
-	})
-	RegisterFunction("/", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	}, nil)
+	RegisterFunction("/", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -73,8 +77,8 @@ func init() {
 			quotient /= x
 		}
 		return quotient, nil
-	})
-	RegisterFunction("define", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	}, nil)
+	RegisterFunction("define", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) != 2 {
 			return nil, ErrNumOperands
 		}
@@ -88,8 +92,8 @@ func init() {
 		}
 		env[varName] = args[1]
 		return nil, nil
-	})
-	RegisterFunction("in", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	}, nil)
+	RegisterFunction("in", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) != 2 {
 			return nil, ErrNumOperands
 		}
@@ -111,8 +115,8 @@ func init() {
 			}
 		}
 		return false, nil
-	})
-	RegisterFunction(">", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	}, nil)
+	RegisterFunction(">", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -130,8 +134,8 @@ func init() {
 			}
 		}
 		return true, nil
-	})
-	RegisterFunction("<", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	}, nil)
+	RegisterFunction("<", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -149,8 +153,8 @@ func init() {
 			}
 		}
 		return true, nil
-	})
-	RegisterFunction(">=", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	}, nil)
+	RegisterFunction(">=", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -168,8 +172,8 @@ func init() {
 			}
 		}
 		return true, nil
-	})
-	RegisterFunction("<=", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	}, nil)
+	RegisterFunction("<=", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -187,8 +191,8 @@ func init() {
 			}
 		}
 		return true, nil
-	})
-	RegisterFunction("<<=", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	}, nil)
+	RegisterFunction("<<=", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -207,8 +211,8 @@ func init() {
 			prev = x
 		}
 		return true, nil
-	})
-	RegisterFunction(">>=", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	}, nil)
+	RegisterFunction(">>=", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -227,8 +231,8 @@ func init() {
 			prev = x
 		}
 		return true, nil
-	})
-	RegisterFunction(">>", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	}, nil)
+	RegisterFunction(">>", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -247,8 +251,8 @@ func init() {
 			prev = x
 		}
 		return true, nil
-	})
-	RegisterFunction("<<", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	}, nil)
+	RegisterFunction("<<", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -267,8 +271,8 @@ func init() {
 			prev = x
 		}
 		return true, nil
-	})
-	RegisterFunction("nth", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	}, nil)
+	RegisterFunction("nth", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) != 2 {
 			return nil, ErrNumOperands
 		}
@@ -284,8 +288,8 @@ func init() {
 			return nil, ErrOutOfBounds
 		}
 		return l.Elems[i], nil
-	})
-	RegisterFunction("nths", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	}, nil)
+	RegisterFunction("nths", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) != 2 {
 			return nil, ErrNumOperands
 		}
@@ -301,8 +305,8 @@ func init() {
 			return nil, ErrOutOfBounds
 		}
 		return string(s[i]), nil
-	})
-	RegisterFunction("eq", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	}, nil)
+	RegisterFunction("eq", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -313,8 +317,8 @@ func init() {
 			}
 		}
 		return true, nil
-	})
-	RegisterFunction("len", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	}, nil)
+	RegisterFunction("len", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) != 1 {
 			return nil, ErrNumOperands
 		}
@@ -322,8 +326,8 @@ func init() {
 			return int64(len(l.Elems)), nil
 		}
 		return int64(1), nil
-	})
-	RegisterFunction("lens", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	}, nil)
+	RegisterFunction("lens", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) != 1 {
 			return nil, ErrNumOperands
 		}
@@ -331,8 +335,8 @@ func init() {
 			return int64(len(s)), nil
 		}
 		return nil, ErrMismatchOperandTypes
-	})
-	RegisterFunction("append", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	}, nil)
+	RegisterFunction("append", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -341,8 +345,8 @@ func init() {
 			return l, nil
 		}
 		return nil, ErrMismatchOperandTypes
-	})
-	RegisterFunction("appendleft", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	}, nil)
+	RegisterFunction("appendleft", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -351,8 +355,8 @@ func init() {
 			return l, nil
 		}
 		return nil, ErrMismatchOperandTypes
-	})
-	RegisterFunction("pop", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	}, nil)
+	RegisterFunction("pop", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) != 1 {
 			return nil, ErrNumOperands
 		}
@@ -361,8 +365,8 @@ func init() {
 			return l, nil
 		}
 		return nil, ErrMismatchOperandTypes
-	})
-	RegisterFunction("popleft", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	}, nil)
+	RegisterFunction("popleft", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) != 1 {
 			return nil, ErrNumOperands
 		}
@@ -371,8 +375,8 @@ func init() {
 			return l, nil
 		}
 		return nil, ErrMismatchOperandTypes
-	})
-	RegisterFunction("peek", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	}, nil)
+	RegisterFunction("peek", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) != 1 {
 			return nil, ErrNumOperands
 		}
@@ -380,8 +384,8 @@ func init() {
 			return l.Elems[len(l.Elems) - 1], nil
 		}
 		return nil, ErrMismatchOperandTypes
-	})
-	RegisterFunction("peekleft", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	}, nil)
+	RegisterFunction("peekleft", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) != 1 {
 			return nil, ErrNumOperands
 		}
@@ -389,22 +393,25 @@ func init() {
 			return l.Elems[0], nil
 		}
 		return nil, ErrMismatchOperandTypes
-	})
-	RegisterFunction("if", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	}, nil)
+	RegisterFunction("if", true, nil, func(env map[string]interface{}, args []*SExpr, eval evalFn, trace Trace) (interface{}, error) {
 		if len(args) != 3 {
 			return nil, ErrNumOperands
 		}
-		p, ok := args[0].(bool)
+		cond, trace := eval(args[0], env, trace)
+		p, ok := cond.(bool)
 		if !ok {
 			return nil, ErrMismatchOperandTypes
 		}
 
 		if p {
-			return args[1], nil
+			result, trace := eval(args[1], env, trace)
+			return result, trace.Err
 		}
-		return args[2], nil
+		result, trace := eval(args[2], env, trace)
+		return result, trace.Err
 	})
-	RegisterFunction("and", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	RegisterFunction("and", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 1 {
 			return nil, ErrNumOperands
 		}
@@ -421,8 +428,8 @@ func init() {
 			p = p && q
 		}
 		return p, nil
-	})
-	RegisterFunction("or", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	}, nil)
+	RegisterFunction("or", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 1 {
 			return nil, ErrNumOperands
 		}
@@ -439,8 +446,8 @@ func init() {
 			p = p || q
 		}
 		return p, nil
-	})
-	RegisterFunction("not", func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	}, nil)
+	RegisterFunction("not", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) != 1 {
 			return nil, ErrNumOperands
 		}
@@ -450,5 +457,5 @@ func init() {
 		}
 
 		return !p, nil
-	})
+	}, nil)
 }

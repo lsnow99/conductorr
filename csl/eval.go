@@ -16,7 +16,15 @@ type List struct {
 	Elems []interface{}
 }
 
-type operation func(env map[string]interface{}, args ...interface{}) (interface{}, error)
+type evalFn func(sexpr *SExpr, env map[string]interface{}, trace Trace) (interface{}, Trace)
+type eagerFnSig func(env map[string]interface{}, args ...interface{}) (interface{}, error)
+type lazyFnSig func(env map[string]interface{}, args []*SExpr, eval evalFn, trace Trace) (interface{}, error)
+
+type operation struct {
+	fn eagerFnSig
+	lazyFn lazyFnSig
+	lazy bool
+}
 
 var (
 	ErrMismatchOperandTypes = &CSLEvalError{
@@ -69,9 +77,11 @@ func Eval(sexprs []*SExpr, env map[string]interface{}) (interface{}, Trace) {
 
 func EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace) (interface{}, Trace) {
 	list := List{}
-	var op operation
+	lazyOps := make([]*SExpr, 0)
+	var op *operation
 	var firstElem bool = true
 	var isDefine bool
+	var isLazy bool
 	var argNum int
 	if sexpr == nil {
 		return nil, trace
@@ -79,6 +89,12 @@ func EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace) (interface
 	if !sexpr.isAtom() {
 		operand := sexpr
 		for operand != nil {
+			if isLazy {
+				lazyOps = append(lazyOps, operand)
+				argNum++
+				operand = operand.R
+				continue
+			}
 			trace.ExprTree = append(trace.ExprTree, operand)
 			if operand.L != nil && operand.L.isAtom() {
 				atom := operand.L
@@ -136,7 +152,9 @@ func EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace) (interface
 						isDefine = true
 					}
 
-					op, ok = builtins[fnName]
+					op = &operation{}
+					*op, ok = builtins[fnName]
+					isLazy = op.lazy
 					if !ok {
 						trace.Err = ErrNoSuchFunction
 						return nil, trace
@@ -161,12 +179,24 @@ func EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace) (interface
 		return list.Elems[0], trace
 	}
 	if op != nil {
-		resp, err := op(env, list.Elems...)
-		if err != nil {
-			trace.Err = err
-			return nil, trace
+		if !op.lazy {
+			resp, err := op.fn(env, list.Elems...)
+			if err != nil {
+				trace.Err = err
+				return nil, trace
+			}
+			return resp, trace
+		} else {
+			for i := range lazyOps {
+				lazyOps[i].R = nil
+			}
+			resp, err := op.lazyFn(env, lazyOps, EvalSExpr, trace)
+			if err != nil {
+				trace.Err = err
+				return nil, trace
+			}
+			return resp, trace
 		}
-		return resp, trace
 	} else {
 		return list, trace
 	}
