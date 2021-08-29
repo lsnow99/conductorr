@@ -773,6 +773,38 @@ func TestIfCondLiteral(t *testing.T) {
 	checkResult(t, int64(42), res, trace)
 }
 
+func TestNestedIfCond(t *testing.T) {
+	expr, err := Parse(`
+	(if
+		(if
+			(> 7 8)
+			(define y 18)
+			(if
+				(< 3 4)
+				true
+				(define x 8)
+			)
+		)
+		(if
+			true
+			19
+			(define z 19)
+		)
+		(define u 189)
+	)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	env := make(map[string]interface{})
+	res, trace := Eval(expr, env)
+
+	if len(env) > 0 {
+		t.Fatal("if function was not lazily-evaluated")
+	}
+	checkResult(t, int64(19), res, trace)
+}
+
 func TestAndExpr(t *testing.T) {
 	expr, err := Parse(`
 	(and true true true (eq 3 3))

@@ -16,9 +16,8 @@ type List struct {
 	Elems []interface{}
 }
 
-type evalFn func(sexpr *SExpr, env map[string]interface{}, trace Trace) (interface{}, Trace)
 type eagerFnSig func(env map[string]interface{}, args ...interface{}) (interface{}, error)
-type lazyFnSig func(env map[string]interface{}, args []*SExpr, eval evalFn, trace Trace) (interface{}, error)
+type lazyFnSig func(env map[string]interface{}, args []*SExpr, trace Trace) (interface{}, Trace)
 
 type operation struct {
 	fn eagerFnSig
@@ -77,11 +76,9 @@ func Eval(sexprs []*SExpr, env map[string]interface{}) (interface{}, Trace) {
 
 func EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace) (interface{}, Trace) {
 	list := List{}
-	lazyOps := make([]*SExpr, 0)
 	var op *operation
 	var firstElem bool = true
 	var isDefine bool
-	var isLazy bool
 	var argNum int
 	if sexpr == nil {
 		return nil, trace
@@ -89,12 +86,6 @@ func EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace) (interface
 	if !sexpr.isAtom() {
 		operand := sexpr
 		for operand != nil {
-			if isLazy {
-				lazyOps = append(lazyOps, operand)
-				argNum++
-				operand = operand.R
-				continue
-			}
 			trace.ExprTree = append(trace.ExprTree, operand)
 			if operand.L != nil && operand.L.isAtom() {
 				atom := operand.L
@@ -154,10 +145,25 @@ func EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace) (interface
 
 					op = &operation{}
 					*op, ok = builtins[fnName]
-					isLazy = op.lazy
 					if !ok {
 						trace.Err = ErrNoSuchFunction
 						return nil, trace
+					}
+					// If the function is lazily-evaluated, then call it immediately and just
+					// pass the arguments as SExpr arguments, without evaluating them. Return
+					// the result of the lazy function
+					if op.lazy {
+						lazyOps := make([]*SExpr, 0)
+						operand = operand.R
+						for operand != nil {
+							arg := &SExpr{
+								Atom: operand.Atom,
+								L: operand.L,
+							}
+							lazyOps = append(lazyOps, arg)
+							operand = operand.R
+						}
+						return op.lazyFn(env, lazyOps, trace)
 					}
 					argNum--
 				}
@@ -179,24 +185,12 @@ func EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace) (interface
 		return list.Elems[0], trace
 	}
 	if op != nil {
-		if !op.lazy {
-			resp, err := op.fn(env, list.Elems...)
-			if err != nil {
-				trace.Err = err
-				return nil, trace
-			}
-			return resp, trace
-		} else {
-			for i := range lazyOps {
-				lazyOps[i].R = nil
-			}
-			resp, err := op.lazyFn(env, lazyOps, EvalSExpr, trace)
-			if err != nil {
-				trace.Err = err
-				return nil, trace
-			}
-			return resp, trace
+		resp, err := op.fn(env, list.Elems...)
+		if err != nil {
+			trace.Err = err
+			return nil, trace
 		}
+		return resp, trace
 	} else {
 		return list, trace
 	}

@@ -1,18 +1,56 @@
 package csl
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 )
 
 var builtins = map[string]operation{}
 
-func RegisterFunction(pattern string, lazy bool, fn eagerFnSig, lazyFn lazyFnSig) {
-	builtins[pattern] = operation{
-		fn: fn,
-		lazy: lazy,
+/*
+RegisterFunction registers a builtin function to CSL that can either be eager or lazy, as specified by
+the `lazy` flag. The function name must meet the same criteria as a variable name to be considered valid.
+Invalid function names will cause RegisterFunction to return an error. If the provided function name is
+already in use, the newly registered function will override and replace it. If `lazy` is true, then
+lazyFn must be supplied, else eagerFn must be supplied, else a non-nil error will be returned. Lazy
+functions must handle their own evaluation of SExpr pointers.
+*/
+func RegisterFunction(name string, lazy bool, eagerFn eagerFnSig, lazyFn lazyFnSig) error {
+	// Check to make sure this name doesn't conflict with any of the symbols in the language definition
+	// (i.e. a name can not be a '(' or '"', or a number, etc))
+	// If the token parses as a variable name that means that it is a valid function name
+	if strings.TrimSpace(name) != name {
+		return fmt.Errorf("function name %s has leading or trailing whitespace", name)
+	}
+	if strings.Contains(name, "\"") {
+		return fmt.Errorf("function name %s contains illegal character '\"'", name)
+	}
+
+	toks := NewTokens(name)
+	if len(toks) < 1 {
+		return fmt.Errorf("did not parse any tokens, expected one for function name %s", name)
+	}
+	if len(toks) > 1 {
+		return fmt.Errorf("parsed multiple tokens, expected one for function name %s", name)
+	}
+	if toks[0].typ != symbolToken {
+		return fmt.Errorf("did not parse function name %s as a symbol token", name)
+	}
+
+	if lazy && lazyFn == nil {
+		return fmt.Errorf("requested to register lazy function but no lazy function supplied")
+	}
+	if !lazy && eagerFn == nil {
+		return fmt.Errorf("requested to register eager function but no eager function supplied")
+	}
+
+	builtins[name] = operation{
+		fn:     eagerFn,
+		lazy:   lazy,
 		lazyFn: lazyFn,
 	}
+	return nil
 }
 
 func init() {
@@ -361,7 +399,7 @@ func init() {
 			return nil, ErrNumOperands
 		}
 		if l, ok := args[0].(List); ok {
-			l.Elems = l.Elems[:len(l.Elems) - 1]
+			l.Elems = l.Elems[:len(l.Elems)-1]
 			return l, nil
 		}
 		return nil, ErrMismatchOperandTypes
@@ -381,7 +419,7 @@ func init() {
 			return nil, ErrNumOperands
 		}
 		if l, ok := args[0].(List); ok {
-			return l.Elems[len(l.Elems) - 1], nil
+			return l.Elems[len(l.Elems)-1], nil
 		}
 		return nil, ErrMismatchOperandTypes
 	}, nil)
@@ -394,22 +432,22 @@ func init() {
 		}
 		return nil, ErrMismatchOperandTypes
 	}, nil)
-	RegisterFunction("if", true, nil, func(env map[string]interface{}, args []*SExpr, eval evalFn, trace Trace) (interface{}, error) {
+	RegisterFunction("if", true, nil, func(env map[string]interface{}, args []*SExpr, trace Trace) (interface{}, Trace) {
 		if len(args) != 3 {
-			return nil, ErrNumOperands
+			trace.Err = ErrNumOperands
+			return nil, trace
 		}
-		cond, trace := eval(args[0], env, trace)
+		cond, trace := EvalSExpr(args[0], env, trace)
 		p, ok := cond.(bool)
 		if !ok {
-			return nil, ErrMismatchOperandTypes
+			trace.Err = ErrMismatchOperandTypes
+			return nil, trace
 		}
 
 		if p {
-			result, trace := eval(args[1], env, trace)
-			return result, trace.Err
+			return EvalSExpr(args[1], env, trace)
 		}
-		result, trace := eval(args[2], env, trace)
-		return result, trace.Err
+		return EvalSExpr(args[2], env, trace)
 	})
 	RegisterFunction("and", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 1 {

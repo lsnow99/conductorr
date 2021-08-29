@@ -140,7 +140,7 @@ func (se *SExpr) String() string {
 	return str
 }
 
-var numberPattern = regexp.MustCompile(`^(((\-)?([0-9]+)(?i)(Gi|G|Mi|M|Ki|K)?))`)
+var numberPattern = regexp.MustCompile(`^(((\-)?([0-9]+)(?i)(Gi|G|Mi|M|Ki|K|B)?))`)
 
 // patterns returns the array of registered regex patterns
 func patterns() []Pattern {
@@ -287,6 +287,8 @@ func ParseAtomicToken(tok *Token) (*SExpr, error) {
 			num *= (1 << 20)
 		case "KI":
 			num *= (1 << 10)
+		case "B":
+			num *= int64(8)
 		}
 		// Flip sign if necessary
 		if matches[0][3] == "-" {
