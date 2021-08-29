@@ -187,6 +187,12 @@ const searchReleasesManual = (id) => {
   })
 }
 
+const searchReleasesAuto = (id) => {
+  return doAPIReq(`/api/v1/media/${id}/searchReleasesAuto`, {
+    method: "POST"
+  })
+}
+
 const testIndexer = (name, base_url, api_key, for_movies, for_series, download_type) => {
   return doAPIReq(`/api/v1/testIndexer`, {
     method: "POST",
@@ -478,6 +484,7 @@ export default {
   getMedia,
   getProfile,
   searchReleasesManual,
+  searchReleasesAuto,
   testIndexer,
   newIndexer,
   getIndexers,

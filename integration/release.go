@@ -96,14 +96,15 @@ func searchKeywords(title string, keywordMap map[string]constant.ParsedOption, s
 FilterReleases takes a pointer to a slice of Releases, as well as a CSL script
 that is expected to always return a boolean. The CSL script will be run once
 for each release, and will have the `a` variable set to the CSL list representation
-of the given release. The CSL script should always return either true or false.
+of the given release. The CSL script should either true or false, OR it can return
+a string/list of strings that will be treated the same as a return false. The string(s)
+will be displayed as errors to the user for why the release failed the filter.
 True means to include the release, false means to filter it out. Returns a slice
-of all excluded releases.
+of all included and excluded releases, as well as a non-nil error if the CSL script
+fails to execute properly. 
 
-If this function ends due to an error, correctness is not guaranteed, and
-the releases slice may be corrupt. If data should not be modified in the event
-of an error, it is recommended to make a copy of your releases slice before
-calling FilterReleases
+If this function ends due to an error, no guarantees are made for the returned release
+slices.
 */
 func FilterReleases(releases []Release, filter string) ([]Release, []Release, error) {
 	sexprs, err := csl.Parse(filter)
@@ -121,7 +122,22 @@ func FilterReleases(releases []Release, filter string) ([]Release, []Release, er
 		}
 		include, ok := val.(bool)
 		if !ok {
-			return nil, nil, fmt.Errorf("csl script returned non boolean value %v", val)
+			str, ok := val.(string)
+			if ok {
+				release.Warnings = append(release.Warnings, str)
+			} else if l, ok := val.(csl.List); ok {
+				warnings := make([]string, 0, len(l.Elems))
+				for _, elem := range l.Elems {
+					if s, ok := elem.(string); ok {
+						warnings = append(warnings, s)
+					} else {
+						return nil, nil, fmt.Errorf("csl script returned non boolean value %v", val)
+					}
+				}
+				release.Warnings = append(release.Warnings, warnings...)
+			} else {
+				return nil, nil, fmt.Errorf("csl script returned non boolean value %v", val)
+			}
 		}
 		if include {
 			included = append(included, release)

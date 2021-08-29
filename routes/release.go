@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -20,30 +19,53 @@ func SearchReleasesManual(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	dbMedia, err := dbstore.GetMediaByID(mediaID)
+	allReleases, _, err := getReleasesForMediaID(mediaID)
+	if err != nil {
+		Respond(w, r.Header.Get("hostname"), err, nil, true)
+	}
+
+	Respond(w, r.Header.Get("hostname"), nil, allReleases, true)
+}
+
+func SearchReleasesAuto(w http.ResponseWriter, r *http.Request) {
+	mediaIDStr := mux.Vars(r)["id"]
+	mediaID, err := strconv.Atoi(mediaIDStr)
 	if err != nil {
 		Respond(w, r.Header.Get("hostname"), err, nil, true)
 		return
+	}
+
+	_, filteredReleases, err := getReleasesForMediaID(mediaID)
+	if err != nil {
+		Respond(w, r.Header.Get("hostname"), err, nil, true)
+	}
+
+	app.DM.AutoDownload(mediaID, filteredReleases)
+
+	Respond(w, r.Header.Get("hostname"), nil, len(filteredReleases), true)
+}
+
+func getReleasesForMediaID(mediaID int) ([]integration.Release, []integration.Release, error) {
+
+	dbMedia, err := dbstore.GetMediaByID(mediaID)
+	if err != nil {
+		return nil, nil, err
 	}
 
 	profileID, err := getProfileID(mediaID)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
-		return
+		return nil, nil, err
 	}
 
 	if profileID < 1 {
-		Respond(w, r.Header.Get("hostname"), errors.New("no profile assigned"), nil, true)
-		return
+		return nil, nil, fmt.Errorf("no profile assigned")
 	}
 	profile, err := dbstore.GetProfileByID(profileID)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), fmt.Errorf("error loading profile for media"), nil, true)
-		return
+		return nil, nil, fmt.Errorf("error loading profile for media")
 	}
 	if !profile.Filter.Valid || !profile.Sorter.Valid {
-		Respond(w, r.Header.Get("hostname"), fmt.Errorf("profile must have sorter and filter defined"), nil, true)
-		return
+		return nil, nil, fmt.Errorf("profile must have sorter and filter defined")
 	}
 
 	media := integration.Media{
@@ -55,13 +77,11 @@ func SearchReleasesManual(w http.ResponseWriter, r *http.Request) {
 	} else if dbMedia.ContentType.String == "episode" {
 		dbSeason, err := dbstore.GetMediaByID(int(dbMedia.ParentMediaID.Int32))
 		if err != nil {
-			Respond(w, r.Header.Get("hostname"), fmt.Errorf("episode has no parent"), nil, true)
-			return
+			return nil, nil, fmt.Errorf("episode has no parent")
 		}
 		dbSeries, err := dbstore.GetMediaByID(int(dbSeason.ParentMediaID.Int32))
 		if err != nil {
-			Respond(w, r.Header.Get("hostname"), fmt.Errorf("episode has no parent"), nil, true)
-			return
+			return nil, nil, fmt.Errorf("season has no parent")
 		}
 		media.Title = dbSeries.Title.String
 		media.Episode = int(dbMedia.Number.Int32)
@@ -72,27 +92,27 @@ func SearchReleasesManual(w http.ResponseWriter, r *http.Request) {
 
 	results, err := app.IM.Search(&media)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
-		return
+		return nil, nil, err
 	}
 
 	included, excluded, err := integration.FilterReleases(results, profile.Filter.String)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
-		return
-	}
-	for index := range excluded {
-		excluded[index].Warnings = append(excluded[index].Warnings, "Release did not pass filter")
+		return nil, nil, err
 	}
 
-	releases := append(included, excluded...)
-	err = integration.SortReleases(&releases, profile.Sorter.String)
+	allReleases := append(included, excluded...)
+	err = integration.SortReleases(&allReleases, profile.Sorter.String)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
-		return
+		return nil, nil, err
 	}
 
-	Respond(w, r.Header.Get("hostname"), nil, releases, true)
+	filteredReleases := included
+	err = integration.SortReleases(&filteredReleases, profile.Sorter.String)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return allReleases, filteredReleases, nil
 }
 
 func getProfileID(mediaID int) (int, error) {

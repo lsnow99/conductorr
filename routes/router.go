@@ -68,6 +68,7 @@ func GetRouter() http.Handler {
 	r.HandleFunc("/api/v1/media/{id}", UpdateMedia).Methods("PUT")
 	r.HandleFunc("/api/v1/media/{id}", DeleteMedia).Methods("DELETE")
 	r.HandleFunc("/api/v1/media/{id}/searchReleasesManual", SearchReleasesManual).Methods("GET")
+	r.HandleFunc("/api/v1/media/{id}/searchReleasesAuto", SearchReleasesAuto).Methods("POST")
 	r.HandleFunc("/api/v1/media/{id}/download", DownloadMediaRelease).Methods("POST")
 	r.HandleFunc("/api/v1/media/{id}/monitoring", SetMonitoringMedia).Methods("PUT")
 	r.HandleFunc("/api/v1/media/{id}/refresh", RefreshMediaMetadata).Methods("POST")

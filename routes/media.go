@@ -279,7 +279,7 @@ func DownloadMediaRelease(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = app.DM.Download(media.ID, release, true)
+	err = app.DM.Download(media.ID, release, true, false, false)
 	Respond(w, r.Header.Get("hostname"), err, nil, true)
 }
 

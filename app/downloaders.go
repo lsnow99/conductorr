@@ -20,6 +20,7 @@ import (
 
 type ManagedDownload struct {
 	ID int
+	TryAgainOnFail bool
 	integration.Download
 }
 
@@ -33,6 +34,7 @@ type ManagedDownloader struct {
 type DownloaderManager struct {
 	sync.RWMutex
 	didFirstRun bool
+	backupReleaseMap map[int][]integration.Release
 	downloaders []ManagedDownloader
 	downloads   []ManagedDownload
 }
@@ -42,7 +44,7 @@ func (md ManagedDownloader) GetName() string {
 }
 
 func (dm *DownloaderManager) DoTask() {
-	downloaders := dm.getDownloaders()
+	downloaders := dm.getDownloaders(false)
 	downloads := make([]integration.Download, 0)
 	for _, dlr := range downloaders {
 		downloadsToMonitor := getDownloadsToMonitor(dm.downloads)
@@ -66,7 +68,10 @@ func (dm *DownloaderManager) GetDownloads() []ManagedDownload {
 	return dm.downloads
 }
 
-func (dm *DownloaderManager) getDownloaders() []ManagedDownloader {
+func (dm *DownloaderManager) getDownloaders(haveLock bool) []ManagedDownloader {
+	if haveLock {
+		return dm.downloaders
+	}
 	dm.RLock()
 	defer dm.RUnlock()
 	return dm.downloaders
@@ -99,9 +104,25 @@ func (dm *DownloaderManager) RegisterDownloader(id int, downloaderType, name str
 	return nil
 }
 
-func (dm *DownloaderManager) Download(mediaID int, release integration.Release, highPriority bool) error {
+func (dm *DownloaderManager) AutoDownload(mediaID int, releases []integration.Release) {
+	dm.Lock()
+	defer dm.Unlock()
+	dm.doAutoDownload(mediaID, releases)
+}
 
-	downloaders := dm.getDownloaders()
+func (dm *DownloaderManager) doAutoDownload(mediaID int, releases []integration.Release) {
+	if len(releases) < 1 {
+		return
+	}
+	dm.backupReleaseMap[mediaID] = releases[1:]
+	if err := dm.Download(mediaID, releases[0], false, true, true); err != nil {
+		logger.LogWarn(err)
+	}
+}
+
+func (dm *DownloaderManager) Download(mediaID int, release integration.Release, highPriority, tryAgainOnFail, haveLock bool) error {
+
+	downloaders := dm.getDownloaders(haveLock)
 
 	var hadError bool
 	for _, downloader := range downloaders {
@@ -121,6 +142,7 @@ func (dm *DownloaderManager) Download(mediaID int, release integration.Release, 
 				md.MediaID = mediaID
 				md.FriendlyName = release.Title
 				md.Identifier = identifier
+				md.TryAgainOnFail = tryAgainOnFail
 				md.Status = constant.StatusWaiting
 				dm.downloads = append(dm.downloads, md)
 				dm.Unlock()
@@ -164,7 +186,6 @@ func (dm *DownloaderManager) DeleteDownloader(id int) {
 }
 
 // processDownloads
-// Assumes exclusive lock has been acquired
 func (dm *DownloaderManager) processDownloads(curState []integration.Download) {
 
 	dm.Lock()
@@ -181,16 +202,13 @@ func (dm *DownloaderManager) processDownloads(curState []integration.Download) {
 					continue
 				}
 				if curStateDL.Status != prevStateDL.Status || !dm.didFirstRun {
-					go func(identifier, status string) {
-						err := dbstore.UpdateDownloadStatusByIdentifier(identifier, status)
-						if err != nil {
-							logger.LogDanger(err)
-						}
-					}(curStateDL.Identifier, curStateDL.Status)
+					updateDBStatus(curStateDL.Identifier, curStateDL.Status)
 					dm.downloads[i].Status = curStateDL.Status
 					switch curStateDL.Status {
 					case constant.StatusError:
-						// TODO Trigger re-download
+						if prevStateDL.TryAgainOnFail {
+							dm.doAutoDownload(dm.downloads[i].MediaID, dm.backupReleaseMap[dm.downloads[i].MediaID])
+						}
 						logger.LogWarn(fmt.Errorf("release failed to download for %s", curStateDL.FriendlyName))
 					case constant.StatusComplete:
 						if prevStateDL.Status == constant.StatusCProcessing || prevStateDL.Status == constant.StatusDone {
@@ -201,6 +219,9 @@ func (dm *DownloaderManager) processDownloads(curState []integration.Download) {
 						go dm.handleCompletedDownload(dm.downloads[i])
 					// Do nothing for these statuses
 					case constant.StatusCError:
+						if prevStateDL.TryAgainOnFail {
+							dm.doAutoDownload(dm.downloads[i].MediaID, dm.backupReleaseMap[dm.downloads[i].MediaID])
+						}
 						logger.LogDanger(fmt.Errorf("conductorr had an error processing %v", curStateDL))
 						// case constant.StatusCProcessing:
 					}
@@ -211,6 +232,15 @@ func (dm *DownloaderManager) processDownloads(curState []integration.Download) {
 	}
 }
 
+func updateDBStatus(identifier, status string) {
+	go func(identifier, status string) {
+		err := dbstore.UpdateDownloadStatusByIdentifier(identifier, status)
+		if err != nil {
+			logger.LogDanger(err)
+		}
+	}(identifier, status)
+}
+
 func (dm *DownloaderManager) handleCompletedDownload(download ManagedDownload) {
 	var outputFile string
 	var dbPath dbstore.Path
@@ -218,23 +248,27 @@ func (dm *DownloaderManager) handleCompletedDownload(download ManagedDownload) {
 	media, err := dbstore.GetMediaByID(download.MediaID)
 	if err != nil {
 		logger.LogDanger(err)
+		updateDBStatus(download.Identifier, constant.StatusCError)
 		return
 	}
 	if media.ParentMediaID.Valid {
 		season, err = dbstore.GetMediaByID(int(media.ParentMediaID.Int32))
 		if err != nil {
 			logger.LogDanger(err)
+			updateDBStatus(download.Identifier, constant.StatusCError)
 			return
 		}
 		if season.ParentMediaID.Valid {
 			series, err = dbstore.GetMediaByID(int(season.ParentMediaID.Int32))
 			if err != nil {
 				logger.LogDanger(err)
+				updateDBStatus(download.Identifier, constant.StatusCError)
 				return
 			}
 			dbPath, err = dbstore.GetPath(int(series.PathID.Int32))
 			if err != nil {
 				logger.LogDanger(err)
+				updateDBStatus(download.Identifier, constant.StatusCError)
 				return
 			}
 			// Rename to /path/Show Name (Year)/Season 0X/Episode Title - S0XE0Y
@@ -244,12 +278,14 @@ func (dm *DownloaderManager) handleCompletedDownload(download ManagedDownload) {
 			outputFile = filepath.Join(outputFile, fmt.Sprintf("%s - S%02dE%02d", media.Title.String, season.Number.Int32, media.Number.Int32))
 		} else {
 			logger.LogDanger(fmt.Errorf("bad media hierarchy"))
+			updateDBStatus(download.Identifier, constant.StatusCError)
 			return
 		}
 	} else {
 		dbPath, err = dbstore.GetPath(int(media.PathID.Int32))
 		if err != nil {
 			logger.LogDanger(err)
+			updateDBStatus(download.Identifier, constant.StatusCError)
 			return
 		}
 		outputFile = media.Title.String + " (" + strconv.Itoa(media.ReleasedAt.Time.Year()) + ")"
@@ -264,6 +300,7 @@ func (dm *DownloaderManager) handleCompletedDownload(download ManagedDownload) {
 
 	if videoPath == "" {
 		logger.LogDanger(fmt.Errorf("could not find output file for %v", download.FriendlyName))
+		updateDBStatus(download.Identifier, constant.StatusCError)
 		return
 	}
 
@@ -271,21 +308,25 @@ func (dm *DownloaderManager) handleCompletedDownload(download ManagedDownload) {
 	destFiledir := filepath.Dir(destFilepath)
 	if err := os.MkdirAll(destFiledir, 0777); err != nil {
 		logger.LogDanger(err)
+		updateDBStatus(download.Identifier, constant.StatusCError)
 		return
 	}
 	destFile, err := os.OpenFile(destFilepath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0777)
 	if err != nil {
 		logger.LogDanger(err)
+		updateDBStatus(download.Identifier, constant.StatusCError)
 		return
 	}
 	srcFile, err := os.OpenFile(videoPath, os.O_RDONLY, os.ModePerm)
 	if err != nil {
 		logger.LogDanger(err)
+		updateDBStatus(download.Identifier, constant.StatusCError)
 		return
 	}
 	n, err := io.Copy(destFile, srcFile)
 	if err != nil {
 		logger.LogDanger(fmt.Errorf("got error after copying %d bytes: %v", n, err))
+		updateDBStatus(download.Identifier, constant.StatusCError)
 		return
 	}
 	logger.LogInfo(fmt.Errorf("successfully copied %s to %s", videoPath, destFilepath))

@@ -5,7 +5,12 @@
     label="Search/Download Automatically"
   >
     <div :class="fontSize" class="mx-2 text-gray-300">
-      <div v-if="!loadingAutoSearch" @click="searchManual" role="button" aria-label="Search automatically">
+      <div
+        v-if="!loadingAutoSearch"
+        @click="searchAuto"
+        role="button"
+        aria-label="Search automatically"
+      >
         <o-icon class="cursor-pointer" icon="bolt" />
       </div>
       <o-icon v-else icon="sync-alt" spin />
@@ -13,29 +18,34 @@
   </o-tooltip>
   <o-tooltip variant="info" :position="tooltipPosition" label="Search Manually">
     <div :class="fontSize" class="mx-2 text-gray-300">
-      <div v-if="!loadingManualSearch" @click="searchManual" role="button" aria-label="Search manually">
+      <div
+        v-if="!loadingManualSearch"
+        @click="searchManual"
+        role="button"
+        aria-label="Search manually"
+      >
         <o-icon class="cursor-pointer" icon="search" />
       </div>
       <o-icon v-else icon="sync-alt" spin />
     </div>
   </o-tooltip>
-    <o-modal
-      full-screen
-      v-model:active="showManualReleasesModal"
+  <o-modal
+    full-screen
+    v-model:active="showManualReleasesModal"
+    @close="showManualReleasesModal = false"
+  >
+    <manual-search-results
       @close="showManualReleasesModal = false"
-    >
-      <manual-search-results
-        @close="showManualReleasesModal = false"
-        :releases="releases"
-        :loading="loadingManualSearch"
-        :mediaID="mediaID"
-      />
-    </o-modal>
+      :releases="releases"
+      :loading="loadingManualSearch"
+      :mediaID="mediaID"
+    />
+  </o-modal>
 </template>
 
 <script>
-import APIUtil from "../util/APIUtil"
-import ManualSearchResults from "./ManualSearchResults.vue"
+import APIUtil from "../util/APIUtil";
+import ManualSearchResults from "./ManualSearchResults.vue";
 
 export default {
   data() {
@@ -81,6 +91,41 @@ export default {
         })
         .finally(() => {
           this.loadingManualSearch = false;
+        });
+    },
+    searchAuto() {
+      this.loadingAutoSearch = true;
+      APIUtil.searchReleasesAuto(this.mediaID)
+        .then((num) => {
+          if (num > 0) {
+            this.$oruga.notification.open({
+              duration: 3000,
+              message: `Successfully queued ${num} releases for auto downloading`,
+              variant: "success",
+              closable: false,
+              position: "bottom-right",
+            });
+          } else {
+            this.$oruga.notification.open({
+              duration: 3000,
+              message: `Could not find any releases to queue`,
+              variant: "danger",
+              closable: false,
+              position: "bottom-right",
+            });
+          }
+        })
+        .catch((err) => {
+          this.$oruga.notification.open({
+            duration: 3000,
+            message: `Error searching: ${err}`,
+            variant: "danger",
+            closable: false,
+            position: "bottom-right",
+          });
+        })
+        .finally(() => {
+          this.loadingAutoSearch = false;
         });
     },
   },

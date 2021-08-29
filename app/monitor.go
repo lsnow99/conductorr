@@ -39,7 +39,7 @@ func (m *SystemMonitor) DoTask() {
 	m.Lock()
 	defer m.Unlock()
 	m.statusMap["indexer"] = checkSystem("indexer", buildServices(IM.getIndexers()))
-	m.statusMap["downloader"] = checkSystem("downloader", buildServices(DM.getDownloaders()))
+	m.statusMap["downloader"] = checkSystem("downloader", buildServices(DM.getDownloaders(false)))
 	m.statusMap["path"] = getPathsStatus()
 }
 
