@@ -161,17 +161,17 @@ func UpsertMedia(title *string, description *string, releasedAt *time.Time, ende
 		return 0, err
 	}
 
-	for _, genre := range genres {
-		_, err := tx.Exec(`
-		INSERT INTO media_genre (media_id, genre_id) VALUES (
-			?,
-			(SELECT id FROM genre WHERE UPPER(name)=UPPER(?))
-		)
-		`, id, genre)
-		if err != nil {
-			return 0, err
-		}
-	}
+	// for _, genre := range genres {
+	// 	_, err := tx.Exec(`
+	// 	INSERT INTO media_genre (media_id, genre_id) VALUES (
+	// 		?,
+	// 		(SELECT id FROM genre WHERE UPPER(name)=UPPER(?))
+	// 	)
+	// 	`, id, genre)
+	// 	if err != nil {
+	// 		return 0, err
+	// 	}
+	// }
 	err = tx.Commit()
 	return id, err
 }
