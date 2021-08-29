@@ -151,7 +151,7 @@ func (t *Transmission) PollDownloads(hashes []string) ([]Download, error) {
 		}
 
 		d.BytesLeft = uint64(*torrent.LeftUntilDone)
-		d.FullSize = uint64(*torrent.TotalSize)
+		d.FullSize = uint64(*torrent.TotalSize)/8
 		d.FriendlyName = *torrent.Name
 		d.Identifier = *torrent.HashString
 		downloads = append(downloads, d)
