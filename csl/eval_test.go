@@ -599,11 +599,30 @@ func TestAppend(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(exprs, env)
+	_, trace := Eval(exprs, env)
 	expected := List{
 		Elems: append(original.Elems, int64(13)),
 	}
-	checkResult(t, expected, res, trace)
+	checkResult(t, expected, env["l"], trace)
+}
+
+func TestAppendUndefined(t *testing.T) {
+	env := make(map[string]interface{})
+	exprs, err := Parse(`
+	(append l 13)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, trace := Eval(exprs, env)
+	expected := List{
+		Elems: []interface{}{int64(13)},
+	}
+	l, ok := env["l"]
+	if !ok {
+		t.Fatalf("expected variable l to be defined but was not")
+	}
+	checkResult(t, expected, l, trace)
 }
 
 func TestAppendMultiple(t *testing.T) {
@@ -618,11 +637,11 @@ func TestAppendMultiple(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(exprs, env)
+	_, trace := Eval(exprs, env)
 	expected := List{
 		Elems: append(original.Elems, int64(13), int64(21), int64(34)),
 	}
-	checkResult(t, expected, res, trace)
+	checkResult(t, expected, env["l"], trace)
 }
 
 func TestAppendLeft(t *testing.T) {
@@ -637,11 +656,11 @@ func TestAppendLeft(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(exprs, env)
+	_, trace := Eval(exprs, env)
 	expected := List{
 		Elems: append([]interface{}{int64(0)}, original.Elems...),
 	}
-	checkResult(t, expected, res, trace)
+	checkResult(t, expected, env["l"], trace)
 }
 
 func TestAppendLeftMultiple(t *testing.T) {
@@ -656,11 +675,11 @@ func TestAppendLeftMultiple(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(exprs, env)
+	_, trace := Eval(exprs, env)
 	expected := List{
 		Elems: append([]interface{}{int64(0), int64(0), int64(0)}, original.Elems...),
 	}
-	checkResult(t, expected, res, trace)
+	checkResult(t, expected, env["l"], trace)
 }
 
 func TestPop(t *testing.T) {
@@ -679,7 +698,8 @@ func TestPop(t *testing.T) {
 	expected := List{
 		Elems: original.Elems[:len(original.Elems) - 1],
 	}
-	checkResult(t, expected, res, trace)
+	checkResult(t, expected, env["l"], trace)
+	checkResult(t, int64(8), res, trace)
 }
 
 func TestPopLeft(t *testing.T) {
@@ -698,7 +718,8 @@ func TestPopLeft(t *testing.T) {
 	expected := List{
 		Elems: original.Elems[1:],
 	}
-	checkResult(t, expected, res, trace)
+	checkResult(t, expected, env["l"], trace)
+	checkResult(t, int64(1), res, trace)
 }
 
 func TestPeek(t *testing.T) {

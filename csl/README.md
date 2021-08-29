@@ -74,16 +74,13 @@ Lists are implicitly defined any time expressions are joined within parentheses 
 - `(nths i s)` Returns the `i`th character in the string `s`
 - `(len l)` Returns the length of list `l`
 - `(lens s)` Returns the length of string `s`
-- `(append l v ...)` Appends v and all subsequent arguments in order to the right end of list `l` and returns the new list.
-- `(appendleft l v ...)` Appends v and all subsequent arguments in order to the left end of list `l` and returns the new list
-- `(pop l ...)` Removes the rightmost element in list `l`, returning the modified list.
-- `(popleft l ...)` Removes the leftmost element in list `l`, returning the modified list.
-- `(peek l)` Returns the rightmost element in list `l`. (shorthand for `(nth (- (len l) 1) l)`)
-- `(peekleft l)` Returns the leftmost element in list `l`. (shorthand for `(nth 0 l)`)
-> NOTE: For the above list modification functions, the modified list is returned but the original list remains unmodified. In other words, to update list `l` do the following: `(define l (append l 7))`. In order to get the last element of a list and remove it you will need to perform `peek` and then `pop` in two separate statements.
-- `(if p expr1 expr2)` Returns the result of `expr1` if `p` evaluates to `true`, and returns the result of `expr2` otherwise.
-- `(and p ...)` Returns the result of a conditional AND applied to all operands in the expression. Returns `true` if there is only one operand.
-- `(or p ...)` Returns the result of a conditional OR applied to all operands in the expression. Returns `true` if there is only one operand.
-- `(not p)` Returns the result of conditional inverse applied to p.
+- `(append l v ...)` Appends `v` and all subsequent arguments in order to the right end of list `l`. If the list `l` does not yet exist, then it is initialized
+- `(appendleft l v ...)` Appends `v` and all subsequent arguments in order to the left end of list `l`. If the list `l` does not yet exist, then it is initialized
+- `(pop l ...)` Removes the rightmost element in list `l`, returning the removed element
+- `(popleft l ...)` Removes the leftmost element in list `l`, returning the removed element
+- `(if p expr1 expr2)` Returns the result of `expr1` if `p` evaluates to `true`, and returns the result of `expr2` otherwise
+- `(and p ...)` Returns the result of a conditional AND applied to all operands in the expression. Returns `true` if there is only one operand
+- `(or p ...)` Returns the result of a conditional OR applied to all operands in the expression. Returns `true` if there is only one operand
+- `(not p)` Returns the result of conditional inverse applied to p
 
-> NOTE: All of the above functions are evaluated *eagerly*, meaning their arguments are evaluated before the function is called. The exception to this is the `if` function, which only evaluates the condition and the branch that it determines to execute, and does not evaluate the dead branch.
+> NOTE: All of the above functions are evaluated *eagerly*, meaning their arguments are evaluated before the function is called. The exception to this is the `if` function, which only evaluates the condition and the branch that it determines to execute, and does not evaluate the dead branch

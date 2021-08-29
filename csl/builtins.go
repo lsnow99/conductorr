@@ -374,46 +374,140 @@ func init() {
 		}
 		return nil, ErrMismatchOperandTypes
 	}, nil)
-	RegisterFunction("append", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	RegisterFunction("append", true, nil, func(env map[string]interface{}, args []*SExpr, trace Trace) (interface{}, Trace) {
 		if len(args) < 2 {
-			return nil, ErrNumOperands
+			trace.Err = ErrNumOperands
+			return nil, trace
 		}
-		if l, ok := args[0].(List); ok {
-			l.Elems = append(l.Elems, args[1:]...)
-			return l, nil
+		if args[0].L == nil || !args[0].L.isAtom() {
+			trace.Err = ErrMismatchOperandTypes
+			return nil, trace
 		}
-		return nil, ErrMismatchOperandTypes
-	}, nil)
-	RegisterFunction("appendleft", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		atom := args[0].L
+		x, ok := atom.varName()
+		if !ok {
+			trace.Err = ErrMismatchOperandTypes
+			return nil, trace
+		}
+		v, ok := env[x]
+		if !ok {
+			v = List{}
+		}
+		l, ok := v.(List)
+		if !ok {
+			trace.Err = ErrMismatchOperandTypes
+			return nil, trace
+		}
+		for _, arg := range args[1:] {
+			value, trace := EvalSExpr(arg, env, trace)
+			if trace.Err != nil {
+				return nil, trace
+			}
+			l.Elems = append(l.Elems, value)
+		}
+		env[x] = l
+		return nil, trace
+	})
+	RegisterFunction("appendleft", true, nil, func(env map[string]interface{}, args []*SExpr, trace Trace) (interface{}, Trace) {
 		if len(args) < 2 {
-			return nil, ErrNumOperands
+			trace.Err = ErrNumOperands
+			return nil, trace
 		}
-		if l, ok := args[0].(List); ok {
-			l.Elems = append(args[1:], l.Elems...)
-			return l, nil
+		if args[0].L == nil || !args[0].L.isAtom() {
+			trace.Err = ErrMismatchOperandTypes
+			return nil, trace
 		}
-		return nil, ErrMismatchOperandTypes
-	}, nil)
-	RegisterFunction("pop", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		atom := args[0].L
+		x, ok := atom.varName()
+		if !ok {
+			trace.Err = ErrMismatchOperandTypes
+			return nil, trace
+		}
+		v, ok := env[x]
+		if !ok {
+			v = List{}
+		}
+		l, ok := v.(List)
+		if !ok {
+			trace.Err = ErrMismatchOperandTypes
+			return nil, trace
+		}
+		values := make([]interface{}, 0, len(args))
+		for _, arg := range args[1:] {
+			value, trace := EvalSExpr(arg, env, trace)
+			if trace.Err != nil {
+				return nil, trace
+			}
+			values = append(values, value)
+		}
+		l.Elems = append(values, l.Elems...)
+		env[x] = l
+		return nil, trace
+	})
+	RegisterFunction("pop", true, nil, func(env map[string]interface{}, args []*SExpr, trace Trace) (interface{}, Trace) {
 		if len(args) != 1 {
-			return nil, ErrNumOperands
+			trace.Err = ErrNumOperands
+			return nil, trace
 		}
-		if l, ok := args[0].(List); ok {
-			l.Elems = l.Elems[:len(l.Elems)-1]
-			return l, nil
+		if args[0].L == nil || !args[0].L.isAtom() {
+			trace.Err = ErrMismatchOperandTypes
+			return nil, trace
 		}
-		return nil, ErrMismatchOperandTypes
-	}, nil)
-	RegisterFunction("popleft", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		atom := args[0].L
+		x, ok := atom.varName()
+		if !ok {
+			trace.Err = ErrMismatchOperandTypes
+			return nil, trace
+		}
+		v, ok := env[x]
+		if !ok {
+			v = List{}
+		}
+		l, ok := v.(List)
+		if !ok {
+			trace.Err = ErrMismatchOperandTypes
+			return nil, trace
+		}
+		if len(l.Elems) == 0 {
+			return nil, trace
+		}
+		val := l.Elems[len(l.Elems) - 1]
+		l.Elems = l.Elems[:len(l.Elems) - 1]
+		env[x] = l
+		return val, trace
+	})
+	RegisterFunction("popleft", true, nil, func(env map[string]interface{}, args []*SExpr, trace Trace) (interface{}, Trace) {
 		if len(args) != 1 {
-			return nil, ErrNumOperands
+			trace.Err = ErrNumOperands
+			return nil, trace
 		}
-		if l, ok := args[0].(List); ok {
-			l.Elems = l.Elems[1:]
-			return l, nil
+		if args[0].L == nil || !args[0].L.isAtom() {
+			trace.Err = ErrMismatchOperandTypes
+			return nil, trace
 		}
-		return nil, ErrMismatchOperandTypes
-	}, nil)
+		atom := args[0].L
+		x, ok := atom.varName()
+		if !ok {
+			trace.Err = ErrMismatchOperandTypes
+			return nil, trace
+		}
+		v, ok := env[x]
+		if !ok {
+			v = List{}
+		}
+		l, ok := v.(List)
+		if !ok {
+			trace.Err = ErrMismatchOperandTypes
+			return nil, trace
+		}
+		if len(l.Elems) == 0 {
+			return nil, trace
+		}
+		val := l.Elems[0]
+		l.Elems = l.Elems[1:]
+		env[x] = l
+		return val, trace
+	})
 	RegisterFunction("peek", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) != 1 {
 			return nil, ErrNumOperands
