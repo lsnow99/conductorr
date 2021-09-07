@@ -2,6 +2,7 @@
   <o-tooltip
     variant="info"
     :position="tooltipPosition"
+    :active="tooltipActive"
     label="Search/Download Automatically"
   >
     <div :class="fontSize" class="mx-2 text-gray-300">
@@ -16,7 +17,12 @@
       <o-icon v-else icon="sync-alt" spin />
     </div>
   </o-tooltip>
-  <o-tooltip variant="info" :position="tooltipPosition" label="Search Manually">
+  <o-tooltip
+    variant="info"
+    :position="tooltipPosition"
+    label="Search Manually"
+    :active="tooltipActive"
+  >
     <div :class="fontSize" class="mx-2 text-gray-300">
       <div
         v-if="!loadingManualSearch"
@@ -46,6 +52,7 @@
 <script>
 import APIUtil from "../util/APIUtil";
 import ManualSearchResults from "./ManualSearchResults.vue";
+import TooltipUtil from "../util/TooltipUtil";
 
 export default {
   data() {
@@ -72,6 +79,7 @@ export default {
     },
   },
   components: { ManualSearchResults },
+  mixins: [TooltipUtil],
   methods: {
     searchManual() {
       this.loadingManualSearch = true;
@@ -91,6 +99,7 @@ export default {
         })
         .finally(() => {
           this.loadingManualSearch = false;
+          this.resetTooltips();
         });
     },
     searchAuto() {
@@ -126,6 +135,7 @@ export default {
         })
         .finally(() => {
           this.loadingAutoSearch = false;
+          this.resetTooltips();
         });
     },
   },

@@ -82,21 +82,22 @@
       </div>
     </section>
 
-    <o-modal v-model:active="mediaEvent">
-      <header v-if="mediaEvent" class="modal-card-header">
+    <o-modal v-model:active="selectedMediaEvent">
+      <header v-if="selectedMediaEvent" class="modal-card-header">
         <p class="modal-card-title">
           {{
-            eventTitle(mediaEvent) +
-            (mediaEvent.content_type == "episode"
-              ? " - " + mediaEvent.title
+            eventTitle(selectedMediaEvent) +
+            (selectedMediaEvent.content_type == "episode"
+              ? " - " + selectedMediaEvent.title
               : "")
           }}
         </p>
       </header>
-      <section v-if="mediaEvent" class="modal-card-content">
-        {{ mediaEvent.description }}
+      <section v-if="selectedMediaEvent" class="modal-card-content">
+        <search-actions :mediaID="selectedMediaEvent.media_id"/>
+        <p>{{ selectedMediaEvent.description }}</p>
       </section>
-      <footer v-if="mediaEvent" class="modal-card-footer"></footer>
+      <footer v-if="selectedMediaEvent" class="modal-card-footer"></footer>
     </o-modal>
   </page-wrapper>
 </template>
@@ -131,6 +132,7 @@
 import PageWrapper from "../components/PageWrapper.vue";
 import { DateTime } from "luxon";
 import APIUtil from "../util/APIUtil";
+import SearchActions from '../components/SearchActions.vue';
 
 const EVENT_BACKGROUNDS = [
   "bg-red-500",
@@ -152,6 +154,7 @@ export default {
   },
   components: {
     PageWrapper,
+    SearchActions,
   },
   methods: {
     goPrev() {

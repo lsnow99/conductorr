@@ -1,9 +1,8 @@
 --SQLITE--
-PRAGMA defer_foreign_keys = true;
+PRAGMA foreign_keys=off;
 --END--
 
 BEGIN;
-
 
 ALTER TABLE media RENAME TO old_media;
 
@@ -35,10 +34,8 @@ CREATE TABLE media(
 
 INSERT INTO media SELECT * FROM old_media;
 
-DROP TABLE old_media;
-
 COMMIT;
 
 --SQLITE--
-PRAGMA defer_foreign_keys = false;
+PRAGMA foreign_keys=on;
 --END--

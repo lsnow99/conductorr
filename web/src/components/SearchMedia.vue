@@ -58,13 +58,15 @@
 </template>
 
 <script>
+import { nextTick } from "vue";
+
 export default {
   data() {
     return {
       contentType: "",
       page: 1,
       current: 1,
-      lastSearchTime: null
+      lastSearchTime: null,
     };
   },
   props: {
@@ -100,32 +102,34 @@ export default {
     },
     query: {
       type: String,
-      default: function() {
-        return ""
-      }
-    }
+      default: function () {
+        return "";
+      },
+    },
   },
   emits: ["close", "search", "selected-media", "update:query"],
   methods: {
     search() {
-      const now = new Date()
-      if (!this.lastSearchTime || now.getTime() - this.lastSearchTime.getTime() > 300){
+      const now = new Date();
+      if (
+        !this.lastSearchTime ||
+        now.getTime() - this.lastSearchTime.getTime() > 300
+      ) {
         this.$emit("search", this.computedQuery, this.contentType, this.page);
-        this.lastSearchTime = now
+        this.lastSearchTime = now;
       }
     },
     clear() {
-      this.computedQuery = ''
+      this.computedQuery = "";
       this.search();
     },
   },
   mounted() {
-
     const screenWidth = window.innerWidth;
     if (screenWidth >= 768) {
-    setTimeout(() => {
-      this.$refs.searchbar.$el.firstChild.focus()
-    }, 100)
+      nextTick(() => {
+        this.$refs.searchbar.$el.firstChild.focus();
+      });
     }
     this.search();
   },
@@ -138,22 +142,22 @@ export default {
       this.page = newVal;
       this.search();
     },
-    computedQuery: function(newVal, oldVal) {
+    computedQuery: function (newVal, oldVal) {
       this.page = 1;
-      if (newVal === '' && oldVal != '') {
+      if (newVal === "" && oldVal != "") {
         this.search();
       }
-    }
+    },
   },
   computed: {
     computedQuery: {
       get() {
-        return this.query
+        return this.query;
       },
       set(q) {
-        this.$emit('update:query', q)
-      }
-    }
-  }
+        this.$emit("update:query", q);
+      },
+    },
+  },
 };
 </script>

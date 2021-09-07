@@ -196,6 +196,7 @@
 </style>
 
 <script>
+import { nextTick } from "vue";
 import APIUtil from "../util/APIUtil";
 import CSLEditor from "../components/CSLEditor.vue";
 import Split from "split.js";
@@ -420,9 +421,9 @@ export default {
   watch: {
     outputs: {
       handler() {
-        setTimeout(() => {
+        nextTick(() => {
           this.scrollOutput();
-        }, 10);
+        });
       },
       deep: true,
     },
