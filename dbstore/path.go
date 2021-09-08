@@ -104,3 +104,40 @@ func GetPath(id int) (Path, error) {
 	path := Path{}
 	return path, row.Scan(&path.ID, &path.Path, &path.MoviesDefault, &path.SeriesDefault)
 }
+
+func DumpPaths(tx *sql.Tx) ([]*Path, error) {
+	paths := make([]*Path, 0)
+
+	rows, err := db.Query(`SELECT id, path, movies_default, series_default FROM path;`)
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	} else if err == sql.ErrNoRows {
+		return paths, nil
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		path := &Path{}
+		err := rows.Scan(&path.ID, &path.Path, &path.MoviesDefault, &path.SeriesDefault)
+		if err != nil {
+			return nil, err
+		}
+		paths = append(paths, path)
+	}
+
+	return paths, rows.Err()
+}
+
+func RestorePaths(tx *sql.Tx, paths []*Path) error {
+	for _, path := range paths {
+		_, err := tx.Exec(`
+		INSERT INTO path (id, path, movies_default, series_default)
+		VALUES(?, ?, ?, ?)`, path.ID, path.Path, path.MoviesDefault, path.SeriesDefault)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

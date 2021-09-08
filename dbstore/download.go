@@ -1,6 +1,10 @@
 package dbstore
 
-import "github.com/lsnow99/conductorr/constant"
+import (
+	"database/sql"
+
+	"github.com/lsnow99/conductorr/constant"
+)
 
 func NewDownload(mediaID int, downloaderID int, identifier string, status string, friendlyName string) (id int, err error) {
 	row := db.QueryRow(`
@@ -92,4 +96,39 @@ func GetDownloadByIdentifier(identifier string) (Download, error) {
 	row := db.QueryRow(`SELECT id, media_id, downloader_id, status, friendly_name, identifier FROM download WHERE identifier = ?`, identifier)
 	download := Download{}
 	return download, row.Scan(&download.ID, &download.MediaID, &download.DownloaderID, &download.Status, &download.FriendlyName, &download.Identifier)
+}
+
+func DumpDownloads(tx *sql.Tx) ([]*Download, error) {
+	rows, err := db.Query(`
+		SELECT id, media_id, downloader_id, status, friendly_name, identifier
+		FROM download
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	downloads := make([]*Download, 0)
+	for rows.Next() {
+		download := &Download{}
+		if err := rows.Scan(&download.ID, &download.MediaID, &download.DownloaderID, &download.Status, &download.FriendlyName, &download.Identifier); err != nil {
+			return nil, err
+		}
+		downloads = append(downloads, download)
+	}
+	return downloads, rows.Err()
+}
+
+func RestoreDownloads(tx *sql.Tx, downloads []*Download) error {
+	for _, download := range downloads {
+		_, err := tx.Exec(`
+		INSERT INTO download 
+		(id, media_id, downloader_id, identifier, status, friendly_name) 
+		VALUES (?, ?, ?, ?, ?, ?)
+	`, download.ID, download.MediaID, download.DownloaderID, download.Identifier, download.Status, download.FriendlyName)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

@@ -72,3 +72,46 @@ func GetMediaServer(id int) (mediaServer MediaServer, err error) {
 	}
 	return
 }
+
+func DumpMediaServers(tx *sql.Tx) (mediaServers []*MediaServer, err error) {
+	rows, err := db.Query(`SELECT id, media_server_type, name, config FROM media_server WHERE true`)
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	} else if err == sql.ErrNoRows {
+		return mediaServers, nil
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		mediaServer := &MediaServer{}
+		var configStr string
+		err := rows.Scan(&mediaServer.ID, &mediaServer.MediaServerType, &mediaServer.Name, &configStr)
+		if err != nil {
+			return nil, err
+		}
+		if err := json.Unmarshal([]byte(configStr), &mediaServer.Config); err != nil {
+			return nil, err
+		}
+		mediaServers = append(mediaServers, mediaServer)
+	}
+
+	return mediaServers, nil
+}
+
+func RestoreMediaServers(tx *sql.Tx, mediaServers []*MediaServer) error {
+	for _, mServer := range mediaServers {
+		configStr, err := json.Marshal(mServer.Config)
+		if err != nil {
+			return err
+		}
+		_, err = tx.Exec(`
+		INSERT INTO media_server (id, media_server_type, name, config) 
+		VALUES (?, ?, ?, ?)`, mServer.ID, mServer.MediaServerType, mServer.Name, configStr)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

@@ -1,6 +1,7 @@
 package dbstore
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"io"
@@ -130,6 +131,10 @@ func Init() error {
 
 func Close() error {
 	return db.Close()
+}
+
+func NewTx(ctx context.Context, opts sql.TxOptions) (*sql.Tx, error) {
+	return db.BeginTx(ctx, &opts)
 }
 
 func initUser() error {

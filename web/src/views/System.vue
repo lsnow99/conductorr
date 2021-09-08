@@ -16,22 +16,56 @@
     <div class="h-72 overflow-y-scroll">
       <LogPane :logs="logs" />
     </div>
+    <div>
+      <o-button icon-left="download" variant="primary" @click="createBackup">
+        <action-button :mode="backupMode"> Download Backup </action-button>
+      </o-button>
+      <iframe :src="backupUrl" class="hidden"></iframe>
+    </div>
   </page-wrapper>
 </template>
 
 <script>
 import PageWrapper from "../components/PageWrapper.vue";
 import SystemStatus from "../components/SystemStatus.vue";
+import ActionButton from "../components/ActionButton.vue";
 import LogPane from "../components/LogPane.vue";
 import APIUtil from "../util/APIUtil";
 import { DateTime } from "luxon";
 
 export default {
-  components: { PageWrapper, SystemStatus, LogPane },
+  components: { PageWrapper, SystemStatus, LogPane, ActionButton },
   data() {
     return {
       logs: [],
+      backupMode: "",
+      backupUrl: '',
     };
+  },
+  methods: {
+    createBackup() {
+      this.backupMode = "loading";
+      APIUtil.createNewBackup()
+        .then((backupData) => {
+          this.backupMode = "success";
+          this.backupUrl = backupData.url;
+        })
+        .catch((err) => {
+            this.$oruga.notification.open({
+              duration: 5000,
+              message: `Failed to create backup: ${err}`,
+              position: "bottom-right",
+              variant: "danger",
+              closable: false,
+            });
+          this.backupMode = "danger";
+        })
+        .finally(() => {
+          setTimeout(() => {
+            this.backupMode = "";
+          }, 5000);
+        });
+    },
   },
   mounted() {
     APIUtil.getLogs().then((logs) => {

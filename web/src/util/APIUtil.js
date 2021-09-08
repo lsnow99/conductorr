@@ -467,6 +467,12 @@ const refreshMediaMetadata = (id) => {
   })
 }
 
+const createNewBackup = () => {
+  return doAPIReq(`/api/v1/backup`, {
+    method: "POST"
+  })
+}
+
 export default {
   signIn,
   signUp,
@@ -517,5 +523,6 @@ export default {
   getMediaServers,
   updateMediaServer,
   deleteMediaServer,
-  refreshMediaMetadata
+  refreshMediaMetadata,
+  createNewBackup
 };

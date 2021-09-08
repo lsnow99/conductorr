@@ -72,3 +72,47 @@ func GetDownloader(id int) (downloader Downloader, err error) {
 	}
 	return
 }
+
+func DumpDownloaders(tx *sql.Tx) ([]*Downloader, error) {
+	downloaders := make([]*Downloader, 0)
+
+	rows, err := db.Query(`SELECT id, downloader_type, name, config FROM downloader WHERE true`)
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	} else if err == sql.ErrNoRows {
+		return downloaders, nil
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		downloader := &Downloader{}
+		var configStr string
+		err := rows.Scan(&downloader.ID, &downloader.DownloaderType, &downloader.Name, &configStr)
+		if err != nil {
+			return nil, err
+		}
+		if err := json.Unmarshal([]byte(configStr), &downloader.Config); err != nil {
+			return nil, err
+		}
+		downloaders = append(downloaders, downloader)
+	}
+
+	return downloaders, nil
+}
+
+func RestoreDownloaders(tx *sql.Tx, downloaders []*Downloader) error {
+	for _, downloader := range downloaders {
+		configStr, err := json.Marshal(downloader.Config)
+		if err != nil {
+			return err
+		}
+		_, err = tx.Exec(`
+		INSERT INTO downloader (id, downloader_type, name, config) 
+		VALUES (?, ?, ?, ?)`, downloader.ID, downloader.DownloaderType, downloader.Name, configStr)
+
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}

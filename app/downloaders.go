@@ -59,7 +59,7 @@ func (dm *DownloaderManager) DoTask() {
 }
 
 func (dm *DownloaderManager) GetFrequency() time.Duration {
-	return time.Second * 7
+	return time.Second * 5
 }
 
 func (dm *DownloaderManager) GetDownloads() []ManagedDownload {

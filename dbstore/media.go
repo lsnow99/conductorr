@@ -318,3 +318,52 @@ func GetMonitoringMedia() (*[]Media, error) {
 	}
 	return &medias, nil
 }
+
+func DumpMedias(tx *sql.Tx) ([]*Media, error) {
+	rows, err := db.Query(`
+		SELECT id, title, description, released_at, ended_at, content_type, poster,
+			parent_media_id, tmdb_id, imdb_id, tmdb_rating, imdb_rating,
+			runtime, status, profile_id, path_id, size, item_number, monitoring, path
+		FROM media
+		`)
+
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+	defer rows.Close()
+
+	medias := make([]*Media, 0, 10)
+	for rows.Next() {
+		media := Media{}
+		if err := rows.Scan(&media.ID, &media.Title, &media.Description, &media.ReleasedAt,
+			&media.EndedAt, &media.ContentType, &media.Poster, &media.ParentMediaID,
+			&media.TmdbID, &media.ImdbID, &media.TmdbRating, &media.ImdbRating,
+			&media.Runtime, &media.Status, &media.ProfileID, &media.PathID, &media.Size, 
+			&media.Number, &media.Monitoring, &media.Path); 
+			err != nil {
+			return nil, err
+		}
+		medias = append(medias, &media)
+	}
+	return medias, nil
+}
+
+func RestoreMedias(tx *sql.Tx, medias []*Media) error {
+	for _, media := range medias {
+		_, err := tx.Exec(`
+		INSERT INTO media (id, title, description, released_at, ended_at, content_type,
+			parent_media_id, tmdb_id, imdb_id, tmdb_rating, imdb_rating, runtime, 
+			poster, profile_id, path_id, item_number, monitoring)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		`, media.ID, media.Title, media.Description, media.ReleasedAt, media.EndedAt,
+			media.ContentType, media.ParentMediaID, media.TmdbID, media.ImdbID,
+			media.ImdbRating, media.Runtime, media.Poster, media.ProfileID, media.PathID,
+			media.Number, media.Monitoring)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

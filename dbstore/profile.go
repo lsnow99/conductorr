@@ -1,5 +1,7 @@
 package dbstore
 
+import "database/sql"
+
 func CreateProfile(name string) error {
 	_, err := db.Exec(`INSERT INTO profile (name) VALUES (?)`, name)
 	return err
@@ -43,4 +45,39 @@ func UpdateProfile(id int, name, filter, sorter string) error {
 func DeleteProfile(id int) error {
 	_, err := db.Exec(`DELETE FROM profile WHERE id = ?`, id)
 	return err
+}
+
+func DumpProfiles(tx *sql.Tx) ([]*Profile, error) {
+	profiles := make([]*Profile, 0)
+
+	rows, err := db.Query(`SELECT id, name, filter, sorter FROM profile;`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		profile := Profile{}
+		err := rows.Scan(&profile.ID, &profile.Name, &profile.Filter, &profile.Sorter)
+		if err != nil {
+			return nil, err
+		}
+		profiles = append(profiles, &profile)
+	}
+
+	return profiles, rows.Err()
+}
+
+func RestoreProfiles(tx *sql.Tx, profiles []*Profile) error {
+	for _, profile := range profiles {
+		_, err := tx.Exec(`
+		INSERT INTO profile (id, name, filter, sorter)
+		VALUES(?, ?, ?, ?)`, profile.ID, profile.Name, profile.Filter, profile.Sorter)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

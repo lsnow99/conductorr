@@ -98,6 +98,8 @@ func GetRouter() http.Handler {
 	r.HandleFunc("/api/v1/mediaServer", GetMediaServers).Methods("GET")
 	r.HandleFunc("/api/v1/mediaServer/{id}", UpdateMediaServer).Methods("PUT")
 	r.HandleFunc("/api/v1/mediaServer/{id}", DeleteMediaServer).Methods("DELETE")
+	r.HandleFunc("/api/v1/backup", CreateNewBackup).Methods("POST")
+	r.HandleFunc("/api/v1/backup/{id}", GetBackupFile).Methods("GET")
 
 	r.Use(AuthMiddleware)
 
