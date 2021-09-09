@@ -62,6 +62,7 @@ import {
   faCircleNotch,
   faSort,
   faHourglassStart,
+  faRss,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
@@ -154,6 +155,7 @@ library.add(faBookmarkRegular);
 library.add(faCircleNotch);
 library.add(faSort);
 library.add(faHourglassStart);
+library.add(faRss);
 
 const app = createApp(App);
 

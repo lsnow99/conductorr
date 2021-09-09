@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col min-h-screen">
   <nav class="container mx-auto mt-4 pb-4">
-    <div class="menu" :class="expandMenu ? 'expanded' : ''" @click="expandMenu = !expandMenu" role="button" aria-label="Expand navigation menu">
+    <div class="menu cursor-auto" :class="expandMenu ? 'expanded' : ''" @click="expandMenu = !expandMenu" role="button" aria-label="Expand navigation menu">
       <div class="visible lg:hidden px-3 py-2 text-xl" >
         <div
           class="

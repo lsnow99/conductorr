@@ -3,8 +3,15 @@
     <section>
       <div class="flex flex-col">
         <div class="flex flex-col items-center sm:flex-row justify-between">
-          <div>
-            <o-button variant="primary" @click="resetDate">Today</o-button>
+          <div class="table-row">
+            <div class="table-cell"><o-button variant="primary" @click="resetDate">Today</o-button></div>
+            <a href="#" class="table-cell"
+              ><o-button
+                variant="primary"
+                class="h-full table-cell ml-3"
+                icon-left="rss"
+              ></o-button
+            ></a>
           </div>
           <div class="overflow-hidden rounded-lg inline-block mt-4 sm:mt-0">
             <o-radio v-model="viewType" name="viewType" native-value="monthly"
@@ -80,6 +87,24 @@
           </div>
         </div>
       </div>
+      <div class="flex flex-col md:flex-row text-lg">
+        <div class="flex flex-row items-center mx-4">
+          <div class="w-6 h-2 bg-green-600 mr-1" />
+          Available
+        </div>
+        <div class="flex flex-row items-center mx-4">
+          <div class="w-6 h-2 bg-purple-600 mr-1" />
+          Unaired/Monitored
+        </div>
+        <div class="flex flex-row items-center mx-4">
+          <div class="w-6 h-2 bg-gray-500 mr-1" />
+          Unmonitored
+        </div>
+        <div class="flex flex-row items-center mx-4">
+          <div class="w-6 h-2 bg-red-600 mr-1" />
+          Missing/Monitored
+        </div>
+      </div>
     </section>
 
     <o-modal v-model:active="selectedMediaEvent">
@@ -94,7 +119,7 @@
         </p>
       </header>
       <section v-if="selectedMediaEvent" class="modal-card-content">
-        <search-actions :mediaID="selectedMediaEvent.media_id"/>
+        <search-actions :mediaID="selectedMediaEvent.media_id" />
         <p>{{ selectedMediaEvent.description }}</p>
       </section>
       <footer v-if="selectedMediaEvent" class="modal-card-footer"></footer>
@@ -104,7 +129,7 @@
 
 <style scoped>
 .date {
-  height: 12rem;
+  height: 8rem;
 
   @apply bg-gray-700;
 }
@@ -132,7 +157,7 @@
 import PageWrapper from "../components/PageWrapper.vue";
 import { DateTime } from "luxon";
 import APIUtil from "../util/APIUtil";
-import SearchActions from '../components/SearchActions.vue';
+import SearchActions from "../components/SearchActions.vue";
 
 const EVENT_BACKGROUNDS = [
   "bg-red-500",
@@ -179,7 +204,7 @@ export default {
       this.selectedDate = DateTime.now();
     },
     eventClass(event) {
-      return `bg-red-600`;
+      return `bg-purple-600`;
     },
     eventTitle(event) {
       if (event.content_type == "movie") {
