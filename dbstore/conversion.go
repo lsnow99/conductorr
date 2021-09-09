@@ -8,6 +8,8 @@ import (
 	"os"
 	"path"
 	"strings"
+
+	"github.com/lsnow99/conductorr/integration"
 )
 
 /*
@@ -22,7 +24,10 @@ path to a temporary directory containing the same migrations but
 with the requested dbms's conversion applied
 */
 func CreateMigrationsFor(dbmsKey, inputDir string) (string, error) {
-	outputDir := os.TempDir()
+	outputDir, err := integration.TempDir()
+	if err != nil {
+		return "", err
+	}
 
 	entries, err := os.ReadDir(inputDir)
 	if err != nil {

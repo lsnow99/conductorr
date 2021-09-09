@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 
 	"github.com/lsnow99/conductorr/dbstore"
+	"github.com/lsnow99/conductorr/integration"
 	"github.com/mholt/archiver/v3"
 )
 
@@ -25,8 +26,12 @@ type BackupData struct {
 }
 
 func CreateBackup(ctx context.Context) (id int, err error) {
-	var dir string
-	dir, err = ioutil.TempDir("", "backup")
+	var dir, tmpDir string
+	tmpDir, err = integration.TempDir()
+	if err != nil {
+		return
+	}
+	dir, err = ioutil.TempDir(tmpDir, "backup")
 	if err != nil {
 		return
 	}
@@ -140,7 +145,7 @@ func CreateBackup(ctx context.Context) (id int, err error) {
 	}
 
 	var outDir string
-	outDir, err = ioutil.TempDir("", "backup_out")
+	outDir, err = ioutil.TempDir(tmpDir, "backup_out")
 	if err != nil {
 		return
 	}

@@ -25,6 +25,7 @@ var ServerHost string
 var CookieDomain string
 var BuildMode string
 var Version string
+var TempDir string
 
 func init() {
 	if os.Getenv("CONDUCTORR_DEBUG") != "" {
@@ -105,4 +106,6 @@ func init() {
 	} else {
 		MigrationsPath = "./migrations"
 	}
+
+	TempDir = os.Getenv("TEMP_DIR")
 }
