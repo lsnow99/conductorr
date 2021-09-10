@@ -1,8 +1,5 @@
 <template>
-  <header class="modal-card-header">
-    <p class="modal-card-title">Configure Transmission</p>
-  </header>
-  <section class="modal-card-content">
+<modal title="Configure Transmission" v-model:active="computedActive" @close="$emit('close')">
     <div>
       <o-field label="Name">
         <o-input
@@ -33,8 +30,7 @@
         />
       </o-field>
     </div>
-  </section>
-  <footer class="modal-card-footer">
+    <template v-slot:footer>
     <o-button @click="$emit('close')">Cancel</o-button>
     <div>
       <o-button variant="primary" @click="test" class="mr-3">
@@ -42,13 +38,15 @@
       </o-button>
       <o-button variant="primary" @click="save">Save</o-button>
     </div>
-  </footer>
+  </template>
+  </modal>
 </template>
 
 <script>
 import APIUtil from '../util/APIUtil';
 import ActionButton from "./ActionButton.vue";
 import EditServiceUtil from "../util/EditServiceUtil";
+import Modal from "./Modal.vue"
 
 export default {
   data() {
@@ -64,10 +62,18 @@ export default {
         return {};
       },
     },
+    active: {
+      type: Boolean,
+      default: function() {
+        return false
+      }
+    }
   },
   mixins: [ EditServiceUtil ],
+  emits: ["submit", "close", "update:active"],
   components: {
     ActionButton,
+    Modal
   },
   methods: {
     save() {
@@ -149,6 +155,14 @@ export default {
         this.newTransmission = newVal;
       },
     },
+    computedActive: {
+      get() {
+        return this.active
+      },
+      set(v) {
+        this.$emit('update:active', v)
+      }
+    }
   },
 };
 </script>

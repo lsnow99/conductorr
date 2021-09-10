@@ -19,47 +19,37 @@
         </code>
       </div>
     </config-item>
-    <o-modal
+    <new-downloader
       v-model:active="showNewDownloaderModal"
       @close="closeNewDownloaderModal"
-    >
-      <new-downloader
-        v-if="downloaderType == ''"
-        @close="closeNewDownloaderModal"
-        @selected="selectedDownloader"
-      />
-      <edit-transmission
-        v-if="downloaderType == 'transmission'"
-        v-model:name="editingName"
-        @submit="newTransmission"
-        @close="closeNewDownloaderModal"
-      />
-      <EditNZBGet
-        v-if="downloaderType == 'nzbget'"
-        v-model:name="editingName"
-        @submit="newNZBGet"
-        @close="closeNewDownloaderModal"
-      />
-    </o-modal>
-    <o-modal
-      v-model:active="showEditDownloaderModal"
-      @close="showEditDownloaderModal = false"
-    >
-      <edit-transmission
-        v-if="editingDownloader.downloader_type == 'transmission'"
-        :transmission="editingDownloader.config"
-        v-model:name="editingName"
-        @submit="updateTransmission"
-        @close="showEditDownloaderModal = false"
-      />
-      <EditNZBGet
-        v-if="editingDownloader.downloader_type == 'nzbget'"
-        :nzbget="editingDownloader.config"
-        v-model:name="editingName"
-        @submit="updateNZBGet"
-        @close="showEditDownloaderModal = false"
-      />
-    </o-modal>
+      @selected="selectedDownloader"
+    />
+    <edit-transmission
+      v-model:active="showNewTransmissionModal"
+      @close="closeNewTransmissionModal"
+      @submit="newTransmission"
+      v-model:name="editingName"
+    />
+    <EditNZBGet
+      v-model:active="showNewNZBGetModal"
+      @close="closeNewNZBGetModal"
+      @submit="newNZBGet"
+      v-model:name="editingName"
+    />
+    <edit-transmission
+      v-model:active="showEditTransmissionModal"
+      @close="closeEditTransmissionModal"
+      @submit="updateTransmission"
+      v-model:name="editingName"
+      :transmission="editingDownloader.config"
+    />
+    <EditNZBGet
+      v-model:active="showEditNZBGetModal"
+      @close="closeEditNZBGetModal"
+      @submit="updateNZBGet"
+      v-model:name="editingName"
+      :nzbget="editingDownloader.config"
+    />
   </section>
 </template>
 
@@ -75,7 +65,10 @@ export default {
   data() {
     return {
       showNewDownloaderModal: false,
-      showEditDownloaderModal: false,
+      showEditTransmissionModal: false,
+      showEditNZBGetModal: false,
+      showNewTransmissionModal: false,
+      showNewNZBGetModal: false,
       downloaderType: "",
       downloaders: [],
       editingDownloader: {},
@@ -91,13 +84,32 @@ export default {
   mixins: [TabSaver],
   methods: {
     selectedDownloader(downloaderType) {
-      this.downloaderType = downloaderType;
+      if(downloaderType == "transmission") {
+        this.showNewTransmissionModal = true
+      } else if (downloaderType == "nzbget") {
+        this.showNewNZBGetModal = true
+      }
+      this.showNewDownloaderModal = false;
     },
     closeNewDownloaderModal() {
       this.showNewDownloaderModal = false;
-      setTimeout(() => {
-        this.downloaderType = "";
-      }, 200);
+      this.restoreFocus();
+    },
+    closeNewTransmissionModal() {
+      this.showNewTransmissionModal = false;
+      this.restoreFocus();
+    },
+    closeNewNZBGetModal() {
+      this.showNewNZBGetModal = false;
+      this.restoreFocus();
+    },
+    closeEditTransmissionModal() {
+      this.showEditTransmissionModal = false;
+      this.restoreFocus();
+    },
+    closeEditNZBGetModal() {
+      this.showEditNZBGetModal = false;
+      this.restoreFocus();
     },
     loadDownloaders() {
       APIUtil.getDownloaders().then((downloaders) => {
@@ -105,7 +117,11 @@ export default {
       });
     },
     editDownloader(downloader) {
-      this.showEditDownloaderModal = true;
+      if(downloader.downloader_type == 'transmission') {
+        this.showEditTransmissionModal = true
+      } else if (downloader.downloader_type == 'nzbget') {
+        this.showEditNZBGetModal = true
+      }
       this.editingDownloader = downloader;
       this.editingName = downloader.name;
     },
@@ -164,7 +180,6 @@ export default {
       this.updateNZBGet(this.editingDownloader.id, this.editingName, config);
     },
     showNewDownloader() {
-      this.downloaderType = "";
       this.editingName = "";
       this.showNewDownloaderModal = true;
     },

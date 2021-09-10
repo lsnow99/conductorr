@@ -1,15 +1,12 @@
 <template>
-  <header class="modal-card-header">
-    <p class="modal-card-title">Configure NZBGet</p>
-  </header>
-  <section class="modal-card-content">
+  <modal
+    title="Configure NZBGet"
+    @close="$emit('close')"
+    v-model="computedActive"
+  >
     <div>
       <o-field label="Name">
-        <o-input
-          type="text"
-          v-model="computedName"
-          placeholder="Name"
-        />
+        <o-input type="text" v-model="computedName" placeholder="Name" />
       </o-field>
       <o-field label="Base URL">
         <o-input
@@ -33,22 +30,23 @@
         />
       </o-field>
     </div>
-  </section>
-  <footer class="modal-card-footer">
-    <o-button @click="$emit('close')">Cancel</o-button>
-    <div>
-      <o-button variant="primary" @click="test" class="mr-3">
-        <action-button :mode="testingMode"> Test </action-button>
-      </o-button>
-      <o-button variant="primary" @click="save">Save</o-button>
-    </div>
-  </footer>
+    <template v-slot:footer>
+      <o-button @click="$emit('close')">Cancel</o-button>
+      <div>
+        <o-button variant="primary" @click="test" class="mr-3">
+          <action-button :mode="testingMode"> Test </action-button>
+        </o-button>
+        <o-button variant="primary" @click="save">Save</o-button>
+      </div>
+    </template>
+  </modal>
 </template>
 
 <script>
-import APIUtil from '../util/APIUtil';
+import APIUtil from "../util/APIUtil";
 import ActionButton from "./ActionButton.vue";
 import EditServiceUtil from "../util/EditServiceUtil";
+import Modal from "./Modal.vue"
 
 export default {
   data() {
@@ -64,11 +62,19 @@ export default {
         return {};
       },
     },
+    active: {
+      type: Boolean,
+      default: function () {
+        return false;
+      },
+    },
   },
-  mixins: [ EditServiceUtil ],
+  mixins: [EditServiceUtil],
   components: {
     ActionButton,
+    Modal,
   },
+  emits: ["submit", "close", "update:active"],
   methods: {
     save() {
       this.$emit("submit", this.newNZBGet);
@@ -145,8 +151,16 @@ export default {
         }
         return this.newNZBGet;
       },
-      set(newVal) {
-        this.newNZBGet = newVal;
+      set(v) {
+        this.newNZBGet = v;
+      },
+    },
+    computedActive: {
+      get() {
+        return this.active;
+      },
+      set(v) {
+        this.$emit("update:active", v);
       },
     },
   },
