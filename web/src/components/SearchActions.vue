@@ -9,6 +9,9 @@
       <div
         v-if="!loadingAutoSearch"
         @click="searchAuto"
+        @keydown.enter="searchAuto"
+        @keydown.space="searchAuto"
+        tabindex="0"
         role="button"
         aria-label="Search automatically"
       >
@@ -27,6 +30,9 @@
       <div
         v-if="!loadingManualSearch"
         @click="searchManual"
+        @keydown.space="searchManual"
+        @keydown.enter="searchManual"
+        tabindex="0"
         role="button"
         aria-label="Search manually"
       >

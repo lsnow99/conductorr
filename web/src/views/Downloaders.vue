@@ -69,6 +69,7 @@ import EditTransmission from "../components/EditTransmission.vue";
 import EditNZBGet from "../components/EditNZBGet.vue";
 import APIUtil from "../util/APIUtil";
 import ConfigItem from "../components/ConfigItem.vue";
+import TabSaver from "../util/TabSaver";
 
 export default {
   data() {
@@ -87,6 +88,7 @@ export default {
     EditNZBGet,
     ConfigItem,
   },
+  mixins: [TabSaver],
   methods: {
     selectedDownloader(downloaderType) {
       this.downloaderType = downloaderType;

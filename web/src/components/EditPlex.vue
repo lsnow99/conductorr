@@ -1,8 +1,9 @@
 <template>
-  <header class="modal-card-header">
-    <p class="modal-card-title">Configure Plex</p>
-  </header>
-  <section class="modal-card-content">
+  <modal
+    v-model="computedActive"
+    @close="$emit('close')"
+    title="Configure Plex"
+  >
     <div>
       <o-field label="Name">
         <o-input type="text" v-model="computedName" placeholder="Name" />
@@ -24,46 +25,43 @@
         <o-button @click="showFetchAuthTokenModal = true">Fetch New</o-button>
       </o-field>
     </div>
-  </section>
-  <footer class="modal-card-footer">
-    <o-button @click="$emit('close')">Cancel</o-button>
-    <div>
-      <o-button variant="primary" @click="test" class="mr-3">
-        <action-button :mode="testingMode"> Test </action-button>
-      </o-button>
-      <o-button variant="primary" @click="save">Save</o-button>
-    </div>
-  </footer>
-  <o-modal
-    v-model:active="showFetchAuthTokenModal"
-    @close="showFetchAuthTokenModal = false"
-  >
-    <header class="modal-card-header">
-      <p class="modal-card-title">Fetch Plex Auth Token</p>
-    </header>
-    <section class="modal-card-content">
+    <template v-slot:footer>
+      <o-button @click="$emit('close')">Cancel</o-button>
       <div>
-        <o-field label="Username">
-          <o-input type="text" v-model="username" placeholder="Username" />
-        </o-field>
-        <o-field label="Password">
-          <o-input type="password" v-model="password" placeholder="Password" />
-        </o-field>
+        <o-button variant="primary" @click="test" class="mr-3">
+          <action-button :mode="testingMode"> Test </action-button>
+        </o-button>
+        <o-button variant="primary" @click="save">Save</o-button>
       </div>
-    </section>
-    <footer class="modal-card-footer">
+    </template>
+  </modal>
+  <modal
+    v-model="showFetchAuthTokenModal"
+    @close="showFetchAuthTokenModal = false"
+    title="Fetch Plex Auth Token"
+  >
+    <div>
+      <o-field label="Username">
+        <o-input type="text" v-model="username" placeholder="Username" />
+      </o-field>
+      <o-field label="Password">
+        <o-input type="password" v-model="password" placeholder="Password" />
+      </o-field>
+    </div>
+    <template v-slot:footer>
       <o-button @click="showFetchAuthTokenModal = false">Cancel</o-button>
       <o-button variant="primary" @click="fetchAuthToken">
         <action-button :mode="fetchTestingMode"> Fetch </action-button>
       </o-button>
-    </footer>
-  </o-modal>
+    </template>
+  </modal>
 </template>
 
 <script>
 import APIUtil from "../util/APIUtil";
 import ActionButton from "./ActionButton.vue";
 import DownloaderUtil from "../util/EditServiceUtil";
+import Modal from "../components/Modal.vue";
 
 export default {
   data() {
@@ -83,11 +81,19 @@ export default {
         return {};
       },
     },
+    active: {
+      type: Boolean,
+      default: function () {
+        return false;
+      },
+    },
   },
   mixins: [DownloaderUtil],
   components: {
     ActionButton,
+    Modal,
   },
+  emits: ["submit", "update:active", "close"],
   methods: {
     save() {
       this.$emit("submit", this.newPlex);
@@ -188,8 +194,16 @@ export default {
         }
         return this.newPlex;
       },
-      set(newVal) {
-        this.newPlex = newVal;
+      set(v) {
+        this.newPlex = v;
+      },
+    },
+    computedActive: {
+      get() {
+        return this.active;
+      },
+      set(v) {
+        this.$emit("update:active", v);
       },
     },
   },

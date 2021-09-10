@@ -4,26 +4,38 @@
       <div class="flex flex-col">
         <div class="flex flex-col items-center sm:flex-row justify-between">
           <div class="table-row">
-            <div class="table-cell"><o-button variant="primary" @click="resetDate">Today</o-button></div>
-            <a href="#" class="table-cell"
-              ><o-button
-                variant="primary"
-                class="h-full table-cell ml-3"
-                icon-left="rss"
-              ></o-button
-            ></a>
+            <div class="table-cell">
+              <o-button variant="primary" @click="resetDate">Today</o-button>
+            </div>
+            <div class="table-cell">
+              <a href="#" class="ml-3"
+                ><o-button
+                  tabindex="-1"
+                  variant="primary"
+                  class="table-cell"
+                  icon-left="rss"
+                ></o-button
+              ></a>
+            </div>
           </div>
-          <div class="overflow-hidden rounded-lg inline-block mt-4 sm:mt-0">
-            <o-radio v-model="viewType" name="viewType" native-value="monthly"
-              >Monthly</o-radio
-            >
-            <o-radio v-model="viewType" name="viewType" native-value="weekly"
-              >Weekly</o-radio
-            >
-            <o-radio v-model="viewType" name="viewType" native-value="daily"
-              >Daily</o-radio
-            >
-          </div>
+          <radio-group
+            v-model="viewType"
+            name="viewType"
+            :options="[
+              {
+                text: 'Monthly',
+                value: 'monthly',
+              },
+              {
+                text: 'Weekly',
+                value: 'weekly',
+              },
+              {
+                text: 'Daily',
+                value: 'daily',
+              },
+            ]"
+          />
         </div>
         <div class="flex flex-row justify-between mt-4">
           <o-button
@@ -60,10 +72,10 @@
               v-for="(event, index) in eventMap[date.dayStart]"
               :key="index"
               :class="eventClass(event)"
-              @click="selectedMediaEvent = event"
-              @keydown.enter="selectedMediaEvent = event"
-              @keydown.space="selectedMediaEvent = event"
-              aria-role="button"
+              @click="selectEvent(event, $event)"
+              @keydown.enter="selectEvent(event, $event)"
+              @keydown.space="selectEvent(event, $event)"
+              role="button"
               tabindex="0"
               class="cursor-pointer focus:bg-opacity-30 focus:outline-white"
             >
@@ -87,7 +99,7 @@
           </div>
         </div>
       </div>
-      <div class="flex flex-col md:flex-row text-lg">
+      <div class="flex flex-col md:flex-row text-lg mt-2">
         <div class="flex flex-row items-center mx-4">
           <div class="w-6 h-2 bg-green-600 mr-1" />
           Available
@@ -107,23 +119,14 @@
       </div>
     </section>
 
-    <o-modal v-model:active="selectedMediaEvent">
-      <header v-if="selectedMediaEvent" class="modal-card-header">
-        <p class="modal-card-title">
-          {{
-            eventTitle(selectedMediaEvent) +
-            (selectedMediaEvent.content_type == "episode"
-              ? " - " + selectedMediaEvent.title
-              : "")
-          }}
-        </p>
-      </header>
-      <section v-if="selectedMediaEvent" class="modal-card-content">
-        <search-actions :mediaID="selectedMediaEvent.media_id" />
-        <p>{{ selectedMediaEvent.description }}</p>
-      </section>
-      <footer v-if="selectedMediaEvent" class="modal-card-footer"></footer>
-    </o-modal>
+    <modal
+      v-model="isMediaEventSelected"
+      :title="mediaEventTitle"
+      @close="restoreFocus"
+    >
+      <search-actions :mediaID="mediaEvent && mediaEvent.media_id" />
+      <p>{{ mediaEvent && mediaEvent.description }}</p>
+    </modal>
   </page-wrapper>
 </template>
 
@@ -158,14 +161,9 @@ import PageWrapper from "../components/PageWrapper.vue";
 import { DateTime } from "luxon";
 import APIUtil from "../util/APIUtil";
 import SearchActions from "../components/SearchActions.vue";
-
-const EVENT_BACKGROUNDS = [
-  "bg-red-500",
-  "bg-yellow-500",
-  "bg-green-500",
-  "bg-blue-500",
-  "bg-purple-500",
-];
+import RadioGroup from "../components/RadioGroup.vue";
+import Modal from "../components/Modal.vue";
+import TabSaver from "../util/TabSaver";
 
 export default {
   data() {
@@ -180,7 +178,10 @@ export default {
   components: {
     PageWrapper,
     SearchActions,
+    RadioGroup,
+    Modal,
   },
+  mixins: [TabSaver],
   methods: {
     goPrev() {
       if (this.viewType === "monthly") {
@@ -190,6 +191,10 @@ export default {
       } else if (this.viewType === "daily") {
         this.selectedDate = this.selectedDate.minus({ days: 1 });
       }
+    },
+    selectEvent(event, $event) {
+      this.mediaEvent = event;
+      this.lastButton = $event.currentTarget;
     },
     goNext() {
       if (this.viewType === "monthly") {
@@ -246,15 +251,27 @@ export default {
     });
   },
   computed: {
-    selectedMediaEvent: {
+    mediaEventTitle() {
+      if (!this.isMediaEventSelected) {
+        return "";
+      }
+      return (
+        this.eventTitle(this.mediaEvent) +
+        (this.mediaEvent.content_type == "episode"
+          ? " - " + this.mediaEvent.title
+          : "")
+      );
+    },
+    isMediaEventSelected: {
       get() {
-        return this.mediaEvent;
+        if (this.mediaEvent) {
+          return true;
+        }
+        return false;
       },
-      set(newVal) {
-        if (!newVal) {
+      set(v) {
+        if (!v) {
           this.mediaEvent = null;
-        } else {
-          this.mediaEvent = newVal;
         }
       },
     },

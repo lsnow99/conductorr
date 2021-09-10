@@ -1,23 +1,30 @@
 <template>
-  <header class="modal-card-header">
-    <p class="modal-card-title">New Media Server</p>
-  </header>
-  <section class="modal-card-content">
-    <service-options :services="mediaServerTypes" v-model="selectedMediaServer" />
-  </section>
-  <footer class="modal-card-footer">
-    <o-button @click="$emit('close')">Cancel</o-button>
-    <div>
-      <o-button variant="primary" :disabled="selectedMediaServer == ''" @click="next"
-        >Next</o-button
-      >
-    </div>
-  </footer>
+  <modal
+    title="New Media Server"
+    v-model="computedActive"
+    @close="$emit('close')"
+  >
+    <service-options
+      :services="mediaServerTypes"
+      v-model="selectedMediaServer"
+    />
+    <template v-slot:footer>
+      <o-button @click="$emit('close')">Cancel</o-button>
+      <div>
+        <o-button
+          variant="primary"
+          :disabled="selectedMediaServer == ''"
+          @click="next"
+          >Next</o-button
+        >
+      </div>
+    </template>
+  </modal>
 </template>
 
 <script>
-import EditPlex from "./EditPlex.vue"
-import ServiceOptions from "./ServiceOptions.vue"
+import ServiceOptions from "./ServiceOptions.vue";
+import Modal from "./Modal.vue";
 
 const mediaServerTypes = [
   {
@@ -30,17 +37,35 @@ export default {
   data() {
     return {
       mediaServerTypes,
-      selectedMediaServer: ''
+      selectedMediaServer: "",
     };
   },
-  components: {
-      EditPlex,
-      ServiceOptions
+  props: {
+    active: {
+      type: Boolean,
+      default: function () {
+        return false;
+      },
+    },
   },
-  emits: ['close', 'selected'],
+  components: {
+    ServiceOptions,
+    Modal,
+  },
+  emits: ["close", "selected", "update:active"],
   methods: {
     next() {
-      this.$emit('selected', this.selectedMediaServer)
+      this.$emit("selected", this.selectedMediaServer);
+    },
+  },
+  computed: {
+    computedActive: {
+      get() {
+        return this.active;
+      },
+      set(v) {
+        this.$emit("update:active", v);
+      },
     },
   },
 };

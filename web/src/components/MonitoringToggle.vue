@@ -1,19 +1,15 @@
 <template>
-  <span :class="computedClass"
-    ><o-icon
-      v-if="monitoring"
-      icon="bookmark"
-      pack="fas"
-      :aria-disabled="disabled"
-      @click="doToggle"
-    />
-    <o-icon
-      v-if="!monitoring"
-      icon="bookmark"
-      pack="far"
-      :aria-disabled="disabled"
-      @click="doToggle"
-    />
+  <span
+    :aria-disabled="disabled"
+    @click.stop="doToggle"
+    @keydown.enter.stop="doToggle"
+    @keydown.space.stop="doToggle"
+    tabindex="0"
+    role="button"
+    :aria-label="monitoring ? 'Unmonitor media' : 'Monitor media'"
+    :class="computedClass"
+    ><o-icon v-if="monitoring" icon="bookmark" pack="fas" />
+    <o-icon v-else icon="bookmark" pack="far" />
   </span>
 </template>
 

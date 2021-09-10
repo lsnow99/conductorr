@@ -25,7 +25,7 @@
     </transition>
     <div class="flex flex-row justify-between mt-4">
       <o-button variant="danger" @click="confirmDelete">Delete</o-button>
-      <o-button variant="primary" @click="$emit('edit')">Edit</o-button>
+      <o-button variant="primary" @click="$emit('edit', $event)">Edit</o-button>
     </div>
   </div>
   <o-modal

@@ -15,18 +15,21 @@
     <div class="flex my-2 md:my-0 self-end md:ml-4 justify-center">
       <o-button variant="primary" @click="search">Search</o-button>
     </div>
-    <div class="md:my-0 my-2 flex justify-center self-end">
-      <div class="md:ml-4 overflow-hidden rounded-lg inline-block">
-        <o-radio v-model="contentType" name="contentType" native-value=""
-          >All</o-radio
-        >
-        <o-radio v-model="contentType" name="contentType" native-value="movie"
-          >Movies</o-radio
-        >
-        <o-radio v-model="contentType" name="contentType" native-value="series"
-          >TV Series</o-radio
-        >
-      </div>
+    <div class="md:my-0 md:ml-4 my-2 flex justify-center self-end">
+      <radio-group v-model="contentType" name="contentType" :options="[
+      {
+        text: 'All',
+        value: ''
+      },
+      {
+        text: 'Movies',
+        value: 'movie'
+      },
+      {
+        text: 'TV Series',
+        value: 'series'
+      }
+      ]" />
     </div>
   </div>
   <div class="mt-4">
@@ -59,6 +62,7 @@
 
 <script>
 import { nextTick } from "vue";
+import RadioGroup from "./RadioGroup.vue"
 
 export default {
   data() {
@@ -106,6 +110,9 @@ export default {
         return "";
       },
     },
+  },
+  components: {
+    RadioGroup
   },
   emits: ["close", "search", "selected-media", "update:query"],
   methods: {

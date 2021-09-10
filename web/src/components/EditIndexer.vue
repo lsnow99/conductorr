@@ -1,25 +1,16 @@
 <template>
-  <header class="modal-card-header">
-    <p class="modal-card-title">{{ title }}</p>
-  </header>
-  <section class="modal-card-content w-96 min-w-full">
+  <modal v-model="computedActive" @close="$emit('close')" :title="title">
     <div>
       Indexer Type
       <div class="flex justify-center">
-        <div class="overflow-hidden rounded-lg inline-block">
-          <o-radio
-            v-model="computedIndexer.download_type"
-            name="indexerType"
-            native-value="torrent"
-            >Torznab</o-radio
-          >
-          <o-radio
-            v-model="computedIndexer.download_type"
-            name="indexerType"
-            native-value="nzb"
-            >Newznab</o-radio
-          >
-        </div>
+        <radio-group
+          name="indexerType"
+          v-model="computedIndexer.download_type"
+          :options="[
+            { text: 'Torznab', value: 'torrent' },
+            { text: 'Newznab', value: 'nzb' },
+          ]"
+        />
       </div>
       <o-field label="Name">
         <o-input
@@ -79,21 +70,23 @@
         <o-switch v-model="computedIndexer.for_series">Use for TV</o-switch>
       </div>
     </div>
-  </section>
-  <footer class="modal-card-footer">
-    <o-button @click="$emit('close')">Cancel</o-button>
-    <div>
-      <o-button variant="primary" @click="test" class="mr-3">
-        <action-button :mode="testingMode"> Test </action-button>
-      </o-button>
-      <o-button variant="primary" @click="submit">Save</o-button>
-    </div>
-  </footer>
+    <template v-slot:footer>
+      <o-button @click="$emit('close')">Cancel</o-button>
+      <div>
+        <o-button variant="primary" @click="test" class="mr-3">
+          <action-button :mode="testingMode"> Test </action-button>
+        </o-button>
+        <o-button variant="primary" @click="submit">Save</o-button>
+      </div>
+    </template>
+  </modal>
 </template>
 
 <script>
 import APIUtil from "../util/APIUtil";
 import ActionButton from "./ActionButton.vue";
+import RadioGroup from "../components/RadioGroup.vue";
+import Modal from "../components/Modal.vue";
 
 const possibleTags = [
   { name: "TV", code: 5000 },
@@ -118,6 +111,12 @@ export default {
     };
   },
   props: {
+    active: {
+      type: Boolean,
+      default: function () {
+        return false;
+      },
+    },
     indexer: {
       type: Object,
       default: function () {
@@ -133,9 +132,11 @@ export default {
       },
     },
   },
-  emits: ["submit", "close"],
+  emits: ["submit", "close", "update:active"],
   components: {
     ActionButton,
+    RadioGroup,
+    Modal,
   },
   methods: {
     test() {
@@ -200,15 +201,18 @@ export default {
     sanitize() {
       this.computedIndexer.name = this.computedIndexer.name
         ? this.computedIndexer.name.trim()
-        : undefined;
+        : "";
       this.computedIndexer.base_url = this.computedIndexer.base_url
         ? this.computedIndexer.base_url.trim()
-        : undefined;
+        : "";
       this.computedIndexer.api_key = this.computedIndexer.api_key
         ? this.computedIndexer.api_key.trim()
-        : undefined;
-      if (this.computedIndexer.base_url.endsWith('/')) {
-        this.computedIndexer.base_url = this.computedIndexer.base_url.slice(0, -1)
+        : "";
+      if (this.computedIndexer.base_url.endsWith("/")) {
+        this.computedIndexer.base_url = this.computedIndexer.base_url.slice(
+          0,
+          -1
+        );
       }
     },
     validate() {
@@ -239,7 +243,7 @@ export default {
   computed: {
     computedIndexer: {
       get() {
-        if (this.newIndexer == null) {
+        if (!this.newIndexer) {
           if (this.indexer) {
             this.newIndexer = this.indexer;
           }
@@ -248,6 +252,14 @@ export default {
       },
       set(newVal) {
         this.newIndexer = newVal;
+      },
+    },
+    computedActive: {
+      get() {
+        return this.active;
+      },
+      set(v) {
+        this.$emit("update:active", v);
       },
     },
   },

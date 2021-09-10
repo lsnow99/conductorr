@@ -17,6 +17,11 @@
   @apply border-gray-600;
 }
 
+.o-btn:focus {
+  @apply bg-opacity-80;
+  @apply outline-white;
+}
+
 .o-btn--small {
   @apply py-1;
   @apply px-2;
@@ -41,6 +46,7 @@
   @apply border-gray-900;
   @apply border-4;
   @apply border-opacity-50;
+  @apply focus:outline-white;
 }
 
 .o-inputit {
@@ -56,6 +62,10 @@
 .o-inputit__container {
   @apply rounded-lg;
   @apply bg-white;
+}
+
+.o-sel {
+  @apply focus:outline-white;
 }
 
 .o-load__overlay {
@@ -89,7 +99,9 @@
 }
 
 .o-radio__check {
-  @apply hidden;
+  @apply opacity-0;
+  @apply h-0;
+  @apply w-0;
 }
 
 .o-radio {
@@ -100,6 +112,15 @@
   @apply font-bold;
   @apply uppercase;
   @apply m-0;
+}
+
+.radio-wrapper:focus-within {
+  @apply outline-white;
+}
+
+.o-radio:focus {
+  @apply bg-opacity-30;
+  @apply outline-white;
 }
 
 .o-radio--checked {
@@ -130,6 +151,11 @@
   @apply border-l-2;
   @apply border-r-2;
   @apply border-b-0;
+}
+
+.o-tabs__nav-item-boxed {
+  @apply focus:outline-white;
+  @apply focus:bg-opacity-30;
 }
 
 .o-tabs__nav-item-boxed--active {
@@ -226,6 +252,10 @@
 
 .o-switch__check--checked {
   @apply bg-yellow-500;
+}
+
+.o-switch:focus-within {
+  @apply outline-white;
 }
 
 .o-slide__thumb--rounded,
@@ -358,4 +388,14 @@
 
 .o-table--hoverable tr:hover {
   @apply bg-gray-900;
+}
+
+a:focus {
+  @apply bg-opacity-30;
+  @apply outline-white;
+}
+
+[role=button] {
+  @apply focus:outline-white;
+  @apply focus:opacity-80;
 }

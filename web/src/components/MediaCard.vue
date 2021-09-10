@@ -1,5 +1,13 @@
 <template>
-  <div @click="$emit('click', media)" class="media-card relative">
+  <div
+    @click="$emit('click', media)"
+    @keydown.space="$emit('click', media)"
+    @keydown.enter="$emit('click', media)"
+    tabindex="0"
+    role="button"
+    :aria-label="media.title"
+    class="media-card relative"
+  >
     <img :src="media.poster" :alt="`Banner image for movie ${media.title}`" />
     <div class="absolute top-0 bottom-0 left-0 right-0 overlay">
       <div class="flex flex-row h-full">
@@ -23,7 +31,12 @@
   @apply cursor-pointer;
 }
 
-.media-card:hover {
+.media-card:focus {
+  @apply outline-white;
+}
+
+.media-card:hover,
+.media-card:focus {
   box-shadow: 0 12px 18px -4px rgba(41, 41, 41, 0.75);
   -webkit-box-shadow: 0 12px 18px -4px rgba(41, 41, 41, 0.75);
   -moz-box-shadow: 0 12px 18px -4px rgba(41, 41, 41, 0.75);
@@ -59,13 +72,13 @@
   opacity: 0;
 }
 
-.overlay:hover::before {
+.overlay:hover::before, .media-card:focus .overlay::before {
   opacity: 1;
 }
 </style>
 
 <script>
-import MediaUtil from "../util/MediaUtil"
+import MediaUtil from "../util/MediaUtil";
 
 export default {
   props: {

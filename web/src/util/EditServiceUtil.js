@@ -18,7 +18,4 @@ export default {
       },
     },
   },
-  created() {
-    console.log("HELLLO")
-  }
 };

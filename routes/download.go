@@ -9,15 +9,15 @@ import (
 )
 
 type DownloadResponse struct {
-	ID           int       `json:"id,omitempty"`
-	MediaID      int       `json:"media_id,omitempty"`
-	FriendlyName string    `json:"friendly_name,omitempty"`
-	Identifier   string    `json:"identifier,omitempty"`
-	FinalDir     string    `json:"final_dir,omitempty"`
-	Status       string    `json:"status,omitempty"`
-	Started      time.Time `json:"started,omitempty"`
-	BytesLeft    uint64    `json:"bytes_left,omitempty"`
-	FullSize     uint64    `json:"full_size,omitempty"`
+	ID           int       `json:"id"`
+	MediaID      int       `json:"media_id"`
+	FriendlyName string    `json:"friendly_name"`
+	Identifier   string    `json:"identifier"`
+	FinalDir     string    `json:"final_dir"`
+	Status       string    `json:"status"`
+	Started      time.Time `json:"started"`
+	BytesLeft    uint64    `json:"bytes_left"`
+	FullSize     uint64    `json:"full_size"`
 }
 
 func NewDownloadResponseFromManagedDownload(dl app.ManagedDownload) (dlr DownloadResponse) {

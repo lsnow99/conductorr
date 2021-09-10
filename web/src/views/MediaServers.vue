@@ -20,46 +20,41 @@
       </div>
     </config-item>
   </section>
-  <o-modal
+  <new-media-server
     v-model:active="showNewMediaServerModal"
     @close="closeNewMediaServerModal"
-  >
-    <new-media-server
-      v-if="mediaServerType == ''"
-      @close="closeNewMediaServerModal"
-      @selected="selectedMediaServer"
-    />
-    <edit-plex v-if="mediaServerType == 'plex'" @submit="newPlex" @close="closeNewMediaServerModal" v-model:name="editingName" />
-  </o-modal>
-    <o-modal
-      v-model:active="showEditMediaServerModal"
-      @close="showEditMediaServerModal = false"
-    >
-      <edit-plex
-        v-if="editingMediaServer.media_server_type == 'plex'"
-        :plex="editingMediaServer.config"
-        v-model:name="editingName"
-        @submit="updatePlex"
-        @close="showEditMediaServerModal = false"
-      />
-    </o-modal>
+    @selected="selectedMediaServer"
+  />
+  <edit-plex
+    v-model:name="editingName"
+    v-model:active="showNewPlexModal"
+    @submit="newPlex"
+    @close="closeNewMediaServerModal"
+  />
+  <edit-plex
+    :plex="editingMediaServer.config"
+    v-model:name="editingName"
+    v-model:active="showEditPlexModal"
+    @submit="updatePlex"
+    @close="showEditMediaServerModal = false"
+  />
 </template>
 
 <script>
 import NewMediaServer from "../components/NewMediaServer.vue";
 import EditPlex from "../components/EditPlex.vue";
-import ConfigItem from "../components/ConfigItem.vue"
+import ConfigItem from "../components/ConfigItem.vue";
 import APIUtil from "../util/APIUtil";
 
 export default {
   data() {
     return {
-      showNewMediaServerModal: false,
-      showEditMediaServerModal: false,
+      _showNewMediaServerModal: false,
+      _showEditMediaServerModal: false,
       editingName: "",
       editingMediaServer: {},
       mediaServerType: "",
-      mediaServers: []
+      mediaServers: [],
     };
   },
   components: { NewMediaServer, EditPlex, ConfigItem },
@@ -97,8 +92,8 @@ export default {
           variant: "success",
           closable: false,
         });
-        this.loadMediaServers()
-      })
+        this.loadMediaServers();
+      });
     },
     updateMediaServer(id, name, config) {
       APIUtil.updateMediaServer(id, name, config).then(() => {
@@ -127,14 +122,47 @@ export default {
       });
     },
     newPlex(config) {
-      this.newMediaServer('plex', this.editingName, config)
+      this.newMediaServer("plex", this.editingName, config);
     },
     updatePlex(config) {
-      this.updateMediaServer(this.editingMediaServer.id, this.editingName, config)
-    }
+      this.updateMediaServer(
+        this.editingMediaServer.id,
+        this.editingName,
+        config
+      );
+    },
   },
   mounted() {
     this.loadMediaServers();
+  },
+  computed: {
+    showNewMediaServerModal: {
+      get() {
+        return this._showNewMediaServerModal && this.mediaServerType == "";
+      },
+      set(v) {
+        this._showNewMediaServerModal = v;
+      },
+    },
+    showEditPlexModal: {
+      get() {
+        return (
+          this.editingMediaServer.media_server_type == "plex" &&
+          this._showEditMediaServerModal
+        );
+      },
+      set(v) {
+        this._showEditMediaServerModal = v;
+      },
+    },
+    showNewPlexModal: {
+      get() {
+        return this._showNewMediaServerModal && this.mediaServerType == "plex";
+      },
+      set(v) {
+        this._showNewMediaServerModal = v;
+      },
+    },
   },
 };
 </script>

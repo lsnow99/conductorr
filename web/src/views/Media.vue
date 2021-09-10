@@ -27,23 +27,23 @@
           class="
             py-4
             flex flex-col
-            sm:flex-row sm:items-center
+            lg:flex-row lg:items-center
             justify-between
             px-4
           "
         >
-          <div class="flex flex-row justify-evenly md:items-center">
-            <div class="text-2xl md:mr-4 text-gray-300">
+          <div class="flex flex-row justify-evenly lg:items-center">
+            <div class="text-2xl lg:mr-4 text-gray-300">
               {{ mediaYear(media) }}
             </div>
-            <div class="text-2xl md:mx-4 text-gray-300">
+            <div class="text-2xl lg:mx-4 text-gray-300">
               <o-icon class="text-lg" icon="star" />
               {{ media.imdb_rating }}%
             </div>
             <a
               :href="`https://www.imdb.com/title/${media.imdb_id}`"
               target="_blank"
-              class="inline-block pt-1 md:mx-4"
+              class="inline-block pt-1 lg:mx-4"
               :aria-label="`Link to IMDB page for ${media.title}`"
             >
               <o-icon
@@ -53,15 +53,17 @@
               />
             </a>
           </div>
-          <div class="flex flex-row justify-evenly md:self-end">
+          <div class="flex flex-row justify-evenly lg:self-end">
             <o-tooltip
               variant="info"
               :position="tooltipPosition"
               label="Delete Media"
             >
-              <div class="text-2xl md:mx-2 text-gray-300">
+              <div class="text-2xl lg:mx-2 text-gray-300">
                 <div
                   @click="showConfirmDeleteModal = true"
+                  @keydown.space="showConfirmDeleteModal = true"
+                  @keydown.enter="showConfirmDeleteModal = true"
                   role="button"
                   aria-label="Delete media"
                   tabindex="0"
@@ -75,8 +77,15 @@
               :position="tooltipPosition"
               label="Edit Media"
             >
-              <div class="text-2xl md:mx-2 text-gray-300">
-                <div @click="editMedia" role="button" aria-label="Edit media">
+              <div class="text-2xl lg:mx-2 text-gray-300">
+                <div
+                  @click="editMedia"
+                  @keydown.space="editMedia"
+                  @keydown.enter="editMedia"
+                  tabindex="0"
+                  role="button"
+                  aria-label="Edit media"
+                >
                   <o-icon class="cursor-pointer" icon="wrench" />
                 </div>
               </div>
@@ -86,8 +95,16 @@
               :position="tooltipPosition"
               label="Refresh Metadata"
             >
-              <div class="text-2xl md:mx-2 text-gray-300">
-                <div v-if="!loadingRefreshMetadata" @click="refreshMediaMetadata" role="button" aria-label="Refresh Metadata">
+              <div class="text-2xl lg:mx-2 text-gray-300">
+                <div
+                  v-if="!loadingRefreshMetadata"
+                  @click="refreshMediaMetadata"
+                  @keydown.space="refreshMediaMetadata"
+                  @keydown.enter="refreshMediaMetadata"
+                  tabindex="0"
+                  role="button"
+                  aria-label="Refresh Metadata"
+                >
                   <o-icon class="cursor-pointer" icon="sync-alt" />
                 </div>
                 <o-icon v-else icon="sync-alt" spin />
@@ -105,10 +122,14 @@
         v-for="season in media.children"
         :key="season.id"
         @click="expand(season.id)"
+        @keydown.enter="expand(season.id)"
+        @keydown.space="expand(season.id)"
+        tabindex="0"
+        role="button"
+        :aria-label="`Expand ${season.title}`"
       >
         <div class="text-2xl">
           <monitoring-toggle
-            @click.stop
             class="text-xl"
             :monitoring="season.monitoring"
             :disabled="!media.monitoring"
@@ -150,6 +171,9 @@
         </div>
       </div>
     </section>
+    <modal v-model="showEditMediaModal" @close="restoreFocus" :title="`Edit ${media.title}`">
+
+      </modal>
     <o-modal
       v-model:active="showEditMediaModal"
       @close="showEditMediaModal = false"
@@ -184,6 +208,7 @@ import ManualSearchResults from "../components/ManualSearchResults.vue";
 import EpisodeList from "../components/EpisodeList.vue";
 import SearchActions from "../components/SearchActions.vue";
 import MonitoringToggle from "../components/MonitoringToggle.vue";
+import Modal from "../components/Modal.vue"
 
 export default {
   data() {
@@ -213,8 +238,12 @@ export default {
     EpisodeList,
     SearchActions,
     MonitoringToggle,
+    Modal
   },
   methods: {
+    restoreFocus() {
+      
+    },
     toggleMonitoring(media) {
       APIUtil.setMonitoringMedia(media.id, !media.monitoring).then(() => {
         this.loadMedia();
@@ -236,11 +265,13 @@ export default {
     },
     refreshMediaMetadata() {
       this.loadingRefreshMetadata = true;
-      APIUtil.refreshMediaMetadata(this.mediaID).then(() => {
-        this.loadMedia();
-      }).finally(() => {
-        this.loadingRefreshMetadata = false;
-      })
+      APIUtil.refreshMediaMetadata(this.mediaID)
+        .then(() => {
+          this.loadMedia();
+        })
+        .finally(() => {
+          this.loadingRefreshMetadata = false;
+        });
     },
     loadMedia() {
       APIUtil.getMedia(this.mediaID)

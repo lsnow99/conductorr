@@ -6,6 +6,11 @@
         class="service"
         :class="computedValue == service.value ? 'active' : ''"
         @click="computedValue = service.value"
+        @keydown.space="computedValue = service.value"
+        @keydown.enter="computedValue = service.value"
+        tabindex="0"
+        role="button"
+        :aria-label="service.name"
       >
         {{ service.name }}
       </div>

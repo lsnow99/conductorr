@@ -78,7 +78,6 @@ func CreateIndexer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	app.IM.RegisterIndexer(id, indexer.DownloadType, indexer.UserID, indexer.Name, indexer.ApiKey, indexer.BaseUrl, indexer.ForMovies, indexer.ForSeries, "")
-
 	Respond(w, r.Header.Get("hostname"), nil, nil, true)
 }
 
@@ -101,6 +100,7 @@ func UpdateIndexer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	app.IM.RegisterIndexer(id, indexer.DownloadType, indexer.UserID, indexer.Name, indexer.ApiKey, indexer.BaseUrl, indexer.ForMovies, indexer.ForSeries, "")
+	Respond(w, r.Header.Get("hostname"), nil, nil, true)
 }
 
 func DeleteIndexer(w http.ResponseWriter, r *http.Request) {
