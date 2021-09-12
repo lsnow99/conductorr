@@ -16,20 +16,24 @@
       <o-button variant="primary" @click="search">Search</o-button>
     </div>
     <div class="md:my-0 md:ml-4 my-2 flex justify-center self-end">
-      <radio-group v-model="contentType" name="contentType" :options="[
-      {
-        text: 'All',
-        value: ''
-      },
-      {
-        text: 'Movies',
-        value: 'movie'
-      },
-      {
-        text: 'TV Series',
-        value: 'series'
-      }
-      ]" />
+      <radio-group
+        v-model="contentType"
+        name="contentType"
+        :options="[
+          {
+            text: 'All',
+            value: '',
+          },
+          {
+            text: 'Movies',
+            value: 'movie',
+          },
+          {
+            text: 'TV Series',
+            value: 'series',
+          },
+        ]"
+      />
     </div>
   </div>
   <div class="mt-4">
@@ -62,7 +66,7 @@
 
 <script>
 import { nextTick } from "vue";
-import RadioGroup from "./RadioGroup.vue"
+import RadioGroup from "./RadioGroup.vue";
 
 export default {
   data() {
@@ -112,15 +116,16 @@ export default {
     },
   },
   components: {
-    RadioGroup
+    RadioGroup,
   },
   emits: ["close", "search", "selected-media", "update:query"],
   methods: {
-    search() {
+    search(disableDebounce) {
       const now = new Date();
       if (
         !this.lastSearchTime ||
-        now.getTime() - this.lastSearchTime.getTime() > 300
+        (now.getTime() - this.lastSearchTime.getTime() > 300 ||
+          disableDebounce)
       ) {
         this.$emit("search", this.computedQuery, this.contentType, this.page);
         this.lastSearchTime = now;
@@ -141,9 +146,9 @@ export default {
     this.search();
   },
   watch: {
-    contentType: function () {
+    contentType: function (contentType) {
       this.page = 0;
-      this.search();
+      this.search(true);
     },
     current: function (newVal) {
       this.page = newVal;
