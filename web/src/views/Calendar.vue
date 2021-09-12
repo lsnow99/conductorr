@@ -165,6 +165,8 @@ import RadioGroup from "../components/RadioGroup.vue";
 import Modal from "../components/Modal.vue";
 import TabSaver from "../util/TabSaver";
 
+const now = DateTime.now();
+
 export default {
   data() {
     return {
@@ -209,7 +211,15 @@ export default {
       this.selectedDate = DateTime.now();
     },
     eventClass(event) {
-      return `bg-purple-600`;
+      if (event.path_id) {
+        return `bg-green-600`
+      } else if (!event.monitoring) {
+        return `bg-gray-500`
+      } else if (event.timestamp > now) {
+        return `bg-purple-600`
+      } else if (event.timestamp <= now) {
+        return `bg-red-600`
+      }
     },
     eventTitle(event) {
       if (event.content_type == "movie") {

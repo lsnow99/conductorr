@@ -17,6 +17,8 @@ type Event struct {
 	EpisodeNum  int       `json:"episode_num,omitempty"`
 	SeriesID    int       `json:"series_id,omitempty"`
 	SeriesTitle string    `json:"series_title,omitempty"`
+	Monitoring  bool      `json:"monitoring,omitempty"`
+	PathID      int       `json:"path_id,omitempty"`
 }
 
 func GetSchedule(w http.ResponseWriter, r *http.Request) {
@@ -37,6 +39,8 @@ func GetSchedule(w http.ResponseWriter, r *http.Request) {
 			Timestamp:   media.ReleasedAt.Time,
 			Description: media.Description.String,
 			ContentType: media.ContentType.String,
+			Monitoring:  media.Monitoring,
+			PathID:      int(media.PathID.Int32),
 		}
 		if media.ContentType.String == "episode" {
 			event.EpisodeNum = int(media.Number.Int32)
