@@ -176,6 +176,8 @@
 .o-modal__content {
   @apply dark:bg-gray-600;
   @apply rounded-xl;
+  @apply flex;
+  @apply flex-col;
 }
 
 .o-modal__content--fullscreen {

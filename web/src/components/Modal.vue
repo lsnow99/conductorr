@@ -14,7 +14,7 @@
         </p>
       </slot>
     </header>
-    <section class="border-t-2 border-b-2 border-gray-300 p-4 flex-1">
+    <section class="border-t-2 border-b-2 border-gray-300 p-4 flex-1 overflow-y-scroll">
       <slot />
     </section>
     <footer class="modal-card-footer">
