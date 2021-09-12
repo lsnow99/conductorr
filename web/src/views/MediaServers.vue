@@ -4,7 +4,7 @@
       >New Media Server</o-button
     >
     <config-item
-      @edit="editMediaServer(mediaServer)"
+      @edit="editMediaServer(mediaServer, $event)"
       @delete="deleteMediaServer(mediaServer)"
       collapsible
       :title="mediaServer.name"
@@ -36,7 +36,7 @@
     v-model:name="editingName"
     v-model:active="showEditPlexModal"
     @submit="updatePlex"
-    @close="showEditMediaServerModal = false"
+    @close="closeEditPlexModal"
   />
 </template>
 
@@ -45,6 +45,7 @@ import NewMediaServer from "../components/NewMediaServer.vue";
 import EditPlex from "../components/EditPlex.vue";
 import ConfigItem from "../components/ConfigItem.vue";
 import APIUtil from "../util/APIUtil";
+import TabSaver from "../util/TabSaver"
 
 export default {
   data() {
@@ -57,15 +58,16 @@ export default {
       mediaServers: [],
     };
   },
+  mixins: [TabSaver],
   components: { NewMediaServer, EditPlex, ConfigItem },
   methods: {
     closeNewMediaServerModal() {
       this.showNewMediaServerModal = false;
-      setTimeout(() => {
-        this.mediaServerType = "";
-      }, 200);
+      this.mediaServerType = "";
+      this.restoreFocus();
     },
-    showNewMediaServer() {
+    showNewMediaServer($event) {
+      this.lastButton = $event.currentTarget
       this.mediaServerType = "";
       this.editingName = "";
       this.showNewMediaServerModal = true;
@@ -78,7 +80,8 @@ export default {
         this.mediaServers = mediaServers;
       });
     },
-    editMediaServer(mediaServer) {
+    editMediaServer(mediaServer, $event) {
+      this.lastButton = $event.currentTarget
       this.showEditMediaServerModal = true;
       this.editingMediaServer = mediaServer;
       this.editingName = mediaServer.name;
@@ -120,6 +123,10 @@ export default {
         this.showNewMediaServerModal = false;
         this.loadMediaServers();
       });
+    },
+    closeEditPlexModal() {
+      this.restoreFocus()
+      this.showEditPlexModal = false;
     },
     newPlex(config) {
       this.newMediaServer("plex", this.editingName, config);

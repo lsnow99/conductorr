@@ -1,25 +1,43 @@
 <template>
-  <header class="modal-card-header">
-    <p class="modal-card-title">Confirm Delete</p>
-  </header>
-  <section class="modal-card-content">
+  <modal title="Confirm Delete" v-model="computedActive">
     <p class="text-2xl">{{ deleteMessage }}</p>
-  </section>
-  <footer class="modal-card-footer">
+  <template v-slot:footer>
     <o-button @click="$emit('close')">Cancel</o-button>
     <o-button @click="$emit('delete')" variant="danger">Delete</o-button>
-  </footer>
+  </template>
+  </modal>
 </template>
 
 <script>
+import Modal from "./Modal.vue"
+
 export default {
-    props: {
-        deleteMessage: {
-            type: String,
-            default: function() {
-                return "You sure?"
-            }
-        }
-    }
-}
+  props: {
+    deleteMessage: {
+      type: String,
+      default: function () {
+        return "You sure?";
+      },
+    },
+    active: {
+      type: Boolean,
+      default: function () {
+        return false;
+      },
+    },
+  },
+  components: {
+    Modal,
+  },
+  computed: {
+    computedActive: {
+      get() {
+        return this.active;
+      },
+      set(v) {
+        this.$emit("update:active", v);
+      },
+    },
+  },
+};
 </script>

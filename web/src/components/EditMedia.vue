@@ -1,8 +1,5 @@
 <template>
-  <header class="modal-card-header">
-    <p class="modal-card-title">{{ media.title }}</p>
-  </header>
-  <section class="modal-card-content w-96 min-w-full">
+  <modal :title="media.title" v-model="computedActive" @close="$emit('close')">
     <o-field
       label="Profile"
       :variant="profileVariant"
@@ -39,36 +36,36 @@
       </o-select>
       <o-button @click="newPath">New</o-button>
     </o-field>
-  </section>
-  <footer class="modal-card-footer">
-    <o-button @click="$emit('close')">Cancel</o-button>
-    <div>
-      <o-button variant="primary" @click="save"
-        ><action-button :mode="loading ? 'loading' : ''"
-          >Save</action-button
-        ></o-button
-      >
-    </div>
-  </footer>
-  <o-modal v-model:active="showNewProfileModal">
-    <new-profile
-      @close="showNewProfileModal = false"
-      @submitted="newProfileSubmitted"
-    />
-  </o-modal>
-  <o-modal v-model:active="showNewPathModal">
-    <edit-path
-      @close="showNewPathModal = false"
-      @submitted="newPathSubmitted"
-    />
-  </o-modal>
+    <template v-slot:footer>
+      <o-button @click="$emit('close')">Cancel</o-button>
+      <div>
+        <o-button variant="primary" @click="save"
+          ><action-button :mode="loading ? 'loading' : ''"
+            >Save</action-button
+          ></o-button
+        >
+      </div>
+    </template>
+  </modal>
+  <new-profile
+    v-model:active="showNewProfileModal"
+    @close="closeNewProfile"
+    @submitted="newProfileSubmitted"
+  />
+  <edit-path
+    v-model:active="showNewPathModal"
+    @close="closeNewPath"
+    @submitted="newPathSubmitted"
+  />
 </template>
 
 <script>
 import APIUtil from "../util/APIUtil";
 import NewProfile from "../components/NewProfile.vue";
 import EditPath from "../components/EditPath.vue";
-import ActionButton from "../components/ActionButton.vue"
+import ActionButton from "../components/ActionButton.vue";
+import Modal from "../components/Modal.vue";
+import TabSaver from "../util/TabSaver";
 
 export default {
   data() {
@@ -95,9 +92,16 @@ export default {
         return false;
       },
     },
+    active: {
+      type: Boolean,
+      default: function () {
+        return false;
+      },
+    },
   },
-  components: { NewProfile, EditPath, ActionButton },
-  emits: ["close", "submit"],
+  components: { NewProfile, EditPath, ActionButton, Modal },
+  emits: ["close", "submit", "update:active"],
+  mixins: [TabSaver],
   methods: {
     save() {
       this.submittedOnce = true;
@@ -135,8 +139,9 @@ export default {
         }
       });
     },
-    newPath() {
+    newPath($event) {
       this.showNewPathModal = true;
+      this.lastButton = $event.currentTarget;
     },
     newPathSubmitted(path) {
       APIUtil.createNewPath(path.path, path.moviesDefault, path.seriesDefault)
@@ -154,12 +159,22 @@ export default {
           this.loadPaths();
         });
     },
-    newProfile() {
+    newProfile($event) {
+      this.lastButton = $event.currentTarget;
       this.showNewProfileModal = true;
+    },
+    closeNewPath() {
+      this.showNewPathModal = false;
+      this.restoreFocus();
+    },
+    closeNewProfile() {
+      this.showNewProfileModal = false;
+      this.restoreFocus();
     },
     newProfileSubmitted() {
       this.loadProfiles();
       this.showNewProfileModal = false;
+      this.restoreFocus();
     },
   },
   mounted() {
@@ -167,6 +182,14 @@ export default {
     this.loadPaths();
   },
   computed: {
+    computedActive: {
+      get() {
+        return this.active;
+      },
+      set(v) {
+        this.$emit("update:active", v);
+      },
+    },
     profileVariant() {
       if (!this.submittedOnce) {
         return "";

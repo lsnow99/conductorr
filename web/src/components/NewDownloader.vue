@@ -51,12 +51,13 @@ export default {
   },
   components: {
     ServiceOptions,
-    Modal
+    Modal,
   },
   emits: ["close", "selected", "update:active"],
   methods: {
     next() {
       this.$emit("selected", this.selectedDownloader);
+      this.selectedDownloader = "";
     },
   },
   computed: {

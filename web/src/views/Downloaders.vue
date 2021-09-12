@@ -4,7 +4,7 @@
       >Add Downloader</o-button
     >
     <config-item
-      @edit="editDownloader(downloader)"
+      @edit="editDownloader(downloader, $event)"
       @delete="deleteDownloader(downloader)"
       collapsible
       :title="downloader.name"
@@ -84,10 +84,10 @@ export default {
   mixins: [TabSaver],
   methods: {
     selectedDownloader(downloaderType) {
-      if(downloaderType == "transmission") {
-        this.showNewTransmissionModal = true
+      if (downloaderType == "transmission") {
+        this.showNewTransmissionModal = true;
       } else if (downloaderType == "nzbget") {
-        this.showNewNZBGetModal = true
+        this.showNewNZBGetModal = true;
       }
       this.showNewDownloaderModal = false;
     },
@@ -116,14 +116,15 @@ export default {
         this.downloaders = downloaders;
       });
     },
-    editDownloader(downloader) {
-      if(downloader.downloader_type == 'transmission') {
-        this.showEditTransmissionModal = true
-      } else if (downloader.downloader_type == 'nzbget') {
-        this.showEditNZBGetModal = true
+    editDownloader(downloader, $event) {
+      if (downloader.downloader_type == "transmission") {
+        this.showEditTransmissionModal = true;
+      } else if (downloader.downloader_type == "nzbget") {
+        this.showEditNZBGetModal = true;
       }
       this.editingDownloader = downloader;
       this.editingName = downloader.name;
+      this.lastButton = $event.currentTarget;
     },
     deleteDownloader(downloader) {
       APIUtil.deleteDownloader(downloader.id).then(() => {
@@ -179,7 +180,8 @@ export default {
     updateNZBGet(config) {
       this.updateNZBGet(this.editingDownloader.id, this.editingName, config);
     },
-    showNewDownloader() {
+    showNewDownloader($event) {
+      this.lastButton = $event.currentTarget;
       this.editingName = "";
       this.showNewDownloaderModal = true;
     },

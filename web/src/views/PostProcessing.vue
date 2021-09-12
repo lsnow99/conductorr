@@ -24,7 +24,7 @@
           >Default for TV</o-switch
         >
         <o-button
-          @click="editPath(pathConfig)"
+          @click="editPath(pathConfig, $event)"
           class="mr-3"
           variant="primary"
           icon-right="edit"
@@ -38,25 +38,24 @@
       </div>
     </div>
   </section>
-  <o-modal v-model:active="showNewPathModal">
-    <edit-path
-      @close="showNewPathModal = false"
-      @submitted="newPathSubmitted"
-    />
-  </o-modal>
-  <o-modal v-model:active="showEditPathModal">
-    <edit-path
-      :path="editingPath"
-      @close="showEditPathModal = false"
-      @submitted="editPathSubmitted"
-    />
-  </o-modal>
+  <edit-path
+    v-model:active="showNewPathModal"
+    @close="closeNewPathModal"
+    @submitted="newPathSubmitted"
+  />
+  <edit-path
+    v-model:active="showEditPathModal"
+    :path="editingPath"
+    @close="closeEditPathModal"
+    @submitted="editPathSubmitted"
+  />
 </template>
 
 <script>
 import ActionButton from "../components/ActionButton.vue";
 import EditPath from "../components/EditPath.vue";
 import APIUtil from "../util/APIUtil";
+import TabSaver from "../util/TabSaver";
 
 export default {
   components: { ActionButton, EditPath },
@@ -68,6 +67,7 @@ export default {
       showEditPathModal: false,
     };
   },
+  mixins: [TabSaver],
   methods: {
     loadPaths() {
       APIUtil.getPaths().then((paths) => {
@@ -79,9 +79,10 @@ export default {
         this.loadPaths();
       });
     },
-    editPath(pathConfig) {
+    editPath(pathConfig, $event) {
       this.editingPath = pathConfig;
       this.showEditPathModal = true;
+      this.lastButton = $event.currentTarget
     },
     editPathSubmitted(path) {
       APIUtil.updatePath(
@@ -104,8 +105,17 @@ export default {
           this.loadPaths();
         });
     },
-    newPath() {
+    closeNewPathModal() {
+      this.showNewPathModal = false;
+      this.restoreFocus();
+    },
+    closeEditPathModal() {
+      this.showEditPathModal = false;
+      this.restoreFocus();
+    },
+    newPath($event) {
       this.showNewPathModal = true;
+      this.lastButton = $event.currentTarget;
     },
     newPathSubmitted(path) {
       APIUtil.createNewPath(path.path, path.moviesDefault, path.seriesDefault)

@@ -171,29 +171,18 @@
         </div>
       </div>
     </section>
-    <modal v-model="showEditMediaModal" @close="restoreFocus" :title="`Edit ${media.title}`">
-
-      </modal>
-    <o-modal
-      v-model:active="showEditMediaModal"
-      @close="showEditMediaModal = false"
-    >
       <edit-media
+        v-model:active="showEditMediaModal"
         @submit="updateMedia"
         :media="media"
-        @close="showEditMediaModal = false"
+        @close="closeEditMedia"
       />
-    </o-modal>
-    <o-modal
+    <ConfirmDelete
       v-model:active="showConfirmDeleteModal"
-      @close="showConfirmDeleteModal = false"
-    >
-      <ConfirmDelete
-        @delete="doDelete"
-        @close="showConfirmDeleteModal = false"
-        :delete-message="`Are you sure you want to delete '${media.title}'?`"
-      />
-    </o-modal>
+      @delete="doDelete"
+      @close="closeDelete"
+      :delete-message="`Are you sure you want to delete '${media.title}'?`"
+    />
     <o-loading v-model:active="loading" is-full-page />
   </page-wrapper>
 </template>
@@ -208,7 +197,8 @@ import ManualSearchResults from "../components/ManualSearchResults.vue";
 import EpisodeList from "../components/EpisodeList.vue";
 import SearchActions from "../components/SearchActions.vue";
 import MonitoringToggle from "../components/MonitoringToggle.vue";
-import Modal from "../components/Modal.vue"
+import Modal from "../components/Modal.vue";
+import TabSaver from "../util/TabSaver";
 
 export default {
   data() {
@@ -229,7 +219,7 @@ export default {
       loadingCfg: {},
     };
   },
-  mixins: [MediaUtil],
+  mixins: [MediaUtil, TabSaver],
   components: {
     PageWrapper,
     EditMedia,
@@ -238,18 +228,24 @@ export default {
     EpisodeList,
     SearchActions,
     MonitoringToggle,
-    Modal
+    Modal,
   },
   methods: {
-    restoreFocus() {
-      
+    closeDelete() {
+      this.restoreFocus();
+      this.showConfirmDeleteModal = false;
+    },
+    closeEditMedia() {
+      this.restoreFocus();
+      this.showEditMediaModal = false;
     },
     toggleMonitoring(media) {
       APIUtil.setMonitoringMedia(media.id, !media.monitoring).then(() => {
         this.loadMedia();
       });
     },
-    editMedia() {
+    editMedia($event) {
+      this.lastButton = $event.currentTarget;
       this.showEditMediaModal = true;
     },
     updateMedia({ profileID, pathID }) {

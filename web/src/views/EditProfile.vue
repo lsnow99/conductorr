@@ -12,6 +12,11 @@
             >{{ `Editing Profile: ${profile.name}` }}
             <o-icon
               @click="editingName = true"
+              @keydown.enter="editingName = true"
+              @keydown.space="editingName = true"
+              tabindex="0"
+              role="button"
+              aria-label="Edit name"
               class="cursor-pointer ml-4"
               icon="edit" /></span
           ><span v-else class="flex flex-row"
@@ -20,6 +25,11 @@
               v-model="profile.name"
             /><o-icon
               @click="editingName = false"
+              @keydown.enter="editingName = false"
+              @keydown.space="editingName = false"
+              tabindex="0"
+              role="button"
+              aria-label="Edit name"
               class="cursor-pointer ml-4"
               icon="check"
             />
@@ -136,11 +146,21 @@
                   icon="times-circle"
                   class="cursor-pointer mr-3"
                   @click="outputs = []"
+                  @keydown.enter="outputs = []"
+                  @keydown.space="outputs = []"
+                  tabindex="0"
+                  role="button"
+                  aria-label="Clear output"
                 />
                 <o-icon
                   icon="angle-double-down"
                   class="cursor-pointer mr-3"
                   @click="scrollOutput"
+                  @keydown.enter="scrollOutput"
+                  @keydown.space="scrollOutput"
+                  tabindex="0"
+                  role="button"
+                  aria-label="Scroll output to bottom"
                 />
               </div>
             </div>

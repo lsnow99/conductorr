@@ -23,7 +23,7 @@
 }
 
 .service.active {
-  @apply border-green-500 text-green-500;
+  @apply border-green-500 text-green-500 border-solid;
 }
 </style>
 

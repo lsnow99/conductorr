@@ -7,6 +7,7 @@
     @keydown.enter.ctrl="enterPressed"
     :highlight="highlighter"
     :readonly="readonly"
+    :aria-disabled="readonly"
     line-numbers
   ></prism-editor>
 </template>

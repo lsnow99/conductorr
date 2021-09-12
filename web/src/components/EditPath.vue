@@ -1,10 +1,9 @@
 <template>
-  <header class="modal-card-header">
-    <p class="modal-card-title">
-      {{ path ? "Editing Path" : "New Path" }}
-    </p>
-  </header>
-  <section class="modal-card-content">
+  <modal
+    :title="path ? 'Editing Path' : 'New Path'"
+    v-model="computedActive"
+    @close="$emit('close')"
+  >
     <o-field label="Path">
       <o-input
         expanded
@@ -20,30 +19,32 @@
         <o-switch v-model="seriesDefault">Default for Series</o-switch>
       </div>
     </o-field>
-  </section>
-  <footer class="modal-card-footer">
-    <o-button @click="$emit('close')">Cancel</o-button>
-    <div>
-      <o-button variant="primary" @click="submit"
-        ><action-button :mode="loading ? 'loading' : ''"
-          >Submit</action-button
-        ></o-button
-      >
-    </div>
-  </footer>
+    <template v-slot:footer>
+      <o-button @click="$emit('close')">Cancel</o-button>
+      <div>
+        <o-button variant="primary" @click="submit"
+          ><action-button :mode="loading ? 'loading' : ''"
+            >Submit</action-button
+          ></o-button
+        >
+      </div>
+    </template>
+  </modal>
 </template>
 
 <script>
 import APIUtil from "../util/APIUtil";
 import ActionButton from "./ActionButton.vue";
+import Modal from "./Modal.vue";
 
 export default {
-  components: { ActionButton },
+  components: { ActionButton, Modal },
   data() {
     return {
       pathDir: "",
       moviesDefault: false,
       seriesDefault: false,
+      loading: false,
     };
   },
   props: {
@@ -53,13 +54,24 @@ export default {
         return null;
       },
     },
+    active: {
+      type: Boolean,
+      default: function () {
+        return false;
+      },
+    },
   },
-  emits: ["close", "submitted"],
+  emits: ["close", "submitted", "update:active"],
   methods: {
     submit() {
-      this.$emit("submitted", {path: this.pathDir, moviesDefault: this.moviesDefault, seriesDefault: this.seriesDefault})
+      this.$emit("submitted", {
+        path: this.pathDir,
+        moviesDefault: this.moviesDefault,
+        seriesDefault: this.seriesDefault,
+      });
     },
     testPath() {
+      this.loading = true;
       APIUtil.testPath(this.pathDir).then((resp) => {
         if (resp.success) {
           this.$oruga.notification.open({
@@ -78,15 +90,27 @@ export default {
             closable: false,
           });
         }
+      }).finally(() => {
+        this.loading = false
       });
     },
   },
   mounted() {
     if (this.path) {
-      this.pathDir = this.path.path
-      this.moviesDefault = this.path.movies_default
-      this.seriesDefault = this.path.series_default
+      this.pathDir = this.path.path;
+      this.moviesDefault = this.path.movies_default;
+      this.seriesDefault = this.path.series_default;
     }
-  }
+  },
+  computed: {
+    computedActive: {
+      get() {
+        return this.active;
+      },
+      set(v) {
+        this.$emit("update:active", v);
+      },
+    },
+  },
 };
 </script>
