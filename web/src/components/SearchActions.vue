@@ -41,24 +41,20 @@
       <o-icon v-else icon="sync-alt" spin />
     </div>
   </o-tooltip>
-  <o-modal
-    full-screen
-    v-model:active="showManualReleasesModal"
-    @close="showManualReleasesModal = false"
-  >
     <manual-search-results
-      @close="showManualReleasesModal = false"
+      v-model:active="showManualReleasesModal"
+      @close="closeManualReleases"
       :releases="releases"
       :loading="loadingManualSearch"
       :mediaID="mediaID"
     />
-  </o-modal>
 </template>
 
 <script>
 import APIUtil from "../util/APIUtil";
 import ManualSearchResults from "./ManualSearchResults.vue";
 import TooltipUtil from "../util/TooltipUtil";
+import TabSaver from "../util/TabSaver";
 
 export default {
   data() {
@@ -85,7 +81,7 @@ export default {
     },
   },
   components: { ManualSearchResults },
-  mixins: [TooltipUtil],
+  mixins: [TooltipUtil, TabSaver],
   methods: {
     searchManual() {
       this.loadingManualSearch = true;
@@ -144,6 +140,10 @@ export default {
           this.resetTooltips();
         });
     },
+    closeManualReleases() {
+      this.showManualReleasesModal = false
+      this.restoreFocus()
+    }
   },
   mounted() {
     const screenWidth = window.innerWidth;

@@ -1,7 +1,11 @@
 <template>
   <modal title="New Profile" v-model="computedActive" @close="$emit('close')">
     <o-field label="Name">
-      <o-input @keydown.enter="submit" v-model="name" />
+      <o-input
+        @keydown.enter="submit"
+        v-model="name"
+        placeholder="Profile name"
+      />
     </o-field>
     <template v-slot:footer>
       <o-button @click="$emit('close')">Cancel</o-button>
@@ -32,14 +36,26 @@ export default {
   props: {
     active: {
       type: Boolean,
-      default: function() {
-        return false
-      }
-    }
+      default: function () {
+        return false;
+      },
+    },
   },
   emits: ["close", "submitted", "update:active"],
   methods: {
     submit() {
+      this.sanitize();
+      const validationErr = this.validate();
+      if (validationErr) {
+        this.$oruga.notification.open({
+          duration: 5000,
+          message: validationErr,
+          position: "bottom-right",
+          variant: "danger",
+          closable: false,
+        });
+        return;
+      }
       this.loading = true;
       APIUtil.createNewProfile(this.name)
         .then(() => {
@@ -56,16 +72,24 @@ export default {
           this.loading = false;
         });
     },
+    sanitize() {
+      this.name = this.name ? this.name.trim() : "";
+    },
+    validate() {
+      if (!this.name) {
+        return "Name is required";
+      }
+    },
   },
   computed: {
     computedActive: {
       get() {
-        return this.active
+        return this.active;
       },
       set(v) {
-        this.$emit('update:active', v)
-      }
-    }
-  }
+        this.$emit("update:active", v);
+      },
+    },
+  },
 };
 </script>

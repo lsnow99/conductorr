@@ -3,17 +3,18 @@
     v-model:active="computedValue"
     role="dialog"
     :aria-label="title"
+    :full-screen="fullScreen"
     aria-modal
     @close="$emit('close')"
   >
     <header class="modal-card-header">
       <slot name="header">
-        <p class="modal-card-title">
+        <p class="text-3xl font-light">
           {{ title }}
         </p>
       </slot>
     </header>
-    <section class="modal-card-content">
+    <section class="border-t-2 border-b-2 border-gray-300 p-4 flex-1">
       <slot />
     </section>
     <footer class="modal-card-footer">
@@ -31,6 +32,17 @@
   </o-modal>
 </template>
 
+<style scoped>
+.modal-card-header,
+.modal-card-footer {
+  @apply flex;
+  @apply flex-row;
+  @apply justify-between;
+  @apply px-4;
+  @apply py-3;
+}
+</style>
+
 <script>
 export default {
   props: {
@@ -46,6 +58,12 @@ export default {
         return "";
       },
     },
+    fullScreen: {
+      type: Boolean,
+      default: function() {
+        return false
+      }
+    }
   },
   emits: ["close", "update:modelValue"],
   methods: {

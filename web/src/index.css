@@ -190,28 +190,6 @@
   @apply top-10;
 }
 
-.modal-card-header,
-.modal-card-footer {
-  @apply flex;
-  @apply flex-row;
-  @apply justify-between;
-  @apply px-4;
-  @apply py-3;
-}
-
-.modal-card-title {
-  @apply text-3xl;
-  @apply font-light;
-}
-
-.modal-card-content {
-  @apply border-t-2;
-  @apply border-b-2;
-  @apply border-gray-300;
-  @apply p-4;
-  @apply flex-1;
-}
-
 .o-input__icon-left {
   position: absolute;
   top: 0;

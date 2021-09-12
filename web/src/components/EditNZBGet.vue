@@ -124,10 +124,10 @@ export default {
     sanitize() {
       this.computedName = this.computedName
         ? this.computedName.trim()
-        : undefined;
+        : '';
       this.computedNZBGet.base_url = this.computedNZBGet.base_url
         ? this.computedNZBGet.base_url.trim()
-        : undefined;
+        : '';
     },
     validate() {
       if (!this.computedName) {

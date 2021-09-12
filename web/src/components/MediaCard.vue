@@ -1,8 +1,8 @@
 <template>
   <div
-    @click="$emit('click', media)"
-    @keydown.space="$emit('click', media)"
-    @keydown.enter="$emit('click', media)"
+    @click="$emit('click', media, $event)"
+    @keydown.space="$emit('click', media, $event)"
+    @keydown.enter="$emit('click', media, $event)"
     tabindex="0"
     role="button"
     :aria-label="media.title"

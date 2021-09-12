@@ -17,6 +17,11 @@
         <div class="text-xl flex flex-row justify-between">
           Recently Completed Downloads<o-icon
             @click="refreshDownloads"
+            @keydown.enter="refreshDownloads"
+            @keydown.space="refreshDownloads"
+            tabindex="0"
+            role="button"
+            aria-label="Refresh downloads"
             class="cursor-pointer"
             icon="sync-alt"
             :spin="loadingDownloads"

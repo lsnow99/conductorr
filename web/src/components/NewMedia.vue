@@ -1,8 +1,5 @@
 <template>
-  <header class="modal-card-header">
-    <p class="modal-card-title">New Media</p>
-  </header>
-  <section class="modal-card-content">
+<modal title="New Media" v-model="computedActive" @close="$emit('close')" full-screen>
     <search-media
       v-model:query="query"
       :results="results"
@@ -29,23 +26,23 @@
         <media-card :media="media" @click="selectedMedia" />
       </template>
     </search-media>
-  </section>
-  <footer class="modal-card-footer">
-    <o-button @click="$emit('close')">Cancel</o-button>
-  </footer>
-  <o-modal
+  </modal>
+  <edit-media
     v-model:active="showNewMediaModal"
-    @close="showNewMediaModal = false"
-  >
-    <edit-media :loading="loadingNewMedia" @submit="addMedia" :media="media" @close="showNewMediaModal = false" />
-  </o-modal>
+    :loading="loadingNewMedia"
+    @submit="addMedia"
+    :media="media"
+    @close="closeNewMedia"
+  />
 </template>
 
 <script>
 import APIUtil from "../util/APIUtil";
 import MediaCard from "../components/MediaCard.vue";
 import SearchMedia from "./SearchMedia.vue";
-import EditMedia from "./EditMedia.vue"
+import EditMedia from "./EditMedia.vue";
+import TabSaver from "../util/TabSaver";
+import Modal from "./Modal.vue"
 
 export default {
   data() {
@@ -56,7 +53,7 @@ export default {
       query: "",
       media: {},
       showNewMediaModal: false,
-      loadingNewMedia: false
+      loadingNewMedia: false,
     };
   },
   props: {
@@ -72,9 +69,16 @@ export default {
         return "";
       },
     },
+    active: {
+      type: Boolean,
+      default: function() {
+        return false;
+      }
+    }
   },
-  components: { MediaCard, SearchMedia, EditMedia },
-  emits: ["close"],
+  mixins: [TabSaver],
+  components: { MediaCard, SearchMedia, EditMedia, Modal },
+  emits: ["close", "update:active"],
   methods: {
     search(query, contentType, page) {
       this.loading = true;
@@ -91,23 +95,41 @@ export default {
           this.loading = false;
         });
     },
-    selectedMedia(media) {
+    selectedMedia(media, $event) {
       this.showNewMediaModal = true;
       this.media = media;
+      this.lastButton = $event.currentTarget;
     },
-    addMedia({profileID, pathID}) {
+    addMedia({ profileID, pathID }) {
       this.loadingNewMedia = true;
-      APIUtil.addMedia(this.media.imdb_id, profileID, pathID).then(id => {
-        this.$router.push({name: 'media', params: {media_id: id}})
-      }).catch(err => {
-        console.log(err)
-      }).finally(() => {
-        this.loadingNewMedia = false;
-      })
-    }
+      APIUtil.addMedia(this.media.imdb_id, profileID, pathID)
+        .then((id) => {
+          this.$router.push({ name: "media", params: { media_id: id } });
+        })
+        .catch((err) => {
+          console.log(err);
+        })
+        .finally(() => {
+          this.loadingNewMedia = false;
+        });
+    },
+    closeNewMedia() {
+      this.showNewMediaModal = false;
+      this.restoreFocus();
+    },
   },
   created() {
     this.query = this.defaultQuery;
   },
+  computed: {
+    computedActive: {
+      get() {
+        return this.active;
+      },
+      set(v) {
+        this.$emit('update:active', v)
+      }
+    }
+  }
 };
 </script>

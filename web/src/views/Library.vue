@@ -28,15 +28,17 @@
           <media-card :media="media" @click="selectedMedia" />
         </template>
       </search-media>
-            <div class="flex flex-row justify-center mt-2">
-              <o-button variant="primary" @click="addNew"
-                >Search for New Media</o-button
-              >
-            </div>
+      <div class="flex flex-row justify-center mt-2">
+        <o-button variant="primary" @click="addNew"
+          >Search for New Media</o-button
+        >
+      </div>
     </section>
-    <o-modal full-screen v-model:active="showNewSearchModal">
-      <new-media :default-query="query" @close="showNewSearchModal = false" />
-    </o-modal>
+    <new-media
+      v-model:active="showNewSearchModal"
+      :default-query="query"
+      @close="closeNewSearchModal"
+    />
   </page-wrapper>
 </template>
 
@@ -46,17 +48,19 @@ import PageWrapper from "../components/PageWrapper.vue";
 import NewMedia from "../components/NewMedia.vue";
 import APIUtil from "../util/APIUtil";
 import SearchMedia from "../components/SearchMedia.vue";
+import TabSaver from "../util/TabSaver";
 
 export default {
   data() {
     return {
-      query: '',
+      query: "",
       results: [],
       totalResults: 0,
       loading: false,
       showNewSearchModal: false,
     };
   },
+  mixins: [TabSaver],
   components: { PageWrapper, MediaCard, NewMedia, SearchMedia },
   methods: {
     search(query, contentType, page) {
@@ -75,10 +79,15 @@ export default {
         });
     },
     selectedMedia(media) {
-      this.$router.push({name: 'media', params: {media_id: media.id}})
+      this.$router.push({ name: "media", params: { media_id: media.id } });
     },
-    addNew() {
+    addNew($event) {
       this.showNewSearchModal = true;
+      this.lastButton = $event.currentTarget;
+    },
+    closeNewSearchModal() {
+      this.showNewSearchModal = false;
+      this.restoreFocus();
     },
   },
 };

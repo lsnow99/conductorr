@@ -2,9 +2,7 @@
   <section class="mt-3">
     <div class="flex flex-col sm:flex-row justify-between">
       <div class="flex justify-center">
-        <o-button variant="primary" @click="showNewProfileModal = true"
-          >New Profile</o-button
-        >
+        <o-button variant="primary" @click="newProfile">New Profile</o-button>
       </div>
       <div class="flex justify-center mt-4 sm:mt-0">
         <o-button
@@ -44,12 +42,11 @@
       @reload="loadProfiles"
       :key="index"
     /> -->
-    <o-modal v-model:active="showNewProfileModal">
-      <new-profile
-        @close="showNewProfileModal = false"
-        @submitted="newProfileSubmitted"
-      />
-    </o-modal>
+    <new-profile
+      v-model:active="showNewProfileModal"
+      @close="closeNewProfileModal"
+      @submitted="newProfileSubmitted"
+    />
   </section>
 </template>
 
@@ -58,6 +55,7 @@ import APIUtil from "../util/APIUtil";
 import NewProfile from "../components/NewProfile.vue";
 import ConfigItem from "../components/ConfigItem.vue";
 import CSLEditor from "../components/CSLEditor.vue";
+import TabSaver from "../util/TabSaver";
 
 export default {
   data() {
@@ -74,6 +72,7 @@ export default {
     ConfigItem,
     CSLEditor,
   },
+  mixins: [TabSaver],
   methods: {
     expandAll() {
       this.profiles.forEach((element) => {
@@ -116,6 +115,14 @@ export default {
         .finally(() => {
           this.loadingDelete = false;
         });
+    },
+    newProfile($event) {
+      this.lastButton = $event.currentTarget;
+      this.showNewProfileModal = true;
+    },
+    closeNewProfileModal() {
+      this.showNewProfileModal = false;
+      this.restoreFocus();
     },
   },
   mounted() {
