@@ -1,5 +1,10 @@
 <template>
-<modal title="New Media" v-model="computedActive" @close="$emit('close')" full-screen>
+  <modal
+    title="New Media"
+    v-model="computedActive"
+    @close="$emit('close')"
+    full-screen
+  >
     <search-media
       v-model:query="query"
       :results="results"
@@ -42,7 +47,7 @@ import MediaCard from "../components/MediaCard.vue";
 import SearchMedia from "./SearchMedia.vue";
 import EditMedia from "./EditMedia.vue";
 import TabSaver from "../util/TabSaver";
-import Modal from "./Modal.vue"
+import Modal from "./Modal.vue";
 
 export default {
   data() {
@@ -71,10 +76,10 @@ export default {
     },
     active: {
       type: Boolean,
-      default: function() {
+      default: function () {
         return false;
-      }
-    }
+      },
+    },
   },
   mixins: [TabSaver],
   components: { MediaCard, SearchMedia, EditMedia, Modal },
@@ -118,8 +123,15 @@ export default {
       this.restoreFocus();
     },
   },
-  created() {
-    this.query = this.defaultQuery;
+  watch: {
+    defaultQuery: {
+      handler(v) {
+        if (v) {
+          this.query = v;
+        }
+      },
+      immediate: true
+    }
   },
   computed: {
     computedActive: {
@@ -127,9 +139,9 @@ export default {
         return this.active;
       },
       set(v) {
-        this.$emit('update:active', v)
-      }
-    }
-  }
+        this.$emit("update:active", v);
+      },
+    },
+  },
 };
 </script>
