@@ -23,12 +23,12 @@
         {{ title }}
       </div>
       <div v-if="collapsible">
-        <o-icon v-if="expanded" icon="chevron-up" />
+        <o-icon v-if="isExpanded" icon="chevron-up" />
         <o-icon v-else icon="chevron-down" />
       </div>
     </div>
     <transition name="fade">
-      <slot v-if="!collapsible || expanded" />
+      <slot v-if="!collapsible || isExpanded" />
     </transition>
     <div class="flex flex-row justify-between mt-4">
       <o-button variant="danger" @click="confirmDelete">Delete</o-button>
@@ -43,8 +43,6 @@
     />
 </template>
 
-<style scoped></style>
-
 <script>
 import ConfirmDelete from "./ConfirmDelete.vue";
 import TabSaver from "../util/TabSaver";
@@ -53,7 +51,7 @@ export default {
   data() {
     return {
       showConfirmDeleteModal: false,
-      expanded: false,
+      isExpanded: this.expanded || false
     };
   },
   props: {
@@ -75,9 +73,15 @@ export default {
         return "";
       },
     },
+    expanded: {
+      type: Boolean,
+      default: function() {
+        return false
+      }
+    }
   },
   components: { ConfirmDelete },
-  emits: ["delete", "edit"],
+  emits: ["delete", "edit", "update:expanded"],
   mixins: [TabSaver],
   methods: {
     closeDelete() {
@@ -90,9 +94,15 @@ export default {
     },
     doExpand() {
       if (this.collapsible) {
-        this.expanded = !this.expanded;
+        this.$emit('update:expanded', !this.isExpanded)
+        this.isExpanded = !this.isExpanded
       }
     },
+  },
+  watch: {
+    expanded(v) {
+      this.isExpanded = v
+    }
   },
   computed: {
     ariaLabel() {

@@ -132,7 +132,6 @@ export default {
   mounted() {
     this.refreshDownloads()
     this.refreshInterval = setInterval(this.refreshDownloads, 3000)
-    console.log('returning from mounted')
   },
   unmounted() {
     clearInterval(this.refreshInterval)

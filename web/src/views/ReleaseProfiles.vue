@@ -22,6 +22,7 @@
     <config-item
       :delete-message="`Are you sure you want to delete profile '${profile.name}'`"
       collapsible
+      v-model:expanded="profile.expanded"
       v-for="profile in profiles"
       :key="profile.id"
       @delete="deleteProfile(profile)"
