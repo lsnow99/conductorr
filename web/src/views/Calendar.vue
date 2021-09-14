@@ -211,7 +211,7 @@ export default {
       this.selectedDate = DateTime.now();
     },
     eventClass(event) {
-      if (event.path_id) {
+      if (event.path_ok) {
         return `bg-green-600`
       } else if (!event.monitoring) {
         return `bg-gray-500`

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/lsnow99/conductorr/app"
 	"github.com/lsnow99/conductorr/dbstore"
 )
 
@@ -18,7 +19,7 @@ type Event struct {
 	SeriesID    int       `json:"series_id,omitempty"`
 	SeriesTitle string    `json:"series_title,omitempty"`
 	Monitoring  bool      `json:"monitoring,omitempty"`
-	PathID      int       `json:"path_id,omitempty"`
+	PathOK      bool      `json:"path_ok,omitempty"`
 }
 
 func GetSchedule(w http.ResponseWriter, r *http.Request) {
@@ -27,12 +28,14 @@ func GetSchedule(w http.ResponseWriter, r *http.Request) {
 		Respond(w, r.Header.Get("hostname"), err, nil, true)
 		return
 	}
+	pathStatuses := app.LM.GetAllMediaPathStatuses()
 
 	events := make([]Event, 0, len(medias))
 	for _, media := range medias {
 		if !media.Title.Valid || !media.ReleasedAt.Valid {
 			continue
 		}
+		pathOK, inMap := pathStatuses[media.ID]
 		event := Event{
 			Title:       media.Title.String,
 			MediaID:     media.ID,
@@ -40,7 +43,7 @@ func GetSchedule(w http.ResponseWriter, r *http.Request) {
 			Description: media.Description.String,
 			ContentType: media.ContentType.String,
 			Monitoring:  media.Monitoring,
-			PathID:      int(media.PathID.Int32),
+			PathOK:      pathOK && inMap,
 		}
 		if media.ContentType.String == "episode" {
 			event.EpisodeNum = int(media.Number.Int32)

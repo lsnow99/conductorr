@@ -18,12 +18,17 @@ type getPathRequest struct {
 	respChan chan bool
 }
 
+type getAllPathsRequest struct {
+	respChan chan map[int]bool
+}
+
 type LibraryManager struct {
 	// map media ids to a boolean of whether the media is downloaded or not
 	pathStatuses map[int]bool
 	// channels to handle access to pathStatuses
 	updateChan chan updatePathRequest
 	getChan chan getPathRequest
+	getAllChan chan getAllPathsRequest
 }
 
 func NewLibraryManager() (LibraryManager) {
@@ -36,6 +41,7 @@ func NewLibraryManager() (LibraryManager) {
 func (lm *LibraryManager) initChannels() {
 	lm.updateChan = make(chan updatePathRequest)
 	lm.getChan = make(chan getPathRequest)
+	lm.getAllChan = make(chan getAllPathsRequest)
 	go func ()  {
 		for {
 			select {
@@ -45,6 +51,12 @@ func (lm *LibraryManager) initChannels() {
 				id := req.mediaID
 				pathGood, inMap := lm.pathStatuses[id]
 				req.respChan <- pathGood && inMap
+			case req := <- lm.getAllChan:
+				newMap := make(map[int]bool)
+				for k, v := range lm.pathStatuses {
+					newMap[k] = v
+				}
+				req.respChan <- newMap
 			}
 		}
 	}()
@@ -91,5 +103,13 @@ func (lm *LibraryManager) GetMediaPathStatus(id int) bool {
 		respChan: make(chan bool),
 	}
 	lm.getChan <- req
+	return <-req.respChan
+}
+
+func (lm *LibraryManager) GetAllMediaPathStatuses() map[int]bool {
+	req := getAllPathsRequest{
+		respChan: make(chan map[int]bool),
+	}
+	lm.getAllChan <- req
 	return <-req.respChan
 }
