@@ -295,12 +295,13 @@ const testDownloader = (downloader_type, config) => {
   })
 }
 
-const newDownloader = (downloader_type, name, config) => {
+const newDownloader = (downloader_type, name, file_action, config) => {
   return doAPIReq(`/api/v1/downloader`, {
     method: "POST",
     body: JSON.stringify({
       name,
       downloader_type,
+      file_action,
       config
     })
   })
@@ -312,11 +313,12 @@ const getDownloaders = () => {
   })
 }
 
-const updateDownloader = (id, name, config) => {
+const updateDownloader = (id, name, file_action, config) => {
   return doAPIReq(`/api/v1/downloader/${id}`, {
     method: "PUT",
     body: JSON.stringify({
       name,
+      file_action,
       config
     })
   })

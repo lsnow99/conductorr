@@ -5,15 +5,15 @@ import (
 	"encoding/json"
 )
 
-func NewDownloader(downloaderType, name string, config map[string]interface{}) (id int, err error) {
+func NewDownloader(downloaderType, name, fileAction string, config map[string]interface{}) (id int, err error) {
 	configStr, err := json.Marshal(config)
 	if err != nil {
 		return 0, err
 	}
 	row := db.QueryRow(`
-	INSERT INTO downloader (downloader_type, name, config) 
-	VALUES (?, ?, ?) 
-	RETURNING id`, downloaderType, name, configStr)
+	INSERT INTO downloader (downloader_type, name, file_action config) 
+	VALUES (?, ?, ?, ?) 
+	RETURNING id`, downloaderType, name, fileAction, configStr)
 
 	err = row.Scan(&id)
 	if err != nil {
@@ -23,7 +23,7 @@ func NewDownloader(downloaderType, name string, config map[string]interface{}) (
 }
 
 func GetDownloaders() (downloaders []Downloader, err error) {
-	rows, err := db.Query(`SELECT id, downloader_type, name, config FROM downloader WHERE true`)
+	rows, err := db.Query(`SELECT id, downloader_type, name, file_action, config FROM downloader WHERE true`)
 	if err != nil && err != sql.ErrNoRows {
 		return nil, err
 	} else if err == sql.ErrNoRows {
@@ -34,7 +34,7 @@ func GetDownloaders() (downloaders []Downloader, err error) {
 	for rows.Next() {
 		downloader := Downloader{}
 		var configStr string
-		err := rows.Scan(&downloader.ID, &downloader.DownloaderType, &downloader.Name, &configStr)
+		err := rows.Scan(&downloader.ID, &downloader.DownloaderType, &downloader.Name, &downloader.FileAction, &configStr)
 		if err != nil {
 			return nil, err
 		}
@@ -47,12 +47,12 @@ func GetDownloaders() (downloaders []Downloader, err error) {
 	return downloaders, nil
 }
 
-func UpdateDownloader(id int, name string, config map[string]interface{}) error {
+func UpdateDownloader(id int, name, fileAction string, config map[string]interface{}) error {
 	configStr, err := json.Marshal(config)
 	if err != nil {
 		return err
 	}
-	_, err = db.Exec(`UPDATE downloader SET config = ?, name = ? WHERE id = ?`, configStr, name, id)
+	_, err = db.Exec(`UPDATE downloader SET config = ?, name = ?, file_action = ? WHERE id = ?`, configStr, name, fileAction, id)
 	return err
 }
 
@@ -62,9 +62,9 @@ func DeleteDownloader(id int) error {
 }
 
 func GetDownloader(id int) (downloader Downloader, err error) {
-	row := db.QueryRow(`SELECT id, downloader_type, name, config FROM downloader WHERE id = ?`, id)
+	row := db.QueryRow(`SELECT id, downloader_type, name, file_action, config FROM downloader WHERE id = ?`, id)
 	var configStr string
-	if err = row.Scan(&downloader.ID, &downloader.DownloaderType, &downloader.Name, &configStr); err != nil {
+	if err = row.Scan(&downloader.ID, &downloader.DownloaderType, &downloader.Name, &downloader.FileAction, &configStr); err != nil {
 		return
 	}
 	if err = json.Unmarshal([]byte(configStr), &downloader.Config); err != nil {
@@ -76,7 +76,7 @@ func GetDownloader(id int) (downloader Downloader, err error) {
 func DumpDownloaders(tx *sql.Tx) ([]*Downloader, error) {
 	downloaders := make([]*Downloader, 0)
 
-	rows, err := db.Query(`SELECT id, downloader_type, name, config FROM downloader WHERE true`)
+	rows, err := db.Query(`SELECT id, downloader_type, name, file_action, config FROM downloader WHERE true`)
 	if err != nil && err != sql.ErrNoRows {
 		return nil, err
 	} else if err == sql.ErrNoRows {
@@ -87,7 +87,7 @@ func DumpDownloaders(tx *sql.Tx) ([]*Downloader, error) {
 	for rows.Next() {
 		downloader := &Downloader{}
 		var configStr string
-		err := rows.Scan(&downloader.ID, &downloader.DownloaderType, &downloader.Name, &configStr)
+		err := rows.Scan(&downloader.ID, &downloader.DownloaderType, &downloader.Name, &downloader.FileAction, &configStr)
 		if err != nil {
 			return nil, err
 		}
@@ -107,8 +107,8 @@ func RestoreDownloaders(tx *sql.Tx, downloaders []*Downloader) error {
 			return err
 		}
 		_, err = tx.Exec(`
-		INSERT INTO downloader (id, downloader_type, name, config) 
-		VALUES (?, ?, ?, ?)`, downloader.ID, downloader.DownloaderType, downloader.Name, configStr)
+		INSERT INTO downloader (id, downloader_type, name, file_action, config) 
+		VALUES (?, ?, ?, ?, ?)`, downloader.ID, downloader.DownloaderType, downloader.Name, downloader.FileAction, configStr)
 
 		if err != nil {
 			return err

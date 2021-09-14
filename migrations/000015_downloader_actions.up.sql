@@ -1,0 +1,5 @@
+BEGIN;
+
+ALTER TABLE downloader ADD COLUMN file_action VARCHAR(128) NOT NULL DEFAULT 'copy';
+
+COMMIT;

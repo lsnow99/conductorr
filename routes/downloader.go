@@ -14,6 +14,7 @@ import (
 type DownloaderInput struct {
 	Name           string                 `json:"name,omitempty"`
 	DownloaderType string                 `json:"downloader_type,omitempty"`
+	FileAction string `json:"file_action,omitempty"`
 	Config         map[string]interface{} `json:"config,omitempty"`
 }
 
@@ -21,6 +22,7 @@ type DownloaderResponse struct {
 	ID             int                    `json:"id,omitempty"`
 	Name           string                 `json:"name,omitempty"`
 	DownloaderType string                 `json:"downloader_type,omitempty"`
+	FileAction string `json:"file_action,omitempty"`
 	Config         map[string]interface{} `json:"config,omitempty"`
 }
 
@@ -50,7 +52,7 @@ func NewDownloader(w http.ResponseWriter, r *http.Request) {
 		Respond(w, r.Header.Get("hostname"), err, nil, true)
 		return
 	}
-	id, err := dbstore.NewDownloader(downloaderInput.DownloaderType, downloaderInput.Name, downloaderInput.Config)
+	id, err := dbstore.NewDownloader(downloaderInput.DownloaderType, downloaderInput.Name, downloaderInput.FileAction, downloaderInput.Config)
 	if err != nil {
 		Respond(w, r.Header.Get("hostname"), err, nil, true)
 		return
@@ -93,7 +95,7 @@ func UpdateDownloader(w http.ResponseWriter, r *http.Request) {
 		Respond(w, r.Header.Get("hostname"), err, nil, true)
 		return
 	}
-	err = dbstore.UpdateDownloader(id, downloaderInput.Name, downloaderInput.Config)
+	err = dbstore.UpdateDownloader(id, downloaderInput.Name, downloaderInput.FileAction, downloaderInput.Config)
 	if err != nil {
 		Respond(w, r.Header.Get("hostname"), err, nil, true)
 		return

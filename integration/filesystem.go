@@ -7,15 +7,23 @@ import (
 	"github.com/lsnow99/conductorr/settings"
 )
 
+// CheckPath checks a path string and if it is a directory, it attempts
+// to create a test file in the directory. If it is a file, it checks
+// that the file exists. Returns a non-nil error if an error is encountered
 func CheckPath(path string) error {
-	_, err := os.Stat(path)
+	info, err := os.Stat(path)
 	if err != nil {
 		return err
 	}
-	f, err := ioutil.TempFile(path, "access_check")
-	f.Close()
-	os.Remove(f.Name())
-	return err
+	if info.IsDir() {
+		f, err := ioutil.TempFile(path, "access_check")
+		if f != nil {
+			f.Close()
+			os.Remove(f.Name())
+		}
+		return err
+	}
+	return nil
 }
 
 func TempDir() (string, error) {

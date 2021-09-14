@@ -29,6 +29,12 @@
           placeholder="transmission"
         />
       </o-field>
+      <o-field label="Post-Processing Action">
+        <radio-group v-model="computedTransmission.file_action" :options="[
+        {text: 'MOVE', value: 'move'},
+        {text: 'COPY', value: 'copy'}
+        ]" />
+      </o-field>
     </div>
     <template v-slot:footer>
     <o-button @click="$emit('close')">Cancel</o-button>
