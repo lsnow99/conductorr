@@ -2,14 +2,14 @@
   <modal
     title="New Media Server"
     v-model="computedActive"
-    @close="$emit('close')"
+    @close="close"
   >
     <service-options
       :services="mediaServerTypes"
       v-model="selectedMediaServer"
     />
     <template v-slot:footer>
-      <o-button @click="$emit('close')">Cancel</o-button>
+      <o-button @click="close">Cancel</o-button>
       <div>
         <o-button
           variant="primary"
@@ -57,6 +57,10 @@ export default {
     next() {
       this.$emit("selected", this.selectedMediaServer);
     },
+    close() {
+      this.$emit('close')
+      this.selectedMediaServer = ''
+    }
   },
   computed: {
     computedActive: {
