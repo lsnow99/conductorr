@@ -38,8 +38,6 @@
 
 <script>
 import NewDownloader from "../components/NewDownloader.vue";
-import EditTransmission from "../components/EditTransmission.vue";
-import EditNZBGet from "../components/EditNZBGet.vue";
 import EditDownloader from "../components/EditDownloader.vue";
 import APIUtil from "../util/APIUtil";
 import ConfigItem from "../components/ConfigItem.vue";
@@ -115,8 +113,6 @@ export default {
   },
   components: {
     NewDownloader,
-    EditTransmission,
-    EditNZBGet,
     ConfigItem,
     EditDownloader,
   },
