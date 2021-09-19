@@ -72,8 +72,8 @@ export default {
     },
     testPath() {
       this.loading = true;
-      APIUtil.testPath(this.pathDir).then((resp) => {
-        if (resp.success) {
+      APIUtil.testPath(this.pathDir)
+        .then((resp) => {
           this.$oruga.notification.open({
             duration: 3000,
             message: `Path is OK`,
@@ -81,18 +81,19 @@ export default {
             variant: "success",
             closable: false,
           });
-        } else {
+        })
+        .catch((err) => {
           this.$oruga.notification.open({
             duration: 5000,
-            message: `Test failed: ${resp.msg}`,
+            message: `Test failed: ${err.msg}`,
             position: "bottom-right",
             variant: "danger",
             closable: false,
           });
-        }
-      }).finally(() => {
-        this.loading = false
-      });
+        })
+        .finally(() => {
+          this.loading = false;
+        });
     },
   },
   mounted() {

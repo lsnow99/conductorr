@@ -6,15 +6,15 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/lsnow99/conductorr/app"
 	"github.com/lsnow99/conductorr/dbstore"
 	"github.com/lsnow99/conductorr/integration"
-	"github.com/lsnow99/conductorr/app"
 )
 
 type DownloaderInput struct {
 	Name           string                 `json:"name,omitempty"`
 	DownloaderType string                 `json:"downloader_type,omitempty"`
-	FileAction string `json:"file_action,omitempty"`
+	FileAction     string                 `json:"file_action,omitempty"`
 	Config         map[string]interface{} `json:"config,omitempty"`
 }
 
@@ -22,7 +22,7 @@ type DownloaderResponse struct {
 	ID             int                    `json:"id,omitempty"`
 	Name           string                 `json:"name,omitempty"`
 	DownloaderType string                 `json:"downloader_type,omitempty"`
-	FileAction string `json:"file_action,omitempty"`
+	FileAction     string                 `json:"file_action,omitempty"`
 	Config         map[string]interface{} `json:"config,omitempty"`
 }
 
@@ -77,6 +77,7 @@ func GetDownloaders(w http.ResponseWriter, r *http.Request) {
 			ID:             dlr.ID,
 			Name:           dlr.Name,
 			DownloaderType: dlr.DownloaderType,
+			FileAction:     dlr.FileAction,
 			Config:         dlr.Config,
 		}
 	}

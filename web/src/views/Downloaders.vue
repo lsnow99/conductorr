@@ -24,31 +24,14 @@
       @close="closeNewDownloaderModal"
       @selected="selectedDownloader"
     />
-    <edit-transmission
-      v-model:active="showNewTransmissionModal"
-      @close="closeNewTransmissionModal"
-      @submit="newTransmission"
-      v-model:name="editingName"
-    />
-    <EditNZBGet
-      v-model:active="showNewNZBGetModal"
-      @close="closeNewNZBGetModal"
-      @submit="newNZBGet"
-      v-model:name="editingName"
-    />
-    <edit-transmission
-      v-model:active="showEditTransmissionModal"
-      @close="closeEditTransmissionModal"
-      @submit="updateTransmission"
-      v-model:name="editingName"
-      :transmission="editingDownloader.config"
-    />
-    <EditNZBGet
-      v-model:active="showEditNZBGetModal"
-      @close="closeEditNZBGetModal"
-      @submit="updateNZBGet"
-      v-model:name="editingName"
-      :nzbget="editingDownloader.config"
+    <EditDownloader
+      v-model:active="showEditDownloaderModal"
+      v-model="editingDownloader"
+      :title="computedTitle"
+      :fields="computedFields"
+      :downloader-type="downloaderType"
+      @close="closeEditDownloaderModal"
+      @save="submittedDownloader"
     />
   </section>
 </template>
@@ -57,22 +40,77 @@
 import NewDownloader from "../components/NewDownloader.vue";
 import EditTransmission from "../components/EditTransmission.vue";
 import EditNZBGet from "../components/EditNZBGet.vue";
+import EditDownloader from "../components/EditDownloader.vue";
 import APIUtil from "../util/APIUtil";
 import ConfigItem from "../components/ConfigItem.vue";
 import TabSaver from "../util/TabSaver";
+
+const NZBGET_FIELDS = [
+  {
+    type: "text",
+    label: "Base URL",
+    placeholder: "http://localhost:6789",
+    property: "base_url",
+    required: true,
+    trim: true,
+  },
+  {
+    type: "text",
+    label: "Username",
+    placeholder: "nzbget",
+    property: "username",
+    required: true,
+    trim: true,
+  },
+  {
+    type: "password",
+    label: "Password",
+    placeholder: "tegbzn6789",
+    property: "password",
+    required: true,
+    trim: true,
+  },
+];
+
+const TRANSMISSION_FIELDS = [
+  {
+    type: "text",
+    label: "Base URL",
+    placeholder: "http://localhost:9091",
+    property: "base_url",
+    required: true,
+    trim: true,
+  },
+  {
+    type: "text",
+    label: "Username",
+    placeholder: "transmission",
+    property: "username",
+    required: true,
+    trim: true,
+  },
+  {
+    type: "password",
+    label: "Password",
+    placeholder: "transmission",
+    property: "password",
+    required: true,
+    trim: true,
+  },
+];
 
 export default {
   data() {
     return {
       showNewDownloaderModal: false,
-      showEditTransmissionModal: false,
-      showEditNZBGetModal: false,
-      showNewTransmissionModal: false,
-      showNewNZBGetModal: false,
-      downloaderType: "",
+      showEditDownloaderModal: false,
       downloaders: [],
-      editingDownloader: {},
-      editingName: "",
+      downloaderType: "",
+      mode: "edit",
+      editingDownloader: {
+        config: {},
+      },
+      editingFileAction: "",
     };
   },
   components: {
@@ -80,36 +118,65 @@ export default {
     EditTransmission,
     EditNZBGet,
     ConfigItem,
+    EditDownloader,
   },
   mixins: [TabSaver],
   methods: {
     selectedDownloader(downloaderType) {
-      if (downloaderType == "transmission") {
-        this.showNewTransmissionModal = true;
-      } else if (downloaderType == "nzbget") {
-        this.showNewNZBGetModal = true;
-      }
+      this.mode = "new";
+      this.downloaderType = downloaderType;
+      this.showEditDownloaderModal = true;
       this.showNewDownloaderModal = false;
     },
     closeNewDownloaderModal() {
       this.showNewDownloaderModal = false;
       this.restoreFocus();
     },
-    closeNewTransmissionModal() {
-      this.showNewTransmissionModal = false;
+    closeEditDownloaderModal() {
+      this.showEditDownloaderModal = false;
+      this.mode = ''
+      this.downloaderType = ''
+      this.editingDownloader = {
+        config: {}
+      }
       this.restoreFocus();
     },
-    closeNewNZBGetModal() {
-      this.showNewNZBGetModal = false;
-      this.restoreFocus();
-    },
-    closeEditTransmissionModal() {
-      this.showEditTransmissionModal = false;
-      this.restoreFocus();
-    },
-    closeEditNZBGetModal() {
-      this.showEditNZBGetModal = false;
-      this.restoreFocus();
+    submittedDownloader(downloader) {
+      if (this.mode == "new") {
+        APIUtil.newDownloader(
+          this.downloaderType,
+          downloader.name,
+          downloader.file_action,
+          downloader.config
+        ).then(() => {
+          this.$oruga.notification.open({
+            duration: 3000,
+            message: `Created successfully`,
+            position: "bottom-right",
+            variant: "success",
+            closable: false,
+          });
+          this.closeEditDownloaderModal();
+          this.loadDownloaders();
+        })
+      } else if (this.mode == "edit") {
+        APIUtil.updateDownloader(
+        downloader.id,
+        downloader.name,
+        downloader.file_action,
+        downloader.config
+      ).then(() => {
+        this.$oruga.notification.open({
+          duration: 3000,
+          message: `Updated successfully`,
+          position: "bottom-right",
+          variant: "success",
+          closable: false,
+        });
+          this.closeEditDownloaderModal()
+          this.loadDownloaders();
+        });
+      }
     },
     loadDownloaders() {
       APIUtil.getDownloaders().then((downloaders) => {
@@ -117,13 +184,10 @@ export default {
       });
     },
     editDownloader(downloader, $event) {
-      if (downloader.downloader_type == "transmission") {
-        this.showEditTransmissionModal = true;
-      } else if (downloader.downloader_type == "nzbget") {
-        this.showEditNZBGetModal = true;
-      }
+      this.mode = "edit";
+      this.showEditDownloaderModal = true;
+      this.downloaderType = downloader.downloader_type;
       this.editingDownloader = downloader;
-      this.editingName = downloader.name;
       this.lastButton = $event.currentTarget;
     },
     deleteDownloader(downloader) {
@@ -138,48 +202,6 @@ export default {
         this.loadDownloaders();
       });
     },
-    updateDownloader(id, name, config) {
-      APIUtil.updateDownloader(id, name, config).then(() => {
-        this.$oruga.notification.open({
-          duration: 3000,
-          message: `Updated successfully`,
-          position: "bottom-right",
-          variant: "success",
-          closable: false,
-        });
-        this.showEditDownloaderModal = false;
-        this.loadDownloaders();
-      });
-    },
-    newDownloader(downloaderType, name, config) {
-      APIUtil.newDownloader(downloaderType, name, config).then(() => {
-        this.$oruga.notification.open({
-          duration: 3000,
-          message: `Created successfully`,
-          position: "bottom-right",
-          variant: "success",
-          closable: false,
-        });
-        this.showNewDownloaderModal = false;
-        this.loadDownloaders();
-      });
-    },
-    newTransmission(config) {
-      this.newDownloader("transmission", this.editingName, config);
-    },
-    newNZBGet(config) {
-      this.newDownloader("nzbget", this.editingName, config);
-    },
-    updateTransmission(config) {
-      this.updateDownloader(
-        this.editingDownloader.id,
-        this.editingName,
-        config
-      );
-    },
-    updateNZBGet(config) {
-      this.updateNZBGet(this.editingDownloader.id, this.editingName, config);
-    },
     showNewDownloader($event) {
       this.lastButton = $event.currentTarget;
       this.editingName = "";
@@ -188,6 +210,28 @@ export default {
   },
   mounted() {
     this.loadDownloaders();
+  },
+  computed: {
+    computedFields() {
+      switch (this.downloaderType) {
+        case "transmission":
+          return TRANSMISSION_FIELDS;
+        case "nzbget":
+          return NZBGET_FIELDS;
+        default:
+          return [];
+      }
+    },
+    computedTitle() {
+      switch (this.downloaderType) {
+        case "transmission":
+          return "Configure Transmission";
+        case "nzbget":
+          return "Configure NZBGet";
+        default:
+          return "";
+      }
+    },
   },
 };
 </script>

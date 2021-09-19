@@ -11,7 +11,7 @@ func NewDownloader(downloaderType, name, fileAction string, config map[string]in
 		return 0, err
 	}
 	row := db.QueryRow(`
-	INSERT INTO downloader (downloader_type, name, file_action config) 
+	INSERT INTO downloader (downloader_type, name, file_action, config) 
 	VALUES (?, ?, ?, ?) 
 	RETURNING id`, downloaderType, name, fileAction, configStr)
 

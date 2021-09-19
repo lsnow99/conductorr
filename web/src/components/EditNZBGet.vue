@@ -46,7 +46,7 @@
 import APIUtil from "../util/APIUtil";
 import ActionButton from "./ActionButton.vue";
 import EditServiceUtil from "../util/EditServiceUtil";
-import Modal from "./Modal.vue"
+import Modal from "./Modal.vue";
 
 export default {
   data() {
@@ -56,10 +56,12 @@ export default {
     };
   },
   props: {
-    nzbget: {
+    modelValue: {
       type: Object,
       default: function () {
-        return {};
+        return {
+          config: {},
+        };
       },
     },
     active: {
@@ -94,26 +96,25 @@ export default {
       }
       this.testingMode = "loading";
       APIUtil.testDownloader("nzbget", this.computedNZBGet)
-        .then((resp) => {
-          if (resp.success) {
-            this.$oruga.notification.open({
-              duration: 5000,
-              message: `Connected successfully`,
-              position: "bottom-right",
-              variant: "success",
-              closable: false,
-            });
-            this.testingMode = "success";
-          } else {
-            this.$oruga.notification.open({
-              duration: 5000,
-              message: `Test failed: ${resp.msg}`,
-              position: "bottom-right",
-              variant: "danger",
-              closable: false,
-            });
-            this.testingMode = "danger";
-          }
+        .then(() => {
+          this.$oruga.notification.open({
+            duration: 5000,
+            message: `Connected successfully`,
+            position: "bottom-right",
+            variant: "success",
+            closable: false,
+          });
+          this.testingMode = "success";
+        })
+        .catch((err) => {
+          this.$oruga.notification.open({
+            duration: 5000,
+            message: `Test failed: ${err.msg}`,
+            position: "bottom-right",
+            variant: "danger",
+            closable: false,
+          });
+          this.testingMode = "danger";
         })
         .finally(() => {
           setTimeout(() => {
@@ -122,12 +123,10 @@ export default {
         });
     },
     sanitize() {
-      this.computedName = this.computedName
-        ? this.computedName.trim()
-        : '';
+      this.computedName = this.computedName ? this.computedName.trim() : "";
       this.computedNZBGet.base_url = this.computedNZBGet.base_url
         ? this.computedNZBGet.base_url.trim()
-        : '';
+        : "";
     },
     validate() {
       if (!this.computedName) {

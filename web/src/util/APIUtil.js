@@ -26,7 +26,7 @@ const doAPIReq = (url, options, errMsg = undefined) => {
               closable: false,
             })
           }
-          reject(resp.msg);
+          reject(resp);
         }
       })
       .catch((err) => {
@@ -314,6 +314,7 @@ const getDownloaders = () => {
 }
 
 const updateDownloader = (id, name, file_action, config) => {
+  console.log('id', id, 'name', name, 'file_action', file_action, 'config', config)
   return doAPIReq(`/api/v1/downloader/${id}`, {
     method: "PUT",
     body: JSON.stringify({

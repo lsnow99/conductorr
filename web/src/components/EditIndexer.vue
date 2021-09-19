@@ -161,26 +161,25 @@ export default {
         this.computedIndexer.for_series,
         this.computedIndexer.download_type
       )
-        .then((resp) => {
-          if (resp.success) {
-            this.$oruga.notification.open({
-              duration: 5000,
-              message: `Connected successfully`,
-              position: "bottom-right",
-              variant: "success",
-              closable: false,
-            });
-            this.testingMode = "success";
-          } else {
-            this.$oruga.notification.open({
-              duration: 5000,
-              message: `Test failed: ${resp.msg}`,
-              position: "bottom-right",
-              variant: "danger",
-              closable: false,
-            });
-            this.testingMode = "danger";
-          }
+        .then(() => {
+          this.$oruga.notification.open({
+            duration: 5000,
+            message: `Connected successfully`,
+            position: "bottom-right",
+            variant: "success",
+            closable: false,
+          });
+          this.testingMode = "success";
+        })
+        .catch((err) => {
+          this.$oruga.notification.open({
+            duration: 5000,
+            message: `Test failed: ${err.msg}`,
+            position: "bottom-right",
+            variant: "danger",
+            closable: false,
+          });
+          this.testingMode = "danger";
         })
         .finally(() => {
           setTimeout(() => {
