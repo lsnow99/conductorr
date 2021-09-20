@@ -1,4 +1,4 @@
-package omdb
+package search
 
 import (
 	"bytes"
@@ -108,11 +108,11 @@ func TestSearchByTitle(t *testing.T) {
 		}, nil
 	}
 
-	results, err := SearchByTitle("Dark", "", 1)
+	results, err := (&OmdbAPI{}).SearchByTitle("Dark", "", 1)
 	if err != nil {
 		t.Fatal(err)
 	}
-	
+
 	if results.TotalResults != 3555 {
 		t.Fatalf("expected 3555 total results, got %v", results.TotalResults)
 	}

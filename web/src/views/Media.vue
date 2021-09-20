@@ -3,7 +3,7 @@
     <section class="flex flex-row">
       <img
         v-if="media.poster"
-        class="hidden md:block rounded-md"
+        class="hidden md:block rounded-md w-72"
         :src="media.poster"
         :alt="`Poster for ${media.title}`"
       />

@@ -5,6 +5,7 @@
         v-model:query="query"
         :results="results"
         :total-results="totalResults"
+        :per-page="perPage"
         :loading="loading"
         @search="search"
         @selected-media="selectedMedia"
@@ -56,6 +57,7 @@ export default {
       query: "",
       results: [],
       totalResults: 0,
+      perPage: 0,
       loading: false,
       showNewSearchModal: false,
     };
@@ -69,6 +71,7 @@ export default {
         .then((data) => {
           this.totalResults = data.total_results;
           this.results = data.results;
+          this.perPage = data.per_page;
         })
         .catch(() => {
           this.totalResults = 0;

@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"database/sql"
 	"errors"
 	"net/http"
 	"os"
@@ -10,7 +9,7 @@ import (
 	"time"
 
 	"github.com/lsnow99/conductorr/dbstore"
-	"github.com/lsnow99/conductorr/services/omdb"
+	"github.com/lsnow99/conductorr/services/search"
 )
 
 type MediaResponse struct {
@@ -33,14 +32,14 @@ type MediaResponse struct {
 	Monitoring    bool       `json:"monitoring"`
 	Path          string     `json:"path"`
 	PathOK        bool       `json:"path_ok"`
-	Size          int64        `json:"size"`
+	Size          int64      `json:"size"`
+
+	SearchID string `json:"search_id,omitempty"`
 
 	Children []MediaResponse `json:"children,omitempty"`
 
 	// to prevent an infinite loop in Expand()
 	visited map[int]bool `json:"-"`
-
-	InLibrary bool `json:"in_library,omitempty"`
 }
 
 // Expand a media response with all the recursively referenced children
@@ -91,6 +90,7 @@ func CheckMediaPath(path string) (bool, int64) {
 
 type SearchResponse struct {
 	TotalResults int             `json:"total_results"`
+	PerPage      int             `json:"per_page"`
 	Results      []MediaResponse `json:"results"`
 }
 
@@ -143,27 +143,23 @@ func NewMediaResponseFromDB(media dbstore.Media) (m MediaResponse) {
 	return m
 }
 
-func NewMediaResponseFromOmdbIndividual(media omdb.IndividualResult) (m MediaResponse) {
+func NewMediaResponseFromIndividual(media search.IndividualResult) (m MediaResponse) {
 	m.Title = media.Title
 	m.Description = media.Plot
 	m.ReleasedAt = media.ReleasedAt
 	m.EndedAt = &media.EndedAt
-	m.ContentType = media.Type
+	m.ContentType = media.ContentType
 	m.Poster = media.Poster
 	m.ImdbID = media.ImdbID
-	m.ImdbRating = int(media.ImdbRating * 10)
+	m.ImdbRating = int(media.Rating * 10)
 	return m
 }
 
-func NewMediaResponseFromOmdbSearch(media omdb.SearchResult) (m MediaResponse) {
+func NewMediaResponseFromSearch(media search.SearchResult) (m MediaResponse) {
 	m.Title = media.Title
-	m.ReleasedAt, _ = time.Parse("2006", strconv.Itoa(media.YearStart))
-	if media.YearEnd != -1 {
-		ended, _ := time.Parse("2006", strconv.Itoa(media.YearEnd))
-		m.EndedAt = &ended
-	}
-	m.ImdbID = media.ImdbID
-	m.ContentType = media.Type
+	m.ReleasedAt = media.ReleasedAt
+	m.SearchID = media.ID
+	m.ContentType = media.ContentType
 	m.Poster = media.Poster
 	return m
 }
@@ -179,31 +175,20 @@ func SearchNewByTitle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	omdbResults, err := omdb.SearchByTitle(query, contentType, page)
+	searchResults, err := search.SearchByTitle(query, contentType, page)
 	if err != nil {
 		Respond(w, r.Header.Get("hostname"), err, nil, true)
 		return
 	}
 
 	medias := make([]MediaResponse, 0)
-	for _, omdbResult := range omdbResults.Search {
-		var media MediaResponse
-		dbMedia, err := dbstore.GetMediaByImdbID(omdbResult.ImdbID)
-		if err != nil && err != sql.ErrNoRows {
-			Respond(w, r.Header.Get("hostname"), err, nil, true)
-			return
-		} else if err == sql.ErrNoRows {
-			media = NewMediaResponseFromOmdbSearch(omdbResult)
-			media.InLibrary = false
-		} else {
-			media = NewMediaResponseFromDB(dbMedia)
-			media.InLibrary = true
-		}
-		medias = append(medias, media)
+	for _, searchResult := range searchResults.Results {
+		medias = append(medias, NewMediaResponseFromSearch(searchResult))
 	}
 
 	sr := SearchResponse{
-		TotalResults: omdbResults.TotalResults,
+		TotalResults: searchResults.TotalResults,
+		PerPage:      searchResults.PerPage,
 		Results:      medias,
 	}
 
@@ -234,6 +219,7 @@ func SearchLibraryByTitle(w http.ResponseWriter, r *http.Request) {
 
 	resp := SearchResponse{
 		TotalResults: total,
+		PerPage:      10,
 		Results:      results,
 	}
 

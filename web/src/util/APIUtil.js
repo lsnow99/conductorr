@@ -149,9 +149,9 @@ const getReleaseProfileCfg = () => {
   });
 };
 
-const addMedia = (imdb_id, profile_id, path_id) => {
+const addMedia = (search_id, profile_id, path_id) => {
   return doAPIReq(
-    `/api/v1/add/${imdb_id}`,
+    `/api/v1/add/${search_id}`,
     {
       method: "POST",
       body: JSON.stringify({

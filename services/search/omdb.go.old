@@ -1,4 +1,4 @@
-package omdb
+package search
 
 import (
 	"encoding/json"
@@ -13,12 +13,12 @@ import (
 	"github.com/lsnow99/conductorr/settings"
 )
 
-const apiHost = "www.omdbapi.com"
+const omdbApiHost = "www.omdbapi.com"
 
 var yearPattern = regexp.MustCompile(`^(\d{4})(\-|–)?(\d{4})?`)
 var runtimePattern = regexp.MustCompile(`^([0-9]+) min`)
 
-type SearchResults struct {
+type OMDBSearchResults struct {
 	Search          []SearchResult
 	TotalResults    int
 	TotalResultsStr string `json:"totalResults"`
@@ -26,7 +26,7 @@ type SearchResults struct {
 	Error           string
 }
 
-type SearchResult struct {
+type OMDBSearchResult struct {
 	Title     string
 	YearStart int
 	YearEnd   int
@@ -36,8 +36,8 @@ type SearchResult struct {
 	Poster    string
 }
 
-type IndividualResult struct {
-	SearchResult
+type OMDBIndividualResult struct {
+	OMDBSearchResult
 	Rated      string
 	Released   string
 	ReleasedAt time.Time
@@ -73,20 +73,22 @@ type HTTPClient interface {
 	Do(req *http.Request) (*http.Response, error)
 }
 
+type OmdbAPI struct {}
+
 var Client HTTPClient
 
 func init() {
 	Client = &http.Client{}
 }
 
-func SearchByTitle(title string, contentType string, page int) (*SearchResults, error) {
+func (o *OmdbAPI) SearchByTitle(title string, contentType string, page int) (*OMDBSearchResults, error) {
 	if title == "" {
-		return &SearchResults{}, nil
+		return &OMDBSearchResults{}, nil
 	}
 
 	u := url.URL{}
 	u.Scheme = "https"
-	u.Host = apiHost
+	u.Host = omdbApiHost
 	u.Path = "/"
 	q := u.Query()
 	q.Set("s", title)
@@ -111,7 +113,7 @@ func SearchByTitle(title string, contentType string, page int) (*SearchResults, 
 		return nil, err
 	}
 
-	results := &SearchResults{}
+	results := &OMDBSearchResults{}
 	err = json.NewDecoder(resp.Body).Decode(results)
 	if err != nil {
 		return nil, err
@@ -134,10 +136,10 @@ func SearchByTitle(title string, contentType string, page int) (*SearchResults, 
 	return results, nil
 }
 
-func SearchByImdbID(imdbID string) (*IndividualResult, error) {
+func (o *OmdbAPI) SearchByImdbID(imdbID string) (*OMDBIndividualResult, error) {
 	u := url.URL{}
 	u.Scheme = "https"
-	u.Host = apiHost
+	u.Host = omdbApiHost
 	u.Path = "/"
 	q := u.Query()
 	q.Set("i", imdbID)
@@ -155,7 +157,7 @@ func SearchByImdbID(imdbID string) (*IndividualResult, error) {
 		return nil, err
 	}
 
-	result := &IndividualResult{}
+	result := &OMDBIndividualResult{}
 	err = json.NewDecoder(resp.Body).Decode(result)
 	if err != nil {
 		return nil, err
@@ -168,7 +170,7 @@ func SearchByImdbID(imdbID string) (*IndividualResult, error) {
 	return result, result.Sanitize()
 }
 
-func (ir *IndividualResult) Sanitize() error {
+func (ir *OMDBIndividualResult) Sanitize() error {
 	// Sanitize the underlying SearchResult
 	if err := ir.SearchResult.Sanitize(); err != nil {
 		return err

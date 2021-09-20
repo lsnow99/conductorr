@@ -7,6 +7,10 @@ import (
 	"strconv"
 )
 
+// Injected at build time
+var DefaultOMDBAPIKey string
+var DefaultTmdbAPIKey string
+
 var DebugMode bool
 var ResetUser bool
 var UsePG bool
@@ -21,6 +25,7 @@ var JWTSecret string
 var JWTExpDays int
 var MigrationsPath string
 var OmdbApiKey string
+var TmdbAPIKey string
 var ServerHost string
 var CookieDomain string
 var BuildMode string
@@ -79,13 +84,9 @@ func init() {
 
 	if os.Getenv("OMDB_API_KEY") != "" {
 		OmdbApiKey = os.Getenv("OMDB_API_KEY")
-	} else if DebugMode {
-		/*
-			This is a free API key that has a limit of 1,000 requests per day. It is intended
-			only for development purposes. Please do not abuse it. If you would like an API
-			key for yourself, you can get one for free at https://www.omdbapi.com
-		*/
-		OmdbApiKey = "2fe27f52"
+	}
+	if os.Getenv("TMDB_API_KEY") != "" {
+		TmdbAPIKey = os.Getenv("TMDB_API_KEY")
 	}
 
 	// Set cookie domain from SERVER_HOST. Can parse IP addresses or hostnames

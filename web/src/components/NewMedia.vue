@@ -9,6 +9,7 @@
       v-model:query="query"
       :results="results"
       :total-results="totalResults"
+      :per-page="perPage"
       :loading="loading"
       @search="search"
       @selected-media="selectedMedia"
@@ -54,6 +55,7 @@ export default {
     return {
       results: [],
       totalResults: 0,
+      perPage: 0,
       loading: false,
       query: "",
       media: {},
@@ -91,6 +93,7 @@ export default {
         .then((data) => {
           this.totalResults = data.total_results;
           this.results = data.results;
+          this.perPage = data.per_page;
         })
         .catch(() => {
           this.totalResults = 0;
@@ -107,7 +110,7 @@ export default {
     },
     addMedia({ profileID, pathID }) {
       this.loadingNewMedia = true;
-      APIUtil.addMedia(this.media.imdb_id, profileID, pathID)
+      APIUtil.addMedia(this.media.search_id, profileID, pathID)
         .then((id) => {
           this.$router.push({ name: "media", params: { media_id: id } });
         })

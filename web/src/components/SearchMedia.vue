@@ -39,12 +39,12 @@
   <div class="mt-4">
     <o-pagination
       :total="totalResults"
+      :per-page="perPage"
       v-model:current="current"
       :range-before="3"
       :range-after="3"
       order="default"
       size="medium"
-      :per-page="10"
       aria-next-label="Next page"
       aria-previous-label="Previous page"
       aria-page-label="Page"
@@ -102,6 +102,12 @@ export default {
         return 0;
       },
     },
+    perPage: {
+      type: Number,
+      default: function() {
+        return 0;
+      }
+    },
     resultsWrapperClass: {
       type: String,
       default: function () {
@@ -147,7 +153,7 @@ export default {
   },
   watch: {
     contentType: function (contentType) {
-      this.page = 0;
+      this.page = 1;
       this.search(true);
     },
     current: function (newVal) {

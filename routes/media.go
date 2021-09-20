@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -14,7 +15,7 @@ import (
 	"github.com/lsnow99/conductorr/app"
 	"github.com/lsnow99/conductorr/dbstore"
 	"github.com/lsnow99/conductorr/integration"
-	"github.com/lsnow99/conductorr/services/omdb"
+	"github.com/lsnow99/conductorr/services/search"
 	"github.com/lsnow99/conductorr/services/series"
 	"golang.org/x/net/html"
 )
@@ -41,6 +42,12 @@ type MonitoringInput struct {
 	Monitoring bool `json:"monitoring"`
 }
 
+type AddMediaInput struct {
+	ProfileID  int  `json:"profile_id,omitempty"`
+	PathID     int  `json:"path_id,omitempty"`
+	Monitoring bool `json:"monitoring"`
+}
+
 func NewIntegrationMediaFromDBMedia(media dbstore.Media) (m integration.Media) {
 	m.ID = media.ID
 	if media.Title.Valid {
@@ -52,14 +59,8 @@ func NewIntegrationMediaFromDBMedia(media dbstore.Media) (m integration.Media) {
 	return m
 }
 
-type AddMediaInput struct {
-	ProfileID  int  `json:"profile_id,omitempty"`
-	PathID     int  `json:"path_id,omitempty"`
-	Monitoring bool `json:"monitoring"`
-}
-
 func AddMedia(w http.ResponseWriter, r *http.Request) {
-	imdbID := mux.Vars(r)["imdb_id"]
+	searchID := mux.Vars(r)["search_id"]
 
 	mi := AddMediaInput{}
 	if err := json.NewDecoder(r.Body).Decode(&mi); err != nil {
@@ -67,7 +68,13 @@ func AddMedia(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := doAddMedia(imdbID, &mi.ProfileID, &mi.PathID, mi.Monitoring)
+	result, err := search.GetResultByID(searchID)
+	if err != nil {
+		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		return
+	}
+
+	id, err := doAddMedia(result, &mi.ProfileID, &mi.PathID, mi.Monitoring)
 	if err != nil {
 		Respond(w, r.Header.Get("hostname"), err, nil, true)
 		return
@@ -94,7 +101,13 @@ func RefreshMediaMetadata(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := doAddMedia(media.ImdbID.String, nil, nil, media.Monitoring)
+	result, err := search.GetResultByImdbID(media.ImdbID.String)
+	if err != nil {
+		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		return
+	}
+
+	id, err := doAddMedia(result, nil, nil, media.Monitoring)
 	if err != nil {
 		Respond(w, r.Header.Get("hostname"), err, nil, true)
 		return
@@ -102,14 +115,13 @@ func RefreshMediaMetadata(w http.ResponseWriter, r *http.Request) {
 	Respond(w, r.Header.Get("hostname"), nil, id, true)
 }
 
-func doAddMedia(imdbID string, profileID *int, pathID *int, monitor bool) (int, error) {
-	result, err := omdb.SearchByImdbID(imdbID)
-	if err != nil {
-		return 0, err
+func doAddMedia(result *search.IndividualResult, profileID *int, pathID *int, monitor bool) (int, error) {
+	if result == nil {
+		return 0, fmt.Errorf("nil search result passed to add media")
 	}
 
 	// Scale imdb rating
-	imdbRating := int(result.ImdbRating * 10)
+	imdbRating := int(result.Rating * 10)
 
 	// Fetch the poster
 	posterResp, err := http.Get(result.Poster)
@@ -121,19 +133,17 @@ func doAddMedia(imdbID string, profileID *int, pathID *int, monitor bool) (int, 
 		return 0, err
 	}
 
-	genres := strings.Split(result.Genre, ", ")
-
 	var id int
 
 	// If tv show, add all the episodes and seasons
-	if result.Type == "series" {
+	if result.ContentType == "series" {
 		episodes, err := series.GetEpisodes(result.ImdbID)
 		if err != nil {
 			return id, err
 		}
 		id, err = dbstore.UpsertMedia(&result.Title, &result.Plot, &result.ReleasedAt, &result.EndedAt,
-			&result.Type, nil, nil, &result.ImdbID, nil, &imdbRating, &result.Runtime,
-			&poster, genres, profileID, pathID, nil, monitor)
+			&result.ContentType, nil, nil, &result.ImdbID, nil, &imdbRating, &result.Runtime,
+			&poster, result.Genres, profileID, pathID, nil, monitor)
 		if err != nil {
 			return id, err
 		}
@@ -160,8 +170,8 @@ func doAddMedia(imdbID string, profileID *int, pathID *int, monitor bool) (int, 
 		}
 	} else {
 		id, err = dbstore.UpsertMedia(&result.Title, &result.Plot, &result.ReleasedAt, &result.EndedAt,
-			&result.Type, nil, nil, &result.ImdbID, nil, &imdbRating, &result.Runtime,
-			&poster, genres, profileID, pathID, nil, monitor)
+			&result.ContentType, nil, nil, &result.ImdbID, nil, &imdbRating, &result.Runtime,
+			&poster, result.Genres, profileID, pathID, nil, monitor)
 		if err != nil {
 			return id, err
 		}
