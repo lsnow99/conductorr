@@ -22,10 +22,10 @@ type AuthTokenResponse struct {
 }
 
 type MediaServerResponse struct {
-	ID             int                    `json:"id,omitempty"`
-	Name           string                 `json:"name,omitempty"`
+	ID              int                    `json:"id,omitempty"`
+	Name            string                 `json:"name,omitempty"`
 	MediaServerType string                 `json:"media_server_type,omitempty"`
-	Config         map[string]interface{} `json:"config,omitempty"`
+	Config          map[string]interface{} `json:"config,omitempty"`
 }
 
 func FetchPlexAuthToken(w http.ResponseWriter, r *http.Request) {
@@ -66,13 +66,8 @@ func TestMediaServer(w http.ResponseWriter, r *http.Request) {
 		Respond(w, r.Header.Get("hostname"), err, nil, true)
 		return
 	}
-	resp := make(map[string]interface{})
 	err = mediaServer.TestConnection()
-	resp["success"] = err == nil
-	if err != nil {
-		resp["msg"] = err.Error()
-	}
-	Respond(w, r.Header.Get("hostname"), nil, resp, true)
+	Respond(w, r.Header.Get("hostname"), err, nil, true)
 }
 
 func NewMediaServer(w http.ResponseWriter, r *http.Request) {
@@ -103,10 +98,10 @@ func GetMediaServers(w http.ResponseWriter, r *http.Request) {
 	mediaServers := make([]MediaServerResponse, len(dbMediaServers))
 	for i, msvr := range dbMediaServers {
 		mediaServers[i] = MediaServerResponse{
-			ID:             msvr.ID,
-			Name:           msvr.Name,
+			ID:              msvr.ID,
+			Name:            msvr.Name,
 			MediaServerType: msvr.MediaServerType,
-			Config:         msvr.Config,
+			Config:          msvr.Config,
 		}
 	}
 	Respond(w, r.Header.Get("hostname"), nil, mediaServers, true)

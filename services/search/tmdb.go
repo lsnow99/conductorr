@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/lsnow99/conductorr/logger"
 	"github.com/lsnow99/conductorr/settings"
 )
 
@@ -287,8 +288,6 @@ func (t *TmdbAPI) SearchByTitle(title, contentType string, page int) (*SearchRes
 	q.Set("page", strconv.Itoa(page))
 	u.RawQuery = q.Encode()
 
-	fmt.Println(u.String())
-
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		return nil, err
@@ -320,7 +319,7 @@ func (t *TmdbAPI) SearchByTitle(title, contentType string, page int) (*SearchRes
 			sr.ContentType = "series"
 			sr.ReleasedAt, err = time.Parse(dateFormat, result.FirstAirDate)
 			if err != nil {
-				return nil, err
+				logger.LogWarn(err)
 			}
 		} else if result.MediaType == "movie" {
 			sr.ID = "movie:" + strconv.Itoa(result.ID)
@@ -328,7 +327,7 @@ func (t *TmdbAPI) SearchByTitle(title, contentType string, page int) (*SearchRes
 			sr.ContentType = "movie"
 			sr.ReleasedAt, err = time.Parse(dateFormat, result.ReleaseDate)
 			if err != nil {
-				return nil, err
+				logger.LogWarn(err)
 			}
 		} else {
 			continue
@@ -400,7 +399,7 @@ func (t *TmdbAPI) SearchByID(id string) (*IndividualResult, error) {
 		ir.ImdbID = result.ExternalIds.ImdbID
 		ir.ReleasedAt, err = time.Parse(dateFormat, result.FirstAirDate)
 		if err != nil {
-			return nil, err
+			logger.LogWarn(err)
 		}
 		if result.LastAirDate != "" {
 			ir.EndedAt, err = time.Parse(dateFormat, result.LastAirDate)
@@ -415,7 +414,7 @@ func (t *TmdbAPI) SearchByID(id string) (*IndividualResult, error) {
 		ir.ImdbID = result.ImdbID
 		ir.ReleasedAt, err = time.Parse(dateFormat, result.ReleaseDate)
 		if err != nil {
-			return nil, err
+			logger.LogWarn(err)
 		}
 		// Get the soonest physical or dvd release date
 		for _, res := range result.ReleaseDates.Results {

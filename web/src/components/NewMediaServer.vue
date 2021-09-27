@@ -1,9 +1,5 @@
 <template>
-  <modal
-    title="New Media Server"
-    v-model="computedActive"
-    @close="close"
-  >
+  <modal title="New Media Server" v-model="computedActive" @close="close">
     <service-options
       :services="mediaServerTypes"
       v-model="selectedMediaServer"
@@ -30,6 +26,10 @@ const mediaServerTypes = [
   {
     name: "Plex",
     value: "plex",
+  },
+  {
+    name: "Jellyfin",
+    value: "jellyfin",
   },
 ];
 
@@ -58,9 +58,16 @@ export default {
       this.$emit("selected", this.selectedMediaServer);
     },
     close() {
-      this.$emit('close')
-      this.selectedMediaServer = ''
-    }
+      this.selectedMediaServer = "";
+      this.$emit("close");
+    },
+  },
+  watch: {
+    active(v) {
+      if (!v) {
+        this.selectedMediaServer = "";
+      }
+    },
   },
   computed: {
     computedActive: {

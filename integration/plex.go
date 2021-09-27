@@ -14,95 +14,6 @@ type Plex struct {
 	baseUrl string
 }
 
-type jobResultPtr *jobResult
-
-type jobResult struct {
-	mediaPaths []MediaPath
-	err        error
-}
-
-func (p *Plex) TestConnection() error {
-	u, err := url.Parse(p.baseUrl)
-	if err != nil {
-		return err
-	}
-	q := url.Values{}
-	q.Add("X-Plex-Token", p.token)
-	u.RawQuery = q.Encode()
-
-	req, err := http.NewRequest("GET", u.String(), nil)
-	if err != nil {
-		return err
-	}
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-
-	defer resp.Body.Close()
-
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("received non-200 level status code %d", resp.StatusCode)
-	}
-
-	return nil
-}
-
-func (p *Plex) ImportMedia(path string) error {
-	libraries, err := p.getLibraries()
-	if err != nil {
-		return err
-	}
-	for _, library := range libraries {
-		u, err := url.Parse(p.baseUrl)
-		if err != nil {
-			return err
-		}
-		q := url.Values{}
-		q.Add("X-Plex-Token", p.token)
-		q.Add("path", path)
-		u.Path = "/library/sections/" + library.Key + "/refresh"
-		u.RawQuery = q.Encode()
-
-		req, err := http.NewRequest("GET", u.String(), nil)
-		if err != nil {
-			return err
-		}
-
-		resp, err := http.DefaultClient.Do(req)
-		if err != nil {
-			return err
-		}
-
-		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-			return fmt.Errorf("received non-200 level status code %d", resp.StatusCode)
-		}
-
-		resp.Body.Close()
-	}
-	return nil
-}
-
-func NewPlex(token, baseUrl string) *Plex {
-	p := &Plex{
-		token:   token,
-		baseUrl: baseUrl,
-	}
-
-	return p
-}
-
-func NewPlexFromConfig(configuration map[string]interface{}) (*Plex, error) {
-	token, tOK := configuration["token"].(string)
-	baseUrl, bOK := configuration["base_url"].(string)
-	if !tOK || !bOK {
-		return nil, errors.New("failed to parse plex configuration")
-	}
-
-	return NewPlex(token, baseUrl), nil
-}
-
 type Directory struct {
 	Text       string `xml:",chardata"`
 	AllowSync  string `xml:"allowSync,attr"`
@@ -224,6 +135,124 @@ type Video struct {
 	} `xml:"Role"`
 }
 
+type jobResultPtr *jobResult
+
+type jobResult struct {
+	mediaPaths []MediaPath
+	err        error
+}
+
+func NewPlex(token, baseUrl string) *Plex {
+	p := &Plex{
+		token:   token,
+		baseUrl: baseUrl,
+	}
+
+	return p
+}
+
+func NewPlexFromConfig(configuration map[string]interface{}) (*Plex, error) {
+	token, tOK := configuration["token"].(string)
+	baseUrl, bOK := configuration["base_url"].(string)
+	if !tOK || !bOK {
+		return nil, errors.New("failed to parse plex configuration")
+	}
+
+	return NewPlex(token, baseUrl), nil
+}
+
+func (p *Plex) TestConnection() error {
+	u, err := url.Parse(p.baseUrl)
+	if err != nil {
+		return err
+	}
+	q := url.Values{}
+	q.Add("X-Plex-Token", p.token)
+	u.RawQuery = q.Encode()
+
+	req, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return fmt.Errorf("received non-200 level status code %d", resp.StatusCode)
+	}
+
+	return nil
+}
+
+func (p *Plex) ImportMedia(mediaPath string) error {
+	libraries, err := p.getLibraries()
+	if err != nil {
+		return err
+	}
+	for _, library := range libraries {
+		u, err := url.Parse(p.baseUrl)
+		if err != nil {
+			return err
+		}
+		q := url.Values{}
+		q.Add("X-Plex-Token", p.token)
+		q.Add("path", mediaPath)
+		u.Path = "/library/sections/" + library.Key + "/refresh"
+		u.RawQuery = q.Encode()
+
+		req, err := http.NewRequest("GET", u.String(), nil)
+		if err != nil {
+			return err
+		}
+
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return err
+		}
+
+		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+			return fmt.Errorf("received non-200 level status code %d", resp.StatusCode)
+		}
+
+		resp.Body.Close()
+	}
+	return nil
+}
+
+func (p *Plex) GetMediaPaths() ([]MediaPath, error) {
+	libraries, err := p.getLibraries()
+	if err != nil {
+		return nil, err
+	}
+
+	results := make([]jobResultPtr, len(libraries))
+	wg := sync.WaitGroup{}
+	for i, library := range libraries {
+		var result jobResultPtr = &jobResult{}
+		results[i] = result
+		wg.Add(1)
+		go p.getMediaInLibrary(&wg, library, result)
+	}
+	wg.Wait()
+
+	mediaPaths := make([]MediaPath, 0)
+	for _, result := range results {
+		if result == nil || result.mediaPaths == nil {
+			continue
+		}
+		if result.err != nil {
+			return nil, err
+		}
+		mediaPaths = append(mediaPaths, result.mediaPaths...)
+	}
+	return mediaPaths, nil
+}
+
 func (p *Plex) getLibraries() ([]Directory, error) {
 	u, err := url.Parse(p.baseUrl)
 	if err != nil {
@@ -307,33 +336,4 @@ func (p *Plex) getMediaInLibrary(wg *sync.WaitGroup, library Directory, result j
 			Path:  video.Media.Part.File,
 		}
 	}
-}
-
-func (p *Plex) GetMediaPaths() ([]MediaPath, error) {
-	libraries, err := p.getLibraries()
-	if err != nil {
-		return nil, err
-	}
-
-	results := make([]jobResultPtr, len(libraries))
-	wg := sync.WaitGroup{}
-	for i, library := range libraries {
-		var result jobResultPtr = &jobResult{}
-		results[i] = result
-		wg.Add(1)
-		go p.getMediaInLibrary(&wg, library, result)
-	}
-	wg.Wait()
-
-	mediaPaths := make([]MediaPath, 0)
-	for _, result := range results {
-		if result == nil || result.mediaPaths == nil {
-			continue
-		}
-		if result.err != nil {
-			return nil, err
-		}
-		mediaPaths = append(mediaPaths, result.mediaPaths...)
-	}
-	return mediaPaths, nil
 }

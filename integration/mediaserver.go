@@ -28,6 +28,8 @@ func NewMediaServerFromConfig(mediaServerType string, config map[string]interfac
 	switch mediaServerType {
 	case "plex":
 		return NewPlexFromConfig(config)
+	case "jellyfin":
+		return NewJellyfinFromConfig(config)
 	}
 	return nil, fmt.Errorf("unrecognized media server type: %s", mediaServerType)
 }

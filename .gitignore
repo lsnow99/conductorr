@@ -6,3 +6,4 @@ conductorr.db-journal
 /bin
 web/src/util/wasm_exec.js
 /conductorr
+jellyfin-openapi-stable.json

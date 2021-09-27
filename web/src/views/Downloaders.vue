@@ -24,24 +24,41 @@
       @close="closeNewDownloaderModal"
       @selected="selectedDownloader"
     />
-    <EditDownloader
+    <EditService
       v-model:active="showEditDownloaderModal"
       v-model="editingDownloader"
       :title="computedTitle"
       :fields="computedFields"
       :downloader-type="downloaderType"
+      :extra-validator="validate"
+      :testingMode="testingMode"
       @close="closeEditDownloaderModal"
+      @test="testDownloader"
       @save="submittedDownloader"
-    />
+    >
+      <o-field label="Post-Processing Action">
+        <div class="flex flex-row justify-center mt-1">
+          <radio-group
+            name="fileAction"
+            v-model="editingDownloader.file_action"
+            :options="[
+              { text: 'MOVE', value: 'move' },
+              { text: 'COPY', value: 'copy' },
+            ]"
+          />
+        </div>
+      </o-field>
+    </EditService>
   </section>
 </template>
 
 <script>
 import NewDownloader from "../components/NewDownloader.vue";
-import EditDownloader from "../components/EditDownloader.vue";
+import EditService from "../components/EditService.vue";
 import APIUtil from "../util/APIUtil";
 import ConfigItem from "../components/ConfigItem.vue";
 import TabSaver from "../util/TabSaver";
+import RadioGroup from "../components/RadioGroup.vue"
 
 const NZBGET_FIELDS = [
   {
@@ -109,12 +126,14 @@ export default {
         config: {},
       },
       editingFileAction: "",
+      testingMode: "",
     };
   },
   components: {
     NewDownloader,
     ConfigItem,
-    EditDownloader,
+    EditService,
+    RadioGroup
   },
   mixins: [TabSaver],
   methods: {
@@ -174,6 +193,35 @@ export default {
         });
       }
     },
+    testDownloader(config) {
+      this.testingMode = "loading";
+      APIUtil.testDownloader(this.downloaderType, config)
+        .then((resp) => {
+          this.$oruga.notification.open({
+            duration: 5000,
+            message: `Connected successfully`,
+            position: "bottom-right",
+            variant: "success",
+            closable: false,
+          });
+          this.testingMode = "success";
+        })
+        .catch((err) => {
+          this.$oruga.notification.open({
+            duration: 5000,
+            message: `Test failed: ${err.msg}`,
+            position: "bottom-right",
+            variant: "danger",
+            closable: false,
+          });
+          this.testingMode = "danger";
+        })
+        .finally(() => {
+          setTimeout(() => {
+            this.testingMode = "";
+          }, 5000);
+        });
+    },
     loadDownloaders() {
       APIUtil.getDownloaders().then((downloaders) => {
         this.downloaders = downloaders;
@@ -183,7 +231,7 @@ export default {
       this.mode = "edit";
       this.showEditDownloaderModal = true;
       this.downloaderType = downloader.downloader_type;
-      this.editingDownloader = downloader;
+      Object.assign(this.editingDownloader, downloader);
       this.lastButton = $event.currentTarget;
     },
     deleteDownloader(downloader) {
@@ -202,6 +250,11 @@ export default {
       this.lastButton = $event.currentTarget;
       this.editingName = "";
       this.showNewDownloaderModal = true;
+    },
+    validate() {
+      if (!this.editingDownloader.file_action) {
+        return "File Action is required";
+      }
     },
   },
   mounted() {

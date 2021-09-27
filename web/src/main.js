@@ -87,6 +87,11 @@ import { PrismEditor } from "vue-prism-editor";
 import "vue-prism-editor/dist/prismeditor.min.css";
 
 /*
+Import our own custom global components
+*/
+import PlexAuthTokenInput from "./components/PlexAuthTokenInput.vue";
+
+/*
 Import VueX devtools fix from https://github.com/erdemefe07/vuex4-devtools-support
 */
 import { addDevtools } from "./vuexdev";
@@ -172,6 +177,7 @@ app.use(Oruga, {
 });
 app.component("vue-fontawesome", FontAwesomeIcon);
 app.component("PrismEditor", PrismEditor);
+app.component("PlexAuthTokenInput", PlexAuthTokenInput)
 app.mount("#app");
 
 if (import.meta.env.DEV) {

@@ -60,7 +60,7 @@
 <script>
 import APIUtil from "../util/APIUtil";
 import ActionButton from "./ActionButton.vue";
-import DownloaderUtil from "../util/EditServiceUtil";
+import EditServiceUtil from "../util/EditServiceUtil";
 import Modal from "../components/Modal.vue";
 
 export default {
@@ -88,7 +88,7 @@ export default {
       },
     },
   },
-  mixins: [DownloaderUtil],
+  mixins: [EditServiceUtil],
   components: {
     ActionButton,
     Modal,
@@ -142,10 +142,10 @@ export default {
     sanitize() {
       this.computedName = this.computedName
         ? this.computedName.trim()
-        : undefined;
+        : "";
       this.computedPlex.base_url = this.computedPlex.base_url
         ? this.computedPlex.base_url.trim()
-        : undefined;
+        : "";
     },
     validate() {
       if (!this.computedName) {

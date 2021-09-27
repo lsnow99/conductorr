@@ -182,7 +182,6 @@ export default {
     toggleMenu(event) {
       if (event) {
         event.preventDefault();
-        console.log(event);
       }
       this.expandMenu = !this.expandMenu;
     },

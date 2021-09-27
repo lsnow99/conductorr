@@ -1,6 +1,6 @@
 <template>
   <section class="mt-3">
-    <o-button variant="primary" @click="showNewMediaServer"
+    <o-button variant="primary" @click="openNewMediaServerModal"
       >New Media Server</o-button
     >
     <config-item
@@ -25,55 +25,98 @@
     @close="closeNewMediaServerModal"
     @selected="selectedMediaServer"
   />
-  <edit-plex
-    v-model:name="editingName"
-    v-model:active="showNewPlexModal"
-    @submit="newPlex"
-    @close="closeNewMediaServerModal"
-  />
-  <edit-plex
-    :plex="editingMediaServer.config"
-    v-model:name="editingName"
-    v-model:active="showEditPlexModal"
-    @submit="updatePlex"
-    @close="closeEditPlexModal"
+  <EditService
+    v-model="editingMediaServer"
+    v-model:active="showEditMediaServerModal"
+    :title="computedTitle"
+    :fields="computedFields"
+    :testingMode="testingMode"
+    @close="closeEditMediaServerModal"
+    @test="testMediaServer"
+    @save="submittedMediaServer"
   />
 </template>
 
 <script>
 import NewMediaServer from "../components/NewMediaServer.vue";
-import EditPlex from "../components/EditPlex.vue";
 import ConfigItem from "../components/ConfigItem.vue";
 import APIUtil from "../util/APIUtil";
-import TabSaver from "../util/TabSaver"
+import TabSaver from "../util/TabSaver";
+import Modal from "../components/Modal.vue";
+import ActionButton from "../components/ActionButton.vue";
+import EditService from "../components/EditService.vue";
+
+const JELLYFIN_FIELDS = [
+  {
+    label: "Base URL",
+    type: "text",
+    property: "base_url",
+    placeholder: "Base URL",
+  },
+  {
+    label: "API Key",
+    type: "text",
+    property: "api_key",
+    placeholder: "API Key",
+  },
+];
+
+const PLEX_FIELDS = [
+  {
+    label: "Base URL",
+    type: "text",
+    property: "base_url",
+    placeholder: "Base URL",
+  },
+  {
+    label: "Auth Token",
+    type: "custom",
+    property: "token",
+    component: "PlexAuthTokenInput",
+  },
+];
 
 export default {
   data() {
     return {
-      _showNewMediaServerModal: false,
-      _showEditMediaServerModal: false,
-      editingName: "",
-      editingMediaServer: {},
+      showNewMediaServerModal: false,
+      showEditMediaServerModal: false,
+      editingMediaServer: {
+        config: {},
+      },
+      mode: "",
       mediaServerType: "",
       mediaServers: [],
+      testingMode: "",
     };
   },
   mixins: [TabSaver],
-  components: { NewMediaServer, EditPlex, ConfigItem },
+  components: {
+    NewMediaServer,
+    ConfigItem,
+    Modal,
+    ActionButton,
+    EditService,
+  },
   methods: {
     closeNewMediaServerModal() {
       this.showNewMediaServerModal = false;
       this.mediaServerType = "";
+      this.editingMediaServer = {
+        config: {}
+      }
       this.restoreFocus();
     },
-    showNewMediaServer($event) {
-      this.lastButton = $event.currentTarget
+    openNewMediaServerModal($event) {
+      this.lastButton = $event.currentTarget;
       this.mediaServerType = "";
-      this.editingName = "";
+      this.mode = "new"
       this.showNewMediaServerModal = true;
     },
     selectedMediaServer(mediaServerType) {
       this.mediaServerType = mediaServerType;
+      this.showEditMediaServerModal = true;
+      this.showNewMediaServerModal = false;
     },
     loadMediaServers() {
       APIUtil.getMediaServers().then((mediaServers) => {
@@ -81,10 +124,11 @@ export default {
       });
     },
     editMediaServer(mediaServer, $event) {
-      this.lastButton = $event.currentTarget
+      this.lastButton = $event.currentTarget;
       this.showEditMediaServerModal = true;
-      this.editingMediaServer = mediaServer;
-      this.editingName = mediaServer.name;
+      this.mode = "edit"
+      this.mediaServerType = mediaServer.media_server_type
+      Object.assign(this.editingMediaServer, mediaServer);
     },
     deleteMediaServer(mediaServer) {
       APIUtil.deleteMediaServer(mediaServer.id).then(() => {
@@ -124,51 +168,111 @@ export default {
         this.loadMediaServers();
       });
     },
-    closeEditPlexModal() {
-      this.restoreFocus()
-      this.showEditPlexModal = false;
+    closeEditMediaServerModal() {
+      this.restoreFocus();
+      this.mode = ""
+      this.mediaServerType = ""
+      this.editingMediaServer = {
+        config: {}
+      }
+      this.showEditMediaServerModal = false;
     },
     newPlex(config) {
-      this.newMediaServer("plex", this.editingName, config);
+      this.newMediaServer("plex", this.editingMediaServer.name, config);
     },
     updatePlex(config) {
       this.updateMediaServer(
         this.editingMediaServer.id,
-        this.editingName,
+        this.editingMediaServer.name,
         config
       );
+    },
+    submittedMediaServer(mediaServer) {
+      if (this.mode == "new") {
+        APIUtil.newMediaServer(
+          this.mediaServerType,
+          mediaServer.name,
+          mediaServer.config
+        ).then(() => {
+          this.$oruga.notification.open({
+            duration: 3000,
+            message: `Created successfully`,
+            position: "bottom-right",
+            variant: "success",
+            closable: false,
+          });
+          this.closeEditMediaServerModal();
+          this.loadMediaServers();
+        });
+      } else if (this.mode == "edit") {
+        APIUtil.updateMediaServer(
+          mediaServer.id,
+          mediaServer.name,
+          mediaServer.config
+        ).then(() => {
+          this.$oruga.notification.open({
+            duration: 3000,
+            message: `Updated successfully`,
+            position: "bottom-right",
+            variant: "success",
+            closable: false,
+          });
+          this.closeEditMediaServerModal();
+          this.loadMediaServers();
+        });
+      }
+    },
+    testMediaServer(mediaServer) {
+      this.testingMode = "loading";
+      APIUtil.testMediaServer(this.mediaServerType, mediaServer.config)
+        .then(() => {
+          this.$oruga.notification.open({
+            duration: 5000,
+            message: `Connected successfully`,
+            position: "bottom-right",
+            variant: "success",
+            closable: false,
+          });
+          this.testingMode = "success";
+        })
+        .catch((err) => {
+          this.$oruga.notification.open({
+            duration: 5000,
+            message: `Test failed: ${err.msg}`,
+            position: "bottom-right",
+            variant: "danger",
+            closable: false,
+          });
+          this.testingMode = "danger";
+        })
+        .finally(() => {
+          setTimeout(() => {
+            this.testingMode = "";
+          }, 5000);
+        });
     },
   },
   mounted() {
     this.loadMediaServers();
   },
   computed: {
-    showNewMediaServerModal: {
-      get() {
-        return this._showNewMediaServerModal && this.mediaServerType == "";
-      },
-      set(v) {
-        this._showNewMediaServerModal = v;
-      },
+    computedFields() {
+      switch (this.mediaServerType) {
+        case "plex":
+          return PLEX_FIELDS;
+        case "jellyfin":
+          return JELLYFIN_FIELDS;
+        default:
+          return [];
+      }
     },
-    showEditPlexModal: {
-      get() {
-        return (
-          this.editingMediaServer.media_server_type == "plex" &&
-          this._showEditMediaServerModal
-        );
-      },
-      set(v) {
-        this._showEditMediaServerModal = v;
-      },
-    },
-    showNewPlexModal: {
-      get() {
-        return this._showNewMediaServerModal && this.mediaServerType == "plex";
-      },
-      set(v) {
-        this._showNewMediaServerModal = v;
-      },
+    computedTitle() {
+      switch (this.mediaServerType) {
+        case "plex":
+          return "Configure Plex";
+        case "jellyfin":
+          return "Configure Jellyfin";
+      }
     },
   },
 };
