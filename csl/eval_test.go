@@ -379,6 +379,174 @@ func TestAllLessThanEqual(t *testing.T) {
 	checkResult(t, false, res, trace)
 }
 
+func TestAllBetweenExcl(t *testing.T) {
+	expr, err := Parse(`
+	(>< -4 4 -3 -2 -1 0 1 2 3)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	res, trace := Eval(expr, nil)
+	checkResult(t, true, res, trace)
+
+	expr, err = Parse(`
+	(>< -4 4 0 0 2 3 4)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace = Eval(expr, nil)
+	checkResult(t, false, res, trace)
+}
+
+func TestAllBetweenLExcl(t *testing.T) {
+	expr, err := Parse(`
+	(><= -4 4 -3 -2 -1 0 1 2 3 4)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	res, trace := Eval(expr, nil)
+	checkResult(t, true, res, trace)
+
+	expr, err = Parse(`
+	(><= -4 4 0 0 2 3 5)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace = Eval(expr, nil)
+	checkResult(t, false, res, trace)
+}
+
+func TestAllBetweenRExcl(t *testing.T) {
+	expr, err := Parse(`
+	(>=< -4 4 -3 -2 -1 0 1 2 3 -4)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	res, trace := Eval(expr, nil)
+	checkResult(t, true, res, trace)
+
+	expr, err = Parse(`
+	(>=< -4 4 0 0 2 3 -5)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace = Eval(expr, nil)
+	checkResult(t, false, res, trace)
+}
+
+func TestAllBetweenIncl(t *testing.T) {
+	expr, err := Parse(`
+	(>=<= -4 4 -4 -3 -2 -1 0 1 2 3 4)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	res, trace := Eval(expr, nil)
+	checkResult(t, true, res, trace)
+
+	expr, err = Parse(`
+	(>=<= -4 4 0 0 2 3 4 5)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace = Eval(expr, nil)
+	checkResult(t, false, res, trace)
+}
+
+func TestAllOutsideExcl(t *testing.T) {
+	expr, err := Parse(`
+	(<> -4 4 5 2G -2G)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	res, trace := Eval(expr, nil)
+	checkResult(t, true, res, trace)
+
+	expr, err = Parse(`
+	(<> -4 4 4)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace = Eval(expr, nil)
+	checkResult(t, false, res, trace)
+}
+
+func TestAllOutsideLExcl(t *testing.T) {
+	expr, err := Parse(`
+	(<>= -4 4 4 2G -2G)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	res, trace := Eval(expr, nil)
+	checkResult(t, true, res, trace)
+
+	expr, err = Parse(`
+	(<>= -4 4 -4 2G)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace = Eval(expr, nil)
+	checkResult(t, false, res, trace)
+}
+
+func TestAllOutsideRExcl(t *testing.T) {
+	expr, err := Parse(`
+	(<=> -4 4 -4 2G -2G)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	res, trace := Eval(expr, nil)
+	checkResult(t, true, res, trace)
+
+	expr, err = Parse(`
+	(<=> -4 4 4 2G)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace = Eval(expr, nil)
+	checkResult(t, false, res, trace)
+}
+
+func TestAllOutsideIncl(t *testing.T) {
+	expr, err := Parse(`
+	(<=>= -4 4 -4 2G -2G)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	res, trace := Eval(expr, nil)
+	checkResult(t, true, res, trace)
+
+	expr, err = Parse(`
+	(<=>= -4 4 -3)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace = Eval(expr, nil)
+	checkResult(t, false, res, trace)
+}
+
 func TestNthElem(t *testing.T) {
 	expr, err := Parse(`
 	(nth 1 (1 7 3 9))

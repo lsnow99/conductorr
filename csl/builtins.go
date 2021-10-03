@@ -310,6 +310,190 @@ func init() {
 		}
 		return true, nil
 	}, nil)
+	RegisterFunction("><", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) < 3 {
+			return nil, ErrNumOperands
+		}
+		x, ok := args[0].(int64)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		y, ok := args[1].(int64)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		for _, arg := range args[2:] {
+			v, ok := arg.(int64)
+			if !ok {
+				return nil, ErrMismatchOperandTypes
+			}
+			if !(v > x) || !(v < y) {
+				return false, nil
+			}
+		}
+		return true, nil
+	}, nil)
+	RegisterFunction(">=<=", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) < 3 {
+			return nil, ErrNumOperands
+		}
+		x, ok := args[0].(int64)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		y, ok := args[1].(int64)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		for _, arg := range args[2:] {
+			v, ok := arg.(int64)
+			if !ok {
+				return nil, ErrMismatchOperandTypes
+			}
+			if !(v >= x) || !(v <= y) {
+				return false, nil
+			}
+		}
+		return true, nil
+	}, nil)
+	RegisterFunction(">=<", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) < 3 {
+			return nil, ErrNumOperands
+		}
+		x, ok := args[0].(int64)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		y, ok := args[1].(int64)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		for _, arg := range args[2:] {
+			v, ok := arg.(int64)
+			if !ok {
+				return nil, ErrMismatchOperandTypes
+			}
+			if !(v >= x) || !(v < y) {
+				return false, nil
+			}
+		}
+		return true, nil
+	}, nil)
+	RegisterFunction("><=", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) < 3 {
+			return nil, ErrNumOperands
+		}
+		x, ok := args[0].(int64)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		y, ok := args[1].(int64)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		for _, arg := range args[2:] {
+			v, ok := arg.(int64)
+			if !ok {
+				return nil, ErrMismatchOperandTypes
+			}
+			if !(v > x) || !(v <= y) {
+				return false, nil
+			}
+		}
+		return true, nil
+	}, nil)
+	RegisterFunction("<>", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) < 3 {
+			return nil, ErrNumOperands
+		}
+		x, ok := args[0].(int64)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		y, ok := args[1].(int64)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		for _, arg := range args[2:] {
+			v, ok := arg.(int64)
+			if !ok {
+				return nil, ErrMismatchOperandTypes
+			}
+			if !(v < x) && !(v > y) {
+				return false, nil
+			}
+		}
+		return true, nil
+	}, nil)
+	RegisterFunction("<=>=", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) < 3 {
+			return nil, ErrNumOperands
+		}
+		x, ok := args[0].(int64)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		y, ok := args[1].(int64)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		for _, arg := range args[2:] {
+			v, ok := arg.(int64)
+			if !ok {
+				return nil, ErrMismatchOperandTypes
+			}
+			if !(v <= x) && !(v >= y) {
+				return false, nil
+			}
+		}
+		return true, nil
+	}, nil)
+	RegisterFunction("<>=", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) < 3 {
+			return nil, ErrNumOperands
+		}
+		x, ok := args[0].(int64)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		y, ok := args[1].(int64)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		for _, arg := range args[2:] {
+			v, ok := arg.(int64)
+			if !ok {
+				return nil, ErrMismatchOperandTypes
+			}
+			if !(v < x) && !(v >= y) {
+				return false, nil
+			}
+		}
+		return true, nil
+	}, nil)
+	RegisterFunction("<=>", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) < 3 {
+			return nil, ErrNumOperands
+		}
+		x, ok := args[0].(int64)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		y, ok := args[1].(int64)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		for _, arg := range args[2:] {
+			v, ok := arg.(int64)
+			if !ok {
+				return nil, ErrMismatchOperandTypes
+			}
+			if !(v <= x) && !(v > y) {
+				return false, nil
+			}
+		}
+		return true, nil
+	}, nil)
 	RegisterFunction("nth", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) != 2 {
 			return nil, ErrNumOperands

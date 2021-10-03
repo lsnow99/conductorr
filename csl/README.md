@@ -29,7 +29,7 @@ CSL has supports the following datatypes:
 
 #### Integers
 
-All CSL integers are 64-bit numbers. They can be negative positive, or zero. One special feature of CSL is the ability to use suffixes that are a shorthand to multiply by an order of magnitude. For example, `3G` is equivalent to `3000000000`.
+All CSL integers are 64-bit numbers. They can be negative, positive, or zero. One special feature of CSL is the ability to use suffixes that are a shorthand to multiply by an order of magnitude. For example, `3G` is equivalent to `3000000000`.
 
 The full list of available suffixes is below:
 - `G` --> 1000000000
@@ -66,6 +66,14 @@ Lists are implicitly defined any time expressions are joined within parentheses 
 - `(>>= x y ...)` Returns true iff each integer argument is strictly greater than or equal to the ones before it
 - `(<= x y ...)`  Returns true iff `x` is less than or equal to all subsequent integer arguments
 - `(<<= x y ...)` Returns true iff each integer argument is strictly less than or equal to the ones before it
+- `(>< x y v ...)` Returns true iff for all integer arguments v that v ∈ (x, y)
+- `(><= x y v ...)` Returns true iff for all integer arguments v that v ∈ (x, y]
+- `(>=< x y v ...)` Returns true iff for all integer arguments v that v ∈ [x, y)
+- `(>=<= x y v ...)` Returns true iff for all integer arguments v that v ∈ [x, y]
+- `(<> x y v ...)` Returns true iff for all integer arguments v that v ∈ [-2^63, x)∩(y, 2^63-1]
+- `(<=>= x y v ...)` Returns true iff for all integer arguments v that v ∈ [-2^63, x]∩[y, 2^63-1]
+- `(<=> x y v ...)` Returns true iff for all integer arguments v that v ∈ [-2^63, x]∩(y, 2^63-1]
+- `(<>= x y v ...)` Returns true iff for all integer arguments v that v ∈ [-2^63, x)∩[y, 2^63-1]
 - `(eq x y ...)` Returns true if all arguments are equal to each other in both type and value. In the case of lists, the elements must be in the same order to be considered equal. (Under the hood we are just using Go's `reflect.DeepEqual`)
 - `(define x expr)` Defines a variable `x` initialized with the result of `expr`
 - `(in v l)` Returns true if the value of `v` appears in list `l`
@@ -83,4 +91,4 @@ Lists are implicitly defined any time expressions are joined within parentheses 
 - `(or p ...)` Returns the result of a conditional OR applied to all operands in the expression. Returns `true` if there is only one operand
 - `(not p)` Returns the result of conditional inverse applied to p
 
-> NOTE: All of the above functions are evaluated *eagerly*, meaning their arguments are evaluated before the function is called. The exception to this is the `if` function, which only evaluates the condition and the branch that it determines to execute, and does not evaluate the dead branch
+> NOTE: All of the above functions are evaluated *eagerly*, meaning their arguments are evaluated before the function is called. The exceptions to this are the `if`, `append`, `appendleft`, `pop`, and `popleft` functions, which only evaluate their arguments as they are needed.
