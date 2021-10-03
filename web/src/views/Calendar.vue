@@ -62,7 +62,7 @@
           v-for="date in dates"
           :key="date"
           class="date overflow-hidden flex flex-col"
-          :class="calDateClass + ' ' + (date.gray ? 'opacity-80' : '')"
+          :class="(date.today?'date-today':'') + ' ' + calDateClass + ' ' + (date.gray ? 'opacity-80' : '')"
         >
           <div class="bg-gray-600 inline-block py-px w-7 text-center">
             {{ date.day }}
@@ -135,6 +135,13 @@
   height: 8rem;
 
   @apply bg-gray-700;
+}
+
+.date-today {
+  @apply bg-gray-500;
+  @apply border-gray-300;
+  @apply border-solid;
+  @apply border-2;
 }
 
 .monthly-wrapper {
@@ -232,6 +239,12 @@ export default {
         return event.series_title + " " + event.season_num + numStr;
       }
     },
+    isTodayClass(date) {
+      if (date.dayStart.toISODate() === DateTime.local().toISODate()) {
+        return `bg-red-600`
+      }
+      return ''
+    }
   },
   mounted() {
     const screenWidth = window.innerWidth;
@@ -300,6 +313,7 @@ export default {
             day: curDate.day,
             dayStart: curDate.startOf("day"),
             gray: true,
+            today: curDate.toISODate() === DateTime.local().toISODate()
           });
         }
         for (let i = 0; i < daysInMonth; i++) {
@@ -308,6 +322,7 @@ export default {
             day: curDate.day,
             dayStart: curDate.startOf("day"),
             gray: false,
+            today: curDate.toISODate() === DateTime.local().toISODate()
           });
         }
         for (let i = monthEndDoW; i < 6; i++) {
@@ -316,6 +331,7 @@ export default {
             day: curDate.day,
             dayStart: curDate.startOf("day"),
             gray: true,
+            today: curDate.toISODate() === DateTime.local().toISODate()
           });
         }
       } else if (this.viewType === "weekly") {
@@ -327,6 +343,7 @@ export default {
             day: curDate.day,
             dayStart: curDate.startOf("day"),
             gray: false,
+            today: curDate.toISODate() === DateTime.local().toISODate()
           });
         }
       } else if (this.viewType === "daily") {
@@ -334,6 +351,7 @@ export default {
           day: this.selectedDate.day,
           dayStart: this.selectedDate.startOf("day"),
           gray: false,
+          today: this.selectedDate.toISODate() === DateTime.local().toISODate()
         });
       }
       return dates;
