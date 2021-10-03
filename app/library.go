@@ -8,13 +8,13 @@ import (
 	"github.com/lsnow99/conductorr/logger"
 )
 
-type updatePathRequest struct{
+type updatePathRequest struct {
 	mediaID int
-	pathOK bool
+	pathOK  bool
 }
 
 type getPathRequest struct {
-	mediaID int
+	mediaID  int
 	respChan chan bool
 }
 
@@ -27,11 +27,11 @@ type LibraryManager struct {
 	pathStatuses map[int]bool
 	// channels to handle access to pathStatuses
 	updateChan chan updatePathRequest
-	getChan chan getPathRequest
+	getChan    chan getPathRequest
 	getAllChan chan getAllPathsRequest
 }
 
-func NewLibraryManager() (LibraryManager) {
+func NewLibraryManager() LibraryManager {
 	lm := LibraryManager{}
 	lm.pathStatuses = make(map[int]bool)
 	lm.initChannels()
@@ -42,16 +42,16 @@ func (lm *LibraryManager) initChannels() {
 	lm.updateChan = make(chan updatePathRequest)
 	lm.getChan = make(chan getPathRequest)
 	lm.getAllChan = make(chan getAllPathsRequest)
-	go func ()  {
+	go func() {
 		for {
 			select {
-			case req := <- lm.updateChan:
+			case req := <-lm.updateChan:
 				lm.pathStatuses[req.mediaID] = req.pathOK
-			case req := <- lm.getChan:
+			case req := <-lm.getChan:
 				id := req.mediaID
 				pathGood, inMap := lm.pathStatuses[id]
 				req.respChan <- pathGood && inMap
-			case req := <- lm.getAllChan:
+			case req := <-lm.getAllChan:
 				newMap := make(map[int]bool)
 				for k, v := range lm.pathStatuses {
 					newMap[k] = v
@@ -92,14 +92,14 @@ func (lm *LibraryManager) CheckMediaPath(mediaID int, path string) bool {
 func (lm *LibraryManager) SetMediaPathStatus(id int, status bool) {
 	req := updatePathRequest{
 		mediaID: id,
-		pathOK: status,
+		pathOK:  status,
 	}
 	lm.updateChan <- req
 }
 
 func (lm *LibraryManager) GetMediaPathStatus(id int) bool {
 	req := getPathRequest{
-		mediaID: id,
+		mediaID:  id,
 		respChan: make(chan bool),
 	}
 	lm.getChan <- req
