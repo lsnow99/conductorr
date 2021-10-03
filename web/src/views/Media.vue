@@ -128,7 +128,8 @@
         role="button"
         :aria-label="`Expand ${season.title}`"
       >
-        <div class="text-2xl">
+        <div class="text-2xl flex flex-row justify-between">
+          <div>
           <monitoring-toggle
             class="text-xl"
             :monitoring="season.monitoring"
@@ -136,6 +137,10 @@
             @toggle="toggleMonitoring(season)"
           />
           {{ season.title }}
+          </div>
+          <div>
+          <!-- <search-actions :mediaID="season.id" size="large" /> -->
+          </div>
         </div>
         <transition name="fade">
           <div

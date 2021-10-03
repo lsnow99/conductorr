@@ -111,12 +111,15 @@ func (dm *DownloaderManager) AutoDownload(mediaID int, releases []integration.Re
 }
 
 func (dm *DownloaderManager) doAutoDownload(mediaID int, releases []integration.Release) {
-	if len(releases) < 1 {
-		return
-	}
-	dm.backupReleaseMap[mediaID] = releases[1:]
-	if err := dm.Download(mediaID, releases[0], false, true, true); err != nil {
-		logger.LogWarn(err)
+	for index := 0; index < len(releases); index++ { 
+		fmt.Printf("Attempting to download: %v", releases[index])
+		if err := dm.Download(mediaID, releases[index], false, true, true); err == nil {
+			// Return if there are no errors, after adding the remaining releases to the backup map
+			dm.backupReleaseMap[mediaID] = releases[index+1:]
+			break
+		} else {
+			logger.LogWarn(err)
+		}
 	}
 }
 
@@ -136,7 +139,9 @@ func (dm *DownloaderManager) Download(mediaID int, release integration.Release, 
 				if err != nil {
 					logger.LogDanger(fmt.Errorf("database error! could not save download: %v", err))
 				}
-				dm.Lock()
+				if !haveLock {
+					dm.Lock()
+				}
 				md := ManagedDownload{}
 				md.ID = id
 				md.MediaID = mediaID
@@ -145,8 +150,10 @@ func (dm *DownloaderManager) Download(mediaID int, release integration.Release, 
 				md.TryAgainOnFail = tryAgainOnFail
 				md.Status = constant.StatusWaiting
 				dm.downloads = append(dm.downloads, md)
-				dm.Unlock()
-				return err
+				if !haveLock {
+					dm.Unlock()
+				}
+				return nil
 			} else {
 				hadError = true
 				logger.LogDanger(err)

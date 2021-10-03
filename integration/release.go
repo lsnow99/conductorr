@@ -169,7 +169,7 @@ func SortReleases(releases *[]Release, sorter string) error {
 		return err
 	}
 	env := make(map[string]interface{})
-	sort.Slice(*releases, func(i, j int) bool {
+	sort.SliceStable(*releases, func(i, j int) bool {
 		env["a"] = makeCSLRelease((*releases)[i])
 		env["b"] = makeCSLRelease((*releases)[j])
 		val, trace := csl.Eval(sexprs, env)

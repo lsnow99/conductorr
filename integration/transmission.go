@@ -129,7 +129,11 @@ func (t *Transmission) PollDownloads(hashes []string) ([]Download, error) {
 
 		switch *torrent.Status {
 		case transmissionrpc.TorrentStatusStopped:
-			d.Status = constant.StatusPaused
+			if torrent.Error != nil && *torrent.Error != 0 {
+				d.Status = constant.StatusError
+			} else {
+				d.Status = constant.StatusPaused
+			}
 		case transmissionrpc.TorrentStatusCheckWait:
 			d.Status = constant.StatusWaiting
 		case transmissionrpc.TorrentStatusCheck:
