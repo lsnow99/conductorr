@@ -774,4 +774,38 @@ func init() {
 
 		return !p, nil
 	}, nil)
+	RegisterFunction("join", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) < 2 {
+			return nil, ErrNumOperands
+		}
+		separator, ok := args[0].(string)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		str := ""
+		for _, arg := range args[1:len(args)-1] {
+			str += fmt.Sprintf("%v%s", arg, separator)
+		}
+		str += fmt.Sprintf("%v", args[len(args) - 1])
+		return str, nil
+	}, nil)
+	RegisterFunction("split", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) != 2 {
+			return nil, ErrNumOperands
+		}
+		str, ok := args[0].(string)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		delimiter, ok := args[1].(string)
+		if !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		l := List{}
+		split := strings.Split(str, delimiter)
+		for _, s := range split {
+			l.Elems = append(l.Elems, s)
+		}
+		return l, nil
+	}, nil)
 }

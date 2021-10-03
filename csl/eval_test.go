@@ -8,7 +8,7 @@ import (
 
 func TestEvalBasic1(t *testing.T) {
 	expr, err := Parse(`
-	;wtf dfas
+	;this is a comment that will be ignored
 	(* 2 (+ 3 (/ 12 6) (* 1 2)))
 	`)
 	if err != nil {
@@ -1052,6 +1052,46 @@ func TestNotExpr(t *testing.T) {
 	}
 	res, trace = Eval(expr, nil)
 	checkResult(t, true, res, trace)
+}
+
+func TestJoinStr(t *testing.T) {
+	expr, err := Parse(`
+	(join " " "hello" "world")
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace := Eval(expr, nil)
+	checkResult(t, "hello world", res, trace)
+}
+
+func TestJoinMixed(t *testing.T) {
+	expr, err := Parse(`
+	(join " " "hello" "world" 1K)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace := Eval(expr, nil)
+	checkResult(t, "hello world 1000", res, trace)
+}
+
+func TestSplitStr(t *testing.T) {
+	expr, err := Parse(`
+	(split "hello world, i am, 7" ",")
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace := Eval(expr, nil)
+	expected := List{
+		Elems: []interface{}{
+			"hello world",
+			" i am",
+			" 7",
+		},
+	}
+	checkResult(t, expected, res, trace)
 }
 
 func printTrace(trace Trace) {

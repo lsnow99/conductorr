@@ -66,14 +66,14 @@ Lists are implicitly defined any time expressions are joined within parentheses 
 - `(>>= x y ...)` Returns true iff each integer argument is strictly greater than or equal to the ones before it
 - `(<= x y ...)`  Returns true iff `x` is less than or equal to all subsequent integer arguments
 - `(<<= x y ...)` Returns true iff each integer argument is strictly less than or equal to the ones before it
-- `(>< x y v ...)` Returns true iff for all integer arguments v that v ∈ (x, y)
-- `(><= x y v ...)` Returns true iff for all integer arguments v that v ∈ (x, y]
-- `(>=< x y v ...)` Returns true iff for all integer arguments v that v ∈ [x, y)
-- `(>=<= x y v ...)` Returns true iff for all integer arguments v that v ∈ [x, y]
-- `(<> x y v ...)` Returns true iff for all integer arguments v that v ∈ [-2^63, x)∩(y, 2^63-1]
-- `(<=>= x y v ...)` Returns true iff for all integer arguments v that v ∈ [-2^63, x]∩[y, 2^63-1]
-- `(<=> x y v ...)` Returns true iff for all integer arguments v that v ∈ [-2^63, x]∩(y, 2^63-1]
-- `(<>= x y v ...)` Returns true iff for all integer arguments v that v ∈ [-2^63, x)∩[y, 2^63-1]
+- `(>< x y v ...)` Returns true iff for all integer arguments `v` that `v` ∈ (`x`, `y`)
+- `(><= x y v ...)` Returns true iff for all integer arguments `v` that `v` ∈ (`x`, `y`]
+- `(>=< x y v ...)` Returns true iff for all integer arguments `v` that `v` ∈ [`x`, `y`)
+- `(>=<= x y v ...)` Returns true iff for all integer arguments `v` that `v` ∈ [`x`, `y`]
+- `(<> x y v ...)` Returns true iff for all integer arguments `v` that `v` ∈ [-2<sup>63</sup>, x)∩(`y`, 2<sup>63</sup>-1]
+- `(<=>= x y v ...)` Returns true iff for all integer arguments `v` that `v` ∈ [-2<sup>63</sup>, `x`]∩[`y`, 2<sup>63</sup>-1]
+- `(<=> x y v ...)` Returns true iff for all integer arguments `v` that `v` ∈ [-2<sup>63</sup>, `x`]∩(`y`, 2<sup>63</sup>-1]
+- `(<>= x y v ...)` Returns true iff for all integer arguments `v` that `v` ∈ [-2<sup>63</sup>, `x`)∩[`y`, 2<sup>63</sup>-1]
 - `(eq x y ...)` Returns true if all arguments are equal to each other in both type and value. In the case of lists, the elements must be in the same order to be considered equal. (Under the hood we are just using Go's `reflect.DeepEqual`)
 - `(define x expr)` Defines a variable `x` initialized with the result of `expr`
 - `(in v l)` Returns true if the value of `v` appears in list `l`
@@ -90,5 +90,7 @@ Lists are implicitly defined any time expressions are joined within parentheses 
 - `(and p ...)` Returns the result of a conditional AND applied to all operands in the expression. Returns `true` if there is only one operand
 - `(or p ...)` Returns the result of a conditional OR applied to all operands in the expression. Returns `true` if there is only one operand
 - `(not p)` Returns the result of conditional inverse applied to p
+- `(join s v ...)` Joins elements elements `v1`, `v2`, ... into a string using separator `s`. Does not add a separator to the end of the resultant string. Non-string elements such as integers will display using `fmt.Sprintf(%v, v)`
+- `(split s d)` Splits a string into a list of strings using delimiter `d`
 
 > NOTE: All of the above functions are evaluated *eagerly*, meaning their arguments are evaluated before the function is called. The exceptions to this are the `if`, `append`, `appendleft`, `pop`, and `popleft` functions, which only evaluate their arguments as they are needed.
