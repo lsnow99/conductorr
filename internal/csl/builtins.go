@@ -104,6 +104,9 @@ func init() {
 		if !ok {
 			return nil, csl.ErrBadType
 		}
+		if runtimeNum == 0 {
+			return -1, nil
+		}
 		return int64(sizeNum / (runtimeNum * 60)), nil
 	}, nil)
 }
