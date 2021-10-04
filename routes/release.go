@@ -22,6 +22,7 @@ func SearchReleasesManual(w http.ResponseWriter, r *http.Request) {
 	allReleases, _, err := getReleasesForMediaID(mediaID)
 	if err != nil {
 		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		return
 	}
 
 	Respond(w, r.Header.Get("hostname"), nil, allReleases, true)
@@ -38,6 +39,7 @@ func SearchReleasesAuto(w http.ResponseWriter, r *http.Request) {
 	_, filteredReleases, err := getReleasesForMediaID(mediaID)
 	if err != nil {
 		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		return
 	}
 
 	app.DM.AutoDownload(mediaID, filteredReleases)
@@ -74,6 +76,7 @@ func getReleasesForMediaID(mediaID int) ([]integration.Release, []integration.Re
 	if dbMedia.ContentType.String == "movie" {
 		media.ContentType = integration.Movie
 		media.ImdbID = dbMedia.ImdbID.String
+		media.Runtime = int64(dbMedia.Runtime.Int32)
 	} else if dbMedia.ContentType.String == "episode" {
 		dbSeason, err := dbstore.GetMediaByID(int(dbMedia.ParentMediaID.Int32))
 		if err != nil {
@@ -87,6 +90,7 @@ func getReleasesForMediaID(mediaID int) ([]integration.Release, []integration.Re
 		media.Episode = int(dbMedia.Number.Int32)
 		media.Season = int(dbSeason.Number.Int32)
 		media.ContentType = integration.TVShow
+		media.Runtime = int64(dbSeries.Runtime.Int32)
 	}
 	media.Year = dbMedia.ReleasedAt.Time.Year()
 
@@ -99,6 +103,29 @@ func getReleasesForMediaID(mediaID int) ([]integration.Release, []integration.Re
 	if err != nil {
 		return nil, nil, err
 	}
+
+	history, err := dbstore.GetReleaseHistoryForMedia(mediaID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	i := 0
+	for _, release := range included {
+		found := false
+		for _, releaseHistory := range history {
+			if releaseHistory.ID == release.ID {
+				found = true
+			}
+		}
+		if found {
+			release.Warnings = append(release.Warnings, "Release failed previously")
+			excluded = append(excluded, release)
+		} else {
+			included[i] = release
+			i++
+		}
+	}
+	included = included[:i]
 
 	allReleases := append(included, excluded...)
 	err = integration.SortReleases(&allReleases, profile.Sorter.String)

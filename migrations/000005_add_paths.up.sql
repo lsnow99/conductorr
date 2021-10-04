@@ -5,7 +5,7 @@ CREATE TABLE path(
     id INTEGER PRIMARY KEY,
     --postgresql--
     id SERIAL PRIMARY KEY,
-    --end
+    --end--
     path TEXT NOT NULL,
     movies_default BOOLEAN NOT NULL,
     series_default BOOLEAN NOT NULL

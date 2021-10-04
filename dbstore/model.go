@@ -2,6 +2,7 @@ package dbstore
 
 import (
 	"database/sql"
+	"time"
 )
 
 type Profile struct {
@@ -68,6 +69,13 @@ type Download struct {
 	Status       string
 	FriendlyName string
 	Identifier   string
+	ReleaseID    sql.NullString
+}
+
+type ReleaseHistory struct {
+	ID string
+	MediaID int
+	LastAttempt time.Time
 }
 
 type Path struct {

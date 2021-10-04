@@ -1,12 +1,11 @@
 ###
 # Dockerfile for Conductorr
 # Author Logan Snow
-# Last updated 7/27/2021
 ###
 
 # Build the CSL web assembly module
 # This stage of the build also copies the wasm_exec.js script to the web ui source
-FROM golang:1.16 AS csl-build-env
+FROM golang:1.17 AS csl-build-env
 COPY . /build
 RUN apt-get update && apt-get install -y brotli
 RUN cd /build && GOOS=js GOARCH=wasm go build -o dist/csl.wasm ./cmd/csl
@@ -20,7 +19,7 @@ RUN yarn install
 RUN yarn build --emptyOutDir
 
 # Build the full binary
-FROM golang:1.16-alpine AS svr-build-env
+FROM golang:1.17-alpine AS svr-build-env
 RUN apk add build-base
 RUN apk add git
 RUN mkdir /src

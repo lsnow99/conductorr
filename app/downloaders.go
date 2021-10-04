@@ -21,6 +21,7 @@ import (
 type ManagedDownload struct {
 	ID int
 	TryAgainOnFail bool
+	ReleaseID *string
 	integration.Download
 }
 
@@ -135,7 +136,7 @@ func (dm *DownloaderManager) Download(mediaID int, release integration.Release, 
 		}
 		if dlType == release.DownloadType {
 			if identifier, err := downloader.AddRelease(release); err == nil {
-				id, err := dbstore.NewDownload(mediaID, downloader.ID, identifier, constant.StatusWaiting, release.Title)
+				id, err := dbstore.NewDownload(mediaID, downloader.ID, identifier, constant.StatusWaiting, release.Title, release.ID)
 				if err != nil {
 					logger.LogDanger(fmt.Errorf("database error! could not save download: %v", err))
 				}
@@ -143,6 +144,7 @@ func (dm *DownloaderManager) Download(mediaID int, release integration.Release, 
 					dm.Lock()
 				}
 				md := ManagedDownload{}
+				md.ReleaseID = &release.ID
 				md.ID = id
 				md.MediaID = mediaID
 				md.FriendlyName = release.Title
@@ -168,11 +170,12 @@ func (dm *DownloaderManager) Download(mediaID int, release integration.Release, 
 	return errors.New("no downloaders for this type of release")
 }
 
-func (dm *DownloaderManager) RegisterDownload(id int, mediaID int, friendlyName, status, identifier string) {
+func (dm *DownloaderManager) RegisterDownload(id int, mediaID int, friendlyName, status, identifier string, releaseID *string) {
 	dm.Lock()
 	defer dm.Unlock()
 
 	md := ManagedDownload{}
+	md.ReleaseID = releaseID
 	md.ID = id
 	md.MediaID = mediaID
 	md.FriendlyName = friendlyName
@@ -217,6 +220,11 @@ func (dm *DownloaderManager) processDownloads(curState []integration.Download) {
 							dm.doAutoDownload(dm.downloads[i].MediaID, dm.backupReleaseMap[dm.downloads[i].MediaID])
 						}
 						logger.LogWarn(fmt.Errorf("release failed to download for %s", curStateDL.FriendlyName))
+						if prevStateDL.ReleaseID != nil {
+							if err := dbstore.UpdateReleaseHistory(prevStateDL.MediaID, *prevStateDL.ReleaseID); err != nil {
+								logger.LogWarn(fmt.Errorf("failed to update release history %v", err))
+							}
+						}
 					case constant.StatusComplete:
 						if prevStateDL.Status == constant.StatusCProcessing || prevStateDL.Status == constant.StatusDone {
 							continue

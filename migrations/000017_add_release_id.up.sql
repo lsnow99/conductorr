@@ -1,0 +1,5 @@
+BEGIN;
+
+ALTER TABLE download ADD COLUMN release_id TEXT;
+
+COMMIT;
