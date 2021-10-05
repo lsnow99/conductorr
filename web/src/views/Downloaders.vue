@@ -193,9 +193,9 @@ export default {
         });
       }
     },
-    testDownloader(config) {
+    testDownloader(downloader) {
       this.testingMode = "loading";
-      APIUtil.testDownloader(this.downloaderType, config)
+      APIUtil.testDownloader(this.downloaderType, downloader.config)
         .then((resp) => {
           this.$oruga.notification.open({
             duration: 5000,
