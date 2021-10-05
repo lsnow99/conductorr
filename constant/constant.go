@@ -127,7 +127,7 @@ var (
 		},
 		"x265": {
 			Priority:     30,
-			ParseStrings: []string{"x265", "HEVC", "H.265"},
+			ParseStrings: []string{"x265", "HEVC", "H.265", "H265"},
 		},
 		"VP9": {
 			Priority:     40,
