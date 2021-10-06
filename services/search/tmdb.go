@@ -441,11 +441,14 @@ func (t *TmdbAPI) SearchByImdbID(imdbID string) (*IndividualResult, error) {
 	u.Scheme = "https"
 	u.Host = tmdbApihost
 	u.Path = "/3/find"
+	u.Path = path.Join(u.Path, imdbID)
 	q := u.Query()
 	q.Set("append_to_response", "release_dates")
+	q.Set("external_source", "imdb_id")
 	q.Set("api_key", settings.TmdbAPIKey)
 	u.RawQuery = q.Encode()
 
+	fmt.Printf("Doing request to %s\n", u.String())
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		return nil, err

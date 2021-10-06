@@ -94,9 +94,9 @@ export default {
     }
   },
   watch: {
-    currentTab(newVal, oldVal) {
+    currentTab(newVal) {
       this.tabsChanged(newVal)
-    }
+    },
   }
 };
 </script>
