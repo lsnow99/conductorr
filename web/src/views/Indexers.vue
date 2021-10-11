@@ -50,6 +50,21 @@ import ConfigItem from "../components/ConfigItem.vue";
 import EditIndexer from "../components/EditIndexer.vue";
 import TabSaver from "../util/TabSaver";
 
+const XNAB_FIELDS = [
+  {
+    type: "text",
+    label: "Base URL",
+    placeholder: "Base URL",
+    property: "base_url",
+    required: true,
+    trim: true,
+  },
+  {
+    type: "text",
+    label: ""
+  }
+]
+
 export default {
   data() {
     return {
