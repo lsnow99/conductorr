@@ -80,6 +80,6 @@ export default {
 body,
 html {
   @apply dark:text-white;
-  @apply dark:bg-gray-800;
+  @apply dark:bg-darkgray;
 }
 </style>

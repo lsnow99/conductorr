@@ -1,5 +1,5 @@
 <template>
-  <prism-editor
+  <PrismEditor
     aria-label="Edit CSL"
     label="edit csl"
     class="my-editor h-full"
@@ -9,7 +9,7 @@
     :readonly="readonly"
     :aria-disabled="readonly"
     line-numbers
-  ></prism-editor>
+  ></PrismEditor>
 </template>
 
 <style scoped>
@@ -44,7 +44,9 @@
 </style>
 
 <script>
+import { PrismEditor } from "vue-prism-editor";
 import { highlight, languages } from "prismjs/components/prism-core";
+import "vue-prism-editor/dist/prismeditor.min.css";
 import "prismjs/components/prism-clike";
 import "prismjs/components/prism-lisp";
 import "prismjs/themes/prism-tomorrow.css"; // import syntax highlighting styles
@@ -64,6 +66,9 @@ export default {
         return false;
       },
     },
+  },
+  components: {
+    PrismEditor
   },
   emits: ['update:modelValue', 'submit'],
   methods: {

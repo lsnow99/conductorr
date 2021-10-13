@@ -6,16 +6,16 @@
     class="p-2 text-lg font-semibold relative"
   >
     <div v-if="output.variant == 'success'" class="absolute mt-1 ml-1">
-      <o-icon icon="check-circle" />
+      <!-- <OIcon icon="check-circle" /> -->
     </div>
     <div v-if="output.variant == 'danger'" class="absolute mt-1 ml-1">
-      <o-icon icon="exclamation-circle" />
+      <!-- <OIcon icon="exclamation-circle" /> -->
     </div>
     <div v-if="output.variant == 'warning'" class="absolute mt-1 ml-1">
-      <o-icon icon="exclamation-triangle" />
+      <!-- <OIcon icon="exclamation-triangle" /> -->
     </div>
     <div v-if="output.variant == ''" class="absolute mt-1 ml-1">
-      <o-icon icon="info-circle" />
+      <!-- <OIcon icon="info-circle" /> -->
     </div>
     <div class="mr-3 ml-8 float-left">
       {{ formatTime(output.timestamp) }}
@@ -26,6 +26,7 @@
 
 <script>
 import { DateTime } from "luxon";
+import OIcon from "@oruga-ui/oruga-next"
 
 export default {
   props: {
@@ -35,6 +36,9 @@ export default {
         return [];
       },
     },
+  },
+  components: {
+    OIcon,
   },
   methods: {
     outputClass(variant) {

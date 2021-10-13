@@ -1,0 +1,19 @@
+{
+  "name": "conductorr-lib",
+  "version": "0.0.2",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/conductorr-lib.umd.js",
+  "module": "./dist/conductorr-lib.es.js",
+  "exports": {
+    ".": {
+      "import": "./dist/conductorr-lib.es.js",
+      "require": "./dist/conductorr-lib.umd.js"
+    },
+    "./dist/style.css": "./dist/style.css"
+  },
+  "dependencies": {
+    "web": "../"
+  }
+}

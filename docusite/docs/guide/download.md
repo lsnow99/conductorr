@@ -1,6 +1,6 @@
 # Download and Installation
 
-Follow the instructions below depending on your system and preferred installation method. For configuration instructions post-installation, check [here]().
+Follow the instructions below depending on your system and preferred installation method. For configuration instructions post-installation, check [here](/guide/configuration.html).
 
 ## Manual Installation
 

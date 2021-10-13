@@ -5,6 +5,11 @@ module.exports = {
     extend: {
       width: {
         '36r': '36rem'
+      },
+      colors: {
+        darkgray: {
+          DEFAULT: '#22272e'
+        }
       }
     },
   },

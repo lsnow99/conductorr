@@ -1,0 +1,1 @@
+import{c as e,o as r,a as s,b as t}from"./app.2980b5d3.js";import{_ as a}from"./plugin-vue_export-helper.5a098b48.js";const o={},n={id:"indexers",tabindex:"-1"},c=s("a",{class:"header-anchor",href:"#indexers","aria-hidden":"true"},"#",-1),d=t(" Indexers"),_=[c,d];function i(h,p){return r(),e("h1",n,_)}var l=a(o,[["render",i]]);export{l as default};

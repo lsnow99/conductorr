@@ -1,0 +1,1 @@
+import{c as e,o as a,a as r,b as t}from"./app.2980b5d3.js";import{_ as o}from"./plugin-vue_export-helper.5a098b48.js";const c={},s={id:"calendar",tabindex:"-1"},n=r("a",{class:"header-anchor",href:"#calendar","aria-hidden":"true"},"#",-1),d=t(" Calendar"),_=[n,d];function i(h,l){return a(),e("h1",s,_)}var m=o(c,[["render",i]]);export{m as default};
