@@ -1,7 +1,35 @@
 {
   "name": "shared",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/main.js",
+  "mainLib": "./dist/conductorr-lib.umd.js",
+  "module": "./dist/conductorr-lib.es.js",
+  "exports": {
+    ".": {
+      "import": "./dist/conductorr-lib.es.js",
+      "require": "./dist/conductorr-lib.umd.js"
+    },
+    "./dist/style.css": "./dist/style.css"
+  },
   "license": "GPLv3",
-  "main": "dist/"
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "@fortawesome/vue-fontawesome": "^3.0.0-3",
+    "@vitejs/plugin-vue": "^1.2.2",
+    "autoprefixer": "^10.3.7",
+    "postcss": "^8.3.9",
+    "tailwindcss": "^2.2.17",
+    "vite": "^2.6.2"
+  },
+  "peerDependencies": {
+    "vue": "^3.2.19"
+  },
+  "dependencies": {
+    "luxon": "^2.0.2",
+    "prismjs": "^1.23.0",
+    "vue-prism-editor": "^2.0.0-alpha.2"
+  }
 }
