@@ -7,7 +7,6 @@ export default defineConfig(({ command, mode }) => {
   return {
     plugins: [vue()],
     base: "/",
-    resolve: command === 'build'?{mainFields: ["mainLib"]}:undefined,
     build: {
       lib: {
         entry: path.resolve(__dirname, "src/lib.js"),

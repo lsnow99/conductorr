@@ -1,5 +1,5 @@
 <template>
-  <PrismEditor
+  <prism-editor
     aria-label="Edit CSL"
     label="edit csl"
     class="my-editor h-full"
@@ -9,7 +9,7 @@
     :readonly="readonly"
     :aria-disabled="readonly"
     line-numbers
-  ></PrismEditor>
+  ></prism-editor>
 </template>
 
 <style scoped>

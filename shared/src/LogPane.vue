@@ -24,6 +24,21 @@
   </div>
 </template>
 
+<style scoped>
+.success {
+  @apply bg-green-600 text-green-300;
+}
+.danger {
+  @apply bg-red-600 text-red-300;
+}
+.warning {
+  @apply bg-yellow-600 text-yellow-300;
+}
+.default {
+  @apply bg-gray-600 text-gray-300;
+}
+</style>
+
 <script>
 import { DateTime } from "luxon";
 import { library } from "@fortawesome/fontawesome-svg-core";
@@ -55,13 +70,13 @@ export default {
   methods: {
     outputClass(variant) {
       if (variant == "success") {
-        return `bg-green-600 text-green-300`;
+        return `success`;
       } else if (variant == "danger") {
-        return `bg-red-600 text-red-300`;
+        return `danger`;
       } else if (variant == "warning") {
-        return `bg-yellow-600 text-yellow-300`;
+        return `warning`;
       } else {
-        return `bg-gray-600 text-gray-300`;
+        return `default`;
       }
     },
     formatTime(timestamp) {

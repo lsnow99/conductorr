@@ -1,25 +1,25 @@
 # REPL
 
+Use the REPL
 <CSLEditor v-model="code"/>
 <LogPane :logs="logs" />
 
-<style scoped>
-@import 'shared/dist/style.css'
+<style>
+@import 'conductorr-lib/dist/style.css';
 </style>
 
 <script>
 import { DateTime } from "luxon";
-import C from 'shared'
-import "vue-prism-editor/dist/prismeditor.min.css";
-
-console.log(C);
+import {CSLEditor, LogPane} from 'conductorr-lib'
 
 export default {
     data() {
         return {
-            code: `this
-            is
-            code`,
+            code: `(if
+    this
+    then
+    that
+)`,
             logs: [
                 {
                     msg: "Hi",
@@ -30,8 +30,8 @@ export default {
         }
     },
     components: {
-        CSLEditor: C.CSLEditor,
-        LogPane: C.LogPane
+        CSLEditor: CSLEditor,
+        LogPane: LogPane
     }
 }
 </script>

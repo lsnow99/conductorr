@@ -1,13 +1,13 @@
 <template>
     <div>
         <CSLEditor v-model="code" />
-        <!-- <LogPane :logs="logs"/> -->
+        <LogPane :logs="logs"/>
     </div>
 </template>
 
 <script>
 import { DateTime } from "luxon";
-// import LogPane from "./LogPane.vue"
+import LogPane from "./LogPane.vue"
 import CSLEditor from "./CSLEditor.vue"
 
 export default {
@@ -29,7 +29,7 @@ export default {
         }
     },
     components: {
-        // LogPane,
+        LogPane,
         CSLEditor
     }
 }
