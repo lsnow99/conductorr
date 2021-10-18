@@ -1,3 +1,6 @@
 {
-    "root": "./docusite/docs/.vuepress/dist"
+  "root": "./docusite/docs/.vuepress/dist",
+  "routes": {
+    "/**": "index.html"
+  }
 }
