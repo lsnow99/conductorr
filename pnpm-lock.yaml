@@ -109,12 +109,6 @@ importers:
       vite: 2.6.7
       vite-plugin-compression: 0.3.5_vite@2.6.7
 
-  web/lib:
-    specifiers:
-      web: ../
-    dependencies:
-      web: link:..
-
 packages:
 
   /@babel/code-frame/7.15.8:

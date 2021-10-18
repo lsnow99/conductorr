@@ -61,3 +61,12 @@ func TestParseArith(t *testing.T) {
 	script := `(* 2 (+ 3 (/ 12 6) (* 1 2)))`
 	t.Log(Parse(script))
 }
+
+func TestParseImport(t *testing.T) {
+	script := `(import "github.com/lsnow99/csl/myscript.csl")`
+	sexprs, err := Parse(script)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(sexprs)
+}

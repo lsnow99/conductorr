@@ -52,6 +52,7 @@ const (
 	boolAtom
 	varAtom
 	fnAtom
+	importAtom
 )
 
 type CSLParserError struct {
@@ -300,6 +301,8 @@ func ParseAtomicToken(tok *Token) (*SExpr, error) {
 		if _, ok := builtins[tok.val]; ok {
 			sexpr.typ = fnAtom
 			sexpr.v = tok.val
+		} else if tok.val == "import" {
+			sexpr.typ = importAtom
 		} else {
 			sexpr.typ = varAtom
 			sexpr.v = tok.val
