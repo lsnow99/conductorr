@@ -5,8 +5,12 @@ importers:
   docusite:
     specifiers:
       '@vuepress/bundler-vite': ^2.0.0-beta.26
+      '@vuepress/plugin-register-components': ^2.0.0-beta.26
+      autoprefixer: ^10.3.7
       conductorr-lib: link:../shared
       luxon: ^2.0.2
+      postcss: ^8.3.9
+      tailwindcss: ^2.2.17
       vue: ^3.2.20
       vue-prism-editor: ^1.3.0
       vuepress: ^2.0.0-beta.26
@@ -17,6 +21,10 @@ importers:
       vue-prism-editor: 1.3.0_vue@3.2.20
     devDependencies:
       '@vuepress/bundler-vite': 2.0.0-beta.26
+      '@vuepress/plugin-register-components': 2.0.0-beta.26
+      autoprefixer: 10.3.7_postcss@8.3.9
+      postcss: 8.3.9
+      tailwindcss: 2.2.17_96f83969316717847b3edf58a3f353f3
       vuepress: 2.0.0-beta.26
 
   shared:
@@ -867,6 +875,16 @@ packages:
     dependencies:
       '@vuepress/core': 2.0.0-beta.26
       prismjs: 1.25.0
+    transitivePeerDependencies:
+      - supports-color
+    dev: true
+
+  /@vuepress/plugin-register-components/2.0.0-beta.26:
+    resolution: {integrity: sha512-a6Wb8kH14L/CXjKNU5N26hsXrYutlnf59GWAJb/ZmGBxZxVPYfMpdLsP0T89jM4pQX2NZWYIxQu1MRnGfYOVQw==}
+    dependencies:
+      '@vuepress/core': 2.0.0-beta.26
+      '@vuepress/utils': 2.0.0-beta.25
+      chokidar: 3.5.2
     transitivePeerDependencies:
       - supports-color
     dev: true

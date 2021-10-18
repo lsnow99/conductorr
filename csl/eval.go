@@ -48,6 +48,9 @@ var (
 	ErrOutOfBounds = &CSLEvalError{
 		Message: "index out of bounds",
 	}
+	ErrDivideByZero = &CSLEvalError{
+		Message: "divide by zero",
+	}
 )
 
 func (c CSLEvalError) Error() string {

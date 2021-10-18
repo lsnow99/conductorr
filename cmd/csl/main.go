@@ -8,6 +8,8 @@ import (
 	_ "github.com/lsnow99/conductorr/internal/csl"
 )
 
+var DefaultEnv map[string]interface{} = make(map[string]interface{})
+
 func Validate(this js.Value, args []js.Value) interface{} {
 	callback := args[len(args)-1:][0]
 	go func() {
@@ -97,6 +99,42 @@ func intOrNil(val js.Value) interface{} {
 	return int64(val.Float())
 }
 
+func Execute(this js.Value, args []js.Value) interface{} {
+	callback := args[len(args)-1:][0]
+	go func() {
+		sexprs, err := csl.Parse(args[0].String())
+		if err != nil {
+			callback.Invoke(false, err.Error())
+			return
+		}
+		result, trace := csl.Eval(sexprs, DefaultEnv)
+		defer func() {
+			if err := recover(); err != nil {
+				if rErr, ok := err.(error); ok {
+					errStr := rErr.Error()
+					callback.Invoke(false, errStr)
+				} else if str, ok := err.(string); ok {
+					if str == "ValueOf: invalid value" {
+						callback.Invoke(false, "ValueOf: invalid value - this usually means the return value of your script could not be converted to a valid javascript value")
+					}
+				} else {
+					callback.Invoke(false, "Unexpected panic")
+				}
+			}
+		}()
+		if trace.Err != nil {
+			callback.Invoke(false, trace.Err.Error())
+			return
+		}
+		if list, ok := result.(csl.List); ok {
+			callback.Invoke(true, js.Null(), list.Elems)
+			return
+		}
+		callback.Invoke(true, js.Null(), result)
+	}()
+	return nil
+}
+
 func Run(this js.Value, args []js.Value) interface{} {
 	callback := args[len(args)-1:][0]
 	env := make(map[string]interface{})
@@ -153,5 +191,6 @@ func Run(this js.Value, args []js.Value) interface{} {
 func main() {
 	js.Global().Set("Validate", js.FuncOf(Validate))
 	js.Global().Set("Run", js.FuncOf(Run))
+	js.Global().Set("Execute", js.FuncOf(Execute))
 	select {}
 }

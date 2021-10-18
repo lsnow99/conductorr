@@ -112,6 +112,9 @@ func init() {
 			if !ok {
 				return nil, ErrMismatchOperandTypes
 			}
+			if x == 0 {
+				return nil, ErrDivideByZero
+			}
 			quotient /= x
 		}
 		return quotient, nil

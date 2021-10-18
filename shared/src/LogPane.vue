@@ -3,7 +3,7 @@
     v-for="output in logs"
     :key="output.timestamp"
     :class="outputClass(output.variant)"
-    class="p-2 text-lg font-semibold relative"
+    class="p-2 text-lg relative"
   >
     <div v-if="output.variant == 'success'" class="absolute">
       <vue-fontawesome icon="check-circle" />
@@ -20,7 +20,7 @@
     <div class="mr-3 ml-8 float-left">
       {{ formatTime(output.timestamp) }}
     </div>
-    <div class="text-gray-100">{{ output.msg }}</div>
+    <div class="text-gray-100" :class="msgClass(output.decoration)">{{ output.msg }}</div>
   </div>
 </template>
 
@@ -77,6 +77,13 @@ export default {
         return `warning`;
       } else {
         return `default`;
+      }
+    },
+    msgClass(decoration) {
+      if (decoration == "bold") {
+        return `font-semibold`
+      } else if (decoration == "italic") {
+        return `italic`
       }
     },
     formatTime(timestamp) {

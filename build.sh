@@ -65,7 +65,12 @@ if [ $buildcsl == 1 ]; then
     GOOS=js GOARCH=wasm go build -o dist/csl.wasm ./cmd/csl
     echo "${cyan}→ Compressing with brotli${reset}"
     brotli -f dist/csl.wasm
-    cp $(go env GOROOT)/misc/wasm/wasm_exec.js web/src/util
+    # Copy the corresponding wasm_exec.js file to the web app and docusite projects
+    cp $(go env GOROOT)/misc/wasm/wasm_exec.js ./web/src/util
+    cp $(go env GOROOT)/misc/wasm/wasm_exec.js ./docusite/docs/.vuepress
+    # Copy the web assembly modules so that they are accessible for the docusite
+    cp ./dist/csl.wasm ./docusite/docs/.vuepress/public
+    cp ./dist/csl.wasm.br ./docusite/docs/.vuepress/public
 fi
 
 # Build web frontend
