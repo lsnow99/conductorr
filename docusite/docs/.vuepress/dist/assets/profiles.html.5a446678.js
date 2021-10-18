@@ -1,1 +1,0 @@
-const e={key:"v-3bcd3316",path:"/features/profiles.html",title:"Profiles",lang:"en-US",frontmatter:{},excerpt:"",headers:[],filePathRelative:"features/profiles.md",git:{updatedTime:null,contributors:[]}};export{e as data};

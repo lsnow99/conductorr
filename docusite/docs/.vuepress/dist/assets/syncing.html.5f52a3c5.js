@@ -1,1 +1,0 @@
-const t={key:"v-5f90410b",path:"/features/syncing.html",title:"Syncing",lang:"en-US",frontmatter:{},excerpt:"",headers:[],filePathRelative:"features/syncing.md",git:{updatedTime:null,contributors:[]}};export{t as data};

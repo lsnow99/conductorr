@@ -1,1 +1,0 @@
-const e={key:"v-0c47f4f8",path:"/csl/examples.html",title:"Examples",lang:"en-US",frontmatter:{},excerpt:"",headers:[],filePathRelative:"csl/examples.md",git:{updatedTime:null,contributors:[]}};export{e as data};

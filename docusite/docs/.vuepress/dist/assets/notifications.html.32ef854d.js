@@ -1,1 +1,0 @@
-import{c as e,o as t,a as o,b as a}from"./app.2980b5d3.js";import{_ as s}from"./plugin-vue_export-helper.5a098b48.js";const i={},c={id:"notifications",tabindex:"-1"},n=o("a",{class:"header-anchor",href:"#notifications","aria-hidden":"true"},"#",-1),r=a(" Notifications"),_=[n,r];function d(f,h){return t(),e("h1",c,_)}var m=s(i,[["render",d]]);export{m as default};

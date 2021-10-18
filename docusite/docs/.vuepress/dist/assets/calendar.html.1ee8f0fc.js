@@ -1,1 +1,0 @@
-const e={key:"v-8b3d4f7c",path:"/features/calendar.html",title:"Calendar",lang:"en-US",frontmatter:{},excerpt:"",headers:[],filePathRelative:"features/calendar.md",git:{updatedTime:null,contributors:[]}};export{e as data};
