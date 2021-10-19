@@ -86,6 +86,7 @@ func EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace) (interface
 	if sexpr == nil {
 		return nil, trace
 	}
+	// TODO: is this check necessary? Maybe it should return an error if false
 	if !sexpr.isAtom() {
 		operand := sexpr
 		for operand != nil {
