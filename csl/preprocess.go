@@ -17,8 +17,26 @@ type Node struct {
 	script     string
 }
 
-func (d *DepGraph) addEdgeCheckCyclic(n Node, edge NodeReference) bool {
-	
+
+func (d *DepGraph) addEdgeCheckCyclic(n *Node, edge NodeReference) (ok bool) {
+	if !d.dfs(n, edge.refNode) {
+		ok = true
+		d.edges[*n] = append(d.edges[*n], edge)
+	}
+	return
+}
+
+func (d *DepGraph) dfs(to *Node, from *Node) bool {
+	children := d.edges[*from]
+	if to == from {
+		return true
+	}
+	for _, child := range children {
+		if d.dfs(to, child.refNode) {
+			return true
+		}
+	}
+	return false
 }
 
 func (n *Node) ResolveDependencies(deps DepGraph) error {
@@ -77,7 +95,7 @@ func (n *Node) ResolveDependencies(deps DepGraph) error {
 						refNode:    foundNode,
 					})
 				} else {
-					if !deps.addEdgeCheckCyclic(*n, NodeReference{importedAs: fnName, refNode: foundNode}) {
+					if !deps.addEdgeCheckCyclic(n, NodeReference{importedAs: fnName, refNode: foundNode}) {
 
 					}
 				}
