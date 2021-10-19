@@ -7,8 +7,8 @@ import (
 
 func TestPreprocessScript1(t *testing.T) {
 	deps := PreprocessScript(`(define x 7)`)
-	if len(deps.nodes) != 1 {
-		t.Fatalf("got dependency graph with %d nodes, expected 1", len(deps.nodes))
+	if len(deps.Nodes) != 1 {
+		t.Fatalf("got dependency graph with %d nodes, expected 1", len(deps.Nodes))
 	}
 }
 
@@ -19,28 +19,26 @@ func TestPreprocessScript2(t *testing.T) {
 
 func TestDFS(t *testing.T) {
 	deps := DepGraph{}
-	deps.edges = make(map[Node][]NodeReference)
-	deps.nodes = make([]*Node, 0)
+	deps.Edges = make(map[*Node][]NodeReference)
+	deps.Nodes = make([]*Node, 0)
 	a := new(Node)
-	a.script = "a"
 	b := new(Node)
-	b.script = "b"
 	c := new(Node)
-	c.script = "c"
 	a2b := NodeReference{
-		refNode: b,
+		RefNode: b,
 	}
 	b2c := NodeReference{
-		refNode: c,
+		RefNode: c,
 	}
 	c2a := NodeReference{
-		refNode: a,
+		RefNode: a,
 	}
-	deps.nodes = append(deps.nodes, a, b, c)
-	deps.edges[*a] = append(deps.edges[*a], a2b)
-	deps.edges[*b] = append(deps.edges[*b], b2c)
-	deps.edges[*c] = append(deps.edges[*c], c2a)
-	if !deps.dfs(a, b) {
+	deps.Nodes = append(deps.Nodes, a, b, c)
+	deps.Edges[a] = append(deps.Edges[a], a2b)
+	deps.Edges[b] = append(deps.Edges[b], b2c)
+	deps.Edges[c] = append(deps.Edges[c], c2a)
+	if !deps.DFS(a, b) {
 		t.Fatalf("Expected to find a path from b to a but did not")
 	}
 }
+

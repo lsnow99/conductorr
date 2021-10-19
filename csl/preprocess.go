@@ -3,36 +3,36 @@ package csl
 import "fmt"
 
 type DepGraph struct {
-	nodes []*Node
-	edges map[Node][]NodeReference
+	Nodes []*Node
+	Edges map[*Node][]NodeReference
 }
 
 type NodeReference struct {
-	importedAs string
-	refNode    *Node
+	ImportedAs string
+	RefNode    *Node
 }
 
 type Node struct {
-	importPath string
-	script     string
+	ImportPath string
+	Script     string
 }
 
 
 func (d *DepGraph) addEdgeCheckCyclic(n *Node, edge NodeReference) (ok bool) {
-	if !d.dfs(n, edge.refNode) {
+	if !d.DFS(n, edge.RefNode) {
 		ok = true
-		d.edges[*n] = append(d.edges[*n], edge)
+		d.Edges[n] = append(d.Edges[n], edge)
 	}
 	return
 }
 
-func (d *DepGraph) dfs(to *Node, from *Node) bool {
-	children := d.edges[*from]
+func (d *DepGraph) DFS(to *Node, from *Node) bool {
+	children := d.Edges[from]
 	if to == from {
 		return true
 	}
 	for _, child := range children {
-		if d.dfs(to, child.refNode) {
+		if d.DFS(to, child.RefNode) {
 			return true
 		}
 	}
@@ -40,7 +40,7 @@ func (d *DepGraph) dfs(to *Node, from *Node) bool {
 }
 
 func (n *Node) ResolveDependencies(deps DepGraph) error {
-	sexprs, err := Parse(n.script)
+	sexprs, err := Parse(n.Script)
 	if err != nil {
 		return err
 	}
@@ -71,8 +71,8 @@ func (n *Node) ResolveDependencies(deps DepGraph) error {
 				}
 				// Check for existing dependency
 				var foundNode *Node
-				for _, node := range deps.nodes {
-					if node.importPath == importPath {
+				for _, node := range deps.Nodes {
+					if node.ImportPath == importPath {
 						foundNode = node
 					}
 				}
@@ -86,16 +86,16 @@ func (n *Node) ResolveDependencies(deps DepGraph) error {
 						return err
 					}
 					foundNode = &Node{
-						importPath: importPath,
-						script:     script,
+						ImportPath: importPath,
+						Script:     script,
 					}
-					deps.nodes = append(deps.nodes, foundNode)
-					deps.edges[*n] = append(deps.edges[*n], NodeReference{
-						importedAs: fnName,
-						refNode:    foundNode,
+					deps.Nodes = append(deps.Nodes, foundNode)
+					deps.Edges[n] = append(deps.Edges[n], NodeReference{
+						ImportedAs: fnName,
+						RefNode:    foundNode,
 					})
 				} else {
-					if !deps.addEdgeCheckCyclic(n, NodeReference{importedAs: fnName, refNode: foundNode}) {
+					if !deps.addEdgeCheckCyclic(n, NodeReference{ImportedAs: fnName, RefNode: foundNode}) {
 
 					}
 				}
@@ -109,14 +109,14 @@ func (n *Node) ResolveDependencies(deps DepGraph) error {
 
 func PreprocessScript(script string) DepGraph {
 	deps := DepGraph{
-		nodes: make([]*Node, 0, 1),
-		edges: make(map[Node][]NodeReference),
+		Nodes: make([]*Node, 0, 1),
+		Edges: make(map[*Node][]NodeReference),
 	}
 	rootNode := &Node{
-		importPath: "",
-		script:     script,
+		ImportPath: "",
+		Script:     script,
 	}
-	deps.nodes = append(deps.nodes, rootNode)
+	deps.Nodes = append(deps.Nodes, rootNode)
 	rootNode.ResolveDependencies(deps)
 	return deps
 }
