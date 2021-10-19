@@ -7,36 +7,39 @@ import (
 )
 
 func TestEvalBasic1(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	;this is a comment that will be ignored
 	(* 2 (+ 3 (/ 12 6) (* 1 2)))
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, int64(14), res, trace)
 }
 
 func TestEvalBasic2(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(* 1 1 1 4 3)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, int64(12), res, trace)
 }
 
 func TestEvalList(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(1 1 1 4 3)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	expected := List{
 		Elems: []interface{}{int64(1), int64(1), int64(1), int64(4), int64(3)},
 	}
@@ -44,26 +47,28 @@ func TestEvalList(t *testing.T) {
 }
 
 func TestSingleString(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	("hello")
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	result, trace := Eval(expr, nil)
+	result, trace := csl.Eval(expr, nil)
 	expected := "hello"
 	checkResult(t, expected, result, trace)
 }
 
 func TestDefineVar(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(define x 10)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
 	env := make(map[string]interface{})
-	_, trace := Eval(expr, env)
+	_, trace := csl.Eval(expr, env)
 	if trace.Err != nil {
 		t.Fatal(trace)
 	}
@@ -76,14 +81,15 @@ func TestDefineVar(t *testing.T) {
 }
 
 func TestDefineVarWithExpr(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(define x (* 3 4))
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
 	env := make(map[string]interface{})
-	_, trace := Eval(expr, env)
+	_, trace := csl.Eval(expr, env)
 	expected := int64(12)
 	if x, ok := env["x"]; ok {
 		checkResult(t, expected, x, trace)
@@ -93,7 +99,8 @@ func TestDefineVarWithExpr(t *testing.T) {
 }
 
 func TestDefineVarWithEnv(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(define x y)
 	`)
 	if err != nil {
@@ -102,7 +109,7 @@ func TestDefineVarWithEnv(t *testing.T) {
 	env := make(map[string]interface{})
 	expected := int64(17)
 	env["y"] = expected
-	_, trace := Eval(expr, env)
+	_, trace := csl.Eval(expr, env)
 	if x, ok := env["x"]; ok {
 		checkResult(t, expected, x, trace)
 	} else {
@@ -111,7 +118,8 @@ func TestDefineVarWithEnv(t *testing.T) {
 }
 
 func TestDefineMultVar(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(define x 17)
 
 	(define y 13)
@@ -122,7 +130,7 @@ func TestDefineMultVar(t *testing.T) {
 		t.Fatal(err)
 	}
 	env := make(map[string]interface{})
-	_, trace := Eval(expr, env)
+	_, trace := csl.Eval(expr, env)
 	if x, ok := env["x"]; ok {
 		checkResult(t, int64(17), x, trace)
 	} else {
@@ -143,14 +151,15 @@ func TestDefineMultVar(t *testing.T) {
 }
 
 func TestDefineListVar(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(define x (1 5 3 1 8))
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
 	env := make(map[string]interface{})
-	_, trace := Eval(expr, env)
+	_, trace := csl.Eval(expr, env)
 	if x, ok := env["x"]; ok {
 		expected := List{
 			Elems: []interface{}{int64(1), int64(5), int64(3), int64(1), int64(8)},
@@ -162,612 +171,644 @@ func TestDefineListVar(t *testing.T) {
 }
 
 func TestInList(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(in 3 (4 8 1 9))
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, false, res, trace)
 
-	expr, err = Parse(`
+	expr, err = csl.Parse(`
 	(in 3 (4 8 1 3 9))
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace = Eval(expr, nil)
+	res, trace = csl.Eval(expr, nil)
 	checkResult(t, true, res, trace)
 
-	expr, err = Parse(`
+	expr, err = csl.Parse(`
 	(in "hello world" ("hi" "world"))
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace = Eval(expr, nil)
+	res, trace = csl.Eval(expr, nil)
 	checkResult(t, false, res, trace)
 
-	expr, err = Parse(`
+	expr, err = csl.Parse(`
 	(in "hello world" ("hello world"))
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace = Eval(expr, nil)
+	res, trace = csl.Eval(expr, nil)
 	checkResult(t, true, res, trace)
 }
 
 func TestInString(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(in "hello" "world")
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, false, res, trace)
 
-	expr, err = Parse(`
+	expr, err = csl.Parse(`
 	(in "hello" "hello world")
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace = Eval(expr, nil)
+	res, trace = csl.Eval(expr, nil)
 	checkResult(t, true, res, trace)
 }
 
 func TestGreaterThan(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(> 3 1 2)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, true, res, trace)
 
-	expr, err = Parse(`
+	expr, err = csl.Parse(`
 	(> 3 1 3)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace = Eval(expr, nil)
+	res, trace = csl.Eval(expr, nil)
 	checkResult(t, false, res, trace)
 }
 
 func TestAllGreaterThan(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(>> 3 2 1)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, true, res, trace)
 
-	expr, err = Parse(`
+	expr, err = csl.Parse(`
 	(>> 3 1 2)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace = Eval(expr, nil)
+	res, trace = csl.Eval(expr, nil)
 	checkResult(t, false, res, trace)
 }
 
 func TestLessThan(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(< 1 2 2)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, true, res, trace)
 
-	expr, err = Parse(`
+	expr, err = csl.Parse(`
 	(< 1 1 2)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace = Eval(expr, nil)
+	res, trace = csl.Eval(expr, nil)
 	checkResult(t, false, res, trace)
 }
 
 func TestAllLessThan(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(<< 1 2 3)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, true, res, trace)
 
-	expr, err = Parse(`
+	expr, err = csl.Parse(`
 	(<< 1 1 2)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace = Eval(expr, nil)
+	res, trace = csl.Eval(expr, nil)
 	checkResult(t, false, res, trace)
 }
 
 func TestGreaterThanEqual(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(>= 3 1 3)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, true, res, trace)
 
-	expr, err = Parse(`
+	expr, err = csl.Parse(`
 	(>= 3 1 4)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace = Eval(expr, nil)
+	res, trace = csl.Eval(expr, nil)
 	checkResult(t, false, res, trace)
 }
 
 func TestAllGreaterThanEqual(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(>>= 3 2 2)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, true, res, trace)
 
-	expr, err = Parse(`
+	expr, err = csl.Parse(`
 	(>>= 3 2 3)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace = Eval(expr, nil)
+	res, trace = csl.Eval(expr, nil)
 	checkResult(t, false, res, trace)
 }
 
 func TestLessThanEqual(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(<= 1 2 1)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, true, res, trace)
 
-	expr, err = Parse(`
+	expr, err = csl.Parse(`
 	(<= 2 2 1)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace = Eval(expr, nil)
+	res, trace = csl.Eval(expr, nil)
 	checkResult(t, false, res, trace)
 }
 
 func TestAllLessThanEqual(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(<<= 1 2 2)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, true, res, trace)
 
-	expr, err = Parse(`
+	expr, err = csl.Parse(`
 	(<<= 1 2 1)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace = Eval(expr, nil)
+	res, trace = csl.Eval(expr, nil)
 	checkResult(t, false, res, trace)
 }
 
 func TestAllBetweenExcl(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(>< -4 4 -3 -2 -1 0 1 2 3)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, true, res, trace)
 
-	expr, err = Parse(`
+	expr, err = csl.Parse(`
 	(>< -4 4 0 0 2 3 4)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace = Eval(expr, nil)
+	res, trace = csl.Eval(expr, nil)
 	checkResult(t, false, res, trace)
 }
 
 func TestAllBetweenLExcl(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(><= -4 4 -3 -2 -1 0 1 2 3 4)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, true, res, trace)
 
-	expr, err = Parse(`
+	expr, err = csl.Parse(`
 	(><= -4 4 0 0 2 3 5)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace = Eval(expr, nil)
+	res, trace = csl.Eval(expr, nil)
 	checkResult(t, false, res, trace)
 }
 
 func TestAllBetweenRExcl(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(>=< -4 4 -3 -2 -1 0 1 2 3 -4)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, true, res, trace)
 
-	expr, err = Parse(`
+	expr, err = csl.Parse(`
 	(>=< -4 4 0 0 2 3 -5)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace = Eval(expr, nil)
+	res, trace = csl.Eval(expr, nil)
 	checkResult(t, false, res, trace)
 }
 
 func TestAllBetweenIncl(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(>=<= -4 4 -4 -3 -2 -1 0 1 2 3 4)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, true, res, trace)
 
-	expr, err = Parse(`
+	expr, err = csl.Parse(`
 	(>=<= -4 4 0 0 2 3 4 5)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace = Eval(expr, nil)
+	res, trace = csl.Eval(expr, nil)
 	checkResult(t, false, res, trace)
 }
 
 func TestAllOutsideExcl(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(<> -4 4 5 2G -2G)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, true, res, trace)
 
-	expr, err = Parse(`
+	expr, err = csl.Parse(`
 	(<> -4 4 4)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace = Eval(expr, nil)
+	res, trace = csl.Eval(expr, nil)
 	checkResult(t, false, res, trace)
 }
 
 func TestAllOutsideLExcl(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(<>= -4 4 4 2G -2G)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, true, res, trace)
 
-	expr, err = Parse(`
+	expr, err = csl.Parse(`
 	(<>= -4 4 -4 2G)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace = Eval(expr, nil)
+	res, trace = csl.Eval(expr, nil)
 	checkResult(t, false, res, trace)
 }
 
 func TestAllOutsideRExcl(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(<=> -4 4 -4 2G -2G)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, true, res, trace)
 
-	expr, err = Parse(`
+	expr, err = csl.Parse(`
 	(<=> -4 4 4 2G)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace = Eval(expr, nil)
+	res, trace = csl.Eval(expr, nil)
 	checkResult(t, false, res, trace)
 }
 
 func TestAllOutsideIncl(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(<=>= -4 4 -4 2G -2G)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, true, res, trace)
 
-	expr, err = Parse(`
+	expr, err = csl.Parse(`
 	(<=>= -4 4 -3)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace = Eval(expr, nil)
+	res, trace = csl.Eval(expr, nil)
 	checkResult(t, false, res, trace)
 }
 
 func TestNthElem(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(nth 1 (1 7 3 9))
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, int64(7), res, trace)
 
-	expr, err = Parse(`
+	expr, err = csl.Parse(`
 	(nth 0 (99))
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace = Eval(expr, nil)
+	res, trace = csl.Eval(expr, nil)
 	checkResult(t, int64(99), res, trace)
 }
 
 func TestEqInt(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(eq 17 17)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, true, res, trace)
 
-	expr, err = Parse(`
+	expr, err = csl.Parse(`
 	(eq 17 39)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace = Eval(expr, nil)
+	res, trace = csl.Eval(expr, nil)
 	checkResult(t, false, res, trace)
 }
 
 func TestEqIntVar(t *testing.T) {
+	csl := NewCSL(true)
 	env := make(map[string]interface{})
 	env["x"] = int64(18)
-	expr, err := Parse(`
+	expr, err := csl.Parse(`
 	(eq x 18)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, env)
+	res, trace := csl.Eval(expr, env)
 	checkResult(t, true, res, trace)
 
-	expr, err = Parse(`
+	expr, err = csl.Parse(`
 	(eq 17 x)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace = Eval(expr, env)
+	res, trace = csl.Eval(expr, env)
 	checkResult(t, false, res, trace)
 }
 
 func TestEqList(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(eq (1 2 4 3 25 6) (1 2 4 3 25 6))
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, true, res, trace)
 
-	expr, err = Parse(`
+	expr, err = csl.Parse(`
 	(eq (1 25 4 3 2 6) (1 2 4 3 25 6))
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace = Eval(expr, nil)
+	res, trace = csl.Eval(expr, nil)
 	checkResult(t, false, res, trace)
 }
 
 func TestEqStr(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(eq "hello" "hello")
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, true, res, trace)
 
-	expr, err = Parse(`
+	expr, err = csl.Parse(`
 	(eq "hello" "world")
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace = Eval(expr, nil)
+	res, trace = csl.Eval(expr, nil)
 	checkResult(t, false, res, trace)
 }
 
 func TestNegativeInt(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(-1)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, int64(-1), res, trace)
 }
 
 func TestGiMiKi(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(-1Gi)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, int64(-1*(1<<30)), res, trace)
 
-	expr, err = Parse(`
+	expr, err = csl.Parse(`
 	(20Mi)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace = Eval(expr, nil)
+	res, trace = csl.Eval(expr, nil)
 	checkResult(t, int64(20*(1<<20)), res, trace)
 
-	expr, err = Parse(`
+	expr, err = csl.Parse(`
 	(17Ki)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace = Eval(expr, nil)
+	res, trace = csl.Eval(expr, nil)
 	checkResult(t, int64(17*(1<<10)), res, trace)
 }
 
 func TestSingleElemList(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(+ (1) (2))
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, int64(3), res, trace)
 }
 
 func TestNthString(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(nths 4 "hello world")
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, "o", res, trace)
 }
 
 func TestLengthString(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(lens "hello world")
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, int64(11), res, trace)
 }
 
 func TestLengthStringNotList(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(lens ("hello world"))
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, int64(11), res, trace)
 }
 
 func TestLengthList(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(len ("hello world" 4 5 1))
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, int64(4), res, trace)
 }
 
 func TestLengthListNotString(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(len ("hello world"))
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, int64(1), res, trace)
 }
 
 func TestAppend(t *testing.T) {
+	csl := NewCSL(true)
 	original := List{
 		Elems: []interface{}{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)},
 	}
 	env := make(map[string]interface{})
 	env["l"] = original
-	exprs, err := Parse(`
+	exprs, err := csl.Parse(`
 	(append l 13)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, trace := Eval(exprs, env)
+	_, trace := csl.Eval(exprs, env)
 	expected := List{
 		Elems: append(original.Elems, int64(13)),
 	}
@@ -775,14 +816,15 @@ func TestAppend(t *testing.T) {
 }
 
 func TestAppendUndefined(t *testing.T) {
+	csl := NewCSL(true)
 	env := make(map[string]interface{})
-	exprs, err := Parse(`
+	exprs, err := csl.Parse(`
 	(append l 13)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, trace := Eval(exprs, env)
+	_, trace := csl.Eval(exprs, env)
 	expected := List{
 		Elems: []interface{}{int64(13)},
 	}
@@ -794,18 +836,19 @@ func TestAppendUndefined(t *testing.T) {
 }
 
 func TestAppendMultiple(t *testing.T) {
+	csl := NewCSL(true)
 	original := List{
 		Elems: []interface{}{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)},
 	}
 	env := make(map[string]interface{})
 	env["l"] = original
-	exprs, err := Parse(`
+	exprs, err := csl.Parse(`
 	(append l 13 21 34)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, trace := Eval(exprs, env)
+	_, trace := csl.Eval(exprs, env)
 	expected := List{
 		Elems: append(original.Elems, int64(13), int64(21), int64(34)),
 	}
@@ -813,18 +856,19 @@ func TestAppendMultiple(t *testing.T) {
 }
 
 func TestAppendLeft(t *testing.T) {
+	csl := NewCSL(true)
 	original := List{
 		Elems: []interface{}{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)},
 	}
 	env := make(map[string]interface{})
 	env["l"] = original
-	exprs, err := Parse(`
+	exprs, err := csl.Parse(`
 	(appendleft l 0)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, trace := Eval(exprs, env)
+	_, trace := csl.Eval(exprs, env)
 	expected := List{
 		Elems: append([]interface{}{int64(0)}, original.Elems...),
 	}
@@ -832,18 +876,19 @@ func TestAppendLeft(t *testing.T) {
 }
 
 func TestAppendLeftMultiple(t *testing.T) {
+	csl := NewCSL(true)
 	original := List{
 		Elems: []interface{}{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)},
 	}
 	env := make(map[string]interface{})
 	env["l"] = original
-	exprs, err := Parse(`
+	exprs, err := csl.Parse(`
 	(appendleft l 0 0 0)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, trace := Eval(exprs, env)
+	_, trace := csl.Eval(exprs, env)
 	expected := List{
 		Elems: append([]interface{}{int64(0), int64(0), int64(0)}, original.Elems...),
 	}
@@ -851,18 +896,19 @@ func TestAppendLeftMultiple(t *testing.T) {
 }
 
 func TestPop(t *testing.T) {
+	csl := NewCSL(true)
 	original := List{
 		Elems: []interface{}{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)},
 	}
 	env := make(map[string]interface{})
 	env["l"] = original
-	exprs, err := Parse(`
+	exprs, err := csl.Parse(`
 	(pop l)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(exprs, env)
+	res, trace := csl.Eval(exprs, env)
 	expected := List{
 		Elems: original.Elems[:len(original.Elems) - 1],
 	}
@@ -871,18 +917,19 @@ func TestPop(t *testing.T) {
 }
 
 func TestPopLeft(t *testing.T) {
+	csl := NewCSL(true)
 	original := List{
 		Elems: []interface{}{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)},
 	}
 	env := make(map[string]interface{})
 	env["l"] = original
-	exprs, err := Parse(`
+	exprs, err := csl.Parse(`
 	(popleft l)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(exprs, env)
+	res, trace := csl.Eval(exprs, env)
 	expected := List{
 		Elems: original.Elems[1:],
 	}
@@ -891,79 +938,84 @@ func TestPopLeft(t *testing.T) {
 }
 
 func TestPeek(t *testing.T) {
+	csl := NewCSL(true)
 	original := List{
 		Elems: []interface{}{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)},
 	}
 	env := make(map[string]interface{})
 	env["l"] = original
-	exprs, err := Parse(`
+	exprs, err := csl.Parse(`
 	(peek l)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(exprs, env)
+	res, trace := csl.Eval(exprs, env)
 	checkResult(t, int64(8), res, trace)
 }
 
 func TestPeekLeft(t *testing.T) {
+	csl := NewCSL(true)
 	original := List{
 		Elems: []interface{}{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)},
 	}
 	env := make(map[string]interface{})
 	env["l"] = original
-	exprs, err := Parse(`
+	exprs, err := csl.Parse(`
 	(peekleft l)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(exprs, env)
+	res, trace := csl.Eval(exprs, env)
 	checkResult(t, int64(1), res, trace)
 }
 
 func TestIfCondExpr(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(if (eq 17 18) (* 7 6) (- 10 5))
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, int64(5), res, trace)
 
-	expr, err = Parse(`
+	expr, err = csl.Parse(`
 	(if (eq 17 17) (* 7 6) (- 10 5))
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace = Eval(expr, nil)
+	res, trace = csl.Eval(expr, nil)
 	checkResult(t, int64(42), res, trace)
 }
 
 func TestIfCondLiteral(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(if false (* 7 6) (- 10 5))
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, int64(5), res, trace)
 
-	expr, err = Parse(`
+	expr, err = csl.Parse(`
 	(if true (* 7 6) (- 10 5))
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace = Eval(expr, nil)
+	res, trace = csl.Eval(expr, nil)
 	checkResult(t, int64(42), res, trace)
 }
 
 func TestNestedIfCond(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(if
 		(if
 			(> 7 8)
@@ -986,7 +1038,7 @@ func TestNestedIfCond(t *testing.T) {
 		t.Fatal(err)
 	}
 	env := make(map[string]interface{})
-	res, trace := Eval(expr, env)
+	res, trace := csl.Eval(expr, env)
 
 	if len(env) > 0 {
 		t.Fatal("if function was not lazily-evaluated")
@@ -995,95 +1047,101 @@ func TestNestedIfCond(t *testing.T) {
 }
 
 func TestAndExpr(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(and true true true (eq 3 3))
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, true, res, trace)
 
-	expr, err = Parse(`
+	expr, err = csl.Parse(`
 	(and true (eq 2 3) true true)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace = Eval(expr, nil)
+	res, trace = csl.Eval(expr, nil)
 	checkResult(t, false, res, trace)
 }
 
 func TestOrExpr(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(or false (eq 3 3) false false)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, true, res, trace)
 
-	expr, err = Parse(`
+	expr, err = csl.Parse(`
 	(or (eq 1 2) false false false)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace = Eval(expr, nil)
+	res, trace = csl.Eval(expr, nil)
 	checkResult(t, false, res, trace)
 }
 
 func TestNotExpr(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(not (or false (eq 3 3) false false))
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, false, res, trace)
 
-	expr, err = Parse(`
+	expr, err = csl.Parse(`
 	(not (or (eq 1 2) false false false))
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace = Eval(expr, nil)
+	res, trace = csl.Eval(expr, nil)
 	checkResult(t, true, res, trace)
 }
 
 func TestJoinStr(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(join " " "hello" "world")
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, "hello world", res, trace)
 }
 
 func TestJoinMixed(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(join " " "hello" "world" 1K)
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	checkResult(t, "hello world 1000", res, trace)
 }
 
 func TestSplitStr(t *testing.T) {
-	expr, err := Parse(`
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
 	(split "hello world, i am, 7" ",")
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
-	res, trace := Eval(expr, nil)
+	res, trace := csl.Eval(expr, nil)
 	expected := List{
 		Elems: []interface{}{
 			"hello world",

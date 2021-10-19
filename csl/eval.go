@@ -62,14 +62,14 @@ func (c CSLEvalError) Error() string {
 	return str
 }
 
-func Eval(sexprs []*SExpr, env map[string]interface{}) (interface{}, Trace) {
+func (csl *CSL) Eval(sexprs []*SExpr, env map[string]interface{}) (interface{}, Trace) {
 	var res interface{}
 	trace := Trace{
 		ExprTree: make([]*SExpr, 0),
 		Err:      nil,
 	}
 	for _, tree := range sexprs {
-		res, trace = EvalSExpr(tree, env, trace)
+		res, trace = csl.EvalSExpr(tree, env, trace)
 		if trace.Err != nil {
 			return res, trace
 		}
@@ -77,7 +77,7 @@ func Eval(sexprs []*SExpr, env map[string]interface{}) (interface{}, Trace) {
 	return res, trace
 }
 
-func EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace) (interface{}, Trace) {
+func (csl *CSL) EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace) (interface{}, Trace) {
 	list := List{}
 	var op *operation
 	var firstElem bool = true
@@ -148,7 +148,7 @@ func EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace) (interface
 					}
 
 					op = &operation{}
-					*op, ok = builtins[fnName]
+					*op, ok = csl.builtins[fnName]
 					if !ok {
 						trace.Err = ErrNoSuchFunction
 						return nil, trace
@@ -172,7 +172,7 @@ func EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace) (interface
 					argNum--
 				}
 			} else if operand.L != nil {
-				val, tr := EvalSExpr(operand.L, env, trace)
+				val, tr := csl.EvalSExpr(operand.L, env, trace)
 				trace = tr
 				if trace.Err != nil {
 					return nil, trace

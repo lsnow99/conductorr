@@ -43,28 +43,33 @@ func TestExpandComplex3(t *testing.T) {
 }
 
 func TestParseBasic1(t *testing.T) {
+	csl := NewCSL(true)
 	script := `(1 2 3)`
-	t.Log(Parse(script))
+	t.Log(csl.Parse(script))
 }
 
 func TestParseBasic2(t *testing.T) {
+	csl := NewCSL(true)
 	script := `(1 (2 3))`
-	t.Log(Parse(script))
+	t.Log(csl.Parse(script))
 }
 
 func TestParseBasic3(t *testing.T) {
+	csl := NewCSL(true)
 	script := `(((1 0) 3) 4)`
-	t.Log(Parse(script))
+	t.Log(csl.Parse(script))
 }
 
 func TestParseArith(t *testing.T) {
+	csl := NewCSL(true)
 	script := `(* 2 (+ 3 (/ 12 6) (* 1 2)))`
-	t.Log(Parse(script))
+	t.Log(csl.Parse(script))
 }
 
 func TestParseImport(t *testing.T) {
+	csl := NewCSL(true)
 	script := `(import "github.com/lsnow99/csl/myscript.csl")`
-	sexprs, err := Parse(script)
+	sexprs, err := csl.Parse(script)
 	if err != nil {
 		t.Fatal(err)
 	}

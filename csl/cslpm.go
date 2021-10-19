@@ -15,13 +15,11 @@ const ExampleGit = "github.com/lsnow99/mycslscripts:main.csl"
 var gitPattern = regexp.MustCompile(`^(.*\..*?)\/(.*):([^@]+)@?(.*)?`)
 var profilePattern = regexp.MustCompile(`^(?:profile):(.*)`)
 var filePattern = regexp.MustCompile(`^(?:file):(.*)`)
-var allowInsecureRequests = true //TODO false
-var profileFetcher ProfileFetcher
 
-type ProfileFetcher func(name string) (string, error)
+type ScriptFetcher func(is ImportableScript) (string, error)
 
 type ImportableScript interface {
-	Fetch() (string, error)
+	Fetch(bool) (string, error)
 }
 
 type GitScript struct {
@@ -43,31 +41,23 @@ type FileScript struct {
 	filePath string
 }
 
-func Setup(allowInsecure bool, profileFetcherFn ProfileFetcher) {
-	allowInsecureRequests = allowInsecure
-	profileFetcher = profileFetcherFn
-}
-
-func (gs GitScript) Fetch() (string, error) {
+func (gs GitScript) Fetch(allowInsecureRequests bool) (string, error) {
 	u := url.URL{}
 	u.Scheme = "https"
 	u.Host = gs.host
 	u.Path = path.Join(gs.repo, "raw", gs.version, gs.filePath)
-	return attemptToFetch(u)
+	return attemptToFetch(u, allowInsecureRequests)
 }
 
-func (ps ProfileScript) Fetch() (string, error) {
-	if profileFetcher == nil {
-		return "", fmt.Errorf("no profile fetcher function provided")
-	}
-	return profileFetcher(ps.name)
+func (ps ProfileScript) Fetch(allowInsecureRequests bool) (string, error) {
+	return "", fmt.Errorf("no profile fetcher function provided")
 }
 
-func (ws WebScript) Fetch() (string, error) {
-	return attemptToFetch(ws.u)
+func (ws WebScript) Fetch(allowInsecureRequests bool) (string, error) {
+	return attemptToFetch(ws.u, allowInsecureRequests)
 }
 
-func (fs FileScript) Fetch() (string, error) {
+func (fs FileScript) Fetch(allowInsecureRequests bool) (string, error) {
 	data, err := ioutil.ReadFile(fs.filePath)
 	return string(data), err
 }
@@ -120,7 +110,7 @@ func ParseImport(importStmt string) (ImportableScript, error) {
 	return nil, fmt.Errorf("no matching import scheme")
 }
 
-func attemptToFetch(u url.URL) (string, error) {
+func attemptToFetch(u url.URL, allowInsecureRequests bool) (string, error) {
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		return "", err
@@ -133,7 +123,7 @@ func attemptToFetch(u url.URL) (string, error) {
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		if u.Scheme == "https" && allowInsecureRequests {
 			u.Scheme = "http"
-			return attemptToFetch(u)
+			return attemptToFetch(u, allowInsecureRequests)
 		} else {
 			return "", fmt.Errorf("received non 2xx response code %d", resp.StatusCode)
 		}

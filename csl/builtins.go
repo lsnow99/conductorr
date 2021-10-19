@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-var builtins = map[string]operation{}
+
 
 /*
 RegisterFunction registers a builtin function to CSL that can either be eager or lazy, as specified by
@@ -16,7 +16,7 @@ already in use, the newly registered function will override and replace it. If `
 lazyFn must be supplied, else eagerFn must be supplied, else a non-nil error will be returned. Lazy
 functions must handle their own evaluation of SExpr pointers.
 */
-func RegisterFunction(name string, lazy bool, eagerFn eagerFnSig, lazyFn lazyFnSig) error {
+func (csl *CSL) RegisterFunction(name string, lazy bool, eagerFn eagerFnSig, lazyFn lazyFnSig) error {
 	// Check to make sure this name doesn't conflict with any of the symbols in the language definition
 	// (i.e. a name can not be a '(' or '"', or a number, etc))
 	// If the token parses as a variable name that means that it is a valid function name
@@ -45,7 +45,7 @@ func RegisterFunction(name string, lazy bool, eagerFn eagerFnSig, lazyFn lazyFnS
 		return fmt.Errorf("requested to register eager function but no eager function supplied")
 	}
 
-	builtins[name] = operation{
+	csl.builtins[name] = operation{
 		fn:     eagerFn,
 		lazy:   lazy,
 		lazyFn: lazyFn,
@@ -53,8 +53,8 @@ func RegisterFunction(name string, lazy bool, eagerFn eagerFnSig, lazyFn lazyFnS
 	return nil
 }
 
-func init() {
-	RegisterFunction("+", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+func (csl *CSL) RegisterDefaults() {
+	csl.RegisterFunction("+", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -68,7 +68,7 @@ func init() {
 		}
 		return sum, nil
 	}, nil)
-	RegisterFunction("-", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("-", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -85,7 +85,7 @@ func init() {
 		}
 		return difference, nil
 	}, nil)
-	RegisterFunction("*", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("*", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -99,7 +99,7 @@ func init() {
 		}
 		return product, nil
 	}, nil)
-	RegisterFunction("/", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("/", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -119,7 +119,7 @@ func init() {
 		}
 		return quotient, nil
 	}, nil)
-	RegisterFunction("define", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("define", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) != 2 {
 			return nil, ErrNumOperands
 		}
@@ -134,7 +134,7 @@ func init() {
 		env[varName] = args[1]
 		return nil, nil
 	}, nil)
-	RegisterFunction("in", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("in", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) != 2 {
 			return nil, ErrNumOperands
 		}
@@ -157,7 +157,7 @@ func init() {
 		}
 		return false, nil
 	}, nil)
-	RegisterFunction(">", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction(">", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -176,7 +176,7 @@ func init() {
 		}
 		return true, nil
 	}, nil)
-	RegisterFunction("<", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("<", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -195,7 +195,7 @@ func init() {
 		}
 		return true, nil
 	}, nil)
-	RegisterFunction(">=", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction(">=", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -214,7 +214,7 @@ func init() {
 		}
 		return true, nil
 	}, nil)
-	RegisterFunction("<=", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("<=", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -233,7 +233,7 @@ func init() {
 		}
 		return true, nil
 	}, nil)
-	RegisterFunction("<<=", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("<<=", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -253,7 +253,7 @@ func init() {
 		}
 		return true, nil
 	}, nil)
-	RegisterFunction(">>=", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction(">>=", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -273,7 +273,7 @@ func init() {
 		}
 		return true, nil
 	}, nil)
-	RegisterFunction(">>", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction(">>", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -293,7 +293,7 @@ func init() {
 		}
 		return true, nil
 	}, nil)
-	RegisterFunction("<<", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("<<", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -313,7 +313,7 @@ func init() {
 		}
 		return true, nil
 	}, nil)
-	RegisterFunction("><", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("><", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 3 {
 			return nil, ErrNumOperands
 		}
@@ -336,7 +336,7 @@ func init() {
 		}
 		return true, nil
 	}, nil)
-	RegisterFunction(">=<=", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction(">=<=", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 3 {
 			return nil, ErrNumOperands
 		}
@@ -359,7 +359,7 @@ func init() {
 		}
 		return true, nil
 	}, nil)
-	RegisterFunction(">=<", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction(">=<", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 3 {
 			return nil, ErrNumOperands
 		}
@@ -382,7 +382,7 @@ func init() {
 		}
 		return true, nil
 	}, nil)
-	RegisterFunction("><=", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("><=", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 3 {
 			return nil, ErrNumOperands
 		}
@@ -405,7 +405,7 @@ func init() {
 		}
 		return true, nil
 	}, nil)
-	RegisterFunction("<>", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("<>", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 3 {
 			return nil, ErrNumOperands
 		}
@@ -428,7 +428,7 @@ func init() {
 		}
 		return true, nil
 	}, nil)
-	RegisterFunction("<=>=", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("<=>=", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 3 {
 			return nil, ErrNumOperands
 		}
@@ -451,7 +451,7 @@ func init() {
 		}
 		return true, nil
 	}, nil)
-	RegisterFunction("<>=", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("<>=", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 3 {
 			return nil, ErrNumOperands
 		}
@@ -474,7 +474,7 @@ func init() {
 		}
 		return true, nil
 	}, nil)
-	RegisterFunction("<=>", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("<=>", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 3 {
 			return nil, ErrNumOperands
 		}
@@ -497,7 +497,7 @@ func init() {
 		}
 		return true, nil
 	}, nil)
-	RegisterFunction("nth", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("nth", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) != 2 {
 			return nil, ErrNumOperands
 		}
@@ -514,7 +514,7 @@ func init() {
 		}
 		return l.Elems[i], nil
 	}, nil)
-	RegisterFunction("nths", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("nths", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) != 2 {
 			return nil, ErrNumOperands
 		}
@@ -531,7 +531,7 @@ func init() {
 		}
 		return string(s[i]), nil
 	}, nil)
-	RegisterFunction("eq", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("eq", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -543,7 +543,7 @@ func init() {
 		}
 		return true, nil
 	}, nil)
-	RegisterFunction("len", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("len", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) != 1 {
 			return nil, ErrNumOperands
 		}
@@ -552,7 +552,7 @@ func init() {
 		}
 		return int64(1), nil
 	}, nil)
-	RegisterFunction("lens", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("lens", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) != 1 {
 			return nil, ErrNumOperands
 		}
@@ -561,7 +561,7 @@ func init() {
 		}
 		return nil, ErrMismatchOperandTypes
 	}, nil)
-	RegisterFunction("append", true, nil, func(env map[string]interface{}, args []*SExpr, trace Trace) (interface{}, Trace) {
+	csl.RegisterFunction("append", true, nil, func(env map[string]interface{}, args []*SExpr, trace Trace) (interface{}, Trace) {
 		if len(args) < 2 {
 			trace.Err = ErrNumOperands
 			return nil, trace
@@ -586,7 +586,7 @@ func init() {
 			return nil, trace
 		}
 		for _, arg := range args[1:] {
-			value, trace := EvalSExpr(arg, env, trace)
+			value, trace := csl.EvalSExpr(arg, env, trace)
 			if trace.Err != nil {
 				return nil, trace
 			}
@@ -595,7 +595,7 @@ func init() {
 		env[x] = l
 		return nil, trace
 	})
-	RegisterFunction("appendleft", true, nil, func(env map[string]interface{}, args []*SExpr, trace Trace) (interface{}, Trace) {
+	csl.RegisterFunction("appendleft", true, nil, func(env map[string]interface{}, args []*SExpr, trace Trace) (interface{}, Trace) {
 		if len(args) < 2 {
 			trace.Err = ErrNumOperands
 			return nil, trace
@@ -621,7 +621,7 @@ func init() {
 		}
 		values := make([]interface{}, 0, len(args))
 		for _, arg := range args[1:] {
-			value, trace := EvalSExpr(arg, env, trace)
+			value, trace := csl.EvalSExpr(arg, env, trace)
 			if trace.Err != nil {
 				return nil, trace
 			}
@@ -631,7 +631,7 @@ func init() {
 		env[x] = l
 		return nil, trace
 	})
-	RegisterFunction("pop", true, nil, func(env map[string]interface{}, args []*SExpr, trace Trace) (interface{}, Trace) {
+	csl.RegisterFunction("pop", true, nil, func(env map[string]interface{}, args []*SExpr, trace Trace) (interface{}, Trace) {
 		if len(args) != 1 {
 			trace.Err = ErrNumOperands
 			return nil, trace
@@ -663,7 +663,7 @@ func init() {
 		env[x] = l
 		return val, trace
 	})
-	RegisterFunction("popleft", true, nil, func(env map[string]interface{}, args []*SExpr, trace Trace) (interface{}, Trace) {
+	csl.RegisterFunction("popleft", true, nil, func(env map[string]interface{}, args []*SExpr, trace Trace) (interface{}, Trace) {
 		if len(args) != 1 {
 			trace.Err = ErrNumOperands
 			return nil, trace
@@ -695,7 +695,7 @@ func init() {
 		env[x] = l
 		return val, trace
 	})
-	RegisterFunction("peek", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("peek", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) != 1 {
 			return nil, ErrNumOperands
 		}
@@ -704,7 +704,7 @@ func init() {
 		}
 		return nil, ErrMismatchOperandTypes
 	}, nil)
-	RegisterFunction("peekleft", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("peekleft", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) != 1 {
 			return nil, ErrNumOperands
 		}
@@ -713,12 +713,12 @@ func init() {
 		}
 		return nil, ErrMismatchOperandTypes
 	}, nil)
-	RegisterFunction("if", true, nil, func(env map[string]interface{}, args []*SExpr, trace Trace) (interface{}, Trace) {
+	csl.RegisterFunction("if", true, nil, func(env map[string]interface{}, args []*SExpr, trace Trace) (interface{}, Trace) {
 		if len(args) != 3 {
 			trace.Err = ErrNumOperands
 			return nil, trace
 		}
-		cond, trace := EvalSExpr(args[0], env, trace)
+		cond, trace := csl.EvalSExpr(args[0], env, trace)
 		p, ok := cond.(bool)
 		if !ok {
 			trace.Err = ErrMismatchOperandTypes
@@ -726,11 +726,11 @@ func init() {
 		}
 
 		if p {
-			return EvalSExpr(args[1], env, trace)
+			return csl.EvalSExpr(args[1], env, trace)
 		}
-		return EvalSExpr(args[2], env, trace)
+		return csl.EvalSExpr(args[2], env, trace)
 	})
-	RegisterFunction("and", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("and", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 1 {
 			return nil, ErrNumOperands
 		}
@@ -748,7 +748,7 @@ func init() {
 		}
 		return p, nil
 	}, nil)
-	RegisterFunction("or", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("or", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 1 {
 			return nil, ErrNumOperands
 		}
@@ -766,7 +766,7 @@ func init() {
 		}
 		return p, nil
 	}, nil)
-	RegisterFunction("not", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("not", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) != 1 {
 			return nil, ErrNumOperands
 		}
@@ -777,7 +777,7 @@ func init() {
 
 		return !p, nil
 	}, nil)
-	RegisterFunction("join", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("join", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
 			return nil, ErrNumOperands
 		}
@@ -792,7 +792,7 @@ func init() {
 		str += fmt.Sprintf("%v", args[len(args) - 1])
 		return str, nil
 	}, nil)
-	RegisterFunction("split", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("split", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) != 2 {
 			return nil, ErrNumOperands
 		}

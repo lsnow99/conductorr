@@ -201,7 +201,7 @@ func (se *SExpr) getExprAtLevel(level int) []*SExpr {
 Parse is the main client function to parse a script into an S-Expression
 tree. Returns a non-nil error if a parsing error is encountered.
 */
-func Parse(script string) ([]*SExpr, error) {
+func (csl *CSL) Parse(script string) ([]*SExpr, error) {
 	var opened, startIndex int
 	trees := make([]*SExpr, 0)
 	script = strings.TrimSpace(script)
@@ -218,7 +218,7 @@ func Parse(script string) ([]*SExpr, error) {
 		} else if tok.typ == closeToken {
 			opened--
 			if opened == 0 {
-				tree, err := ParseTokens(tokens[startIndex:index+1])
+				tree, err := ParseTokens(tokens[startIndex:index+1], csl.builtins)
 				if err != nil {
 					return nil, err
 				}
@@ -239,7 +239,7 @@ func Parse(script string) ([]*SExpr, error) {
 ParseAtomicToken given an atomic token, (a symbol in Lisp), parse it into
 an atomic S-Expression that is ready to be evaluated.
 */
-func ParseAtomicToken(tok *Token) (*SExpr, error) {
+func ParseAtomicToken(tok *Token, builtins map[string]operation) (*SExpr, error) {
 	sexpr := &SExpr{}
 	var err error
 	switch tok.typ {
@@ -315,7 +315,7 @@ func ParseAtomicToken(tok *Token) (*SExpr, error) {
 ParseTokens main parsing logic that builds an S-Expression tree from a slice
 of parsed tokens.
 */
-func ParseTokens(tokens Tokens) (*SExpr, error) {
+func ParseTokens(tokens Tokens, builtins map[string]operation) (*SExpr, error) {
 	root := &SExpr{}
 	var err error
 	for index := 0; index < len(tokens); index++ {
@@ -327,9 +327,9 @@ func ParseTokens(tokens Tokens) (*SExpr, error) {
 			for len(elem) > 0 && elem[0].typ != closeToken {
 				index += len(elem)
 				if len(elem) > 1 {
-					curRoot.L, err = ParseTokens(elem)
+					curRoot.L, err = ParseTokens(elem, builtins)
 				} else if len(elem) == 1 {
-					curRoot.L, err = ParseAtomicToken(elem[0])
+					curRoot.L, err = ParseAtomicToken(elem[0], builtins)
 				}
 				if err != nil {
 					return nil, err
@@ -345,7 +345,7 @@ func ParseTokens(tokens Tokens) (*SExpr, error) {
 			}
 		case closeToken:
 		default:
-			root.L, err = ParseAtomicToken(tok)
+			root.L, err = ParseAtomicToken(tok, builtins)
 		}
 	}
 	return root, err
