@@ -1,0 +1,3 @@
+(import "github.com/lsnow99/myscripts:main.csl" main)
+
+(main)

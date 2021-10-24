@@ -62,7 +62,7 @@ fi
 if [ $buildcsl == 1 ]; then
     echo "==============================[   Building CSL Module   ]=============================="
     echo "${cyan}→ Compiling to WASM${reset}"
-    GOOS=js GOARCH=wasm go build -o dist/csl.wasm ./cmd/csl
+    GOOS=js GOARCH=wasm go build -o dist/csl.wasm ./cmd/cslwasm
     echo "${cyan}→ Compressing with brotli${reset}"
     brotli -f dist/csl.wasm
     # Copy the corresponding wasm_exec.js file to the web app and docusite projects

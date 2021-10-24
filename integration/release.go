@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/lsnow99/conductorr/constant"
-	"github.com/lsnow99/conductorr/csl"
+	"github.com/lsnow99/conductorr/csllib"
 )
 
 type Release struct {
@@ -107,6 +107,7 @@ If this function ends due to an error, no guarantees are made for the returned r
 slices.
 */
 func FilterReleases(releases []Release, filter string) ([]Release, []Release, error) {
+	csl := csllib.NewCSL(true)
 	sexprs, err := csl.Parse(filter)
 	if err != nil {
 		return nil, nil, err
@@ -125,7 +126,7 @@ func FilterReleases(releases []Release, filter string) ([]Release, []Release, er
 			str, ok := val.(string)
 			if ok {
 				release.Warnings = append(release.Warnings, str)
-			} else if l, ok := val.(csl.List); ok {
+			} else if l, ok := val.(csllib.List); ok {
 				warnings := make([]string, 0, len(l.Elems))
 				for _, elem := range l.Elems {
 					if s, ok := elem.(string); ok {
@@ -161,6 +162,7 @@ of an error, it is recommended to make a copy of your releases slice before
 calling SortReleases
 */
 func SortReleases(releases *[]Release, sorter string) error {
+	csl := csllib.NewCSL(true)
 	if releases == nil {
 		return nil
 	}
@@ -189,8 +191,8 @@ func SortReleases(releases *[]Release, sorter string) error {
 	return nil
 }
 
-func makeCSLRelease(release Release) csl.List {
-	return csl.List{
+func makeCSLRelease(release Release) csllib.List {
+	return csllib.List{
 		Elems: []interface{}{
 			release.Title,
 			release.Indexer,

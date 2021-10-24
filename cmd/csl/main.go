@@ -1,196 +1,62 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"syscall/js"
+	"os"
 
-	"github.com/lsnow99/conductorr/csl"
-	_ "github.com/lsnow99/conductorr/internal/csl"
+	"github.com/lsnow99/conductorr/csllib"
 )
 
-var DefaultEnv map[string]interface{} = make(map[string]interface{})
-
-func Validate(this js.Value, args []js.Value) interface{} {
-	callback := args[len(args)-1:][0]
-	go func() {
-		_, err := csl.Parse(args[0].String())
-		if err != nil {
-			callback.Invoke(false, err.Error())
-			return
-		}
-		callback.Invoke(true, js.Null())
-	}()
-	return nil
-}
-
-func buildRelease(release js.Value) (csl.List, error) {
-	title := strOrNil(release.Get("title"))
-	if title == nil {
-		return csl.List{}, fmt.Errorf("title is nil")
-	}
-	indexer := strOrNil(release.Get("indexer"))
-	if indexer == nil {
-		return csl.List{}, fmt.Errorf("indexer is nil")
-	}
-	downloadType := strOrNil(release.Get("download_type"))
-	if downloadType == nil {
-		return csl.List{}, fmt.Errorf("download_type is nil")
-	}
-	contentType := strOrNil(release.Get("content_type"))
-	if contentType == nil {
-		return csl.List{}, fmt.Errorf("content_type is nil")
-	}
-	ripType := strOrNil(release.Get("rip_type"))
-	if ripType == nil {
-		return csl.List{}, fmt.Errorf("rip_type is nil")
-	}
-	resolution := strOrNil(release.Get("resolution"))
-	if resolution == nil {
-		return csl.List{}, fmt.Errorf("resolution is nil")
-	}
-	encoding := strOrNil(release.Get("encoding"))
-	if encoding == nil {
-		return csl.List{}, fmt.Errorf("encoding is nil")
-	}
-	seeders := intOrNil(release.Get("seeders"))
-	if seeders == nil {
-		return csl.List{}, fmt.Errorf("seeders is nil")
-	}
-	age := intOrNil(release.Get("age"))
-	if age == nil {
-		return csl.List{}, fmt.Errorf("age is nil")
-	}
-	size := intOrNil(release.Get("size"))
-	if size == nil {
-		return csl.List{}, fmt.Errorf("size is nil")
-	}
-	runtime := intOrNil(release.Get("runtime"))
-	if runtime == nil {
-		return csl.List{}, fmt.Errorf("runtime is nil")
-	}
-	return csl.List{
-		Elems: []interface{}{
-			title,
-			indexer,
-			contentType,
-			downloadType,
-			ripType,
-			resolution,
-			encoding,
-			seeders,
-			age,
-			size,
-			runtime,
-		},
-	}, nil
-}
-
-func strOrNil(val js.Value) interface{} {
-	if val.IsNull() || val.IsUndefined() {
-		return nil
-	}
-	return val.String()
-}
-
-func intOrNil(val js.Value) interface{} {
-	if val.IsNull() || val.IsUndefined() {
-		return nil
-	}
-	return int64(val.Float())
-}
-
-func Execute(this js.Value, args []js.Value) interface{} {
-	callback := args[len(args)-1:][0]
-	go func() {
-		sexprs, err := csl.Parse(args[0].String())
-		if err != nil {
-			callback.Invoke(false, err.Error())
-			return
-		}
-		result, trace := csl.Eval(sexprs, DefaultEnv)
-		defer func() {
-			if err := recover(); err != nil {
-				if rErr, ok := err.(error); ok {
-					errStr := rErr.Error()
-					callback.Invoke(false, errStr)
-				} else if str, ok := err.(string); ok {
-					if str == "ValueOf: invalid value" {
-						callback.Invoke(false, "ValueOf: invalid value - this usually means the return value of your script could not be converted to a valid javascript value")
-					}
-				} else {
-					callback.Invoke(false, "Unexpected panic")
-				}
-			}
-		}()
-		if trace.Err != nil {
-			callback.Invoke(false, trace.Err.Error())
-			return
-		}
-		if list, ok := result.(csl.List); ok {
-			callback.Invoke(true, js.Null(), list.Elems)
-			return
-		}
-		callback.Invoke(true, js.Null(), result)
-	}()
-	return nil
-}
-
-func Run(this js.Value, args []js.Value) interface{} {
-	callback := args[len(args)-1:][0]
-	env := make(map[string]interface{})
-	a := args[1].Get("a")
-	b := args[1].Get("b")
-	aR, err := buildRelease(a)
-	if err != nil {
-		callback.Invoke(false, err.Error())
-		return nil
-	}
-	env["a"] = aR
-	if !b.IsUndefined() {
-		bR, err := buildRelease(b)
-		if err != nil {
-			callback.Invoke(false, err.Error())
-			return nil
-		}
-		env["b"] = bR
-	}
-	go func() {
-		sexprs, err := csl.Parse(args[0].String())
-		if err != nil {
-			callback.Invoke(false, err.Error())
-			return
-		}
-		result, trace := csl.Eval(sexprs, env)
-		defer func() {
-			if err := recover(); err != nil {
-				if rErr, ok := err.(error); ok {
-					errStr := rErr.Error()
-					callback.Invoke(false, errStr)
-				} else if str, ok := err.(string); ok {
-					if str == "ValueOf: invalid value" {
-						callback.Invoke(false, "ValueOf: invalid value - this usually means the return value of your script could not be converted to a valid javascript value")
-					}
-				} else {
-					callback.Invoke(false, "Unexpected panic")
-				}
-			}
-		}()
-		if trace.Err != nil {
-			callback.Invoke(false, trace.Err.Error())
-			return
-		}
-		if list, ok := result.(csl.List); ok {
-			callback.Invoke(true, js.Null(), list.Elems)
-			return
-		}
-		callback.Invoke(true, js.Null(), result)
-	}()
-	return nil
-}
+var NoCache bool
+var AllowInsecureRequests bool
 
 func main() {
-	js.Global().Set("Validate", js.FuncOf(Validate))
-	js.Global().Set("Run", js.FuncOf(Run))
-	js.Global().Set("Execute", js.FuncOf(Execute))
-	select {}
+	flag.BoolVar(&NoCache, "nocache", false, "If set, the dependency cache will not be used")
+	flag.BoolVar(&AllowInsecureRequests, "insecure", false, "If set, the dependency manager will allow plaintext http request fallbacks")
+	flag.Parse()
+
+	if flag.NArg() < 1 {
+		fmt.Printf("missing required argument action (run, or get)\n")
+		os.Exit(1)
+	}
+
+	switch flag.Arg(0) {
+	case "run":
+		if flag.NArg() < 2 {
+			fmt.Printf("missing required argument script file\n")
+			os.Exit(1)
+		}
+		csl := csllib.NewCSL(true)
+		cslpm := csllib.NewCSLPackageManager(func(is csllib.ImportableScript, importPath string, allowInsecureRequests bool) (string, error) {
+			if NoCache {
+				return is.Fetch(allowInsecureRequests)
+			}
+			return csllib.DefaultFetcher(is, importPath, allowInsecureRequests)
+		}, AllowInsecureRequests)
+		data, err := os.ReadFile(flag.Arg(1))
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		script := string(data)
+		csl.PreprocessScript(script, cslpm)
+		sexprs, err := csl.Parse(script)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		env := make(map[string]interface{})
+		result, trace := csl.Eval(sexprs, env)
+		if trace.Err != nil {
+			fmt.Println("Error evaluating csl script:")
+			fmt.Println(trace.Err)
+			fmt.Println("Trace:")
+			fmt.Println(trace.ExprTree)
+			os.Exit(1)
+		}
+		fmt.Printf("%v\n", result)
+	case "get":
+
+	}
 }

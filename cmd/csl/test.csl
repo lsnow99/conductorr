@@ -1,0 +1,3 @@
+(import "file:libfun.csl" libfun)
+
+(libfun "beautiful")

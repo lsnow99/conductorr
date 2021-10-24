@@ -6,7 +6,7 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/lsnow99/conductorr/csl"
+	"github.com/lsnow99/conductorr/csllib"
 )
 
 func main() {
@@ -21,6 +21,7 @@ func main() {
 		}
 	}()
 
+	csl := csllib.NewCSL(true)
 	env := make(map[string]interface{})
 
 	for {
