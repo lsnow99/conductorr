@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/lsnow99/conductorr/csllib"
 )
@@ -19,28 +20,32 @@ func main() {
 	if flag.NArg() < 1 {
 		fmt.Printf("missing required argument action (run, or get)\n")
 		os.Exit(1)
+	} else if flag.NArg() < 2 {
+		fmt.Printf("missing required argument script file\n")
+		os.Exit(1)
 	}
 
-	switch flag.Arg(0) {
+	csl := csllib.NewCSL(true)
+	action := flag.Arg(0)
+	importPath := flag.Arg(1)
+
+	switch action {
 	case "run":
-		if flag.NArg() < 2 {
-			fmt.Printf("missing required argument script file\n")
-			os.Exit(1)
-		}
-		csl := csllib.NewCSL(true)
 		cslpm := csllib.NewCSLPackageManager(func(is csllib.ImportableScript, importPath string, allowInsecureRequests bool) (string, error) {
 			if NoCache {
 				return is.Fetch(allowInsecureRequests)
 			}
 			return csllib.DefaultFetcher(is, importPath, allowInsecureRequests)
 		}, AllowInsecureRequests)
-		data, err := os.ReadFile(flag.Arg(1))
+		script, err := cslpm.Resolve(importPath)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		script := string(data)
-		csl.PreprocessScript(script, cslpm)
+		if err := csl.PreprocessScript(script, importPath, cslpm); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 		sexprs, err := csl.Parse(script)
 		if err != nil {
 			fmt.Println(err)
@@ -57,6 +62,36 @@ func main() {
 		}
 		fmt.Printf("%v\n", result)
 	case "get":
+		cslpm := csllib.NewCSLPackageManager(func(is csllib.ImportableScript, importPath string, allowInsecureRequests bool) (string, error) {
+			script, err := is.Fetch(allowInsecureRequests)
+			if err != nil {
+				return "", err
+			}
 
+			cacheDir, err := csllib.GetDefaultCacheDir()
+			if err != nil {
+				return "", err
+			}
+			filename := csllib.GetDefaultCacheName(importPath)
+			filename = filepath.Join(cacheDir, filename)
+			err = os.WriteFile(filename, []byte(script), os.ModePerm)
+			if err != nil {
+				return "", err
+			}
+
+			return script, nil
+		}, AllowInsecureRequests)
+		script, err := cslpm.Resolve(importPath)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		if err := csl.PreprocessScript(script, importPath, cslpm); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+	default:
+		fmt.Printf("Unrecognized action %s, available actions are [get, run]\n", action)
+		os.Exit(1)
 	}
 }

@@ -8,16 +8,16 @@ import (
 func TestPreprocessScript1(t *testing.T) {
 	csl := NewCSL(false)
 	cslpm := NewCSLPackageManager(DefaultFetcher, false)
-	deps := csl.PreprocessScript(`(define x 7)`, cslpm)
-	if len(deps.Nodes) != 1 {
-		t.Fatalf("got dependency graph with %d nodes, expected 1", len(deps.Nodes))
+	err := csl.PreprocessScript(`(define x 7)`, "", cslpm)
+	if err != nil {
+		t.Fatal(err)
 	}
 }
 
 func TestPreprocessScript2(t *testing.T) {
 	csl := NewCSL(false)
 	cslpm := NewCSLPackageManager(DefaultFetcher, false)
-	deps := csl.PreprocessScript(`(import "github.com/lsnow99/myscripts:main.csl" main)`, cslpm)
+	deps := csl.PreprocessScript(`(import "github.com/lsnow99/myscripts:main.csl" main)`, "", cslpm)
 	fmt.Println(deps)
 }
 

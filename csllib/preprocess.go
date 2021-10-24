@@ -79,6 +79,25 @@ func (n *Node) ResolveDependencies(deps DepGraph, csl *CSL, cslpm *CSLPackageMan
 				if !ok {
 					return fmt.Errorf("second argument to import was not a valid symbol")
 				}
+				parentImportableScript, err := cslpm.parseImport(n.ImportPath)
+				if err != nil {
+					return err
+				}
+				curImportableScript, err := cslpm.parseImport(importPath)
+				if err != nil {
+					return err
+				}
+				parentGS, pOK := parentImportableScript.(GitScript)
+				curFS, cOK := curImportableScript.(FileScript)
+				if pOK && cOK {
+					is := GitScript{
+						host: parentGS.host,
+						repo: parentGS.repo,
+						filePath: curFS.filePath,
+						version: parentGS.version,
+					}
+					importPath = is.CanonicalizedImportPath()
+				}
 				// Check for existing dependency
 				var foundNode *Node
 				for _, node := range deps.Nodes {
@@ -133,17 +152,16 @@ func (n *Node) ResolveDependencies(deps DepGraph, csl *CSL, cslpm *CSLPackageMan
 	return nil
 }
 
-func (csl *CSL) PreprocessScript(script string, cslpm *CSLPackageManager) DepGraph {
+func (csl *CSL) PreprocessScript(script string, rootImportPath string, cslpm *CSLPackageManager) error {
 	deps := DepGraph{
 		Nodes: make([]*Node, 0, 1),
 		Edges: make(map[*Node][]NodeReference),
 	}
 	rootNode := &Node{
-		ImportPath: "",
+		ImportPath: rootImportPath,
 		Script:     script,
 	}
 	deps.Nodes = append(deps.Nodes, rootNode)
 	// TODO option
-	rootNode.ResolveDependencies(deps, csl, cslpm)
-	return deps
+	return rootNode.ResolveDependencies(deps, csl, cslpm)
 }

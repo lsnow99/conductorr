@@ -123,7 +123,7 @@ func (se *SExpr) String() string {
 	level := 0
 	exprs := se.getExprAtLevel(level)
 	str := ""
-	for exprs != nil && len(exprs) > 0 {
+	for len(exprs) > 0 {
 		str += fmt.Sprintf("\nLevel %d: ", level)
 		for _, se := range exprs {
 			leftStr, rightStr := "NIL", "NIL"

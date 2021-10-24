@@ -24,7 +24,7 @@ type ScriptFetcher func(is ImportableScript, importPath string, allowInsecureReq
 
 type ImportableScript interface {
 	Fetch(allowInsecureRequests bool) (script string, err error)
-	Type() string
+	CanonicalizedImportPath() string
 }
 
 type GitScript struct {
@@ -54,26 +54,34 @@ func (gs GitScript) Fetch(allowInsecureRequests bool) (string, error) {
 	return attemptToFetch(u, allowInsecureRequests)
 }
 
-func (gs GitScript) Type() string { return "git" }
+func (gs GitScript) CanonicalizedImportPath() string {
+	return fmt.Sprintf("%s/%s:%s@%s", gs.host, gs.repo, gs.filePath, gs.version)
+}
 
 func (ps ProfileScript) Fetch(allowInsecureRequests bool) (string, error) {
 	return "", fmt.Errorf("no profile fetcher function provided")
 }
 
-func (ps ProfileScript) Type() string { return "profile" }
+func (ps ProfileScript) CanonicalizedImportPath() string {
+	return ps.name
+}
 
 func (ws WebScript) Fetch(allowInsecureRequests bool) (string, error) {
 	return attemptToFetch(ws.u, allowInsecureRequests)
 }
 
-func (ws WebScript) Type() string { return "web" }
+func (ws WebScript) CanonicalizedImportPath() string {
+	return ws.u.String()
+}
 
 func (fs FileScript) Fetch(allowInsecureRequests bool) (string, error) {
 	data, err := ioutil.ReadFile(fs.filePath)
 	return string(data), err
 }
 
-func (fs FileScript) Type() string { return "file" }
+func (fs FileScript) CanonicalizedImportPath() string {
+	return fs.filePath
+}
 
 func (cslpm *CSLPackageManager) parseImport(importStmt string) (ImportableScript, error) {
 	if strings.HasPrefix(importStmt, "http") {
@@ -119,8 +127,14 @@ func (cslpm *CSLPackageManager) parseImport(importStmt string) (ImportableScript
 			filePath: matches[0][1],
 		}
 		return fs, nil
+	} else {
+		// Assume it is a file
+		fs := FileScript{
+			filePath: importStmt,
+		}
+		return fs, nil
 	}
-	return nil, fmt.Errorf("no matching import scheme")
+	// return nil, fmt.Errorf("no matching import scheme")
 }
 
 func (cslpm *CSLPackageManager) Resolve(importPath string) (string, error) {
@@ -158,20 +172,16 @@ func attemptToFetch(u url.URL, allowInsecureRequests bool) (string, error) {
 
 // DefaultFetcher implements the Fetcher interface and uses a simple filesystem cache to resolve scripts
 func DefaultFetcher(is ImportableScript, importPath string, allowInsecureRequests bool) (string, error) {
-	if is.Type() == "file" {
+	if _, ok := is.(FileScript); ok {
 		return is.Fetch(allowInsecureRequests)
 	}
-	
-	cacheDir, err := os.UserCacheDir()
+
+	cacheDir, err := GetDefaultCacheDir()
 	if err != nil {
 		return "", err
 	}
-	cacheDir = filepath.Join(cacheDir, "csl")
-	if err := os.MkdirAll(cacheDir, os.ModePerm); err != nil {
-		return "", err
-	}
 
-	filename := GetCacheName(importPath)
+	filename := GetDefaultCacheName(importPath)
 	filename = filepath.Join(cacheDir, filename)
 	data, err := os.ReadFile(filename)
 	if err == nil {
@@ -186,8 +196,20 @@ func DefaultFetcher(is ImportableScript, importPath string, allowInsecureRequest
 	return script, os.WriteFile(filename, []byte(script), os.ModePerm)
 }
 
-func GetCacheName(importPath string) string {
+func GetDefaultCacheName(importPath string) string {
 	hasher := sha256.New()
 	hasher.Write([]byte(importPath))
 	return hex.EncodeToString(hasher.Sum(nil)) + ".csl"
+}
+
+func GetDefaultCacheDir() (string, error) {
+	cacheDir, err := os.UserCacheDir()
+	if err != nil {
+		return "", err
+	}
+	cacheDir = filepath.Join(cacheDir, "csl")
+	if err := os.MkdirAll(cacheDir, os.ModePerm); err != nil {
+		return "", err
+	}
+	return cacheDir, nil
 }
