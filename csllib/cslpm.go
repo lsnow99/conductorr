@@ -14,8 +14,6 @@ import (
 	"strings"
 )
 
-const ExampleGit = "github.com/lsnow99/mycslscripts:main.csl"
-
 var gitPattern = regexp.MustCompile(`^(.*\..*?)\/(.*):([^@]+)@?(.*)?`)
 var profilePattern = regexp.MustCompile(`^(?:profile):(.*)`)
 var filePattern = regexp.MustCompile(`^(?:file):(.*)`)
