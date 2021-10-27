@@ -12,7 +12,7 @@ type Trace struct {
 	Err      error
 }
 
-type List []interface{}
+type List = []interface{}
 
 type eagerFnSig func(env map[string]interface{}, args ...interface{}) (interface{}, error)
 type lazyFnSig func(env map[string]interface{}, args []*SExpr, trace Trace) (interface{}, Trace)
@@ -199,4 +199,15 @@ func (csl *CSL) EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace)
 	} else {
 		return list, trace
 	}
+}
+
+func (csl *CSL) Invoke(sexprs []*SExpr, args... interface{}) (interface{}, Trace) {
+	env := make(map[string]interface{})
+	var argsList List
+	for _, arg := range args {
+		argsList = append(argsList, arg)
+	}
+	env["args"] = argsList
+	result, trace := csl.Eval(sexprs, env)
+	return result, trace
 }

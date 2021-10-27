@@ -33,7 +33,7 @@ var Version string
 var TempDir string
 
 func init() {
-	if os.Getenv("CONDUCTORR_DEBUG") != "" {
+	if _, exists := os.LookupEnv("CONDUCTORR_DEBUG"); exists {
 		DebugMode = true
 	}
 
@@ -47,8 +47,8 @@ func init() {
 		JWTSecret = "abcdefghijklmnopqrstuvwxyz0123456789"
 	}
 
-	if os.Getenv("JWT_EXP_DAYS") != "" {
-		jwtExpDaysStr := os.Getenv("JWT_EXP_DAYS")
+	if jwtExp, exists := os.LookupEnv("JWT_EXP_DAYS"); exists {
+		jwtExpDaysStr := jwtExp
 		jwtExpDaysInt, err := strconv.Atoi(jwtExpDaysStr)
 		if err != nil {
 			log.Fatalf("error parsing JWT_EXP_DAYS (%s) as integer", jwtExpDaysStr)
@@ -58,40 +58,40 @@ func init() {
 		JWTExpDays = 7
 	}
 
-	if os.Getenv("RESET_USER") != "" {
+	if _, exists := os.LookupEnv("RESET_USER"); exists {
 		ResetUser = true
 		log.Println("Allowing user reset since RESET_USER environment variable is set")
 	}
 
-	if os.Getenv("PG_USER") != "" {
+	if _, exists := os.LookupEnv("PG_USER"); exists {
 		PGUser = os.Getenv("PG_USER")
 		PGPass = os.Getenv("PG_PASS")
 		PGName = os.Getenv("PG_NAME")
 		PGHost = os.Getenv("PG_HOST")
 		PGPort = os.Getenv("PG_PORT")
-		PGSSL = os.Getenv("PG_SSL") != ""
+		_, PGSSL = os.LookupEnv("PG_SSL")
 		UsePG = true
 		log.Println("Using postgres for database")
 	} else {
 		log.Println("Defaulting to sqlite for database")
 	}
 
-	if os.Getenv("DB_PATH") != "" {
-		DBPath = "file:" + os.Getenv("DB_PATH") + "?_foreign_keys=on&cache=shared&mode=rwc"
+	if dbPath, exists := os.LookupEnv("DB_PATH"); exists {
+		DBPath = "file:" + dbPath + "?_foreign_keys=on&cache=shared&mode=rwc"
 	} else {
 		DBPath = "file:./conductorr.db?_foreign_keys=on&cache=shared&mode=rwc"
 	}
 
-	if os.Getenv("OMDB_API_KEY") != "" {
-		OmdbApiKey = os.Getenv("OMDB_API_KEY")
+	if omdbKey, exists := os.LookupEnv("OMDB_API_KEY"); exists {
+		OmdbApiKey = omdbKey
 	}
-	if os.Getenv("TMDB_API_KEY") != "" {
-		TmdbAPIKey = os.Getenv("TMDB_API_KEY")
+	if tmdbKey, exists := os.LookupEnv("TMDB_API_KEY"); exists {
+		TmdbAPIKey = tmdbKey
 	}
 
 	// Set cookie domain from SERVER_HOST. Can parse IP addresses or hostnames
-	if os.Getenv("SERVER_HOST") != "" {
-		ServerHost = os.Getenv("SERVER_HOST")
+	if host, exists := os.LookupEnv("SERVER_HOST"); exists {
+		ServerHost = host
 	} else {
 		ServerHost = "localhost"
 	}
@@ -102,8 +102,8 @@ func init() {
 		CookieDomain = ServerHost
 	}
 
-	if os.Getenv("MIGRATIONS_PATH") != "" {
-		MigrationsPath = os.Getenv("MIGRATIONS_PATH")
+	if mPath, exists := os.LookupEnv("MIGRATIONS_PATH"); exists {
+		MigrationsPath = mPath
 	} else {
 		MigrationsPath = "./migrations"
 	}

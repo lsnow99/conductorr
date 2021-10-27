@@ -1,0 +1,5 @@
+(import "github.com/lsnow99/myscripts:entry.csl" tester)
+
+(define errors ())
+
+(tester)

@@ -42,13 +42,18 @@ func main() {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		result, err := csllib.ResolveDepsAndCall(cslpm, csllib.Script{
+		result, err, trace := csl.ResolveDepsAndCall(cslpm, csllib.Script{
 			Code: script,
 			ImportPath: importPath,
 		})
 		if err != nil {
+			fmt.Println("Error resolving dependencies: ", err)
+		}
+		if trace.Err != nil {
 			fmt.Println("Error evaluating csl script:")
 			fmt.Println(err)
+			fmt.Println("Trace:")
+			fmt.Println(trace.ExprTree)
 			os.Exit(1)
 		}
 		fmt.Printf("%v\n", result)

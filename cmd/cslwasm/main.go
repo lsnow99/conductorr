@@ -5,13 +5,18 @@ import (
 	"syscall/js"
 
 	"github.com/lsnow99/conductorr/csllib"
+	"github.com/lsnow99/conductorr/internal/csl"
 	_ "github.com/lsnow99/conductorr/internal/csl"
 )
 
 var DefaultEnv map[string]interface{} = make(map[string]interface{})
 
+var Fetcher  = func(is csllib.ImportableScript, importPath string, allowInsecureRequests bool) (string, error) {
+	return is.Fetch(allowInsecureRequests)
+}
+
 func Validate(this js.Value, args []js.Value) interface{} {
-	csl := csllib.NewCSL(true)
+	csl := csl.NewCSL()
 	callback := args[len(args)-1:][0]
 	go func() {
 		_, err := csl.Parse(args[0].String())
@@ -70,17 +75,17 @@ func buildRelease(release js.Value) (csllib.List, error) {
 		return csllib.List{}, fmt.Errorf("runtime is nil")
 	}
 	return csllib.List{
-			title,
-			indexer,
-			contentType,
-			downloadType,
-			ripType,
-			resolution,
-			encoding,
-			seeders,
-			age,
-			size,
-			runtime,
+		title,
+		indexer,
+		contentType,
+		downloadType,
+		ripType,
+		resolution,
+		encoding,
+		seeders,
+		age,
+		size,
+		runtime,
 	}, nil
 }
 
@@ -99,14 +104,23 @@ func intOrNil(val js.Value) interface{} {
 }
 
 func Execute(this js.Value, args []js.Value) interface{} {
-	csl := csllib.NewCSL(true)
+	script := args[0].String()
 	callback := args[len(args)-1:][0]
+
 	go func() {
-		sexprs, err := csl.Parse(args[0].String())
+		csl := csl.NewCSL()
+		cslpm := csllib.NewCSLPackageManager(Fetcher, true)
+		if err := csl.PreprocessScript(script, "", cslpm); err != nil {
+			callback.Invoke(false, err.Error())
+			return
+		}
+
+		sexprs, err := csl.Parse(script)
 		if err != nil {
 			callback.Invoke(false, err.Error())
 			return
 		}
+
 		result, trace := csl.Eval(sexprs, DefaultEnv)
 		defer func() {
 			if err := recover(); err != nil {
@@ -136,32 +150,36 @@ func Execute(this js.Value, args []js.Value) interface{} {
 }
 
 func Run(this js.Value, args []js.Value) interface{} {
+	var aR, bR csllib.List
+	var err error
+
+	script := args[0].String()
 	callback := args[len(args)-1:][0]
-	env := make(map[string]interface{})
 	a := args[1].Get("a")
 	b := args[1].Get("b")
-	aR, err := buildRelease(a)
+
+	aR, err = buildRelease(a)
 	if err != nil {
 		callback.Invoke(false, err.Error())
 		return nil
 	}
-	env["a"] = aR
 	if !b.IsUndefined() {
-		bR, err := buildRelease(b)
+		bR, err = buildRelease(b)
 		if err != nil {
 			callback.Invoke(false, err.Error())
 			return nil
 		}
-		env["b"] = bR
 	}
 	go func() {
-		csl := csllib.NewCSL(true)
-		sexprs, err := csl.Parse(args[0].String())
+		csl := csl.NewCSL()
+		cslpm := csllib.NewCSLPackageManager(Fetcher, true)
+
+		result, err, trace := csl.ResolveDepsAndCall(cslpm, csllib.Script{
+			Code: script,
+		}, aR, bR)
 		if err != nil {
-			callback.Invoke(false, err.Error())
-			return
+			fmt.Println(err)
 		}
-		result, trace := csl.Eval(sexprs, env)
 		defer func() {
 			if err := recover(); err != nil {
 				if rErr, ok := err.(error); ok {
@@ -169,7 +187,7 @@ func Run(this js.Value, args []js.Value) interface{} {
 					callback.Invoke(false, errStr)
 				} else if str, ok := err.(string); ok {
 					if str == "ValueOf: invalid value" {
-						callback.Invoke(false, "ValueOf: invalid value - this usually means the return value of your script could not be converted to a valid javascript value")
+						callback.Invoke(false, fmt.Sprintf("ValueOf: invalid value - this usually means the return value of your script could not be converted to a valid javascript value. Return value: %v", result))
 					}
 				} else {
 					callback.Invoke(false, "Unexpected panic")
@@ -180,11 +198,7 @@ func Run(this js.Value, args []js.Value) interface{} {
 			callback.Invoke(false, trace.Err.Error())
 			return
 		}
-		if list, ok := result.(csllib.List); ok {
-			callback.Invoke(true, js.Null(), list)
-			return
-		}
-		callback.Invoke(true, js.Null(), result)
+		callback.Invoke(true, js.Null(), fmt.Sprintf("Returning %v", result))
 	}()
 	return nil
 }

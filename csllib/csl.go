@@ -23,24 +23,15 @@ func NewCSL(registerDefaults bool) *CSL {
 	return csl
 }
 
-func ResolveDepsAndCall(cslpm *CSLPackageManager, script Script, args ...interface{}) (interface{}, error) {
-	csl := NewCSL(true)
-	if err := csl.PreprocessScript(script.Code, script.ImportPath, cslpm); err != nil {
-		return nil, err
+func (csl *CSL) ResolveDepsAndCall(cslpm *CSLPackageManager, script Script, args ...interface{}) (result interface{}, err error, trace Trace) {
+	if err = csl.PreprocessScript(script.Code, script.ImportPath, cslpm); err != nil {
+		return
 	}
-	sexprs, err := csl.Parse(script.Code)
+	var sexprs []*SExpr
+	sexprs, err = csl.Parse(script.Code)
 	if err != nil {
-		return nil, err
+		return
 	}
-	env := make(map[string]interface{})
-	var argsList List
-	for _, arg := range args {
-		argsList = append(argsList, arg)
-	}
-	env["args"] = argsList
-	result, trace := csl.Eval(sexprs, env)
-	if trace.Err != nil {
-		return nil, trace.Err
-	}
-	return result, nil
+	result, trace = csl.Invoke(sexprs, args...)
+	return
 }

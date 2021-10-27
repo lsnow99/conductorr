@@ -9,6 +9,7 @@ import (
 	"github.com/lsnow99/conductorr/constant"
 	"github.com/lsnow99/conductorr/csllib"
 	"github.com/lsnow99/conductorr/internal/csl"
+	"github.com/lsnow99/conductorr/settings"
 )
 
 type Release struct {
@@ -108,16 +109,20 @@ If this function ends due to an error, no guarantees are made for the returned r
 slices.
 */
 func FilterReleases(releases []Release, filter string) ([]Release, []Release, error) {
-	sexprs, err := csl.CSL.Parse(filter)
+	csl := csl.NewCSL()
+	cslpm := csllib.NewCSLPackageManager(csllib.DefaultFetcher, settings.DebugMode)
+	if err := csl.PreprocessScript(filter, "", cslpm); err != nil {
+		return nil, nil, err
+	}
+	sexprs, err := csl.Parse(filter)
 	if err != nil {
 		return nil, nil, err
 	}
+
 	included := make([]Release, 0, len(releases))
 	excluded := make([]Release, 0, len(releases))
-	env := make(map[string]interface{})
 	for _, release := range releases {
-		env["a"] = makeCSLRelease(release)
-		val, trace := csl.CSL.Eval(sexprs, env)
+		val, trace := csl.Invoke(sexprs, makeCSLRelease(release))
 		if trace.Err != nil {
 			return nil, nil, trace.Err
 		}
@@ -165,15 +170,19 @@ func SortReleases(releases *[]Release, sorter string) error {
 	if releases == nil {
 		return nil
 	}
-	sexprs, err := csl.CSL.Parse(sorter)
+
+	csl := csl.NewCSL()
+	cslpm := csllib.NewCSLPackageManager(csllib.DefaultFetcher, settings.DebugMode)
+	if err := csl.PreprocessScript(sorter, "", cslpm); err != nil {
+		return err
+	}
+	sexprs, err := csl.Parse(sorter)
 	if err != nil {
 		return err
 	}
-	env := make(map[string]interface{})
+
 	sort.SliceStable(*releases, func(i, j int) bool {
-		env["a"] = makeCSLRelease((*releases)[i])
-		env["b"] = makeCSLRelease((*releases)[j])
-		val, trace := csl.CSL.Eval(sexprs, env)
+		val, trace := csl.Invoke(sexprs, makeCSLRelease((*releases)[i]), makeCSLRelease((*releases)[j]))
 		if trace.Err != nil {
 			err = trace.Err
 		}

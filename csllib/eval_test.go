@@ -1109,10 +1109,26 @@ func TestSplitStr(t *testing.T) {
 	}
 	res, trace := csl.Eval(expr, nil)
 	expected := List{
-			"hello world",
-			" i am",
-			" 7",
-		}
+		"hello world",
+		" i am",
+		" 7",
+	}
+	checkResult(t, expected, res, trace)
+}
+
+func TestInvoke(t *testing.T) {
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
+	(args)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace := csl.Invoke(expr, List{int64(325), int64(235), int64(235)}, List{int64(53), int64(3), int64(2), int64(532), int64(2)})
+	expected := List{
+		List{int64(325), int64(235), int64(235)},
+		List{int64(53), int64(3), int64(2), int64(532), int64(2)},
+	}
 	checkResult(t, expected, res, trace)
 }
 

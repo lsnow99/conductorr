@@ -162,6 +162,5 @@ func (csl *CSL) PreprocessScript(script string, rootImportPath string, cslpm *CS
 		Script:     script,
 	}
 	deps.Nodes = append(deps.Nodes, rootNode)
-	// TODO option
 	return rootNode.ResolveDependencies(deps, csl, cslpm)
 }

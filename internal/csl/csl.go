@@ -5,43 +5,42 @@ import (
 	"github.com/lsnow99/conductorr/csllib"
 )
 
-var CSL = csllib.NewCSL(true)
-
-func init() {
-	CSL.RegisterFunction("r-title", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+func NewCSL() *csllib.CSL {
+	csl := csllib.NewCSL(true)
+	csl.RegisterFunction("r-title", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		return GetNthFromRelease(env, append([]interface{}{int64(0)}, args...)...)
 	}, nil)
-	CSL.RegisterFunction("r-indexer", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("r-indexer", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		return GetNthFromRelease(env, append([]interface{}{int64(1)}, args...)...)
 	}, nil)
-	CSL.RegisterFunction("r-downloadtype", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("r-downloadtype", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		return GetNthFromRelease(env, append([]interface{}{int64(2)}, args...)...)
 	}, nil)
-	CSL.RegisterFunction("r-contenttype", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("r-contenttype", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		return GetNthFromRelease(env, append([]interface{}{int64(3)}, args...)...)
 	}, nil)
-	CSL.RegisterFunction("r-riptype", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("r-riptype", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		return GetNthFromRelease(env, append([]interface{}{int64(4)}, args...)...)
 	}, nil)
-	CSL.RegisterFunction("r-resolution", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("r-resolution", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		return GetNthFromRelease(env, append([]interface{}{int64(5)}, args...)...)
 	}, nil)
-	CSL.RegisterFunction("r-encoding", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("r-encoding", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		return GetNthFromRelease(env, append([]interface{}{int64(6)}, args...)...)
 	}, nil)
-	CSL.RegisterFunction("r-seeders", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("r-seeders", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		return GetNthFromRelease(env, append([]interface{}{int64(7)}, args...)...)
 	}, nil)
-	CSL.RegisterFunction("r-age", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("r-age", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		return GetNthFromRelease(env, append([]interface{}{int64(8)}, args...)...)
 	}, nil)
-	CSL.RegisterFunction("r-size", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("r-size", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		return GetNthFromRelease(env, append([]interface{}{int64(9)}, args...)...)
 	}, nil)
-	CSL.RegisterFunction("r-runtime", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("r-runtime", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		return GetNthFromRelease(env, append([]interface{}{int64(10)}, args...)...)
 	}, nil)
-	CSL.RegisterFunction("r-riptype-order", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("r-riptype-order", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		retVal, err := GetNthFromRelease(env, append([]interface{}{int64(4)}, args...)...)
 		if err != nil {
 			return nil, err
@@ -57,7 +56,7 @@ func init() {
 		}
 		return int64(0), nil
 	}, nil)
-	CSL.RegisterFunction("r-resolution-order", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("r-resolution-order", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		retVal, err := GetNthFromRelease(env, append([]interface{}{int64(5)}, args...)...)
 		if err != nil {
 			return nil, err
@@ -73,7 +72,7 @@ func init() {
 		}
 		return int64(0), nil
 	}, nil)
-	CSL.RegisterFunction("r-encoding-order", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("r-encoding-order", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		retVal, err := GetNthFromRelease(env, append([]interface{}{int64(6)}, args...)...)
 		if err != nil {
 			return nil, err
@@ -89,7 +88,7 @@ func init() {
 		}
 		return int64(0), nil
 	}, nil)
-	CSL.RegisterFunction("r-bitrate", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("r-bitrate", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		size, err := GetNthFromRelease(env, append([]interface{}{int64(9)}, args...)...)
 		if err != nil {
 			return nil, err
@@ -111,6 +110,7 @@ func init() {
 		}
 		return int64(sizeNum / (runtimeNum * 60)), nil
 	}, nil)
+	return csl
 }
 
 func GetNthFromRelease(env map[string]interface{}, args ...interface{}) (interface{}, error) {
