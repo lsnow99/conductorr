@@ -129,12 +129,10 @@ func GetNthFromRelease(env map[string]interface{}, args ...interface{}) (interfa
 			}
 			return string(s[i]), nil
 		}
-		l = csllib.List{
-			Elems: []interface{}{args[1]},
-		}
+		l = csllib.List{args[1]}
 	}
-	if i < 0 || i >= int64(len(l.Elems)) {
+	if i < 0 || i >= int64(len(l)) {
 		return nil, csllib.ErrOutOfBounds
 	}
-	return l.Elems[i], nil
+	return l[i], nil
 }

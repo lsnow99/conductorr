@@ -40,9 +40,7 @@ func TestEvalList(t *testing.T) {
 		t.Fatal(err)
 	}
 	res, trace := csl.Eval(expr, nil)
-	expected := List{
-		Elems: []interface{}{int64(1), int64(1), int64(1), int64(4), int64(3)},
-	}
+	expected := List{int64(1), int64(1), int64(1), int64(4), int64(3)}
 	checkResult(t, expected, res, trace)
 }
 
@@ -161,9 +159,7 @@ func TestDefineListVar(t *testing.T) {
 	env := make(map[string]interface{})
 	_, trace := csl.Eval(expr, env)
 	if x, ok := env["x"]; ok {
-		expected := List{
-			Elems: []interface{}{int64(1), int64(5), int64(3), int64(1), int64(8)},
-		}
+		expected := List{int64(1), int64(5), int64(3), int64(1), int64(8)}
 		checkResult(t, expected, x, trace)
 	} else {
 		t.Fatal("x not defined in environment")
@@ -797,9 +793,7 @@ func TestLengthListNotString(t *testing.T) {
 
 func TestAppend(t *testing.T) {
 	csl := NewCSL(true)
-	original := List{
-		Elems: []interface{}{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)},
-	}
+	original := List{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)}
 	env := make(map[string]interface{})
 	env["l"] = original
 	exprs, err := csl.Parse(`
@@ -809,9 +803,7 @@ func TestAppend(t *testing.T) {
 		t.Fatal(err)
 	}
 	_, trace := csl.Eval(exprs, env)
-	expected := List{
-		Elems: append(original.Elems, int64(13)),
-	}
+	expected := append(original, int64(13))
 	checkResult(t, expected, env["l"], trace)
 }
 
@@ -825,9 +817,7 @@ func TestAppendUndefined(t *testing.T) {
 		t.Fatal(err)
 	}
 	_, trace := csl.Eval(exprs, env)
-	expected := List{
-		Elems: []interface{}{int64(13)},
-	}
+	expected := List{int64(13)}
 	l, ok := env["l"]
 	if !ok {
 		t.Fatalf("expected variable l to be defined but was not")
@@ -837,9 +827,7 @@ func TestAppendUndefined(t *testing.T) {
 
 func TestAppendMultiple(t *testing.T) {
 	csl := NewCSL(true)
-	original := List{
-		Elems: []interface{}{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)},
-	}
+	original := List{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)}
 	env := make(map[string]interface{})
 	env["l"] = original
 	exprs, err := csl.Parse(`
@@ -849,17 +837,13 @@ func TestAppendMultiple(t *testing.T) {
 		t.Fatal(err)
 	}
 	_, trace := csl.Eval(exprs, env)
-	expected := List{
-		Elems: append(original.Elems, int64(13), int64(21), int64(34)),
-	}
+	expected := append(original, int64(13), int64(21), int64(34))
 	checkResult(t, expected, env["l"], trace)
 }
 
 func TestAppendLeft(t *testing.T) {
 	csl := NewCSL(true)
-	original := List{
-		Elems: []interface{}{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)},
-	}
+	original := List{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)}
 	env := make(map[string]interface{})
 	env["l"] = original
 	exprs, err := csl.Parse(`
@@ -869,17 +853,13 @@ func TestAppendLeft(t *testing.T) {
 		t.Fatal(err)
 	}
 	_, trace := csl.Eval(exprs, env)
-	expected := List{
-		Elems: append([]interface{}{int64(0)}, original.Elems...),
-	}
+	expected := append(List{int64(0), original})
 	checkResult(t, expected, env["l"], trace)
 }
 
 func TestAppendLeftMultiple(t *testing.T) {
 	csl := NewCSL(true)
-	original := List{
-		Elems: []interface{}{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)},
-	}
+	original := List{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)}
 	env := make(map[string]interface{})
 	env["l"] = original
 	exprs, err := csl.Parse(`
@@ -889,17 +869,13 @@ func TestAppendLeftMultiple(t *testing.T) {
 		t.Fatal(err)
 	}
 	_, trace := csl.Eval(exprs, env)
-	expected := List{
-		Elems: append([]interface{}{int64(0), int64(0), int64(0)}, original.Elems...),
-	}
+	expected := append(List{int64(0), int64(0), int64(0)}, original...)
 	checkResult(t, expected, env["l"], trace)
 }
 
 func TestPop(t *testing.T) {
 	csl := NewCSL(true)
-	original := List{
-		Elems: []interface{}{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)},
-	}
+	original := List{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)}
 	env := make(map[string]interface{})
 	env["l"] = original
 	exprs, err := csl.Parse(`
@@ -909,18 +885,14 @@ func TestPop(t *testing.T) {
 		t.Fatal(err)
 	}
 	res, trace := csl.Eval(exprs, env)
-	expected := List{
-		Elems: original.Elems[:len(original.Elems)-1],
-	}
+	expected := original[:len(original)-1]
 	checkResult(t, expected, env["l"], trace)
 	checkResult(t, int64(8), res, trace)
 }
 
 func TestPopLeft(t *testing.T) {
 	csl := NewCSL(true)
-	original := List{
-		Elems: []interface{}{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)},
-	}
+	original := List{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)}
 	env := make(map[string]interface{})
 	env["l"] = original
 	exprs, err := csl.Parse(`
@@ -930,18 +902,14 @@ func TestPopLeft(t *testing.T) {
 		t.Fatal(err)
 	}
 	res, trace := csl.Eval(exprs, env)
-	expected := List{
-		Elems: original.Elems[1:],
-	}
+	expected := original[1:]
 	checkResult(t, expected, env["l"], trace)
 	checkResult(t, int64(1), res, trace)
 }
 
 func TestPeek(t *testing.T) {
 	csl := NewCSL(true)
-	original := List{
-		Elems: []interface{}{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)},
-	}
+	original := List{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)}
 	env := make(map[string]interface{})
 	env["l"] = original
 	exprs, err := csl.Parse(`
@@ -956,9 +924,7 @@ func TestPeek(t *testing.T) {
 
 func TestPeekLeft(t *testing.T) {
 	csl := NewCSL(true)
-	original := List{
-		Elems: []interface{}{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)},
-	}
+	original := List{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)}
 	env := make(map[string]interface{})
 	env["l"] = original
 	exprs, err := csl.Parse(`
@@ -1143,12 +1109,10 @@ func TestSplitStr(t *testing.T) {
 	}
 	res, trace := csl.Eval(expr, nil)
 	expected := List{
-		Elems: []interface{}{
 			"hello world",
 			" i am",
 			" 7",
-		},
-	}
+		}
 	checkResult(t, expected, res, trace)
 }
 

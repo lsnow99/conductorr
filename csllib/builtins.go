@@ -150,7 +150,7 @@ func (csl *CSL) RegisterDefaults() {
 			}
 			return reflect.DeepEqual(x, args[1]), nil
 		}
-		for _, elem := range l.Elems {
+		for _, elem := range l {
 			if reflect.DeepEqual(elem, x) {
 				return true, nil
 			}
@@ -507,12 +507,12 @@ func (csl *CSL) RegisterDefaults() {
 		}
 		l, ok := args[1].(List)
 		if !ok {
-			l.Elems = []interface{}{args[1]}
+			l = []interface{}{args[1]}
 		}
-		if i < 0 || i >= int64(len(l.Elems)) {
+		if i < 0 || i >= int64(len(l)) {
 			return nil, ErrOutOfBounds
 		}
-		return l.Elems[i], nil
+		return l[i], nil
 	}, nil)
 	csl.RegisterFunction("nths", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) != 2 {
@@ -548,7 +548,7 @@ func (csl *CSL) RegisterDefaults() {
 			return nil, ErrNumOperands
 		}
 		if l, ok := args[0].(List); ok {
-			return int64(len(l.Elems)), nil
+			return int64(len(l)), nil
 		}
 		return int64(1), nil
 	}, nil)
@@ -590,7 +590,7 @@ func (csl *CSL) RegisterDefaults() {
 			if trace.Err != nil {
 				return nil, trace
 			}
-			l.Elems = append(l.Elems, value)
+			l = append(l, value)
 		}
 		env[x] = l
 		return nil, trace
@@ -627,7 +627,7 @@ func (csl *CSL) RegisterDefaults() {
 			}
 			values = append(values, value)
 		}
-		l.Elems = append(values, l.Elems...)
+		l = append(values, l...)
 		env[x] = l
 		return nil, trace
 	})
@@ -655,11 +655,11 @@ func (csl *CSL) RegisterDefaults() {
 			trace.Err = ErrMismatchOperandTypes
 			return nil, trace
 		}
-		if len(l.Elems) == 0 {
+		if len(l) == 0 {
 			return nil, trace
 		}
-		val := l.Elems[len(l.Elems) - 1]
-		l.Elems = l.Elems[:len(l.Elems) - 1]
+		val := l[len(l) - 1]
+		l = l[:len(l) - 1]
 		env[x] = l
 		return val, trace
 	})
@@ -687,11 +687,11 @@ func (csl *CSL) RegisterDefaults() {
 			trace.Err = ErrMismatchOperandTypes
 			return nil, trace
 		}
-		if len(l.Elems) == 0 {
+		if len(l) == 0 {
 			return nil, trace
 		}
-		val := l.Elems[0]
-		l.Elems = l.Elems[1:]
+		val := l[0]
+		l = l[1:]
 		env[x] = l
 		return val, trace
 	})
@@ -700,7 +700,7 @@ func (csl *CSL) RegisterDefaults() {
 			return nil, ErrNumOperands
 		}
 		if l, ok := args[0].(List); ok {
-			return l.Elems[len(l.Elems)-1], nil
+			return l[len(l)-1], nil
 		}
 		return nil, ErrMismatchOperandTypes
 	}, nil)
@@ -709,7 +709,7 @@ func (csl *CSL) RegisterDefaults() {
 			return nil, ErrNumOperands
 		}
 		if l, ok := args[0].(List); ok {
-			return l.Elems[0], nil
+			return l[0], nil
 		}
 		return nil, ErrMismatchOperandTypes
 	}, nil)
@@ -791,8 +791,8 @@ func (csl *CSL) RegisterDefaults() {
 			if !ok {
 				return nil, ErrMismatchOperandTypes
 			}
-			for j, elem := range list.Elems {
-				if i != len(args) - 1 && j != len(list.Elems) - 1 {
+			for j, elem := range list {
+				if i != len(args) - 1 && j != len(list) - 1 {
 					str += fmt.Sprintf("%v%s", elem, separator)
 				} else {
 					str += fmt.Sprintf("%v", elem)
@@ -816,7 +816,7 @@ func (csl *CSL) RegisterDefaults() {
 		l := List{}
 		split := strings.Split(str, delimiter)
 		for _, s := range split {
-			l.Elems = append(l.Elems, s)
+			l = append(l, s)
 		}
 		return l, nil
 	}, nil)

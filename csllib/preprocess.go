@@ -133,7 +133,7 @@ func (n *Node) ResolveDependencies(deps DepGraph, csl *CSL, cslpm *CSLPackageMan
 						if trace.Err != nil {
 							return nil, trace
 						}
-						argList.Elems = append(argList.Elems, res)
+						argList = append(argList, res)
 					}
 					sexprs, err := depCSL.Parse(foundNode.Script)
 					if err != nil {

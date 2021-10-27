@@ -127,8 +127,8 @@ func FilterReleases(releases []Release, filter string) ([]Release, []Release, er
 			if ok {
 				release.Warnings = append(release.Warnings, str)
 			} else if l, ok := val.(csllib.List); ok {
-				warnings := make([]string, 0, len(l.Elems))
-				for _, elem := range l.Elems {
+				warnings := make([]string, 0, len(l))
+				for _, elem := range l {
 					if s, ok := elem.(string); ok {
 						warnings = append(warnings, s)
 					} else {
@@ -192,7 +192,6 @@ func SortReleases(releases *[]Release, sorter string) error {
 
 func makeCSLRelease(release Release) csllib.List {
 	return csllib.List{
-		Elems: []interface{}{
 			release.Title,
 			release.Indexer,
 			release.DownloadType,
@@ -204,6 +203,5 @@ func makeCSLRelease(release Release) csllib.List {
 			release.Age,
 			release.Size,
 			release.Media.Runtime,
-		},
 	}
 }

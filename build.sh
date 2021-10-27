@@ -45,7 +45,7 @@ mustHaveInstalled() {
 }
 
 # Check for build requirements
-mustHaveInstalled "yarn"
+mustHaveInstalled "pnpm"
 mustHaveInstalled "go"
 mustHaveInstalled "brotli"
 
@@ -77,9 +77,23 @@ fi
 if [ $buildweb == 1 ]; then
     echo "==============================[    Building Frontend    ]=============================="
     echo "${cyan}→ Installing frontend dependencies${reset}"
-    yarn --cwd ./web install
-    echo "${cyan}→ Building frontend for distribution${reset}"
-    yarn --cwd ./web build
+    cd web
+    success=$(pnpm install)
+    if [ success ]
+    then
+        echo "${cyan}→ Building frontend for distribution${reset}"
+        success=$(pnpm build)
+        if [ success ]
+        then
+            cd ..
+        else
+            cd ..
+            exit 1
+        fi
+    else
+        cd ..
+        exit 1
+    fi
 fi
 
 # Build the full binaries

@@ -12,9 +12,7 @@ type Trace struct {
 	Err      error
 }
 
-type List struct {
-	Elems []interface{}
-}
+type List []interface{}
 
 type eagerFnSig func(env map[string]interface{}, args ...interface{}) (interface{}, error)
 type lazyFnSig func(env map[string]interface{}, args []*SExpr, trace Trace) (interface{}, Trace)
@@ -100,21 +98,21 @@ func (csl *CSL) EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace)
 						trace.Err = ErrBadType
 						return nil, trace
 					}
-					list.Elems = append(list.Elems, x)
+					list = append(list, x)
 				case stringAtom:
 					x, ok := atom.stringVal()
 					if !ok {
 						trace.Err = ErrBadType
 						return nil, trace
 					}
-					list.Elems = append(list.Elems, x)
+					list = append(list, x)
 				case boolAtom:
 					x, ok := atom.boolVal()
 					if !ok {
 						trace.Err = ErrBadType
 						return nil, trace
 					}
-					list.Elems = append(list.Elems, x)
+					list = append(list, x)
 				case varAtom:
 					x, ok := atom.varName()
 					if !ok {
@@ -122,14 +120,14 @@ func (csl *CSL) EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace)
 						return nil, trace
 					}
 					if isDefine && argNum == 0 {
-						list.Elems = append(list.Elems, atom.Atom)
+						list = append(list, atom.Atom)
 					} else {
 						val, ok := env[x]
 						if !ok {
 							trace.Err = errors.New("undefined variable: " + x)
 							return nil, trace
 						}
-						list.Elems = append(list.Elems, val)
+						list = append(list, val)
 					}
 				case importAtom:
 					// Ignore import commands
@@ -180,7 +178,7 @@ func (csl *CSL) EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace)
 				if trace.Err != nil {
 					return nil, trace
 				}
-				list.Elems = append(list.Elems, val)
+				list = append(list, val)
 			}
 			argNum++
 			operand = operand.R
@@ -188,11 +186,11 @@ func (csl *CSL) EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace)
 		}
 	}
 
-	if len(list.Elems) == 1 && op == nil {
-		return list.Elems[0], trace
+	if len(list) == 1 && op == nil {
+		return list[0], trace
 	}
 	if op != nil {
-		resp, err := op.fn(env, list.Elems...)
+		resp, err := op.fn(env, list...)
 		if err != nil {
 			trace.Err = err
 			return nil, trace

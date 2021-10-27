@@ -70,7 +70,6 @@ func buildRelease(release js.Value) (csllib.List, error) {
 		return csllib.List{}, fmt.Errorf("runtime is nil")
 	}
 	return csllib.List{
-		Elems: []interface{}{
 			title,
 			indexer,
 			contentType,
@@ -82,7 +81,6 @@ func buildRelease(release js.Value) (csllib.List, error) {
 			age,
 			size,
 			runtime,
-		},
 	}, nil
 }
 
@@ -129,7 +127,7 @@ func Execute(this js.Value, args []js.Value) interface{} {
 			return
 		}
 		if list, ok := result.(csllib.List); ok {
-			callback.Invoke(true, js.Null(), list.Elems)
+			callback.Invoke(true, js.Null(), list)
 			return
 		}
 		callback.Invoke(true, js.Null(), result)
@@ -183,7 +181,7 @@ func Run(this js.Value, args []js.Value) interface{} {
 			return
 		}
 		if list, ok := result.(csllib.List); ok {
-			callback.Invoke(true, js.Null(), list.Elems)
+			callback.Invoke(true, js.Null(), list)
 			return
 		}
 		callback.Invoke(true, js.Null(), result)
