@@ -853,7 +853,7 @@ func TestAppendLeft(t *testing.T) {
 		t.Fatal(err)
 	}
 	_, trace := csl.Eval(exprs, env)
-	expected := append(List{int64(0), original})
+	expected := append(List{int64(0)}, original...)
 	checkResult(t, expected, env["l"], trace)
 }
 

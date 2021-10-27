@@ -10,7 +10,7 @@ import (
 	"github.com/lsnow99/conductorr/dbstore"
 	_ "github.com/lsnow99/conductorr/internal/csl"
 	"github.com/lsnow99/conductorr/logger"
-	"github.com/lsnow99/conductorr/routes"
+	"github.com/lsnow99/conductorr/api"
 	"github.com/lsnow99/conductorr/scheduler"
 	"github.com/lsnow99/conductorr/settings"
 )
@@ -89,7 +89,7 @@ func main() {
 
 func serveRoutes(port int) error {
 
-	http.Handle("/", routes.GetRouter())
+	http.Handle("/", api.GetRouter())
 
 	if settings.DebugMode {
 		log.Println("Warning: starting in debug mode")

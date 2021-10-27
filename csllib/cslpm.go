@@ -44,6 +44,17 @@ type FileScript struct {
 	filePath string
 }
 
+func NewCSLPackageManager(scriptFetcher ScriptFetcher, allowInsecureRequests bool) *CSLPackageManager {
+	cslpm := new(CSLPackageManager)
+	if scriptFetcher == nil {
+		cslpm.scriptFetcher = DefaultFetcher
+	} else {
+		cslpm.scriptFetcher = scriptFetcher
+	}
+	cslpm.allowInsecureRequests = allowInsecureRequests
+	return cslpm
+}
+
 func (gs GitScript) Fetch(allowInsecureRequests bool) (string, error) {
 	u := url.URL{}
 	u.Scheme = "https"

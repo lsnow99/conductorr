@@ -42,22 +42,13 @@ func main() {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		if err := csl.PreprocessScript(script, importPath, cslpm); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		sexprs, err := csl.Parse(script)
+		result, err := csllib.ResolveDepsAndCall(cslpm, csllib.Script{
+			Code: script,
+			ImportPath: importPath,
+		})
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		env := make(map[string]interface{})
-		result, trace := csl.Eval(sexprs, env)
-		if trace.Err != nil {
 			fmt.Println("Error evaluating csl script:")
-			fmt.Println(trace.Err)
-			fmt.Println("Trace:")
-			fmt.Println(trace.ExprTree)
+			fmt.Println(err)
 			os.Exit(1)
 		}
 		fmt.Printf("%v\n", result)
