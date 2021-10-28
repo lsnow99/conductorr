@@ -1,18 +1,111 @@
+//go:build js && wasm
+// +build js,wasm
+
 package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/url"
 	"syscall/js"
 
 	"github.com/lsnow99/conductorr/csllib"
 	"github.com/lsnow99/conductorr/internal/csl"
 	_ "github.com/lsnow99/conductorr/internal/csl"
+	"github.com/openzipkin/zipkin-go/reporter/http"
 )
 
 var DefaultEnv map[string]interface{} = make(map[string]interface{})
+var Mode string
+var CorsProxyServer string
 
-var Fetcher  = func(is csllib.ImportableScript, importPath string, allowInsecureRequests bool) (string, error) {
+var Fetcher = func(is csllib.ImportableScript, importPath string, allowInsecureRequests bool) (string, error) {
+	if _, ok := is.(csllib.FileScript); ok {
+		return "", fmt.Errorf("cannot resolve import from file")
+	}
+
+	if Mode == "app" {
+		u := url.URL{}
+		u.Path = "/api/v1/resolveImport"
+		q := u.Query()
+		q.Set("importPath", importPath)
+		u.RawQuery = q.Encode()
+
+		req, err := http.NewRequest("GET", u.String(), nil)
+		if err != nil {
+			return "", err
+		}
+		
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return "", err
+		}
+
+		defer resp.Body.Close()
+
+		data, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return "", err
+		}
+
+		respString := string(data)
+
+		if resp.StatusCode < 200 || resp.StatusCode > 299 {
+			return "", fmt.Errorf("api server encountered error resolving import: %s", respString)
+		}
+		
+		return respString, nil
+	} else if Mode == "playground" {
+		if _, ok := is.(csllib.ProfileScript); ok {
+			return "", fmt.Errorf("cannot resolve import from local profile")
+		} else if gs, ok := is.(csllib.GitScript); ok {
+			u := gs.GetURL()
+			return attemptProxyFetch(u, allowInsecureRequests)
+		} else if ws, ok := is.(csllib.WebScript); ok {
+			u := ws.GetURL()
+			return attemptProxyFetch(u, allowInsecureRequests)
+		} else {
+			return "", fmt.Errorf("unimplemented importable script scheme or type")
+		}
+	}
 	return is.Fetch(allowInsecureRequests)
+}
+
+func attemptProxyFetch(u url.URL, allowInsecureRequests bool) (string, error) {
+	proxyReqUrl, err := url.Parse(CorsProxyServer)
+	if err != nil {
+		return "", err
+	}
+	q := proxyReqUrl.Query()
+	q.Set("url", u.String())
+	proxyReqUrl.RawQuery = q.Encode()
+
+	proxyReq, err := http.NewRequest("GET", proxyReqUrl.String(), nil)
+	if err != nil {
+		return "", err
+	}
+
+	resp, err := http.DefaultClient.Do(proxyReq)
+	if err != nil {
+		return "", err
+	}
+
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		if u.Scheme == "https" && allowInsecureRequests {
+			u.Scheme = "http"
+			return attemptProxyFetch(u, allowInsecureRequests)
+		} else {
+			return "", fmt.Errorf("received non 2xx response code %d", resp.StatusCode)
+		}
+	}
+
+	data, err := ioutil.ReadAll(proxyReq.Body)
+	if err != nil {
+		return "", err
+	}
+
+	return string(data), nil
 }
 
 func Validate(this js.Value, args []js.Value) interface{} {
@@ -178,7 +271,12 @@ func Run(this js.Value, args []js.Value) interface{} {
 			Code: script,
 		}, aR, bR)
 		if err != nil {
-			fmt.Println(err)
+			callback.Invoke(false, err.Error())
+			return
+		}
+		if trace.Err != nil {
+			callback.Invoke(false, trace.Err.Error())
+			return
 		}
 		defer func() {
 			if err := recover(); err != nil {
@@ -194,11 +292,7 @@ func Run(this js.Value, args []js.Value) interface{} {
 				}
 			}
 		}()
-		if trace.Err != nil {
-			callback.Invoke(false, trace.Err.Error())
-			return
-		}
-		callback.Invoke(true, js.Null(), fmt.Sprintf("Returning %v", result))
+		callback.Invoke(true, js.Null(), result)
 	}()
 	return nil
 }

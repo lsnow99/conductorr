@@ -56,15 +56,18 @@ func NewCSLPackageManager(scriptFetcher ScriptFetcher, allowInsecureRequests boo
 }
 
 func (gs GitScript) Fetch(allowInsecureRequests bool) (string, error) {
-	u := url.URL{}
-	u.Scheme = "https"
-	u.Host = gs.host
-	u.Path = path.Join(gs.repo, "raw", gs.version, gs.filePath)
-	return attemptToFetch(u, allowInsecureRequests)
+	return attemptToFetch(gs.GetURL(), allowInsecureRequests)
 }
 
 func (gs GitScript) CanonicalizedImportPath() string {
 	return fmt.Sprintf("%s/%s:%s@%s", gs.host, gs.repo, gs.filePath, gs.version)
+}
+
+func (gs GitScript) GetURL() (u url.URL) {
+	u.Scheme = "https"
+	u.Host = gs.host
+	u.Path = path.Join(gs.repo, "raw", gs.version, gs.filePath)
+	return
 }
 
 func (ps ProfileScript) Fetch(allowInsecureRequests bool) (string, error) {
@@ -81,6 +84,10 @@ func (ws WebScript) Fetch(allowInsecureRequests bool) (string, error) {
 
 func (ws WebScript) CanonicalizedImportPath() string {
 	return ws.u.String()
+}
+
+func (ws WebScript) GetURL() (url.URL) {
+	return ws.u
 }
 
 func (fs FileScript) Fetch(allowInsecureRequests bool) (string, error) {
