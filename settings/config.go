@@ -5,6 +5,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"strings"
 )
 
 // Injected at build time
@@ -31,11 +32,10 @@ var CookieDomain string
 var BuildMode string
 var Version string
 var TempDir string
+var AllowInsecureRequests bool
 
 func init() {
-	if _, exists := os.LookupEnv("CONDUCTORR_DEBUG"); exists {
-		DebugMode = true
-	}
+	DebugMode = checkBool("CONDUCTORR_DEBUG")
 
 	if len(os.Getenv("JWT_SECRET")) >= 64 {
 		JWTSecret = os.Getenv("JWT_SECRET")
@@ -58,7 +58,7 @@ func init() {
 		JWTExpDays = 7
 	}
 
-	if _, exists := os.LookupEnv("RESET_USER"); exists {
+	if checkBool("RESET_USER") {
 		ResetUser = true
 		log.Println("Allowing user reset since RESET_USER environment variable is set")
 	}
@@ -108,5 +108,12 @@ func init() {
 		MigrationsPath = "./migrations"
 	}
 
+	AllowInsecureRequests = checkBool("ALLOW_INSECURE_REQUESTS")
+
 	TempDir = os.Getenv("TEMP_DIR")
+}
+
+func checkBool(envName string) bool {
+	val, exists := os.LookupEnv(envName)
+	return exists && strings.ToLower(val) != "false"
 }

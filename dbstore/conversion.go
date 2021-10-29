@@ -13,7 +13,7 @@ import (
 )
 
 /*
-Converts conductorr-annotated SQL to different dbms compatible sql commands.
+Converts conductorr-annotated SQL to different dbms-compatible sql commands.
 
 See the README file for annotation syntax
 */

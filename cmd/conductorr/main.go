@@ -8,7 +8,6 @@ import (
 
 	"github.com/lsnow99/conductorr/app"
 	"github.com/lsnow99/conductorr/dbstore"
-	_ "github.com/lsnow99/conductorr/internal/csl"
 	"github.com/lsnow99/conductorr/logger"
 	"github.com/lsnow99/conductorr/api"
 	"github.com/lsnow99/conductorr/scheduler"

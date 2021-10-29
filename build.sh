@@ -1,7 +1,6 @@
 #!/bin/bash
 # Build script for Conductorr
 # Author Logan Snow
-# Last updated 08/03/2021
 
 # Set script to fail if any sub commands fail
 set -e
@@ -23,7 +22,7 @@ if [ "$1" == "all" ] || [ "$1" == "" ]; then
     buildbin=1
 fi
 
-if [ "$1" == "csl" ]; then
+if [ "$1" == "wasm" ]; then
     buildcsl=1
 fi
 
@@ -60,9 +59,9 @@ fi
 
 # Build CSL WASM module
 if [ $buildcsl == 1 ]; then
-    echo "==============================[   Building CSL Module   ]=============================="
+    echo "==============================[    Building CSL WASM    ]=============================="
     echo "${cyan}→ Compiling to WASM${reset}"
-    GOOS=js GOARCH=wasm go build -o dist/csl.wasm ./cmd/cslwasm
+    GOOS=js GOARCH=wasm go build -o dist/csl.wasm -ldflags="-s -w -X 'main.CorsProxyServer=https://corsproxy.conductorr.workers.dev'" ./cmd/cslwasm
     echo "${cyan}→ Compressing with brotli${reset}"
     brotli -f dist/csl.wasm
     # Copy the corresponding wasm_exec.js file to the web app and docusite projects

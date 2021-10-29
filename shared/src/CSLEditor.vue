@@ -24,6 +24,7 @@
   font-size: 20px;
   line-height: 1.5;
   padding: 5px;
+  cursor: text;
 }
 
 /* optional class for removing the outline */

@@ -1,4 +1,3 @@
-//go:build js && wasm
 // +build js,wasm
 
 package main
@@ -12,64 +11,62 @@ import (
 
 	"github.com/lsnow99/conductorr/csllib"
 	"github.com/lsnow99/conductorr/internal/csl"
-	_ "github.com/lsnow99/conductorr/internal/csl"
-	"github.com/openzipkin/zipkin-go/reporter/http"
 )
 
 var DefaultEnv map[string]interface{} = make(map[string]interface{})
-var Mode string
 var CorsProxyServer string
 
-var Fetcher = func(is csllib.ImportableScript, importPath string, allowInsecureRequests bool) (string, error) {
+var AppFetcher = func(is csllib.ImportableScript, importPath string, allowInsecureRequests bool) (string, error) {
 	if _, ok := is.(csllib.FileScript); ok {
 		return "", fmt.Errorf("cannot resolve import from file")
 	}
 
-	if Mode == "app" {
-		u := url.URL{}
-		u.Path = "/api/v1/resolveImport"
-		q := u.Query()
-		q.Set("importPath", importPath)
-		u.RawQuery = q.Encode()
+	u := url.URL{}
+	u.Path = "/api/v1/fetchScript"
+	q := u.Query()
+	q.Set("importPath", importPath)
+	u.RawQuery = q.Encode()
 
-		req, err := http.NewRequest("GET", u.String(), nil)
-		if err != nil {
-			return "", err
-		}
-		
-		resp, err := http.DefaultClient.Do(req)
-		if err != nil {
-			return "", err
-		}
-
-		defer resp.Body.Close()
-
-		data, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return "", err
-		}
-
-		respString := string(data)
-
-		if resp.StatusCode < 200 || resp.StatusCode > 299 {
-			return "", fmt.Errorf("api server encountered error resolving import: %s", respString)
-		}
-		
-		return respString, nil
-	} else if Mode == "playground" {
-		if _, ok := is.(csllib.ProfileScript); ok {
-			return "", fmt.Errorf("cannot resolve import from local profile")
-		} else if gs, ok := is.(csllib.GitScript); ok {
-			u := gs.GetURL()
-			return attemptProxyFetch(u, allowInsecureRequests)
-		} else if ws, ok := is.(csllib.WebScript); ok {
-			u := ws.GetURL()
-			return attemptProxyFetch(u, allowInsecureRequests)
-		} else {
-			return "", fmt.Errorf("unimplemented importable script scheme or type")
-		}
+	req, err := http.NewRequest("GET", u.String(), nil)
+	if err != nil {
+		return "", err
 	}
-	return is.Fetch(allowInsecureRequests)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	respString := string(data)
+
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		return "", fmt.Errorf("api server encountered error resolving import: %s", respString)
+	}
+
+	return respString, nil
+}
+
+var PlaygroundFetcher = func(is csllib.ImportableScript, importPath string, allowInsecureRequests bool) (string, error) {
+	if _, ok := is.(csllib.FileScript); ok {
+		return "", fmt.Errorf("cannot resolve import from file in playground")
+	} else if _, ok := is.(csllib.ProfileScript); ok {
+		return "", fmt.Errorf("cannot resolve import from local profile in playground")
+	} else if gs, ok := is.(csllib.GitScript); ok {
+		u := gs.GetURL()
+		return attemptProxyFetch(u, allowInsecureRequests)
+	} else if ws, ok := is.(csllib.WebScript); ok {
+		u := ws.GetURL()
+		return attemptProxyFetch(u, allowInsecureRequests)
+	} else {
+		return "", fmt.Errorf("unimplemented importable script scheme or type")
+	}
 }
 
 func attemptProxyFetch(u url.URL, allowInsecureRequests bool) (string, error) {
@@ -91,6 +88,8 @@ func attemptProxyFetch(u url.URL, allowInsecureRequests bool) (string, error) {
 		return "", err
 	}
 
+	defer resp.Body.Close()
+
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		if u.Scheme == "https" && allowInsecureRequests {
 			u.Scheme = "http"
@@ -100,7 +99,7 @@ func attemptProxyFetch(u url.URL, allowInsecureRequests bool) (string, error) {
 		}
 	}
 
-	data, err := ioutil.ReadAll(proxyReq.Body)
+	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}
@@ -202,7 +201,7 @@ func Execute(this js.Value, args []js.Value) interface{} {
 
 	go func() {
 		csl := csl.NewCSL()
-		cslpm := csllib.NewCSLPackageManager(Fetcher, true)
+		cslpm := csllib.NewCSLPackageManager(PlaygroundFetcher, true)
 		if err := csl.PreprocessScript(script, "", cslpm); err != nil {
 			callback.Invoke(false, err.Error())
 			return
@@ -265,7 +264,7 @@ func Run(this js.Value, args []js.Value) interface{} {
 	}
 	go func() {
 		csl := csl.NewCSL()
-		cslpm := csllib.NewCSLPackageManager(Fetcher, true)
+		cslpm := csllib.NewCSLPackageManager(AppFetcher, true)
 
 		result, err, trace := csl.ResolveDepsAndCall(cslpm, csllib.Script{
 			Code: script,
@@ -298,6 +297,7 @@ func Run(this js.Value, args []js.Value) interface{} {
 }
 
 func main() {
+	fmt.Printf("Using %s as cors proxy server\n", CorsProxyServer)
 	js.Global().Set("Validate", js.FuncOf(Validate))
 	js.Global().Set("Run", js.FuncOf(Run))
 	js.Global().Set("Execute", js.FuncOf(Execute))

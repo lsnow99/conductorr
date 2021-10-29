@@ -39,11 +39,9 @@
     <template v-slot:footer>
       <o-button @click="$emit('close')">Cancel</o-button>
       <div>
-        <o-button variant="primary" @click="save"
-          ><action-button :mode="loading ? 'loading' : ''"
-            >Save</action-button
-          ></o-button
-        >
+        <o-button variant="primary" @click="save">
+          <action-button :mode="loading ? 'loading' : ''">Save</action-button>
+        </o-button>
       </div>
     </template>
   </modal>
@@ -180,6 +178,17 @@ export default {
   mounted() {
     this.loadProfiles();
     this.loadPaths();
+  },
+  watch: {
+    media: {
+      handler: function (newVal) {
+        if (newVal) {
+          this.profileID = newVal.profile_id;
+          this.pathID = newVal.path_id;
+        }
+      },
+      immediate: true,
+    },
   },
   computed: {
     computedActive: {

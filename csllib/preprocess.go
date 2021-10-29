@@ -125,7 +125,10 @@ func (n *Node) ResolveDependencies(deps DepGraph, csl *CSL, cslpm *CSLPackageMan
 					}
 				}
 				depCSL := NewCSL(true)
-				foundNode.ResolveDependencies(deps, depCSL, cslpm)
+				err = foundNode.ResolveDependencies(deps, depCSL, cslpm)
+				if err != nil {
+					return err
+				}
 				csl.RegisterFunction(fnName, true, nil, func(env map[string]interface{}, args []*SExpr, trace Trace) (interface{}, Trace) {
 					argList := List{}
 					for _, arg := range args {

@@ -1,6 +1,6 @@
 package csllib
 
-import "errors"
+import "fmt"
 
 type CSLEvalError struct {
 	Message  string
@@ -18,9 +18,9 @@ type eagerFnSig func(env map[string]interface{}, args ...interface{}) (interface
 type lazyFnSig func(env map[string]interface{}, args []*SExpr, trace Trace) (interface{}, Trace)
 
 type operation struct {
-	fn eagerFnSig
+	fn     eagerFnSig
 	lazyFn lazyFnSig
-	lazy bool
+	lazy   bool
 }
 
 var (
@@ -124,7 +124,7 @@ func (csl *CSL) EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace)
 					} else {
 						val, ok := env[x]
 						if !ok {
-							trace.Err = errors.New("undefined variable: " + x)
+							trace.Err = fmt.Errorf("undefined variable: %s", x)
 							return nil, trace
 						}
 						list = append(list, val)
@@ -163,7 +163,7 @@ func (csl *CSL) EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace)
 						for operand != nil {
 							arg := &SExpr{
 								Atom: operand.Atom,
-								L: operand.L,
+								L:    operand.L,
 							}
 							lazyOps = append(lazyOps, arg)
 							operand = operand.R
@@ -201,7 +201,7 @@ func (csl *CSL) EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace)
 	}
 }
 
-func (csl *CSL) Invoke(sexprs []*SExpr, args... interface{}) (interface{}, Trace) {
+func (csl *CSL) Invoke(sexprs []*SExpr, args ...interface{}) (interface{}, Trace) {
 	env := make(map[string]interface{})
 	var argsList List
 	for _, arg := range args {

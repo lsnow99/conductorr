@@ -15,7 +15,7 @@ import (
 )
 
 var gitPattern = regexp.MustCompile(`^(.*\..*?)\/(.*):([^@]+)@?(.*)?`)
-var profilePattern = regexp.MustCompile(`^(?:profile):(.*)`)
+var profilePattern = regexp.MustCompile(`^(?:profile):(filter|sorter):(.*)`)
 var filePattern = regexp.MustCompile(`^(?:file):(.*)`)
 
 type ScriptFetcher func(is ImportableScript, importPath string, allowInsecureRequests bool) (string, error)
@@ -34,6 +34,7 @@ type GitScript struct {
 
 type ProfileScript struct {
 	name string
+	scriptType string
 }
 
 type WebScript struct {
@@ -75,7 +76,15 @@ func (ps ProfileScript) Fetch(allowInsecureRequests bool) (string, error) {
 }
 
 func (ps ProfileScript) CanonicalizedImportPath() string {
+	return fmt.Sprintf("profile:%s:%s", ps.scriptType, ps.name)
+}
+
+func (ps ProfileScript) GetName() string {
 	return ps.name
+}
+
+func (ps ProfileScript) GetScriptType() string {
+	return ps.scriptType
 }
 
 func (ws WebScript) Fetch(allowInsecureRequests bool) (string, error) {
@@ -128,11 +137,12 @@ func (cslpm *CSLPackageManager) parseImport(importStmt string) (ImportableScript
 		}
 		return gs, nil
 	} else if matches := profilePattern.FindAllStringSubmatch(importStmt, -1); len(matches) > 0 {
-		if len(matches[0]) != 2 {
+		if len(matches[0]) != 3 {
 			return nil, fmt.Errorf("regular expression returned unexpected amount of submatches")
 		}
 		ps := ProfileScript{
-			name: matches[0][1],
+			name: matches[0][2],
+			scriptType: matches[0][1],
 		}
 		return ps, nil
 	} else if matches := filePattern.FindAllStringSubmatch(importStmt, -1); len(matches) > 0 {
