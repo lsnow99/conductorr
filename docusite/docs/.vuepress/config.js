@@ -38,6 +38,7 @@ module.exports = {
   head: [["link", { rel: "shortcut icon", href: "/logo.svg" }]],
   themeConfig: {
     logo: "/logo-rounded.svg",
+    overrideTheme: 'dark',
     navbar: [
       {
         text: "Guide",

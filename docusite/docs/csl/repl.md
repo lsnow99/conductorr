@@ -64,7 +64,9 @@ export default {
             }
         },
         execute() {
-            this.history.push(this.replInput);
+            if(this.history[this.history.length - 1] != this.replInput) {
+                this.history.push(this.replInput);
+            }
             this.historyIndex = this.history.length;
             this.pushOutput(this.replInput, "default", "italic")
             Execute(this.replInput, (ok, err, result) => {

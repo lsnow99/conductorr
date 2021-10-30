@@ -158,12 +158,21 @@ The above snippet returns `"Manos.The.Hands.of.Fate.1966.THEATRiCAL.1080p.BluRay
 
 In a CSL script, the value of the final expression is considered to be the "return value" of the script. Scripts can be imported as functions.
 
-The syntax to import a script function is `(import "https://conductorr.github.io/demoscript.csl" demo-script)`. The last argument is optional, and if excluded, then the function name will resolve to the filename without the extension, which in this case would be `demoscript`.
+The syntax to import a script function is `(import "https://conductorr.github.io/demoscript.csl" demo-script)`.
+
+Available protocols:
+
+| Source Type | Syntax | Availability | Notes |
+| ----------- | ------ | ------------ | ----- |
+| filesystem  | file:/home/user/scripts/test.csl | cli |  |
+| git         | github.com/user/repo:test.csl@v2 | cli, conductorr, playground | Works with GitLab, GitHub, and Gitea (others possibly as well). The version tag is optional, and any commit hash or branch name or tag is valid. Note the colon separating the hostname and web path from the path within the repository to the script. |
+| web         | https://example.com/test.csl | cli, conductorr, playground |  |
 
 You can then invoke the script at any time using `(demo-script)`. The script will execute, and the above expression will evaluate as the script's return value. Arguments to a script are accessible via an ordered list called `args` which is always accessible. Script functions are run in a separate scope and only inherit the arguments that are passed to it.
 
 ## Important Notes and Caveats
 - Your imports must come before any other code in your script.
-- Attempting to pass anything other than a string **literal** as the import statement's second argument will result in an execution failure. 
-- Depending on your execution environment (ie Conductorr), imported scripts may be cached. Conductorr caches scripts imported from the web and periodically refetches them to check for updates. If you know your dependent scripts have updated, you can force Conductorr to reload them, or if using the git-style imports, you can bump the version tag and the next time the script executes it will pull the updated version of the script.
+- Attempting to pass anything other than a string **literal** as the import statement's second argument will result in an parsing failure. 
+- Depending on your execution environment (i.e. Conductorr), imported scripts may be cached. Conductorr caches scripts imported from the web and periodically refetches them to check for updates. If you know your dependent scripts have updated, you can force Conductorr to reload them, or if using the git-style imports, you can bump the version tag and the next time the script executes it will pull the updated version of the script.
 - If a script fails to load, your execution environment may instead load the script from its cache. If your script is tagged with a version, it should only look for scripts tagged with that same version in the cache.
+- For any http request made by your execution environment to resolve dependencies, it will first attempt to use https, and depending on the environment configuration, http may be used as a fallback. By default insecure requests are disabled in all execution environments, except for the playground.
