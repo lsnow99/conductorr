@@ -42,15 +42,15 @@ module.exports = {
     navbar: [
       {
         text: "Guide",
-        link: "/guide/",
+        link: "/guide/download.md",
       },
       {
         text: "Features",
-        link: "/features/",
+        link: "/features/indexers.md",
       },
       {
         text: "CSL",
-        link: "/csl/",
+        link: "/csl/introduction.md",
       },
     ],
     sidebar: {
