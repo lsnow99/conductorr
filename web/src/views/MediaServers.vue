@@ -1,11 +1,30 @@
 <template>
   <section class="mt-3">
-    <o-button variant="primary" @click="openNewMediaServerModal"
-      >New Media Server</o-button
-    >
+    <div class="flex flex-col sm:flex-row justify-between">
+      <div class="flex justify-center">
+        <o-button variant="primary" @click="openNewMediaServerModal"
+          >New Media Server</o-button
+        >
+      </div>
+      <div class="flex justify-center mt-4 sm:mt-0">
+        <o-button
+          variant="primary"
+          icon-left="plus-square"
+          @click="setExpanded(true)"
+          class="mr-3"
+          >Expand All</o-button
+        ><o-button
+          variant="primary"
+          icon-left="minus-square"
+          @click="setExpanded(false)"
+          >Collapse All</o-button
+        >
+      </div>
+    </div>
     <config-item
       @edit="editMediaServer(mediaServer, $event)"
       @delete="deleteMediaServer(mediaServer)"
+      v-model:expanded="mediaServer.expanded"
       collapsible
       :title="mediaServer.name"
       :delete-message="`Are you sure you want to delete mediaServer '${mediaServer.name}'?`"
@@ -99,6 +118,11 @@ export default {
     EditService,
   },
   methods: {
+    setExpanded(expanded) {
+      this.mediaServers.forEach((element) => {
+        element.expanded = expanded;
+      });
+    },
     closeNewMediaServerModal() {
       this.showNewMediaServerModal = false;
       this.mediaServerType = "";

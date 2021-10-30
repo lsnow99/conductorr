@@ -96,11 +96,16 @@ export default {
         });
     },
   },
-  mounted() {
-    if (this.path) {
-      this.pathDir = this.path.path;
-      this.moviesDefault = this.path.movies_default;
-      this.seriesDefault = this.path.series_default;
+  watch: {
+    path: {
+      handler: function(newVal) {
+        if(newVal) {
+          this.pathDir = this.path.path;
+          this.moviesDefault = this.path.movies_default;
+          this.seriesDefault = this.path.series_default;
+        }
+      },
+      immediate: true
     }
   },
   computed: {

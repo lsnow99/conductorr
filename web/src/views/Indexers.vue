@@ -1,13 +1,31 @@
 <template>
   <section class="mt-3">
-    <o-button
-      variant="primary"
-      @click="doShowNewIndexerModal($event)"
-      >Add Indexer</o-button
-    >
+    <div class="flex flex-col sm:flex-row justify-between">
+      <div class="flex justify-center">
+        <o-button variant="primary" @click="doShowNewIndexerModal($event)"
+          >Add Indexer</o-button
+        >
+      </div>
+      <div class="flex justify-center mt-4 sm:mt-0">
+        <o-button
+          variant="primary"
+          icon-left="plus-square"
+          @click="setExpanded(true)"
+          class="mr-3"
+          >Expand All</o-button
+        ><o-button
+          variant="primary"
+          icon-left="minus-square"
+          @click="setExpanded(false)"
+          >Collapse All</o-button
+        >
+      </div>
+    </div>
     <config-item
       :delete-message="`Are you sure you want to delete indexer '${indexer.name}'?`"
       v-for="indexer in indexers"
+      collapsible
+      v-model:expanded="indexer.expanded"
       :key="indexer.id"
       :title="indexer.name"
       @edit="editIndexer(indexer, $event)"
@@ -61,9 +79,9 @@ const XNAB_FIELDS = [
   },
   {
     type: "text",
-    label: ""
-  }
-]
+    label: "",
+  },
+];
 
 export default {
   data() {
@@ -80,6 +98,11 @@ export default {
   },
   mixins: [TabSaver],
   methods: {
+    setExpanded(expanded) {
+      this.indexers.forEach((element) => {
+        element.expanded = expanded;
+      });
+    },
     doShowNewIndexerModal($event) {
       this.lastButton = $event.currentTarget;
       this.showNewIndexerModal = true;
@@ -116,7 +139,7 @@ export default {
     editIndexer(indexer, $event) {
       this.indexerToEdit = indexer;
       this.showEditIndexerModal = true;
-      this.lastButton = $event.currentTarget
+      this.lastButton = $event.currentTarget;
     },
     deleteIndexer(indexer) {
       APIUtil.deleteIndexer(indexer.id).then(() => {

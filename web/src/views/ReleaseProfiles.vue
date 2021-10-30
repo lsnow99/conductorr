@@ -8,13 +8,13 @@
         <o-button
           variant="primary"
           icon-left="plus-square"
-          @click="expandAll"
+          @click="setExpanded(true)"
           class="mr-3"
           >Expand All</o-button
         ><o-button
           variant="primary"
           icon-left="minus-square"
-          @click="collapseAll"
+          @click="setExpanded(false)"
           >Collapse All</o-button
         >
       </div>
@@ -75,14 +75,9 @@ export default {
   },
   mixins: [TabSaver],
   methods: {
-    expandAll() {
+    setExpanded(expanded) {
       this.profiles.forEach((element) => {
-        element.expanded = true;
-      });
-    },
-    collapseAll() {
-      this.profiles.forEach((element) => {
-        element.expanded = false;
+        element.expanded = expanded;
       });
     },
     newProfileSubmitted() {

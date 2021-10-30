@@ -1,11 +1,30 @@
 <template>
   <section class="mt-3">
-    <o-button @click="showNewDownloader" variant="primary"
-      >Add Downloader</o-button
-    >
+    <div class="flex flex-col sm:flex-row justify-between">
+      <div class="flex justify-center">
+        <o-button @click="showNewDownloader" variant="primary"
+          >Add Downloader</o-button
+        >
+      </div>
+      <div class="flex justify-center mt-4 sm:mt-0">
+        <o-button
+          variant="primary"
+          icon-left="plus-square"
+          @click="setExpanded(true)"
+          class="mr-3"
+          >Expand All</o-button
+        ><o-button
+          variant="primary"
+          icon-left="minus-square"
+          @click="setExpanded(false)"
+          >Collapse All</o-button
+        >
+      </div>
+    </div>
     <config-item
       @edit="editDownloader(downloader, $event)"
       @delete="deleteDownloader(downloader)"
+      v-model:expanded="downloader.expanded"
       collapsible
       :title="downloader.name"
       :delete-message="`Are you sure you want to delete downloader '${downloader.name}'?`"
@@ -58,7 +77,7 @@ import EditService from "../components/EditService.vue";
 import APIUtil from "../util/APIUtil";
 import ConfigItem from "../components/ConfigItem.vue";
 import TabSaver from "../util/TabSaver";
-import RadioGroup from "../components/RadioGroup.vue"
+import RadioGroup from "../components/RadioGroup.vue";
 
 const NZBGET_FIELDS = [
   {
@@ -133,10 +152,15 @@ export default {
     NewDownloader,
     ConfigItem,
     EditService,
-    RadioGroup
+    RadioGroup,
   },
   mixins: [TabSaver],
   methods: {
+    setExpanded(expanded) {
+      this.downloaders.forEach((element) => {
+        element.expanded = expanded;
+      });
+    },
     selectedDownloader(downloaderType) {
       this.mode = "new";
       this.downloaderType = downloaderType;
@@ -149,11 +173,11 @@ export default {
     },
     closeEditDownloaderModal() {
       this.showEditDownloaderModal = false;
-      this.mode = ''
-      this.downloaderType = ''
+      this.mode = "";
+      this.downloaderType = "";
       this.editingDownloader = {
-        config: {}
-      }
+        config: {},
+      };
       this.restoreFocus();
     },
     submittedDownloader(downloader) {
@@ -173,22 +197,22 @@ export default {
           });
           this.closeEditDownloaderModal();
           this.loadDownloaders();
-        })
+        });
       } else if (this.mode == "edit") {
         APIUtil.updateDownloader(
-        downloader.id,
-        downloader.name,
-        downloader.file_action,
-        downloader.config
-      ).then(() => {
-        this.$oruga.notification.open({
-          duration: 3000,
-          message: `Updated successfully`,
-          position: "bottom-right",
-          variant: "success",
-          closable: false,
-        });
-          this.closeEditDownloaderModal()
+          downloader.id,
+          downloader.name,
+          downloader.file_action,
+          downloader.config
+        ).then(() => {
+          this.$oruga.notification.open({
+            duration: 3000,
+            message: `Updated successfully`,
+            position: "bottom-right",
+            variant: "success",
+            closable: false,
+          });
+          this.closeEditDownloaderModal();
           this.loadDownloaders();
         });
       }

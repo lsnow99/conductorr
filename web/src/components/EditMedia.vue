@@ -113,28 +113,11 @@ export default {
     loadProfiles() {
       APIUtil.getProfiles().then((profiles) => {
         this.profiles = profiles;
-        if (this.media.profile_id) {
-          this.profileID = this.media.profile_id;
-        }
       });
     },
     loadPaths() {
       APIUtil.getPaths().then((paths) => {
         this.paths = paths;
-        if (!this.media.path_id) {
-          this.paths.forEach((elem) => {
-            if (elem.movies_default && this.media.content_type == "movie") {
-              this.pathID = elem.id;
-            } else if (
-              elem.series_default &&
-              this.media.content_type == "series"
-            ) {
-              this.pathID = elem.id;
-            }
-          });
-        } else {
-          this.pathID = this.media.path_id;
-        }
       });
     },
     newPath($event) {
@@ -184,7 +167,19 @@ export default {
       handler: function (newVal) {
         if (newVal) {
           this.profileID = newVal.profile_id;
-          this.pathID = newVal.path_id;
+          if (!this.media.path_id) {
+            this.paths.forEach((elem) => {
+              console.log('checking ', elem, this.media)
+              if (
+                (elem.movies_default && this.media.content_type == "movie") ||
+                (elem.series_default && this.media.content_type == "series")
+              ) {
+                this.pathID = elem.id;
+              }
+            });
+          } else {
+            this.pathID = this.media.path_id;
+          }
         }
       },
       immediate: true,
