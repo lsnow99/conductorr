@@ -91,7 +91,12 @@ func (x *Xnab) Search(media *Media) ([]Release, error) {
 		nzbs, err := x.client.SearchWithQuery([]int{newznab.CategoryTVAll}, media.QueryString(), "search")
 		return x.prepareResponse(nzbs, media), err
 	} else if media.ContentType == TVSeason {
-		x.client.Search
+		if x.caps.Searching.TvSearch.Available == "yes" {
+			// if strings.Contains
+			if strings.Contains(x.caps.Searching.TvSearch.SupportedParams, "tvdbid") && media.ParentMedia.TvdbID != 0 {
+				nzbs, err := x.client.SearchWithTVDB()
+			}
+		}
 	} else if media.ContentType == TVEpisode {
 
 	}

@@ -68,7 +68,7 @@ type IndividualResult struct {
 	EndedAt                time.Time
 	Genres                 []string
 	ImdbID                 string
-	TvdbID                 string
+	TvdbID                 int
 }
 
 type SearchResults struct {

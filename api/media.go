@@ -142,7 +142,7 @@ func doAddMedia(result *search.IndividualResult, profileID *int, pathID *int, mo
 			return id, err
 		}
 		id, err = dbstore.UpsertMedia(&result.Title, &result.Plot, &result.ReleasedAt, &result.EndedAt,
-			&result.ContentType, nil, nil, &result.ImdbID, nil, &imdbRating, &result.Runtime,
+			&result.ContentType, nil, nil, &result.ImdbID, &result.TvdbID, nil, &imdbRating, &result.Runtime,
 			&poster, result.Genres, profileID, pathID, nil, monitor)
 		if err != nil {
 			return id, err
@@ -154,7 +154,7 @@ func doAddMedia(result *search.IndividualResult, profileID *int, pathID *int, mo
 			if !ok {
 				seasonStr := "Season " + strconv.Itoa(episode.Season)
 				contentType := "season"
-				seasonID, err = dbstore.UpsertMedia(&seasonStr, nil, &episode.Aired, nil, &contentType, &id, nil, nil, nil, nil, nil, nil, nil, nil, nil, &episode.Season, monitor)
+				seasonID, err = dbstore.UpsertMedia(&seasonStr, nil, &episode.Aired, nil, &contentType, &id, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, &episode.Season, monitor)
 				if err != nil {
 					return id, err
 				}
@@ -163,14 +163,14 @@ func doAddMedia(result *search.IndividualResult, profileID *int, pathID *int, mo
 
 			description := getTextFromHTML(episode.Description)
 			contentType := "episode"
-			_, err = dbstore.UpsertMedia(&episode.Title, &description, &episode.Aired, nil, &contentType, &seasonID, nil, nil, nil, nil, &episode.Runtime, nil, nil, nil, nil, &episode.Episode, monitor)
+			_, err = dbstore.UpsertMedia(&episode.Title, &description, &episode.Aired, nil, &contentType, &seasonID, nil, nil, nil, nil, nil, &episode.Runtime, nil, nil, nil, nil, &episode.Episode, monitor)
 			if err != nil {
 				return id, err
 			}
 		}
 	} else {
 		id, err = dbstore.UpsertMedia(&result.Title, &result.Plot, &result.ReleasedAt, &result.EndedAt,
-			&result.ContentType, nil, nil, &result.ImdbID, nil, &imdbRating, &result.Runtime,
+			&result.ContentType, nil, nil, &result.ImdbID, &result.TvdbID, nil, &imdbRating, &result.Runtime,
 			&poster, result.Genres, profileID, pathID, nil, monitor)
 		if err != nil {
 			return id, err
