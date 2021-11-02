@@ -62,6 +62,10 @@ func (lm *LibraryManager) initChannels() {
 	}()
 }
 
+func (*LibraryManager) GetTaskName() string {
+	return "Library Filesystem Checker"
+}
+
 func (lm *LibraryManager) GetFrequency() time.Duration {
 	return time.Minute * 30
 }

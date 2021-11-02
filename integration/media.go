@@ -4,7 +4,9 @@ import "fmt"
 
 const (
 	Movie = iota
-	TVShow
+	TVSeries
+	TVSeason
+	TVEpisode
 )
 
 type Media struct {
@@ -24,31 +26,34 @@ type Media struct {
 	URL string
 	// ContentType either Movie or TVShow
 	ContentType int
-	// ParentMedia for tv shows, this is usually the media object that encompasses all episodes
+	// ParentMedia for tv shows, can either be a season media type or series
 	ParentMedia *Media
 	// ImdbID assigned by Imdb
 	ImdbID string
 	// TvdbID assigned by Tvdb
 	TvdbID int
-	// Season (tv shows only)
-	Season int
-	// Episode (tv shows only)
-	Episode int
+	// Episode (tv episodes and series only)
+	Number int
 	// Runtime minutes duration of media
 	Runtime int64
 }
 
 func (m Media) QueryString() string {
-	var query string
-	if m.ParentMedia != nil {
-		query += m.ParentMedia.Title + " "
-	}
-	query += m.Title + " "
 
-	if m.ContentType == TVShow {
-		query += fmt.Sprintf("S%02dE%02d", m.Season, m.Episode)
+	if m.ContentType == TVEpisode {
+		if m.ParentMedia == nil || m.ParentMedia.ParentMedia == nil {
+			return ""
+		}
+		return fmt.Sprintf("%s S%02dE%02d", m.ParentMedia.ParentMedia.Title, m.ParentMedia.Number, m.Number)
 	} else if m.ContentType == Movie {
-		query += fmt.Sprintf("(%d)", m.Year)
+		return fmt.Sprintf("%s %d", m.Title, m.Year)
+	} else if m.ContentType == TVSeason {
+		if m.ParentMedia == nil {
+			return ""
+		}
+		return fmt.Sprintf("%s Season %d", m.ParentMedia.Title, m.Number)
+	} else if m.ContentType == TVSeries {
+		return fmt.Sprintf("%s %d", m.Title, m.Year)
 	}
-	return query
+	return ""
 }

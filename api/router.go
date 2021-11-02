@@ -101,6 +101,7 @@ func GetRouter() http.Handler {
 	r.HandleFunc("/api/v1/backup", CreateNewBackup).Methods("POST")
 	r.HandleFunc("/api/v1/backup/{id}", GetBackupFile).Methods("GET")
 	r.HandleFunc("/api/v1/fetchScript", FetchScript).Methods("GET")
+	r.HandleFunc("/api/v1/tasks", GetTasks).Methods("GET")
 
 	r.Use(AuthMiddleware)
 

@@ -7,42 +7,101 @@ import (
 
 type Task interface {
 	GetFrequency() time.Duration
+	GetTaskName() string
 	DoTask()
 }
 
-type managedTask struct {
+type ManagedTask struct {
 	Task
-	startChan chan struct{}
+	NextRunTime time.Time
+	ID          int
+	startChan   chan struct{}
 }
 
-var tasks []*managedTask
+type statusReq struct {
+	respCh chan []*ManagedTask
+}
+
+type updateReq struct {
+	nextRunTime time.Time
+	taskID      int
+}
+
+var startCh = make(chan struct{})
+var registerCh = make(chan Task)
+var statusCh = make(chan statusReq)
+var updateCh = make(chan updateReq)
 var ctx context.Context = context.Background()
 
-func RegisterTask(t Task) {
-	mt := &managedTask{
-		Task: t,
-		startChan: make(chan struct{}),
-	}
-	tasks = append(tasks, mt)
+func init() {
+	var tasks []*ManagedTask
+	var counter = 1
 	go func() {
-		<-mt.startChan
-		t.DoTask()
-		ticker := time.NewTicker(t.GetFrequency())
 		for {
 			select {
-			case <- ticker.C:
-				go func ()  {
-					t.DoTask()
-				}()
-			case <- ctx.Done():
-				return
+			case <-startCh:
+				for _, task := range tasks {
+					task.startChan <- struct{}{}
+				}
+			case t := <-registerCh:
+				mt := &ManagedTask{
+					Task:      t,
+					startChan: make(chan struct{}),
+					ID:        counter,
+				}
+				counter++
+				tasks = append(tasks, mt)
+				go loopTask(mt)
+			case sr := <-statusCh:
+				sr.respCh <- tasks
+			case ur := <-updateCh:
+				for _, task := range tasks {
+					if task.ID == ur.taskID {
+						task.NextRunTime = ur.nextRunTime
+						break
+					}
+				}
 			}
 		}
 	}()
 }
 
-func StartTasks() {
-	for _, task := range tasks {
-		task.startChan <- struct{}{}
+func loopTask(mt *ManagedTask) {
+	<-mt.startChan
+	mt.DoTask()
+
+	mt.NextRunTime = time.Now().Add(mt.GetFrequency())
+
+	timer := time.NewTimer(mt.GetFrequency())
+
+	for {
+		select {
+		case <-timer.C:
+			go mt.DoTask()
+			ur := updateReq{
+				nextRunTime: mt.NextRunTime.Add(mt.GetFrequency()),
+				taskID:      mt.ID,
+			}
+			updateCh <- ur
+			timer.Reset(mt.GetFrequency())
+		case <-ctx.Done():
+			return
+		}
 	}
+}
+
+func RegisterTask(t Task) {
+	registerCh <- t
+}
+
+func StartTasks() {
+	startCh <- struct{}{}
+}
+
+func GetTaskStatuses() []*ManagedTask {
+	sr := statusReq{
+		respCh: make(chan []*ManagedTask),
+	}
+	statusCh <- sr
+	return <-sr.respCh
 }

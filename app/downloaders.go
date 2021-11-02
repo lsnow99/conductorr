@@ -59,6 +59,10 @@ func (dm *DownloaderManager) DoTask() {
 	dm.didFirstRun = true
 }
 
+func (dm *DownloaderManager) GetTaskName() string {
+	return "Downloader Manager"
+}
+
 func (dm *DownloaderManager) GetFrequency() time.Duration {
 	return time.Second * 5
 }

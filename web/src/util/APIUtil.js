@@ -476,6 +476,12 @@ const createNewBackup = () => {
   })
 }
 
+const getTaskStatuses = () => {
+  return doAPIReq(`/api/v1/tasks`, {
+    method: "GET"
+  })
+}
+
 export default {
   signIn,
   signUp,
@@ -527,5 +533,6 @@ export default {
   updateMediaServer,
   deleteMediaServer,
   refreshMediaMetadata,
-  createNewBackup
+  createNewBackup,
+  getTaskStatuses
 };

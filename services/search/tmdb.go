@@ -397,6 +397,7 @@ func (t *TmdbAPI) SearchByID(id string) (*IndividualResult, error) {
 		ir.Title = result.Name
 		ir.ContentType = "series"
 		ir.ImdbID = result.ExternalIds.ImdbID
+		ir.TvdbID = strconv.Itoa(result.ExternalIds.TvdbID)
 		ir.ReleasedAt, err = time.Parse(dateFormat, result.FirstAirDate)
 		if err != nil {
 			logger.LogWarn(err)

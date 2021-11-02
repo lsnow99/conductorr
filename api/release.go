@@ -77,6 +77,7 @@ func getReleasesForMediaID(mediaID int) ([]integration.Release, []integration.Re
 		media.ContentType = integration.Movie
 		media.ImdbID = dbMedia.ImdbID.String
 		media.Runtime = int64(dbMedia.Runtime.Int32)
+		media.Year = dbMedia.ReleasedAt.Time.Year()
 	} else if dbMedia.ContentType.String == "episode" {
 		dbSeason, err := dbstore.GetMediaByID(int(dbMedia.ParentMediaID.Int32))
 		if err != nil {
@@ -86,13 +87,38 @@ func getReleasesForMediaID(mediaID int) ([]integration.Release, []integration.Re
 		if err != nil {
 			return nil, nil, fmt.Errorf("season has no parent")
 		}
-		media.Title = dbSeries.Title.String
-		media.Episode = int(dbMedia.Number.Int32)
-		media.Season = int(dbSeason.Number.Int32)
-		media.ContentType = integration.TVShow
+		media.Title = dbMedia.Title.String
+		media.Number = int(dbMedia.Number.Int32)
+		media.ContentType = integration.TVEpisode
 		media.Runtime = int64(dbSeries.Runtime.Int32)
+		media.ParentMedia = &integration.Media{
+			Number: int(dbSeason.Number.Int32),
+			ContentType: integration.TVSeason,
+			ParentMedia: &integration.Media{
+				Title: dbSeries.Title.String,
+				ContentType: integration.TVSeries,
+				Year: dbSeries.ReleasedAt.Time.Year(),
+			},
+		}
+	} else if dbMedia.ContentType.String == "season" {
+		dbSeries, err := dbstore.GetMediaByID(int(dbMedia.ParentMediaID.Int32))
+		if err != nil {
+			return nil, nil, fmt.Errorf("season has no parent")
+		}
+		media.Title = dbMedia.Title.String
+		media.Number = int(dbMedia.Number.Int32)
+		media.ContentType = integration.TVSeason
+		media.Runtime = int64(dbSeries.Runtime.Int32)
+		media.ParentMedia = &integration.Media{
+			Title: dbSeries.Title.String,
+			Year: dbSeries.ReleasedAt.Time.Year(),
+		}
+	} else if dbMedia.ContentType.String == "series" {
+		media.Title = dbMedia.Title.String
+		media.Year = dbMedia.ReleasedAt.Time.Year()
+		media.ContentType = integration.TVSeries
+		media.Runtime = int64(dbMedia.Runtime.Int32)
 	}
-	media.Year = dbMedia.ReleasedAt.Time.Year()
 
 	results, err := app.IM.Search(&media)
 	if err != nil {

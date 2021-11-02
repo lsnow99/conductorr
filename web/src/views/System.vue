@@ -4,13 +4,17 @@
     <div class="rounded-md overflow-hidden">
       <SystemStatus
         :status="$store.getters.status['downloader']"
-        :system="'Downloaders'"
+        system="Downloaders"
       />
       <SystemStatus
         :status="$store.getters.status['indexer']"
-        :system="'Indexers'"
+        system="Indexers"
       />
-      <SystemStatus :status="$store.getters.status['path']" :system="'Paths'" />
+      <SystemStatus
+        :status="$store.getters.status['media_server']"
+        system="Media Servers"
+      />
+      <SystemStatus :status="$store.getters.status['path']" system="Paths" />
     </div>
     <div class="text-xl mt-10">Logs</div>
     <div class="h-72 overflow-y-scroll">
@@ -18,7 +22,10 @@
     </div>
     <div>
       <o-button icon-left="download" variant="primary" @click="createBackup">
-        <action-button :mode="backupMode"> Download Backup </action-button>
+        <action-button :mode="backupMode"> Download System Backup </action-button>
+      </o-button>
+      <o-button icon-left="download" variant="primary">
+        Download Logs
       </o-button>
       <iframe :src="backupUrl" class="hidden"></iframe>
     </div>
@@ -39,7 +46,8 @@ export default {
     return {
       logs: [],
       backupMode: "",
-      backupUrl: '',
+      backupUrl: "",
+      tasks: [],
     };
   },
   methods: {
@@ -51,13 +59,13 @@ export default {
           this.backupUrl = backupData.url;
         })
         .catch((err) => {
-            this.$oruga.notification.open({
-              duration: 5000,
-              message: `Failed to create backup: ${err}`,
-              position: "bottom-right",
-              variant: "danger",
-              closable: false,
-            });
+          this.$oruga.notification.open({
+            duration: 5000,
+            message: `Failed to create backup: ${err}`,
+            position: "bottom-right",
+            variant: "danger",
+            closable: false,
+          });
           this.backupMode = "danger";
         })
         .finally(() => {
@@ -73,6 +81,9 @@ export default {
         logs[i].timestamp = DateTime.fromJSDate(new Date(logs[i].timestamp));
       }
       this.logs = logs;
+    });
+    APIUtil.getTaskStatuses().then((tasks) => {
+      this.tasks = tasks;
     });
   },
 };

@@ -68,10 +68,11 @@ type IndividualResult struct {
 	EndedAt                time.Time
 	Genres                 []string
 	ImdbID                 string
+	TvdbID                 string
 }
 
 type SearchResults struct {
 	Results      []SearchResult
-	PerPage int
+	PerPage      int
 	TotalResults int
 }

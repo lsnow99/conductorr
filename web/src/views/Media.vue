@@ -130,16 +130,16 @@
       >
         <div class="text-2xl flex flex-row justify-between">
           <div>
-          <monitoring-toggle
-            class="text-xl"
-            :monitoring="season.monitoring"
-            :disabled="!media.monitoring"
-            @toggle="toggleMonitoring(season)"
-          />
-          {{ season.title }}
+            <monitoring-toggle
+              class="text-xl"
+              :monitoring="season.monitoring"
+              :disabled="!media.monitoring"
+              @toggle="toggleMonitoring(season)"
+            />
+            {{ season.title }}
           </div>
-          <div>
-          <!-- <search-actions :mediaID="season.id" size="large" /> -->
+          <div class="text-base" @click.prevent @click.stop>
+            <search-actions :mediaID="season.id" size="large" />
           </div>
         </div>
         <transition name="fade">
@@ -176,12 +176,12 @@
         </div>
       </div>
     </section>
-      <edit-media
-        v-model:active="showEditMediaModal"
-        @submit="updateMedia"
-        :media="media"
-        @close="closeEditMedia"
-      />
+    <edit-media
+      v-model:active="showEditMediaModal"
+      @submit="updateMedia"
+      :media="media"
+      @close="closeEditMedia"
+    />
     <ConfirmDelete
       v-model:active="showConfirmDeleteModal"
       @delete="doDelete"

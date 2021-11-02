@@ -38,7 +38,7 @@ func (im *IndexerManager) DoTask() {
 			continue
 		}
 		if len(results) > 0 {
-			im.updateIndexerLastRSSID(indexer.ID, results[len(results) - 1].ID)
+			im.updateIndexerLastRSSID(indexer.ID, results[len(results)-1].ID)
 			monitoringMedia, err := dbstore.GetMonitoringMedia()
 			if err != nil || monitoringMedia == nil {
 				return
@@ -63,6 +63,10 @@ func (im *IndexerManager) updateIndexerLastRSSID(indexerID int, rssID string) {
 			im.indexers[i] = indexer
 		}
 	}
+}
+
+func (*IndexerManager) GetTaskName() string {
+	return "Indexer Manager"
 }
 
 func (im *IndexerManager) GetFrequency() time.Duration {
@@ -90,7 +94,7 @@ func (im *IndexerManager) RegisterIndexer(id int, downloadType string, userID in
 
 	im.Lock()
 	defer im.Unlock()
-	
+
 	var updated bool
 	for i, indexer := range im.indexers {
 		if indexer.ID == id {
@@ -112,12 +116,14 @@ func (im *IndexerManager) Search(media *integration.Media) ([]integration.Releas
 	if len(indexers) == 0 {
 		return results, errors.New("no indexers registered")
 	}
+
 	var wg sync.WaitGroup
 	resultsArrs := make([]*[]integration.Release, len(indexers))
+
 	for i, indexer := range indexers {
 		resultsArrs[i] = &[]integration.Release{}
 		wg.Add(1)
-		go func (wg *sync.WaitGroup, indexer integration.Indexer, results *[]integration.Release)  {
+		go func(wg *sync.WaitGroup, indexer integration.Indexer, results *[]integration.Release) {
 			indexerResults, err := indexer.Search(media)
 			if err != nil {
 				logger.LogWarn(err)
@@ -126,12 +132,14 @@ func (im *IndexerManager) Search(media *integration.Media) ([]integration.Releas
 			defer wg.Done()
 		}(&wg, indexer, resultsArrs[i])
 	}
+
 	wg.Wait()
 	for _, resultsArr := range resultsArrs {
 		if resultsArr != nil {
 			results = append(results, *resultsArr...)
 		}
 	}
+
 	return results, nil
 }
 

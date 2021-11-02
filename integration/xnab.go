@@ -78,18 +78,22 @@ func (x *Xnab) Search(media *Media) ([]Release, error) {
 		}
 		nzbs, err := x.client.SearchWithQuery([]int{newznab.CategoryMovieAll}, media.QueryString(), "search")
 		return x.prepareResponse(nzbs, media), err
-	} else if media.ContentType == TVShow {
+	} else if media.ContentType == TVSeries {
 		if x.caps.Searching.TvSearch.Available == "yes" {
-			// if strings.Contains(x.caps.Searching.TvSearch.SupportedParams, "tvdbid") {
-			// 	nzbs, err := x.client.SearchWithTVDB([]int{newznab.CategoryTVAll}, media.ParentMedia.TvdbID, media.Season, media.Episode)
-			// 	return x.prepareResponse(nzbs, media), err
-			// }
+			if strings.Contains(x.caps.Searching.TvSearch.SupportedParams, "tvdbid") && media.TvdbID != 0 {
+				nzbs, err := x.client.SearchWithTVDB([]int{newznab.CategoryTVAll}, media.TvdbID, media.Season, media.Episode)
+				return x.prepareResponse(nzbs, media), err
+			}
 			q := media.QueryString()
 			nzbs, err := x.client.SearchWithQuery([]int{newznab.CategoryTVAll}, q, "tvsearch")
 			return x.prepareResponse(nzbs, media), err
 		}
 		nzbs, err := x.client.SearchWithQuery([]int{newznab.CategoryTVAll}, media.QueryString(), "search")
 		return x.prepareResponse(nzbs, media), err
+	} else if media.ContentType == TVSeason {
+		x.client.Search
+	} else if media.ContentType == TVEpisode {
+
 	}
 	return nil, fmt.Errorf("unrecognized media content type: %d", media.ContentType)
 }

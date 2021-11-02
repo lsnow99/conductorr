@@ -26,6 +26,10 @@ type SystemMonitor struct {
 	statusMap map[string]SystemTypeStatus
 }
 
+func (*SystemMonitor) GetTaskName() string {
+	return "System Health Checker"
+}
+
 func (m *SystemMonitor) GetFrequency() time.Duration {
 	return time.Minute * 20
 }
@@ -40,6 +44,7 @@ func (m *SystemMonitor) DoTask() {
 	defer m.Unlock()
 	m.statusMap["indexer"] = checkSystem("indexer", buildServices(IM.getIndexers()))
 	m.statusMap["downloader"] = checkSystem("downloader", buildServices(DM.getDownloaders(false)))
+	m.statusMap["media_server"] = checkSystem("media server", buildServices(MSM.getMediaServers()))
 	m.statusMap["path"] = getPathsStatus()
 }
 

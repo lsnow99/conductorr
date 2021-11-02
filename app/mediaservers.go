@@ -22,6 +22,10 @@ type MediaServerManager struct {
 	mediaServers []ManagedMediaServer
 }
 
+func (*MediaServerManager) GetTaskName() string {
+	return "Media Server Manager"
+}
+
 func (msm *MediaServerManager) GetFrequency() time.Duration {
 	return time.Minute * 10
 }
