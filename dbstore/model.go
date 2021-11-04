@@ -23,6 +23,7 @@ type Media struct {
 	ParentMediaID sql.NullInt32
 	TmdbID        sql.NullInt32
 	ImdbID        sql.NullString
+	TvdbID		  sql.NullInt32
 	TmdbRating    sql.NullInt32
 	ImdbRating    sql.NullInt32
 	Runtime       sql.NullInt32
