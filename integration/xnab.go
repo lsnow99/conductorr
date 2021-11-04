@@ -3,9 +3,10 @@ package integration
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 
-	"github.com/mrobinsn/go-newznab/newznab"
+	"github.com/lsnow99/go-newznab/newznab"
 )
 
 type Xnab struct {
@@ -41,59 +42,135 @@ func (x *Xnab) TestConnection() error {
 		_, err = x.client.SearchWithQuery([]int{newznab.CategoryMovieAll}, "The", "movie")
 	} else if x.caps.Searching.TvSearch.Available == "yes" {
 		// Check auth
-		_, err = x.client.SearchWithQuery([]int{newznab.CategoryTVAll}, "The", "movie")
+		_, err = x.client.SearchWithQuery([]int{newznab.CategoryTVAll}, "The", "series")
 	} else {
 		return errors.New("searching is not enabled")
 	}
 	return err
 }
 
-func (x *Xnab) prepareResponse(nzbs []newznab.NZB, media *Media) []Release {
+func (x *Xnab) prepareResponse(nzbs []newznab.NZB, contentTypeExtractor func(nzb newznab.NZB) string) []Release {
 	releases := make([]Release, len(nzbs))
 	for i, nzb := range nzbs {
-		releases[i] = NewRelease(nzb.ID, nzb.Title, nzb.Description, nzb.DownloadURL, nzb.Category, nzb.Size, int64(nzb.Seeders), nzb.AirDate, nzb.PubDate, media, x, nzb.IMDBID)
+		contentType := contentTypeExtractor(nzb)
+		releases[i] = NewRelease(nzb.ID, nzb.Title, nzb.Description, nzb.DownloadURL, nzb.Category, nzb.Size, int64(nzb.Seeders), nzb.AirDate, nzb.PubDate, x, nzb.IMDBID, contentType)
 	}
 	return releases
 }
 
+func rssContentTypeExtractor(nzb newznab.NZB) string {
+	for _, cat := range nzb.Category {
+		if cat == strconv.Itoa(newznab.CategoryTVAll) {
+			// TODO: figure out how to differentiate seasons
+			return "episode"
+		} else if cat == strconv.Itoa(newznab.CategoryMovieAll) {
+			return "movie"
+		}
+	}
+	return ""
+}
+
+func movieContentTypeExtractor(newznab.NZB) string   { return "movie" }
+func seasonContentTypeExtractor(newznab.NZB) string  { return "season" }
+func episodeContentTypeExtractor(newznab.NZB) string { return "episode" }
+
 func (x *Xnab) SyncRSS(lastRSSID string) ([]Release, error) {
 	results, err := x.client.LoadRSSFeedUntilNZBID([]int{newznab.CategoryMovieAll, newznab.CategoryTVAll}, 50, lastRSSID, 20)
-	releases := x.prepareResponse(results, nil)
+	releases := x.prepareResponse(results, rssContentTypeExtractor)
 	return releases, err
 }
 
-func (x *Xnab) Search(media *Media) ([]Release, error) {
+func (x *Xnab) SearchEpisode(seasonNum, episodeNum int, showTitle string, tvdbID *int, imdbID *string) ([]Release, error) {
 	if x.caps.Searching.Search.Available != "yes" {
 		return nil, fmt.Errorf("searching not enabled on indexer")
 	}
 
-	if media.ContentType == Movie {
-		if x.caps.Searching.MovieSearch.Available == "yes" {
-			if strings.Contains(x.caps.Searching.MovieSearch.SupportedParams, "imdbid") {
-				nzbs, err := x.client.SearchWithIMDB([]int{newznab.CategoryMovieAll}, strings.ReplaceAll(media.ImdbID, "t", ""))
-				return x.prepareResponse(nzbs, media), err
-			}
-			nzbs, err := x.client.SearchWithQuery([]int{newznab.CategoryMovieAll}, media.QueryString(), "movie")
-			return x.prepareResponse(nzbs, media), err
+	var allResults []newznab.NZB
+	if tvdbID != nil && strings.Contains(x.caps.Searching.TvSearch.SupportedParams, "tvdbid") {
+		nzbs, err := x.client.SearchWithParams([]int{newznab.CategoryTVAll}, "tvsearch", map[string][]string{
+			"tvdbid":  {strconv.Itoa(*tvdbID)},
+			"season":  {strconv.Itoa(seasonNum)},
+			"episode": {strconv.Itoa(episodeNum)},
+		})
+		if err != nil {
+			return nil, err
 		}
-		nzbs, err := x.client.SearchWithQuery([]int{newznab.CategoryMovieAll}, media.QueryString(), "search")
-		return x.prepareResponse(nzbs, media), err
-	} else if media.ContentType == TVSeries {
-		if x.caps.Searching.TvSearch.Available == "yes" {
-			if strings.Contains(x.caps.Searching.TvSearch.SupportedParams, "tvdbid") && media.TvdbID != 0 {
-				nzbs, err := x.client.SearchWithTVDB([]int{newznab.CategoryTVAll}, media.TvdbID, media.Season, media.Episode)
-				return x.prepareResponse(nzbs, media), err
-			}
-			q := media.QueryString()
-			nzbs, err := x.client.SearchWithQuery([]int{newznab.CategoryTVAll}, q, "tvsearch")
-			return x.prepareResponse(nzbs, media), err
-		}
-		nzbs, err := x.client.SearchWithQuery([]int{newznab.CategoryTVAll}, media.QueryString(), "search")
-		return x.prepareResponse(nzbs, media), err
-	} else if media.ContentType == TVSeason {
-		x.client.Search
-	} else if media.ContentType == TVEpisode {
-
+		allResults = append(allResults, nzbs...)
 	}
-	return nil, fmt.Errorf("unrecognized media content type: %d", media.ContentType)
+	if imdbID != nil && strings.Contains(x.caps.Searching.TvSearch.SupportedParams, "imdbid") {
+		nzbs, err := x.client.SearchWithParams([]int{newznab.CategoryTVAll}, "tvsearch", map[string][]string{
+			"imdbid":  {*imdbID},
+			"season":  {strconv.Itoa(seasonNum)},
+			"episode": {strconv.Itoa(episodeNum)},
+		})
+		if err != nil {
+			return nil, err
+		}
+		allResults = append(allResults, nzbs...)
+	}
+
+	if len(allResults) == 0 {
+		nzbs, err := x.client.SearchWithQuery([]int{newznab.CategoryTVAll}, fmt.Sprintf("%s S%02dE%02d", showTitle, seasonNum, episodeNum), "tvsearch")
+		if err != nil {
+			return nil, err
+		}
+		allResults = append(allResults, nzbs...)
+	}
+
+	return x.prepareResponse(allResults, episodeContentTypeExtractor), nil
+}
+
+func (x *Xnab) SearchSeason(seasonNum int, tvdbID *int, imdbID *string) ([]Release, error) {
+	if x.caps.Searching.Search.Available != "yes" {
+		return nil, fmt.Errorf("searching not enabled on indexer")
+	}
+
+	var allResults []newznab.NZB
+	if tvdbID != nil && strings.Contains(x.caps.Searching.TvSearch.SupportedParams, "tvdbid") {
+		nzbs, err := x.client.SearchWithParams([]int{newznab.CategoryTVAll}, "tvsearch", map[string][]string{
+			"tvdbid": {strconv.Itoa(*tvdbID)},
+			"season": {strconv.Itoa(seasonNum)},
+		})
+		if err != nil {
+			return nil, err
+		}
+		allResults = append(allResults, nzbs...)
+	}
+	if imdbID != nil && strings.Contains(x.caps.Searching.TvSearch.SupportedParams, "imdbid") {
+		nzbs, err := x.client.SearchWithParams([]int{newznab.CategoryTVAll}, "tvsearch", map[string][]string{
+			"imdbid": {*imdbID},
+			"season": {strconv.Itoa(seasonNum)},
+		})
+		if err != nil {
+			return nil, err
+		}
+		allResults = append(allResults, nzbs...)
+	}
+
+	return x.prepareResponse(allResults, seasonContentTypeExtractor), nil
+}
+
+func (x *Xnab) SearchMovie(movieTitle string, year int, imdbID *string) ([]Release, error) {
+	if x.caps.Searching.Search.Available != "yes" {
+		return nil, fmt.Errorf("searching not enabled on indexer")
+	}
+
+	var allResults []newznab.NZB
+	if imdbID != nil && strings.Contains(x.caps.Searching.TvSearch.SupportedParams, "imdbid") {
+		nzbs, err := x.client.SearchWithIMDB([]int{newznab.CategoryMovieAll}, *imdbID)
+		if err != nil {
+			return nil, err
+		}
+		allResults = append(allResults, nzbs...)
+	}
+
+	if len(allResults) == 0 {
+		nzbs, err := x.client.SearchWithQuery([]int{newznab.CategoryMovieAll}, fmt.Sprintf("%s %d", movieTitle, year), "moviesearch")
+		if err != nil {
+			return nil, err
+		}
+		allResults = append(allResults, nzbs...)
+	}
+
+	return x.prepareResponse(allResults, seasonContentTypeExtractor), nil
 }

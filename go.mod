@@ -11,6 +11,7 @@ require (
 	github.com/hekmon/transmissionrpc v1.1.1-0.20210523080628-42bb8f04fdc8
 	github.com/jackc/pgx/v4 v4.13.0
 	github.com/kisielk/godepgraph v0.0.0-20190626013829-57a7e4a651a9 // indirect
+	github.com/lsnow99/go-newznab v1.1.1-0.20211104052345-8d29a69c248f // indirect
 	github.com/mattn/go-sqlite3 v1.14.8 // indirect
 	github.com/mholt/archiver/v3 v3.5.0
 	github.com/mrobinsn/go-newznab v1.2.0

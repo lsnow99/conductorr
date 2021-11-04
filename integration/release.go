@@ -29,15 +29,15 @@ type Release struct {
 	DownloadType string    `json:"download_type,omitempty"`
 	Indexer      string    `json:"indexer,omitempty"`
 	Warnings     []string  `json:"warnings,omitempty"`
-	Media        *Media    `json:"media,omitempty"`
 	IndexerID    int       `json:"indexer_id,omitempty"`
 	ImdbID       string    `json:"imdb_id,omitempty"`
+	ContentType  string    `json:"content_type,omitempty"`
 
 	// HighPriority whether to download with high priority
 	HighPriority bool `json:"high_priority,omitempty"`
 }
 
-func NewRelease(id, title, description, downloadURL string, categories []string, size, seeders int64, airDate, pubDate time.Time, media *Media, indexer *Xnab, imdbID string) Release {
+func NewRelease(id, title, description, downloadURL string, categories []string, size, seeders int64, airDate, pubDate time.Time, indexer *Xnab, imdbID, contentType string) Release {
 	release := Release{
 		ID:           id,
 		Title:        title,
@@ -48,10 +48,10 @@ func NewRelease(id, title, description, downloadURL string, categories []string,
 		Seeders:      seeders,
 		AirDate:      airDate,
 		PubDate:      pubDate,
-		Media:        media,
 		DownloadType: indexer.downloadType,
 		Indexer:      indexer.name,
 		ImdbID:       imdbID,
+		ContentType:  contentType,
 	}
 
 	// Calculate age in days
@@ -103,12 +103,12 @@ a string/list of strings that will be treated the same as a return false. The st
 will be displayed as errors to the user for why the release failed the filter.
 True means to include the release, false means to filter it out. Returns a slice
 of all included and excluded releases, as well as a non-nil error if the CSL script
-fails to execute properly. 
+fails to execute properly.
 
 If this function ends due to an error, no guarantees are made for the returned release
 slices.
 */
-func FilterReleases(releases []Release, filter string) ([]Release, []Release, error) {
+func FilterReleases(releases []Release, filter string, runtime *int64) ([]Release, []Release, error) {
 	csl := csl.NewCSL()
 	cslpm := csllib.NewCSLPackageManager(csllib.DefaultFetcher, settings.DebugMode)
 	if err := csl.PreprocessScript(filter, "", cslpm); err != nil {
@@ -122,7 +122,7 @@ func FilterReleases(releases []Release, filter string) ([]Release, []Release, er
 	included := make([]Release, 0, len(releases))
 	excluded := make([]Release, 0, len(releases))
 	for _, release := range releases {
-		val, trace := csl.Invoke(sexprs, makeCSLRelease(release))
+		val, trace := csl.Invoke(sexprs, makeCSLRelease(release, runtime))
 		if trace.Err != nil {
 			return nil, nil, trace.Err
 		}
@@ -166,7 +166,7 @@ the releases slice may be corrupt. If data should not be modified in the event
 of an error, it is recommended to make a copy of your releases slice before
 calling SortReleases
 */
-func SortReleases(releases *[]Release, sorter string) error {
+func SortReleases(releases *[]Release, sorter string, runtime *int64) error {
 	if releases == nil {
 		return nil
 	}
@@ -182,7 +182,7 @@ func SortReleases(releases *[]Release, sorter string) error {
 	}
 
 	sort.SliceStable(*releases, func(i, j int) bool {
-		val, trace := csl.Invoke(sexprs, makeCSLRelease((*releases)[i]), makeCSLRelease((*releases)[j]))
+		val, trace := csl.Invoke(sexprs, makeCSLRelease((*releases)[i], runtime), makeCSLRelease((*releases)[j], runtime))
 		if trace.Err != nil {
 			err = trace.Err
 		}
@@ -199,18 +199,18 @@ func SortReleases(releases *[]Release, sorter string) error {
 	return nil
 }
 
-func makeCSLRelease(release Release) csllib.List {
+func makeCSLRelease(release Release, runtime *int64) csllib.List {
 	return csllib.List{
-			release.Title,
-			release.Indexer,
-			release.DownloadType,
-			release.Media.ContentType,
-			release.RipType,
-			release.Resolution,
-			release.Encoding,
-			release.Seeders,
-			release.Age,
-			release.Size,
-			release.Media.Runtime,
+		release.Title,
+		release.Indexer,
+		release.DownloadType,
+		release.ContentType,
+		release.RipType,
+		release.Resolution,
+		release.Encoding,
+		release.Seeders,
+		release.Age,
+		release.Size,
+		runtime,
 	}
 }

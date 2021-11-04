@@ -70,14 +70,21 @@ func getReleasesForMediaID(mediaID int) ([]integration.Release, []integration.Re
 		return nil, nil, fmt.Errorf("profile must have sorter and filter defined")
 	}
 
-	media := integration.Media{
-		Title: dbMedia.Title.String,
-	}
+	var runtime *int64
+	var results []integration.Release
 	if dbMedia.ContentType.String == "movie" {
-		media.ContentType = integration.Movie
-		media.ImdbID = dbMedia.ImdbID.String
-		media.Runtime = int64(dbMedia.Runtime.Int32)
-		media.Year = dbMedia.ReleasedAt.Time.Year()
+		var imdbID *string
+		if dbMedia.ImdbID.Valid {
+			imdbID = new(string)
+			*imdbID = dbMedia.ImdbID.String
+		}
+		nzbs, err := app.IM.SearchMovie(dbMedia.Title.String, dbMedia.ReleasedAt.Time.Year(), imdbID)
+		if err != nil {
+			return nil, nil, err
+		}
+		runtime = new(int64)
+		*runtime = int64(dbMedia.Runtime.Int32)
+		results = append(results, nzbs...)
 	} else if dbMedia.ContentType.String == "episode" {
 		dbSeason, err := dbstore.GetMediaByID(int(dbMedia.ParentMediaID.Int32))
 		if err != nil {
@@ -100,6 +107,18 @@ func getReleasesForMediaID(mediaID int) ([]integration.Release, []integration.Re
 				Year: dbSeries.ReleasedAt.Time.Year(),
 			},
 		}
+		var imdbID *string
+		if dbSeries.ImdbID.Valid {
+			imdbID = new(string)
+			*imdbID = dbMedia.ImdbID.String
+		}
+		nzbs, err := app.IM.SearchEpisode(int(dbSeries.Number.Int32), int(dbMedia.Number.Int32), dbSeries.Title.String, dbMedia.Tvdb, imdbID)
+		if err != nil {
+			return nil, nil, err
+		}
+		runtime = new(int64)
+		*runtime = int64(dbMedia.Runtime.Int32)
+		results = append(results, nzbs...)
 	} else if dbMedia.ContentType.String == "season" {
 		dbSeries, err := dbstore.GetMediaByID(int(dbMedia.ParentMediaID.Int32))
 		if err != nil {
@@ -120,12 +139,7 @@ func getReleasesForMediaID(mediaID int) ([]integration.Release, []integration.Re
 		media.Runtime = int64(dbMedia.Runtime.Int32)
 	}
 
-	results, err := app.IM.Search(&media)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	included, excluded, err := integration.FilterReleases(results, profile.Filter.String)
+	included, excluded, err := integration.FilterReleases(results, profile.Filter.String, runtime)
 	if err != nil {
 		return nil, nil, err
 	}

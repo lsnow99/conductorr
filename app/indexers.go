@@ -109,7 +109,7 @@ func (im *IndexerManager) RegisterIndexer(id int, downloadType string, userID in
 	}
 }
 
-func (im *IndexerManager) Search(media *integration.Media) ([]integration.Release, error) {
+func (im *IndexerManager) doSearch(searchFunc func(indexer integration.Indexer)([]integration.Release, error)) ([]integration.Release, error) {
 	results := make([]integration.Release, 0)
 	indexers := im.getIndexers()
 
@@ -124,7 +124,7 @@ func (im *IndexerManager) Search(media *integration.Media) ([]integration.Releas
 		resultsArrs[i] = &[]integration.Release{}
 		wg.Add(1)
 		go func(wg *sync.WaitGroup, indexer integration.Indexer, results *[]integration.Release) {
-			indexerResults, err := indexer.Search(media)
+			indexerResults, err := searchFunc(indexer)
 			if err != nil {
 				logger.LogWarn(err)
 			}
@@ -141,6 +141,24 @@ func (im *IndexerManager) Search(media *integration.Media) ([]integration.Releas
 	}
 
 	return results, nil
+}
+
+func (im *IndexerManager) SearchEpisode(seasonNum, episodeNum int, showTitle string, tvdbID *int, imdbID *string) ([]integration.Release, error) {
+	return im.doSearch(func(indexer integration.Indexer) ([]integration.Release, error) {
+		return indexer.SearchEpisode(seasonNum, episodeNum, showTitle, tvdbID, imdbID)
+	})
+}
+
+func (im *IndexerManager) SearchSeason(seasonNum int, showTitle string, tvdbID *int, imdbID *string) ([]integration.Release, error) {
+	return im.doSearch(func(indexer integration.Indexer) ([]integration.Release, error) {
+		return indexer.SearchSeason(seasonNum, tvdbID, imdbID)
+	})
+}
+
+func (im *IndexerManager) SearchMovie(movieTitle string, year int, imdbID *string) ([]integration.Release, error) {
+	return im.doSearch(func(indexer integration.Indexer) ([]integration.Release, error) {
+		return indexer.SearchMovie(movieTitle, year, imdbID)
+	})
 }
 
 func (im *IndexerManager) DeleteIndexer(id int) {
