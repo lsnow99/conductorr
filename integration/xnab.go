@@ -86,27 +86,21 @@ func (x *Xnab) SearchEpisode(seasonNum, episodeNum int, showTitle string, tvdbID
 	}
 
 	var allResults []newznab.NZB
+	var err error
+	var params = make(map[string][]string)
+	params["season"] = []string{strconv.Itoa(seasonNum)}
+	params["episode"] = []string{strconv.Itoa(episodeNum)}
+
 	if tvdbID != nil && strings.Contains(x.caps.Searching.TvSearch.SupportedParams, "tvdbid") {
-		nzbs, err := x.client.SearchWithParams([]int{newznab.CategoryTVAll}, "tvsearch", map[string][]string{
-			"tvdbid":  {strconv.Itoa(*tvdbID)},
-			"season":  {strconv.Itoa(seasonNum)},
-			"episode": {strconv.Itoa(episodeNum)},
-		})
-		if err != nil {
-			return nil, err
-		}
-		allResults = append(allResults, nzbs...)
+		params["tvdbid"] = []string{strconv.Itoa(*tvdbID)}
 	}
 	if imdbID != nil && strings.Contains(x.caps.Searching.TvSearch.SupportedParams, "imdbid") {
-		nzbs, err := x.client.SearchWithParams([]int{newznab.CategoryTVAll}, "tvsearch", map[string][]string{
-			"imdbid":  {*imdbID},
-			"season":  {strconv.Itoa(seasonNum)},
-			"episode": {strconv.Itoa(episodeNum)},
-		})
-		if err != nil {
-			return nil, err
-		}
-		allResults = append(allResults, nzbs...)
+		params["imdbid"] = []string{strings.ReplaceAll(*imdbID, "tt", "")}
+	}
+
+	allResults, err = x.client.SearchWithParams([]int{newznab.CategoryTVAll}, "tvsearch", params)
+	if err != nil {
+		return nil, err
 	}
 
 	if len(allResults) == 0 {
@@ -126,28 +120,19 @@ func (x *Xnab) SearchSeason(seasonNum int, tvdbID *int, imdbID *string) ([]Relea
 	}
 
 	var allResults []newznab.NZB
+	var err error
+	var params = make(map[string][]string)
+	params["season"] = []string{strconv.Itoa(seasonNum)}
+
 	if tvdbID != nil && strings.Contains(x.caps.Searching.TvSearch.SupportedParams, "tvdbid") {
-		nzbs, err := x.client.SearchWithParams([]int{newznab.CategoryTVAll}, "tvsearch", map[string][]string{
-			"tvdbid": {strconv.Itoa(*tvdbID)},
-			"season": {strconv.Itoa(seasonNum)},
-		})
-		if err != nil {
-			return nil, err
-		}
-		allResults = append(allResults, nzbs...)
+		params["tvdbid"] = []string{strconv.Itoa(*tvdbID)}
 	}
 	if imdbID != nil && strings.Contains(x.caps.Searching.TvSearch.SupportedParams, "imdbid") {
-		nzbs, err := x.client.SearchWithParams([]int{newznab.CategoryTVAll}, "tvsearch", map[string][]string{
-			"imdbid": {*imdbID},
-			"season": {strconv.Itoa(seasonNum)},
-		})
-		if err != nil {
-			return nil, err
-		}
-		allResults = append(allResults, nzbs...)
+		params["imdbid"] = []string{strings.ReplaceAll(*imdbID, "tt", "")}
 	}
 
-	return x.prepareResponse(allResults, seasonContentTypeExtractor), nil
+	allResults, err = x.client.SearchWithParams([]int{newznab.CategoryTVAll}, "tvsearch", params)
+	return x.prepareResponse(allResults, seasonContentTypeExtractor), err
 }
 
 func (x *Xnab) SearchMovie(movieTitle string, year int, imdbID *string) ([]Release, error) {
@@ -172,5 +157,5 @@ func (x *Xnab) SearchMovie(movieTitle string, year int, imdbID *string) ([]Relea
 		allResults = append(allResults, nzbs...)
 	}
 
-	return x.prepareResponse(allResults, seasonContentTypeExtractor), nil
+	return x.prepareResponse(allResults, movieContentTypeExtractor), nil
 }

@@ -200,6 +200,12 @@ func SortReleases(releases *[]Release, sorter string, runtime *int64) error {
 }
 
 func makeCSLRelease(release Release, runtime *int64) csllib.List {
+	var rt interface{}
+	if runtime == nil {
+		rt = nil
+	} else {
+		rt = *runtime
+	}
 	return csllib.List{
 		release.Title,
 		release.Indexer,
@@ -211,6 +217,6 @@ func makeCSLRelease(release Release, runtime *int64) csllib.List {
 		release.Seeders,
 		release.Age,
 		release.Size,
-		runtime,
+		rt,
 	}
 }

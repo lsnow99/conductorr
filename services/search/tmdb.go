@@ -396,8 +396,15 @@ func (t *TmdbAPI) SearchByID(id string) (*IndividualResult, error) {
 		ir.Runtime = result.EpisodeRunTime[0]
 		ir.Title = result.Name
 		ir.ContentType = "series"
+		if ir.ImdbID == "" {
+			return nil, fmt.Errorf("no imdb id returned")
+		}
 		ir.ImdbID = result.ExternalIds.ImdbID
-		ir.TvdbID = result.ExternalIds.TvdbID
+		if result.ExternalIds.TvdbID == 0 {
+			ir.TvdbID = nil
+		} else {
+			ir.TvdbID = &result.ExternalIds.TvdbID
+		}
 		ir.ReleasedAt, err = time.Parse(dateFormat, result.FirstAirDate)
 		if err != nil {
 			logger.LogWarn(err)
@@ -412,7 +419,10 @@ func (t *TmdbAPI) SearchByID(id string) (*IndividualResult, error) {
 		ir.Runtime = result.Runtime
 		ir.Title = result.Title
 		ir.ContentType = "movie"
-		ir.ImdbID = result.ImdbID
+		if ir.ImdbID == "" {
+			return nil, fmt.Errorf("no imdb id returned")
+		}
+		ir.ImdbID = result.ExternalIds.ImdbID
 		ir.ReleasedAt, err = time.Parse(dateFormat, result.ReleaseDate)
 		if err != nil {
 			logger.LogWarn(err)

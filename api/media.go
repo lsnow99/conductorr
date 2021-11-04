@@ -48,17 +48,6 @@ type AddMediaInput struct {
 	Monitoring bool `json:"monitoring"`
 }
 
-func NewIntegrationMediaFromDBMedia(media dbstore.Media) (m integration.Media) {
-	m.ID = media.ID
-	if media.Title.Valid {
-		m.Title = media.Title.String
-	}
-	if media.Description.Valid {
-		m.Description = media.Description.String
-	}
-	return m
-}
-
 func AddMedia(w http.ResponseWriter, r *http.Request) {
 	searchID := mux.Vars(r)["search_id"]
 
@@ -142,7 +131,7 @@ func doAddMedia(result *search.IndividualResult, profileID *int, pathID *int, mo
 			return id, err
 		}
 		id, err = dbstore.UpsertMedia(&result.Title, &result.Plot, &result.ReleasedAt, &result.EndedAt,
-			&result.ContentType, nil, nil, &result.ImdbID, &result.TvdbID, nil, &imdbRating, &result.Runtime,
+			&result.ContentType, nil, nil, &result.ImdbID, result.TvdbID, nil, &imdbRating, &result.Runtime,
 			&poster, result.Genres, profileID, pathID, nil, monitor)
 		if err != nil {
 			return id, err
@@ -170,7 +159,7 @@ func doAddMedia(result *search.IndividualResult, profileID *int, pathID *int, mo
 		}
 	} else {
 		id, err = dbstore.UpsertMedia(&result.Title, &result.Plot, &result.ReleasedAt, &result.EndedAt,
-			&result.ContentType, nil, nil, &result.ImdbID, &result.TvdbID, nil, &imdbRating, &result.Runtime,
+			&result.ContentType, nil, nil, &result.ImdbID, result.TvdbID, nil, &imdbRating, &result.Runtime,
 			&poster, result.Genres, profileID, pathID, nil, monitor)
 		if err != nil {
 			return id, err
@@ -310,13 +299,3 @@ func SetMonitoringMedia(w http.ResponseWriter, r *http.Request) {
 	err = dbstore.UpdateMediaMonitoring(mediaID, mi.Monitoring)
 	Respond(w, r.Header.Get("hostname"), err, nil, true)
 }
-
-// func RefreshMediaMetadata(w http.ResponseWriter, r *http.Request) {
-// 	mediaIDStr := mux.Vars(r)["id"]
-// 	mediaID, err := strconv.Atoi(mediaIDStr)
-// 	if err != nil {
-// 		Respond(w, r.Header.Get("hostname"), err, nil, true)
-// 		return
-// 	}
-
-// }

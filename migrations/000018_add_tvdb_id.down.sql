@@ -1,5 +1,5 @@
 BEGIN;
 
-ALTER TABLE media DROP COLUMN tmdb_id;
+ALTER TABLE media DROP COLUMN tvdb_id;
 
 COMMIT;

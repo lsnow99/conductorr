@@ -94,49 +94,49 @@ func getReleasesForMediaID(mediaID int) ([]integration.Release, []integration.Re
 		if err != nil {
 			return nil, nil, fmt.Errorf("season has no parent")
 		}
-		media.Title = dbMedia.Title.String
-		media.Number = int(dbMedia.Number.Int32)
-		media.ContentType = integration.TVEpisode
-		media.Runtime = int64(dbSeries.Runtime.Int32)
-		media.ParentMedia = &integration.Media{
-			Number: int(dbSeason.Number.Int32),
-			ContentType: integration.TVSeason,
-			ParentMedia: &integration.Media{
-				Title: dbSeries.Title.String,
-				ContentType: integration.TVSeries,
-				Year: dbSeries.ReleasedAt.Time.Year(),
-			},
-		}
 		var imdbID *string
 		if dbSeries.ImdbID.Valid {
 			imdbID = new(string)
-			*imdbID = dbMedia.ImdbID.String
+			*imdbID = dbSeries.ImdbID.String
 		}
-		nzbs, err := app.IM.SearchEpisode(int(dbSeries.Number.Int32), int(dbMedia.Number.Int32), dbSeries.Title.String, dbMedia.Tvdb, imdbID)
+		var tvdbID *int
+		if dbSeries.TvdbID.Valid {
+			tvdbID = new(int)
+			*tvdbID = int(dbSeries.TvdbID.Int32)
+		}
+		nzbs, err := app.IM.SearchEpisode(int(dbSeason.Number.Int32), int(dbMedia.Number.Int32), dbSeries.Title.String, tvdbID, imdbID)
 		if err != nil {
 			return nil, nil, err
 		}
 		runtime = new(int64)
-		*runtime = int64(dbMedia.Runtime.Int32)
+		*runtime = int64(dbSeries.Runtime.Int32)
 		results = append(results, nzbs...)
 	} else if dbMedia.ContentType.String == "season" {
 		dbSeries, err := dbstore.GetMediaByID(int(dbMedia.ParentMediaID.Int32))
 		if err != nil {
 			return nil, nil, fmt.Errorf("season has no parent")
 		}
-		media.Title = dbMedia.Title.String
-		media.Number = int(dbMedia.Number.Int32)
-		media.ContentType = integration.TVSeason
-		media.Runtime = int64(dbSeries.Runtime.Int32)
-		media.ParentMedia = &integration.Media{
-			Title: dbSeries.Title.String,
-			Year: dbSeries.ReleasedAt.Time.Year(),
+		var imdbID *string
+		if dbSeries.ImdbID.Valid {
+			imdbID = new(string)
+			*imdbID = dbSeries.ImdbID.String
 		}
+		var tvdbID *int
+		if dbSeries.TvdbID.Valid {
+			tvdbID = new(int)
+			*tvdbID = int(dbSeries.TvdbID.Int32)
+		}
+		nzbs, err := app.IM.SearchSeason(int(dbMedia.Number.Int32), dbSeries.Title.String, tvdbID, imdbID)
+		if err != nil {
+			return nil, nil, err
+		}
+		runtime = new(int64)
+		*runtime = int64(dbSeries.Runtime.Int32)
+		results = append(results, nzbs...)
+
+		// TODO: Search individual episodes as fallback
 	} else if dbMedia.ContentType.String == "series" {
-		media.Title = dbMedia.Title.String
-		media.Year = dbMedia.ReleasedAt.Time.Year()
-		media.ContentType = integration.TVSeries
-		media.Runtime = int64(dbMedia.Runtime.Int32)
+		// TODO: Search all seasons
 	}
 
 	included, excluded, err := integration.FilterReleases(results, profile.Filter.String, runtime)
@@ -168,13 +168,13 @@ func getReleasesForMediaID(mediaID int) ([]integration.Release, []integration.Re
 	included = included[:i]
 
 	allReleases := append(included, excluded...)
-	err = integration.SortReleases(&allReleases, profile.Sorter.String)
+	err = integration.SortReleases(&allReleases, profile.Sorter.String, runtime)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	filteredReleases := included
-	err = integration.SortReleases(&filteredReleases, profile.Sorter.String)
+	err = integration.SortReleases(&filteredReleases, profile.Sorter.String, runtime)
 	if err != nil {
 		return nil, nil, err
 	}

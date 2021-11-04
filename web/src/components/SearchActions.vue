@@ -90,10 +90,10 @@ export default {
           this.releases = releases;
           this.showManualReleasesModal = true;
         })
-        .catch((err) => {
+        .catch((re) => {
           this.$oruga.notification.open({
             duration: 3000,
-            message: `Error searching: ${err}`,
+            message: `Error searching: ${re.msg}`,
             variant: "danger",
             closable: false,
             position: "bottom-right",
@@ -126,10 +126,10 @@ export default {
             });
           }
         })
-        .catch((err) => {
+        .catch((re) => {
           this.$oruga.notification.open({
             duration: 3000,
-            message: `Error searching: ${err}`,
+            message: `Error searching: ${re.msg}`,
             variant: "danger",
             closable: false,
             position: "bottom-right",
