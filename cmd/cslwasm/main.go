@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"syscall/js"
 
-	"github.com/lsnow99/conductorr/csllib"
+	"github.com/lsnow99/conductorr/pkg/csllib"
 	"github.com/lsnow99/conductorr/internal/csl"
 )
 

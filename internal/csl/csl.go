@@ -1,8 +1,8 @@
 package csl
 
 import (
-	"github.com/lsnow99/conductorr/constant"
-	"github.com/lsnow99/conductorr/csllib"
+	"github.com/lsnow99/conductorr/pkg/constant"
+	"github.com/lsnow99/conductorr/pkg/csllib"
 )
 
 func NewCSL() *csllib.CSL {

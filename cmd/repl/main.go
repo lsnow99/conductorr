@@ -6,7 +6,7 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/lsnow99/conductorr/csllib"
+	"github.com/lsnow99/conductorr/pkg/csllib"
 )
 
 func main() {

@@ -6,12 +6,12 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/lsnow99/conductorr/app"
-	"github.com/lsnow99/conductorr/dbstore"
-	"github.com/lsnow99/conductorr/logger"
-	"github.com/lsnow99/conductorr/api"
-	"github.com/lsnow99/conductorr/scheduler"
-	"github.com/lsnow99/conductorr/settings"
+	"github.com/lsnow99/conductorr/internal/conductorr/app"
+	"github.com/lsnow99/conductorr/internal/conductorr/dbstore"
+	"github.com/lsnow99/conductorr/internal/conductorr/logger"
+	"github.com/lsnow99/conductorr/internal/conductorr/api"
+	"github.com/lsnow99/conductorr/internal/conductorr/scheduler"
+	"github.com/lsnow99/conductorr/internal/conductorr/settings"
 )
 
 func main() {
