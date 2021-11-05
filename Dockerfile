@@ -1,9 +1,9 @@
 ###
 # Dockerfile for Conductorr
 # Author Logan Snow
+# Arguments:
+# - VERSION can be set using $(git describe --tags)
 ###
-
-ARG VERSION
 
 # Build the CSL web assembly module
 # This stage of the build also copies the wasm_exec.js script to the web ui source
@@ -39,14 +39,17 @@ WORKDIR /src
 COPY go.mod .
 COPY go.sum .
 RUN go mod download
+COPY ./embed.go ./embed.go
+COPY ./migrations ./migrations
 COPY ./internal ./internal
 COPY ./pkg ./pkg
 COPY ./cmd/conductorr ./cmd/conductorr
-COPY --from=csl-build-env /build .
+COPY --from=csl-build-env /build/dist ./dist
 COPY --from=vue-build-env /build/web/build web/build
+ARG VERSION=NULL
 RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 \
     go build -o /build/conductorr \
-    -ldflags="-s -w -X 'github.com/lsnow99/conductorr/settings.Version=${VERSION}' -X 'github.com/lsnow99/conductorr/settings.BuildMode=binary'" \
+    -ldflags="-s -w -X 'github.com/lsnow99/conductorr/internal/conductorr/settings.Version=${VERSION}' -X 'github.com/lsnow99/conductorr/internal/conductorr/settings.BuildMode=binary'" \
     ./cmd/conductorr
 
 # Copy the full binary into a minimal alpine image

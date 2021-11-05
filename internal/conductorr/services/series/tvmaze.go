@@ -2,8 +2,6 @@ package series
 
 import (
 	"encoding/json"
-	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -111,10 +109,6 @@ func (t *TVMaze) GetEpisodes(imdbID string) ([]Episode, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-
-	bod, _ := ioutil.ReadAll(resp.Body)
-	strbod := string(bod)
-	fmt.Println(strbod)
 
 	results := EpisodeResults{}
 	err = json.NewDecoder(resp.Body).Decode(&results)
