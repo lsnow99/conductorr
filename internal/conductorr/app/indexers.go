@@ -151,7 +151,7 @@ func (im *IndexerManager) SearchEpisode(seasonNum, episodeNum int, showTitle str
 
 func (im *IndexerManager) SearchSeason(seasonNum int, showTitle string, tvdbID *int, imdbID *string) ([]integration.Release, error) {
 	return im.doSearch(func(indexer integration.Indexer) ([]integration.Release, error) {
-		return indexer.SearchSeason(seasonNum, tvdbID, imdbID)
+		return indexer.SearchSeason(seasonNum, showTitle, tvdbID, imdbID)
 	})
 }
 
