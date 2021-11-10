@@ -24,6 +24,6 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: logansnow/conductorr-pre:${{ github.GITHUB_REF_NAME }}
+          tags: logansnow/conductorr-pre:${{ github.ref_name }}
           build-args: |
-            VERSION=${{ github.GITHUB_REF_NAME }}
+            VERSION=${{ github.ref_name }}
