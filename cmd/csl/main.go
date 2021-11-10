@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/lsnow99/conductorr/csllib"
+	"github.com/lsnow99/conductorr/pkg/csllib"
 )
 
 var NoCache bool

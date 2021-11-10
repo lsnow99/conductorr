@@ -38,14 +38,14 @@ RUN mkdir /src
 WORKDIR /src
 COPY go.mod .
 COPY go.sum .
+COPY --from=csl-build-env /build/dist ./dist
+COPY --from=vue-build-env /build/web/build web/build
 RUN go mod download
 COPY ./embed.go ./embed.go
 COPY ./migrations ./migrations
 COPY ./internal ./internal
 COPY ./pkg ./pkg
 COPY ./cmd/conductorr ./cmd/conductorr
-COPY --from=csl-build-env /build/dist ./dist
-COPY --from=vue-build-env /build/web/build web/build
 ARG VERSION=NULL
 RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 \
     go build -o /build/conductorr \
