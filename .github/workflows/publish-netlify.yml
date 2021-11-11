@@ -1,18 +1,24 @@
 on:
   push:
+    branches:
+    - master
   workflow_dispatch:
 
-name: Publish docs if changed
+name: Publish docusite
 jobs:
-  checkChangesInDocs:
-    name: Check changes in docs
+  buildAndPublishDocusite:
+    name: Build and publish docusite
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
     - name: Build
         run: |
           bash build.sh wasm && bash build.sh docusite
-    - name: Check changes in stories
-      uses: netlify/actions/diff-includes@master
+    - name: Deploy production to Netlify
+      uses: South-Paw/action-netlify-deploy@v1.2.0
       with:
-        args: docusite/docs/.vuepress/dist
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        netlify-auth-token: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        netlify-site-id: ${{ secrets.NETLIFY_SITE_ID }}
+        build-dir: './docusite/docs/.vuepress/dist'
+        comment-on-commit: true
