@@ -34,7 +34,7 @@ jobs:
     - uses: actions/checkout@master
     - name: Build
       run: |
-        bash build.sh wasm && bash build.sh docusite
+        TERM=linux bash build.sh wasm && bash build.sh docusite
     - name: Deploy production to Netlify
       uses: South-Paw/action-netlify-deploy@v1.2.0
       with:
