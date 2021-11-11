@@ -14,6 +14,7 @@ type Script struct {
 	ImportPath string
 }
 
+// NewCSL generates a new CSL interpretor.
 func NewCSL(registerDefaults bool) *CSL {
 	csl := new(CSL)
 	csl.builtins = make(map[string]operation)
