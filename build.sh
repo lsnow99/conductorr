@@ -12,18 +12,26 @@ cyan=`tput setaf 6`
 reset=`tput sgr0`
 
 # Parse command
-buildcsl=0
+buildwasm=0
 buildweb=0
 buildbin=0
+buildcsl=0
 
-if [ "$1" == "all" ] || [ "$1" == "" ]; then
-    buildcsl=1
+if [ "$1" == "conductorr" ]; then
+    buildwasm=1
     buildweb=1
     buildbin=1
 fi
 
-if [ "$1" == "wasm" ]; then
+if [ "$1" == "all" ] || [ "$1" == "" ]; then
+    buildwasm=1
+    buildweb=1
+    buildbin=1
     buildcsl=1
+fi
+
+if [ "$1" == "wasm" ]; then
+    buildwasm=1
 fi
 
 if [ "$1" == "web" ]; then
@@ -32,6 +40,10 @@ fi
 
 if [ "$1" == "bin" ]; then
     buildbin=1
+fi
+
+if [ "$1" == "csl" ]; then
+    buildcsl=1
 fi
 
 # Helper functions
@@ -58,7 +70,7 @@ then
 fi
 
 # Build CSL WASM module
-if [ $buildcsl == 1 ]; then
+if [ $buildwasm == 1 ]; then
     echo "==============================[    Building CSL WASM    ]=============================="
     echo "${cyan}→ Compiling to WASM${reset}"
     GOOS=js GOARCH=wasm go build -o dist/csl.wasm -ldflags="-s -w -X 'main.CorsProxyServer=https://corsproxy.conductorr.workers.dev'" ./cmd/cslwasm
@@ -95,7 +107,14 @@ if [ $buildweb == 1 ]; then
     fi
 fi
 
-# Build the full binaries
+# Compile the CSL command line interface
+if [ $buildcsl == 1 ]; then
+    echo "==============================[    Compiling CSL CLI    ]=============================="
+    echo "${cyan}→ Compiling${reset}"
+    go build -o dist/csl ./cmd/csl
+fi
+
+# Build the full conductorr binaries
 if [ $buildbin == 1 ]; then
     echo "==============================[ Compiling Full Binaries ]=============================="
     # Compile for Windows
@@ -114,6 +133,6 @@ if [ $buildbin == 1 ]; then
     GOOS=linux GOARCH=amd64 go build -o bin/conductorr-linux_x64 -ldflags="-s -w -X 'github.com/lsnow99/conductorr/settings.Version=$(git describe --tags)' -X 'github.com/lsnow99/conductorr/settings.BuildMode=binary'" ./cmd/conductorr
     GOOS=linux GOARCH=arm go build -o bin/conductorr-linux_arm -ldflags="-s -w -X 'github.com/lsnow99/conductorr/settings.Version=$(git describe --tags)' -X 'github.com/lsnow99/conductorr/settings.BuildMode=binary'" ./cmd/conductorr
     GOOS=linux GOARCH=arm64 go build -o bin/conductorr-linux_arm64 -ldflags="-s -w -X 'github.com/lsnow99/conductorr/settings.Version=$(git describe --tags)' -X 'github.com/lsnow99/conductorr/settings.BuildMode=binary'" ./cmd/conductorr
-
-    echo "${green}✓ Build succeeded${reset}"
 fi
+
+echo "${green}✓ Build succeeded${reset}"
