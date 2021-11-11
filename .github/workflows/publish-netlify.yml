@@ -1,0 +1,15 @@
+on: push
+name: Publish docs if changed
+jobs:
+  checkChangesInDocs:
+    name: Check changes in docs
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: Build
+        run: |
+          bash build.sh wasm && bash build.sh docusite
+    - name: Check changes in stories
+      uses: netlify/actions/diff-includes@master
+      with:
+        args: docusite/docs/.vuepress/dist

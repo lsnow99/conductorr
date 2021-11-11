@@ -1,5 +1,0 @@
-[build.environment]
-  NPM_FLAGS = "--version"
-[build]
-  command = "npx pnpm install && cd docusite && npx pnpm build && cd .."
-  publish = "docusite/docs/.vuepress/dist"

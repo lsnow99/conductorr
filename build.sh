@@ -16,6 +16,7 @@ buildwasm=0
 buildweb=0
 buildbin=0
 buildcsl=0
+builddocusite=0
 
 if [ "$1" == "conductorr" ]; then
     buildwasm=1
@@ -28,6 +29,10 @@ if [ "$1" == "all" ] || [ "$1" == "" ]; then
     buildweb=1
     buildbin=1
     buildcsl=1
+fi
+
+if [ "$1" == "docusite" ]; then
+    builddocusite=1
 fi
 
 if [ "$1" == "wasm" ]; then
@@ -51,6 +56,28 @@ mustHaveInstalled() {
     if ! builtin type -P "$1" &> /dev/null
     then
         echo "build process requires $1"
+        exit 1
+    fi
+}
+
+buildWebsite() {
+    echo "${cyan}→ Installing dependencies${reset}"
+    wd=$(pwd)
+    cd $1
+    success=$(pnpm install)
+    if [ success ]
+    then
+        echo "${cyan}→ Building for distribution${reset}"
+        success=$(pnpm build)
+        if [ success ]
+        then
+            cd $wd
+        else
+            cd $wd
+            exit 1
+        fi
+    else
+        cd $wd
         exit 1
     fi
 }
@@ -87,24 +114,13 @@ fi
 # Build web frontend
 if [ $buildweb == 1 ]; then
     echo "==============================[    Building Frontend    ]=============================="
-    echo "${cyan}→ Installing frontend dependencies${reset}"
-    cd web
-    success=$(pnpm install)
-    if [ success ]
-    then
-        echo "${cyan}→ Building frontend for distribution${reset}"
-        success=$(pnpm build)
-        if [ success ]
-        then
-            cd ..
-        else
-            cd ..
-            exit 1
-        fi
-    else
-        cd ..
-        exit 1
-    fi
+    buildWebsite web
+fi
+
+# Build docusite
+if [ $builddocusite == 1 ]; then
+    echo "==============================[    Building Docusite    ]=============================="
+    buildWebsite docusite
 fi
 
 # Compile the CSL command line interface
