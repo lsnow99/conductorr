@@ -65,9 +65,9 @@ module.exports = {
             "/features/indexers.md",
             "/features/downloaders.md",
             "/features/profiles.md",
-            "/features/notifications.md",
+            // "/features/integrations.md",
             "/features/post-processing.md",
-            "/features/syncing.md",
+            "/features/mediaservers.md",
           ],
         },
         {

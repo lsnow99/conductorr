@@ -1,3 +1,5 @@
+// Package conductorr exists at the root level of the Conductorr source code in order
+// to embed the different folders to be accessible in the binary.
 package conductorr
 
 import "embed"
