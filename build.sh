@@ -6,9 +6,6 @@
 set -e
 
 # Terminal color definitions
-echo "ECHOING TERM"
-echo $TERM
-
 if [ tty -s ]; then 
     green=`tput setaf 2`
     blue=`tput setaf 4`
