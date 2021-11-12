@@ -9,8 +9,8 @@ import (
 	"net/url"
 	"syscall/js"
 
-	"github.com/lsnow99/conductorr/pkg/csllib"
 	"github.com/lsnow99/conductorr/internal/csl"
+	"github.com/lsnow99/conductorr/pkg/csllib"
 )
 
 var DefaultEnv map[string]interface{} = make(map[string]interface{})

@@ -2,17 +2,22 @@
 
 Enter a CSL expression and press enter to evaluate it
 
-<div class="h-64 overflow-y-scroll" ref="logWrapper">
-<LogPane :logs="logs" />
+<div class="relative">
+    <div v-if="loadingMsg" class="absolute top-0 bottom-0 left-0 right-0 flex justify-center items-center bg-opacity-75 bg-gray-700 text-white text-2xl">
+        {{ loadingMsg }}
+    </div>
+    <div class="h-64 overflow-y-scroll" ref="logWrapper">
+        <LogPane :logs="logs" />
+    </div>
+    <input 
+        type="text" 
+        placeholder="Type something here" 
+        v-model="replInput" 
+        class="bg-gray-700 w-full p-1 text-white text-lg border-0 outline-none" 
+        @keydown.enter="execute"
+        @keydown.up="upHistory"
+        @keydown.down="downHistory" />
 </div>
-<input 
-    type="text" 
-    placeholder="Type something here" 
-    v-model="replInput" 
-    class="bg-gray-700 w-full p-1 text-white text-lg border-0 outline-none" 
-    @keydown.enter="execute"
-    @keydown.up="upHistory"
-    @keydown.down="downHistory" />
 
 <style>
 @import 'conductorr-lib/dist/style.css';
@@ -21,7 +26,6 @@ Enter a CSL expression and press enter to evaluate it
 <script>
 import { DateTime } from "luxon";
 import { LogPane } from 'conductorr-lib'
-// import "/src/util/wasm_exec.js";
 
 export default {
     data() {
@@ -29,7 +33,9 @@ export default {
             replInput: '',
             logs: [],
             history: [],
-            historyIndex: 0
+            historyIndex: 0,
+            loadingMsg: "Loading CSL WebAssembly module...",
+            lastRetryTime: new Date().getTime(),
         }
     },
     components: {
@@ -39,13 +45,26 @@ export default {
         initCSL() {
             let go = new Go();
 
-            WebAssembly.instantiateStreaming(
-                fetch("/csl.wasm"),
-                go.importObject
-            ).then(async (result) => {
-                await go.run(result.instance);
-                this.initCSL();
-            });
+            if (typeof WebAssembly === "object"
+             && typeof WebAssembly.instantiateStreaming === "function") {
+                WebAssembly.instantiateStreaming(
+                    fetch("/csl.wasm"),
+                    go.importObject
+                ).then(async (result) => {
+                    this.loadingMsg = ""
+                    await go.run(result.instance);
+                    const now = new Date().getTime()
+                    if (now - this.lastRetryTime > 2000) {
+                        this.initCSL();
+                    } else {
+                        this.loadingMsg = "Time since last WebAssembly initialization attempt is less than the minimum of 20 seconds. Refresh the page to reattempt initialization"
+                    }
+                }).catch(() => {
+                    this.loadingMsg = "Error downloading WebAssembly module"
+                })
+            } else {
+                this.loadingMsg = "WebAssembly is not supported by your browser"
+            }
         },
         upHistory() {
             if(this.historyIndex > 0) {

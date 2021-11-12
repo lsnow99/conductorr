@@ -5,6 +5,9 @@
 # Set script to fail if any sub commands fail
 set -e
 
+# Set TERM variable if not set (tput needs it)
+if [ -z ${TERM+x} ]; then TERM=linux; fi
+
 # Terminal color definitions
 green=`tput setaf 2`
 blue=`tput setaf 4`
@@ -60,9 +63,11 @@ mustHaveInstalled() {
     fi
 }
 
+# Build one of the frontends for Conductorr (either application frontend or docusite)
 buildWebsite() {
     echo "${cyan}→ Installing dependencies${reset}"
     pnpm install
+
     echo "${cyan}→ Building shared library${reset}"
     wd=$(pwd)
     cd shared

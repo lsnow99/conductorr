@@ -1,27 +1,29 @@
 <template>
-  <div
-    v-for="output in logs"
-    :key="output.timestamp"
-    :class="outputClass(output.variant)"
-    class="p-2 text-lg relative"
-  >
-    <div v-if="output.variant == 'success'" class="absolute">
-      <vue-fontawesome icon="check-circle" />
+    <div
+      v-for="output in logs"
+      :key="output.timestamp"
+      :class="outputClass(output.variant)"
+      class="p-2 text-lg relative"
+    >
+      <div v-if="output.variant == 'success'" class="absolute">
+        <vue-fontawesome icon="check-circle" />
+      </div>
+      <div v-if="output.variant == 'danger'" class="absolute">
+        <vue-fontawesome icon="exclamation-circle" />
+      </div>
+      <div v-if="output.variant == 'warning'" class="absolute">
+        <vue-fontawesome icon="exclamation-triangle" />
+      </div>
+      <div v-if="output.variant == ''" class="absolute">
+        <vue-fontawesome icon="info-circle" />
+      </div>
+      <div class="mr-3 ml-8 float-left">
+        {{ formatTime(output.timestamp) }}
+      </div>
+      <div class="text-gray-100" :class="msgClass(output.decoration)">
+        {{ output.msg }}
+      </div>
     </div>
-    <div v-if="output.variant == 'danger'" class="absolute">
-      <vue-fontawesome icon="exclamation-circle" />
-    </div>
-    <div v-if="output.variant == 'warning'" class="absolute">
-      <vue-fontawesome icon="exclamation-triangle" />
-    </div>
-    <div v-if="output.variant == ''" class="absolute">
-      <vue-fontawesome icon="info-circle" />
-    </div>
-    <div class="mr-3 ml-8 float-left">
-      {{ formatTime(output.timestamp) }}
-    </div>
-    <div class="text-gray-100" :class="msgClass(output.decoration)">{{ output.msg }}</div>
-  </div>
 </template>
 
 <style scoped>
@@ -81,9 +83,9 @@ export default {
     },
     msgClass(decoration) {
       if (decoration == "bold") {
-        return `font-semibold`
+        return `font-semibold`;
       } else if (decoration == "italic") {
-        return `italic`
+        return `italic`;
       }
     },
     formatTime(timestamp) {

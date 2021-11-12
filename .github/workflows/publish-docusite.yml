@@ -1,0 +1,31 @@
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  buildAndPublishDocusite:
+    name: Build and publish docusite
+    runs-on: ubuntu-latest
+    steps:
+    - uses: pnpm/action-setup@v2.0.1
+      with:
+        version: 6.0.2
+    - uses: actions/setup-go@v2
+      with:
+        go-version: '^1.16.1'
+    - uses: actions/checkout@master
+    - name: Build
+      run: |
+        TERM=linux bash build.sh wasm && TERM=linux bash build.sh docusite
+    - name: Deploy production to Netlify
+      uses: nwtgck/actions-netlify@v1.2
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        deploy-message: "Deploy from GitHub Actions"
+        publish-dir: './docusite/docs/.vuepress/dist'
+        functions-dir: ''
+        enable-commit-comment: true
+        production-branch: master
+      env:
+        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
