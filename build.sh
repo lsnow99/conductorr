@@ -5,14 +5,18 @@
 # Set script to fail if any sub commands fail
 set -e
 
-# Set TERM variable if not set (tput needs it)
-if [ -z ${TERM+x} ]; then export TERM=linux; fi
-
 # Terminal color definitions
-green=`tput setaf 2`
-blue=`tput setaf 4`
-cyan=`tput setaf 6`
-reset=`tput sgr0`
+if [ -z ${TERM+x} ]; then 
+    green=`tput -T linux setaf 2`
+    blue=`tput -T linux setaf 4`
+    cyan=`tput -T linux setaf 6`
+    reset=`tput -T linux sgr0`
+else
+    green=`tput setaf 2`
+    blue=`tput setaf 4`
+    cyan=`tput setaf 6`
+    reset=`tput sgr0`
+fi
 
 # Parse command
 buildwasm=0
