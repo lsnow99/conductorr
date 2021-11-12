@@ -62,12 +62,24 @@ mustHaveInstalled() {
 
 buildWebsite() {
     echo "${cyan}→ Installing dependencies${reset}"
+    pnpm install
+    echo "${cyan}→ Building shared library${reset}"
     wd=$(pwd)
+    cd shared
+    success=$(pnpm build)
+    if [ success ]
+    then
+        cd $wd
+    else
+        cd $wd
+        exit 1
+    fi
+
     cd $1
     success=$(pnpm install)
     if [ success ]
     then
-        echo "${cyan}→ Building for distribution${reset}"
+        echo "${cyan}→ Building $1 for distribution${reset}"
         success=$(pnpm build)
         if [ success ]
         then
