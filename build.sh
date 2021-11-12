@@ -6,7 +6,7 @@
 set -e
 
 # Set TERM variable if not set (tput needs it)
-if [ -z ${TERM+x} ]; then TERM=linux; fi
+if [ -z ${TERM+x} ]; then export TERM=linux; fi
 
 # Terminal color definitions
 green=`tput setaf 2`
