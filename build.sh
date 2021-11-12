@@ -6,7 +6,7 @@
 set -e
 
 # Terminal color definitions
-if [ tty -s ]; then 
+if tty -s ; then 
     green=`tput setaf 2`
     blue=`tput setaf 4`
     cyan=`tput setaf 6`
@@ -157,7 +157,7 @@ fi
 if [ $buildcorsproxy == 1 ]; then
     echo "==============================[   Compiling CORS Proxy  ]=============================="
     echo "${cyan}→ Compiling${reset}"
-    go build -o dist/functions/corsproxy ./functions/corsproxy/*.go
+    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o dist/functions/corsproxy -ldflags="-s -w" ./cmd/corsproxy
 fi
 
 # Build the full conductorr binaries
@@ -181,4 +181,4 @@ if [ $buildbin == 1 ]; then
     GOOS=linux GOARCH=arm64 go build -o bin/conductorr-linux_arm64 -ldflags="-s -w -X 'github.com/lsnow99/conductorr/settings.Version=$(git describe --tags)' -X 'github.com/lsnow99/conductorr/settings.BuildMode=binary'" ./cmd/conductorr
 fi
 
-echo "${green}✓ Build succeeded${reset}"
+echo "${green}✔ Build succeeded${reset}"

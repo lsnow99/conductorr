@@ -39,7 +39,8 @@ module.exports = {
   themeConfig: {
     logo: "/logo-rounded.svg",
     overrideTheme: 'dark',
-    navbar: [
+    navbar: [],
+    oldnav: [
       {
         text: "Guide",
         link: "/guide/download.md",
@@ -53,7 +54,8 @@ module.exports = {
         link: "/csl/introduction.md",
       },
     ],
-    sidebar: {
+    sidebar: {},
+    oldsidebar:{
       "/": [
         {
           text: "Guide",
