@@ -6,6 +6,9 @@
 set -e
 
 # Terminal color definitions
+echo "ECHOING TERM"
+echo $TERM
+
 if [ -z ${TERM+x} ] || [ "$TERM" == "" ]; then 
     green=`tput -T linux setaf 2`
     blue=`tput -T linux setaf 4`
