@@ -20,6 +20,7 @@ buildweb=0
 buildbin=0
 buildcsl=0
 builddocusite=0
+buildcorsproxy=0
 
 if [ "$1" == "conductorr" ]; then
     buildwasm=1
@@ -32,6 +33,8 @@ if [ "$1" == "all" ] || [ "$1" == "" ]; then
     buildweb=1
     buildbin=1
     buildcsl=1
+    builddocusite=1
+    buildcorsproxy=1
 fi
 
 if [ "$1" == "docusite" ]; then
@@ -52,6 +55,10 @@ fi
 
 if [ "$1" == "csl" ]; then
     buildcsl=1
+fi
+
+if [ "$1" == "corsproxy" ]; then
+    buildcorsproxy=1
 fi
 
 # Helper functions
@@ -147,9 +154,16 @@ if [ $buildcsl == 1 ]; then
     go build -o dist/csl ./cmd/csl
 fi
 
+# Compile the CORS proxy lambda function
+if [ $buildcorsproxy == 1 ]; then
+    echo "==============================[   Compiling CORS Proxy  ]=============================="
+    echo "${cyan}→ Compiling${reset}"
+    go build -o dist/functions/corsproxy ./functions/corsproxy/*.go
+fi
+
 # Build the full conductorr binaries
 if [ $buildbin == 1 ]; then
-    echo "==============================[ Compiling Full Binaries ]=============================="
+    echo "==============================[   Compiling Conductorr  ]=============================="
     # Compile for Windows
     echo "${cyan}→ Compiling for Windows${reset}"
     GOOS=windows GOARCH=386 go build -o bin/conductorr-windows_x86.exe -ldflags="-s -w -X 'github.com/lsnow99/conductorr/settings.Version=$(git describe --tags)' -X 'github.com/lsnow99/conductorr/settings.BuildMode=binary'" ./cmd/conductorr

@@ -16,14 +16,14 @@ jobs:
     - uses: actions/checkout@master
     - name: Build
       run: |
-        TERM=linux bash build.sh wasm && TERM=linux bash build.sh docusite
+        bash build.sh wasm && bash build.sh docusite && bash build.sh corsproxy
     - name: Deploy production to Netlify
       uses: nwtgck/actions-netlify@v1.2
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         deploy-message: "Deploy from GitHub Actions"
         publish-dir: './docusite/docs/.vuepress/dist'
-        functions-dir: './functions'
+        functions-dir: './dist/functions'
         enable-commit-comment: true
         production-branch: master
       env:
