@@ -117,7 +117,7 @@ fi
 if [ $buildwasm == 1 ]; then
     echo "==============================[    Building CSL WASM    ]=============================="
     echo "${cyan}→ Compiling to WASM${reset}"
-    GOOS=js GOARCH=wasm go build -o dist/csl.wasm -ldflags="-s -w -X 'main.CorsProxyServer=https://corsproxy.conductorr.workers.dev'" ./cmd/cslwasm
+    GOOS=js GOARCH=wasm go build -o dist/csl.wasm -ldflags="-s -w -X 'main.CorsProxyServer=/.netlify/functions/corsproxy'" ./cmd/cslwasm
     echo "${cyan}→ Compressing with brotli${reset}"
     brotli -f dist/csl.wasm
     # Copy the corresponding wasm_exec.js file to the web app and docusite projects
