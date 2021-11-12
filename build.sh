@@ -6,7 +6,7 @@
 set -e
 
 # Terminal color definitions
-if [ -z ${TERM+x} ]; then 
+if [ -z ${TERM+x} ] || [ $TERM == "" ]; then 
     green=`tput -T linux setaf 2`
     blue=`tput -T linux setaf 4`
     cyan=`tput -T linux setaf 6`
