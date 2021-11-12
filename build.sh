@@ -9,12 +9,7 @@ set -e
 echo "ECHOING TERM"
 echo $TERM
 
-if [ -z ${TERM+x} ] || [ "$TERM" == "" ]; then 
-    green=`tput -T linux setaf 2`
-    blue=`tput -T linux setaf 4`
-    cyan=`tput -T linux setaf 6`
-    reset=`tput -T linux sgr0`
-else
+if [ tty -s ]; then 
     green=`tput setaf 2`
     blue=`tput setaf 4`
     cyan=`tput setaf 6`
