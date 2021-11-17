@@ -38,9 +38,9 @@ RUN mkdir /src
 WORKDIR /src
 COPY go.mod .
 COPY go.sum .
+RUN go mod download
 COPY --from=csl-build-env /build/dist ./dist
 COPY --from=vue-build-env /build/web/build web/build
-RUN go mod download
 COPY ./embed.go ./embed.go
 COPY ./migrations ./migrations
 COPY ./internal ./internal

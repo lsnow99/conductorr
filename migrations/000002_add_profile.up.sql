@@ -5,7 +5,7 @@ CREATE TABLE profile(
     id INTEGER PRIMARY KEY,
     --postgresql--
     id SERIAL PRIMARY KEY,
-    --end
+    --end--
     name VARCHAR(128),
     filter TEXT,
     sorter TEXT

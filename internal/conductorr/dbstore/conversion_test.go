@@ -213,6 +213,35 @@ func TestRealSQLiteAndPG(t *testing.T) {
 	compareSQL(t, sqlMap, expectedMap)
 }
 
+func TestNoCombine(t *testing.T) {
+	sql := `CREATE TABLE user(
+		--sqlite--
+		id INTEGER PRIMARY KEY,
+		--postgresql--
+		id SERIAL PRIMARY KEY,
+		--end--
+		username VARCHAR(128) UNIQUE,
+		password VARBINARY(128)
+	);`
+
+	sqlMap := ConvertSQL(sql)
+
+	expectedMap := map[string]string{
+		sqliteKey: `CREATE TABLE user(
+		id INTEGER PRIMARY KEY,
+		username VARCHAR(128) UNIQUE,
+		password VARBINARY(128)
+	);`,
+		pgKey: `CREATE TABLE user(
+		id SERIAL PRIMARY KEY,
+		username VARCHAR(128) UNIQUE,
+		password VARBINARY(128)
+	);`,
+	}
+
+	compareSQL(t, sqlMap, expectedMap)
+}
+
 func compareSQL(t *testing.T, sqlMap, expectedMap map[string]string) {
 	if len(sqlMap) != len(expectedMap) {
 		t.Fatal("returned sql map number of keys differs from the expected map")

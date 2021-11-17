@@ -5,7 +5,7 @@ CREATE TABLE media_server(
     id INTEGER PRIMARY KEY,
     --postgresql--
     id SERIAL PRIMARY KEY,
-    --end
+    --end--
     name VARCHAR(128) NOT NULL,
     media_server_type VARCHAR(64) NOT NULL,
     config TEXT NOT NULL
