@@ -4,6 +4,7 @@
   "license": "GPL-3.0-only",
   "scripts": {
     "dev": "vite",
+    "devhost": "vite --host",
     "build": "vite build",
     "build-lib": "vite build --config lib.vite.config.js",
     "serve": "vite preview"
