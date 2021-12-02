@@ -14,7 +14,7 @@ type PathInput struct {
 func TestPath(w http.ResponseWriter, r *http.Request) {
 	pathInput := PathInput{}
 	if err := json.NewDecoder(r.Body).Decode(&pathInput); err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 	err := integration.CheckPath(pathInput.Path)
@@ -23,5 +23,5 @@ func TestPath(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		resp["msg"] = err.Error()
 	}
-	Respond(w, r.Header.Get("hostname"), nil, resp, true)
+	Respond(w, r, nil, resp, true)
 }

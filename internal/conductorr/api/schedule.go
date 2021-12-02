@@ -25,7 +25,7 @@ type Event struct {
 func GetSchedule(w http.ResponseWriter, r *http.Request) {
 	medias, err := dbstore.GetAllMediaMap()
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 	pathStatuses := app.LM.GetAllMediaPathStatuses()
@@ -65,5 +65,5 @@ func GetSchedule(w http.ResponseWriter, r *http.Request) {
 		}
 		events = append(events, event)
 	}
-	Respond(w, r.Header.Get("hostname"), nil, events, true)
+	Respond(w, r, nil, events, true)
 }

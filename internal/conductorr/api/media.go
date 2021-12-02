@@ -53,22 +53,22 @@ func AddMedia(w http.ResponseWriter, r *http.Request) {
 
 	mi := AddMediaInput{}
 	if err := json.NewDecoder(r.Body).Decode(&mi); err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 
 	result, err := search.GetResultByID(searchID)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 
 	id, err := doAddMedia(result, &mi.ProfileID, &mi.PathID, mi.Monitoring)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
-	Respond(w, r.Header.Get("hostname"), nil, id, true)
+	Respond(w, r, nil, id, true)
 }
 
 func RefreshMediaMetadata(w http.ResponseWriter, r *http.Request) {
@@ -76,32 +76,32 @@ func RefreshMediaMetadata(w http.ResponseWriter, r *http.Request) {
 
 	mediaID, err := strconv.Atoi(mediaIDStr)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 
 	media, err := dbstore.GetMediaByID(mediaID)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 	if !media.ImdbID.Valid {
-		Respond(w, r.Header.Get("hostname"), errors.New("imdb id is nil for media"), nil, true)
+		Respond(w, r, errors.New("imdb id is nil for media"), nil, true)
 		return
 	}
 
 	result, err := search.GetResultByImdbID(media.ImdbID.String)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 
 	id, err := doAddMedia(result, nil, nil, media.Monitoring)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
-	Respond(w, r.Header.Get("hostname"), nil, id, true)
+	Respond(w, r, nil, id, true)
 }
 
 func doAddMedia(result *search.IndividualResult, profileID *int, pathID *int, monitor bool) (int, error) {
@@ -213,89 +213,89 @@ func GetMedia(w http.ResponseWriter, r *http.Request) {
 	mediaIDStr := mux.Vars(r)["id"]
 	mediaID, err := strconv.Atoi(mediaIDStr)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 	media, err := dbstore.GetMediaByID(mediaID)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 	mr := NewMediaResponseFromDB(media)
 	err = mr.Expand()
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
-	Respond(w, r.Header.Get("hostname"), nil, mr, true)
+	Respond(w, r, nil, mr, true)
 }
 
 func DeleteMedia(w http.ResponseWriter, r *http.Request) {
 	mediaIDStr := mux.Vars(r)["id"]
 	mediaID, err := strconv.Atoi(mediaIDStr)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 	err = dbstore.DeleteMedia(mediaID)
-	Respond(w, r.Header.Get("hostname"), err, nil, true)
+	Respond(w, r, err, nil, true)
 }
 
 func UpdateMedia(w http.ResponseWriter, r *http.Request) {
 	media := MediaInput{}
 	if err := json.NewDecoder(r.Body).Decode(&media); err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 	idStr := mux.Vars(r)["id"]
 	idInt, err := strconv.Atoi(idStr)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 
 	err = dbstore.UpdateMedia(idInt, media.ProfileID, media.PathID)
-	Respond(w, r.Header.Get("hostname"), err, nil, true)
+	Respond(w, r, err, nil, true)
 }
 
 func DownloadMediaRelease(w http.ResponseWriter, r *http.Request) {
 	mediaIDStr := mux.Vars(r)["id"]
 	mediaID, err := strconv.Atoi(mediaIDStr)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 
 	release := integration.Release{}
 	if err := json.NewDecoder(r.Body).Decode(&release); err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 
 	media, err := dbstore.GetMediaByID(mediaID)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 
 	err = app.DM.Download(media.ID, release, true, false, false)
-	Respond(w, r.Header.Get("hostname"), err, nil, true)
+	Respond(w, r, err, nil, true)
 }
 
 func SetMonitoringMedia(w http.ResponseWriter, r *http.Request) {
 	mediaIDStr := mux.Vars(r)["id"]
 	mediaID, err := strconv.Atoi(mediaIDStr)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 
 	mi := MonitoringInput{}
 	if err := json.NewDecoder(r.Body).Decode(&mi); err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 
 	err = dbstore.UpdateMediaMonitoring(mediaID, mi.Monitoring)
-	Respond(w, r.Header.Get("hostname"), err, nil, true)
+	Respond(w, r, err, nil, true)
 }

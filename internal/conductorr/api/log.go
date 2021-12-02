@@ -34,5 +34,5 @@ func GetLogs(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	Respond(w, r.Header.Get("hostname"), nil, logsResp, true)
+	Respond(w, r, nil, logsResp, true)
 }

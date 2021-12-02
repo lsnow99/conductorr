@@ -15,36 +15,36 @@ func SearchReleasesManual(w http.ResponseWriter, r *http.Request) {
 	mediaIDStr := mux.Vars(r)["id"]
 	mediaID, err := strconv.Atoi(mediaIDStr)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 
 	allReleases, _, err := getReleasesForMediaID(mediaID)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 
-	Respond(w, r.Header.Get("hostname"), nil, allReleases, true)
+	Respond(w, r, nil, allReleases, true)
 }
 
 func SearchReleasesAuto(w http.ResponseWriter, r *http.Request) {
 	mediaIDStr := mux.Vars(r)["id"]
 	mediaID, err := strconv.Atoi(mediaIDStr)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 
 	_, filteredReleases, err := getReleasesForMediaID(mediaID)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 
 	app.DM.AutoDownload(mediaID, filteredReleases)
 
-	Respond(w, r.Header.Get("hostname"), nil, len(filteredReleases), true)
+	Respond(w, r, nil, len(filteredReleases), true)
 }
 
 func getReleasesForMediaID(mediaID int) ([]integration.Release, []integration.Release, error) {

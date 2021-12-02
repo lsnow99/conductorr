@@ -41,7 +41,7 @@ func NewIndexerResponseFromDB(dbIndexer dbstore.Indexer) IndexerResponse {
 func GetIndexers(w http.ResponseWriter, r *http.Request) {
 	dbIndexers, err := dbstore.GetIndexers()
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 
@@ -50,77 +50,77 @@ func GetIndexers(w http.ResponseWriter, r *http.Request) {
 		indexers[i] = NewIndexerResponseFromDB(dbIndexer)
 	}
 
-	Respond(w, r.Header.Get("hostname"), nil, indexers, true)
+	Respond(w, r, nil, indexers, true)
 }
 
 func GetIndexer(w http.ResponseWriter, r *http.Request) {
 	indexerIDStr := mux.Vars(r)["id"]
 	indexerID, err := strconv.Atoi(indexerIDStr)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 	indexer, err := dbstore.GetIndexerByID(indexerID)
-	Respond(w, r.Header.Get("hostname"), err, NewIndexerResponseFromDB(indexer), true)
+	Respond(w, r, err, NewIndexerResponseFromDB(indexer), true)
 }
 
 func CreateIndexer(w http.ResponseWriter, r *http.Request) {
 	indexer := IndexerInput{}
 	if err := json.NewDecoder(r.Body).Decode(&indexer); err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 
 	id, err := dbstore.CreateIndexer(indexer.Name, indexer.UserID, indexer.BaseUrl, indexer.ApiKey, indexer.ForMovies, indexer.ForSeries, indexer.DownloadType)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 
 	app.IM.RegisterIndexer(id, indexer.DownloadType, indexer.UserID, indexer.Name, indexer.ApiKey, indexer.BaseUrl, indexer.ForMovies, indexer.ForSeries, "")
-	Respond(w, r.Header.Get("hostname"), nil, nil, true)
+	Respond(w, r, nil, nil, true)
 }
 
 func UpdateIndexer(w http.ResponseWriter, r *http.Request) {
 	indexer := IndexerInput{}
 	if err := json.NewDecoder(r.Body).Decode(&indexer); err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 	idStr := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 
 	err = dbstore.UpdateIndexer(id, indexer.Name, indexer.UserID, indexer.BaseUrl, indexer.ApiKey, indexer.ForMovies, indexer.ForSeries)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 	app.IM.RegisterIndexer(id, indexer.DownloadType, indexer.UserID, indexer.Name, indexer.ApiKey, indexer.BaseUrl, indexer.ForMovies, indexer.ForSeries, "")
-	Respond(w, r.Header.Get("hostname"), nil, nil, true)
+	Respond(w, r, nil, nil, true)
 }
 
 func DeleteIndexer(w http.ResponseWriter, r *http.Request) {
 	idStr := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 
 	app.IM.DeleteIndexer(id)
 
 	err = dbstore.DeleteIndexer(id)
-	Respond(w, r.Header.Get("hostname"), err, nil, true)
+	Respond(w, r, err, nil, true)
 }
 
 func TestIndexer(w http.ResponseWriter, r *http.Request) {
 	indexer := IndexerInput{}
 	if err := json.NewDecoder(r.Body).Decode(&indexer); err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 	xnab := integration.NewXnab(indexer.UserID, indexer.ApiKey, indexer.BaseUrl, indexer.Name, indexer.DownloadType)
@@ -130,5 +130,5 @@ func TestIndexer(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		resp["msg"] = err.Error()
 	}
-	Respond(w, r.Header.Get("hostname"), nil, resp, true)
+	Respond(w, r, nil, resp, true)
 }

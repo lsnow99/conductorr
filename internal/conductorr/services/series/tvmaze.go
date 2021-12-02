@@ -8,8 +8,7 @@ import (
 	"time"
 )
 
-type TVMaze struct {
-}
+type TVMaze struct {}
 
 type EpisodeResults []EpisodeResult
 
@@ -36,7 +35,7 @@ type EpisodeResult struct {
 	} `json:"_links"`
 }
 
-type ShowResult struct {
+type TVMazeShowResult struct {
 	ID             int      `json:"id"`
 	URL            string   `json:"url"`
 	Name           string   `json:"name"`
@@ -149,8 +148,16 @@ func (t *TVMaze) getShowID(imdbID string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+	defer resp.Body.Close()
 
-	sr := ShowResult{}
+	if resp.StatusCode == http.StatusNotFound {
+		return 0, &ErrImdbIDNotFound{
+			ImdbID: imdbID,
+			Agent: "tvmaze",
+		}
+	}
+
+	sr := TVMazeShowResult{}
 	if err := json.NewDecoder(resp.Body).Decode(&sr); err != nil {
 		return 0, err
 	}

@@ -171,13 +171,13 @@ func SearchNewByTitle(w http.ResponseWriter, r *http.Request) {
 
 	page, err := strconv.Atoi(pageStr)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 
 	searchResults, err := search.SearchByTitle(query, contentType, page)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 
@@ -192,7 +192,7 @@ func SearchNewByTitle(w http.ResponseWriter, r *http.Request) {
 		Results:      medias,
 	}
 
-	Respond(w, r.Header.Get("hostname"), err, sr, true)
+	Respond(w, r, err, sr, true)
 }
 
 func SearchLibraryByTitle(w http.ResponseWriter, r *http.Request) {
@@ -202,7 +202,7 @@ func SearchLibraryByTitle(w http.ResponseWriter, r *http.Request) {
 
 	page, err := strconv.Atoi(pageStr)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 
@@ -223,5 +223,5 @@ func SearchLibraryByTitle(w http.ResponseWriter, r *http.Request) {
 		Results:      results,
 	}
 
-	Respond(w, r.Header.Get("hostname"), err, resp, true)
+	Respond(w, r, err, resp, true)
 }

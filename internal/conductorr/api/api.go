@@ -33,7 +33,7 @@ type response struct {
 	FailedAuth bool        `json:"failed_auth"`
 }
 
-func Respond(w http.ResponseWriter, reqHost string, err error, data interface{}, authorize bool) {
+func Respond(w http.ResponseWriter, req *http.Request, err error, data interface{}, authorize bool) {
 	r := response{}
 	if err != nil {
 		r.Success = false
@@ -49,6 +49,7 @@ func Respond(w http.ResponseWriter, reqHost string, err error, data interface{},
 		if err != nil {
 			r.Success = false
 		} else {
+			reqHost := req.Host
 			if i := strings.Index(reqHost, ":"); i > 0 {
 				reqHost = reqHost[:i]
 			}
@@ -108,7 +109,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		if shouldAuth && strings.HasPrefix(r.URL.Path, "/api/v1") {
 			tok, err := r.Cookie(UserAuthKey)
 			if err != nil || !checkToken(tok.Value) {
-				Respond(w, "", errAuth, nil, false)
+				Respond(w, r, errAuth, nil, false)
 				return
 			}
 		}
@@ -121,7 +122,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 }
 
 func InvalidateAuthCookie(w http.ResponseWriter, r *http.Request) {
-	reqHost := r.Header.Get("hostname")
+	reqHost := r.Host
 	if i := strings.Index(reqHost, ":"); i > 0 {
 		reqHost = reqHost[:i]
 	}
@@ -151,7 +152,7 @@ func InvalidateAuthCookie(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, &cookie)
 
-	Respond(w, r.Header.Get("hostname"), nil, nil, false)
+	Respond(w, r, nil, nil, false)
 }
 
 func checkToken(tok string) bool {

@@ -13,13 +13,13 @@ import (
 func CreateNewBackup(w http.ResponseWriter, r *http.Request) {
 	id, err := backup.CreateBackup(r.Context())
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 	url := fmt.Sprintf("/api/v1/backup/%d", id)
 	data := make(map[string]interface{})
 	data["url"] = url
-	Respond(w, r.Header.Get("hostname"), nil, data, true)
+	Respond(w, r, nil, data, true)
 }
 
 func GetBackupFile(w http.ResponseWriter, r *http.Request) {

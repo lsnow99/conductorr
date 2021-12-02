@@ -8,7 +8,7 @@ import (
 )
 
 func GetStatus(w http.ResponseWriter, r *http.Request) {
-	Respond(w, r.Header.Get("hostname"), nil, app.Monitor.GetStatus(), true)
+	Respond(w, r, nil, app.Monitor.GetStatus(), true)
 }
 
 func GetTasks(w http.ResponseWriter, r *http.Request) {
@@ -21,5 +21,5 @@ func GetTasks(w http.ResponseWriter, r *http.Request) {
 			"name": task.GetTaskName(),
 		})
 	}
-	Respond(w, r.Header.Get("hostname"), nil, tasks, true)
+	Respond(w, r, nil, tasks, true)
 }

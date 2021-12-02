@@ -32,7 +32,7 @@ func NewProfileFromDB(dbProfile *dbstore.Profile) (Profile) {
 func GetProfiles(w http.ResponseWriter, r *http.Request) {
 	dbProfiles, err := dbstore.GetProfiles()
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 
@@ -41,56 +41,56 @@ func GetProfiles(w http.ResponseWriter, r *http.Request) {
 		profiles[i] = NewProfileFromDB(dbProfile)
 	}
 
-	Respond(w, r.Header.Get("hostname"), nil, profiles, true)
+	Respond(w, r, nil, profiles, true)
 }
 
 func GetProfile(w http.ResponseWriter, r *http.Request) {
 	profileIDStr := mux.Vars(r)["id"]
 	profileID, err := strconv.Atoi(profileIDStr)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 	profile, err := dbstore.GetProfileByID(profileID)
-	Respond(w, r.Header.Get("hostname"), err, NewProfileFromDB(&profile), true)
+	Respond(w, r, err, NewProfileFromDB(&profile), true)
 }
 
 func CreateProfile(w http.ResponseWriter, r *http.Request) {
 	profile := NewProfile{}
 	if err := json.NewDecoder(r.Body).Decode(&profile); err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 
 	err := dbstore.CreateProfile(profile.Name)
-	Respond(w, r.Header.Get("hostname"), err, nil, true)
+	Respond(w, r, err, nil, true)
 }
 
 func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	profile := Profile{}
 	if err := json.NewDecoder(r.Body).Decode(&profile); err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 	idStr := mux.Vars(r)["id"]
 	idInt, err := strconv.Atoi(idStr)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 
 	err = dbstore.UpdateProfile(idInt, profile.Name, profile.Filter, profile.Sorter)
-	Respond(w, r.Header.Get("hostname"), err, nil, true)
+	Respond(w, r, err, nil, true)
 }
 
 func DeleteProfile(w http.ResponseWriter, r *http.Request) {
 	idStr := mux.Vars(r)["id"]
 	idInt, err := strconv.Atoi(idStr)
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 		return
 	}
 
 	err = dbstore.DeleteProfile(idInt)
-	Respond(w, r.Header.Get("hostname"), err, nil, true)
+	Respond(w, r, err, nil, true)
 }

@@ -3,7 +3,6 @@ import EventBus from "./EventBus";
 
 const doAPIReq = (url, options, errMsg = undefined) => {
   return new Promise((resolve, reject) => {
-    options.headers = new Headers({'Hostname': new URL(window.location).hostname})
     fetch(url, options)
       .then((re) => re.json())
       .then((resp) => {

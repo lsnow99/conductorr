@@ -47,17 +47,17 @@ func GetActiveDownloads(w http.ResponseWriter, r *http.Request) {
 	for i, download := range downloads {
 		downloadsResponse[i] = NewDownloadResponseFromManagedDownload(download)
 	}
-	Respond(w, r.Header.Get("hostname"), nil, downloadsResponse, true)
+	Respond(w, r, nil, downloadsResponse, true)
 }
 
 func GetDoneDownloads(w http.ResponseWriter, r *http.Request) {
 	downloads, err := dbstore.GetFinishedDownloads()
 	if err != nil {
-		Respond(w, r.Header.Get("hostname"), err, nil, true)
+		Respond(w, r, err, nil, true)
 	}
 	downloadsResponse := make([]DownloadResponse, len(downloads))
 	for i, download := range downloads {
 		downloadsResponse[i] = NewDownloadResponseFromDBDownload(download)
 	}
-	Respond(w, r.Header.Get("hostname"), nil, downloadsResponse, true)
+	Respond(w, r, nil, downloadsResponse, true)
 }
