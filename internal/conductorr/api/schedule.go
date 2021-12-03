@@ -2,6 +2,7 @@ package api
 
 import (
 	"net/http"
+	"sort"
 	"time"
 
 	"github.com/lsnow99/conductorr/internal/conductorr/app"
@@ -65,5 +66,8 @@ func GetSchedule(w http.ResponseWriter, r *http.Request) {
 		}
 		events = append(events, event)
 	}
+	sort.Slice(events, func(i, j int) bool {
+		return events[i].Timestamp.Before(events[j].Timestamp)
+	})
 	Respond(w, r, nil, events, true)
 }

@@ -64,10 +64,10 @@
           class="date overflow-hidden flex flex-col"
           :class="(date.today?'date-today':'') + ' ' + calDateClass + ' ' + (date.gray ? 'opacity-80' : '')"
         >
-          <div class="bg-gray-600 inline-block py-px w-7 text-center">
+          <div class="bg-gray-800 inline-block py-px w-7 text-center">
             {{ date.day }}
           </div>
-          <div class="height-full overflow-y-auto">
+          <div class="height-full overflow-y-auto overflow-x-hidden">
             <div
               v-for="(event, index) in eventMap[date.dayStart]"
               :key="index"
@@ -77,7 +77,7 @@
               @keydown.space="selectEvent(event, $event)"
               role="button"
               tabindex="0"
-              class="cursor-pointer focus:bg-opacity-30 focus:outline-white"
+              class="cursor-pointer focus:bg-opacity-30 focus:outline-white flex flex-col lg:block"
             >
               <span
                 class="
@@ -85,10 +85,13 @@
                   bg-gray-900 bg-opacity-30
                   text-sm
                   font-bold
-                  inline-block
+                  lg:inline-block
+                  lg:w-4-5r
+                  flex-col
+                  flex-1
+                  w-full
                   min-h-full
                 "
-                style="width: 70px"
                 >{{ event.time.slice(0, -3)
                 }}<span class="text-xs">{{ event.time.slice(-3) }}</span></span
               >
