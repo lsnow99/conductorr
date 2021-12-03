@@ -4,7 +4,8 @@ module.exports = {
   theme: {
     extend: {
       width: {
-        '36r': '36rem'
+        '36r': '36rem',
+        '4-5r': '4.5rem'
       },
       colors: {
         darkgray: {
