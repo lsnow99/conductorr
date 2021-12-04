@@ -57,7 +57,7 @@
           </o-button>
         </div>
       </div>
-      <div :class="calWrapperClass" class="mt-4">
+      <div :class="calWrapperClass" class="mt-4 relative">
         <div
           v-for="date in dates"
           :key="date"
@@ -101,6 +101,7 @@
             </div>
           </div>
         </div>
+        <o-loading :active="loading" :full-page="false"></o-loading>
       </div>
       <div class="flex flex-col md:flex-row text-lg mt-2">
         <div class="flex flex-row items-center mx-4">
@@ -185,6 +186,7 @@ export default {
       events: [],
       eventMap: {},
       mediaEvent: null,
+      loading: true,
     };
   },
   components: {
@@ -258,6 +260,7 @@ export default {
     } else {
       this.viewType = "monthly";
     }
+    this.loading = true;
     APIUtil.getSchedule().then((events) => {
       for (let i = 0; i < events.length; i++) {
         events[i].timestamp = DateTime.fromJSDate(
@@ -274,6 +277,8 @@ export default {
         }
       }
       this.events = events;
+    }).finally(() => {
+      this.loading = false;
     });
   },
   computed: {
@@ -387,7 +392,7 @@ export default {
     computedRangeType() {
       switch (this.viewType) {
         case "monthly":
-          return "monnth";
+          return "month";
         case "weekly":
           return "week";
         case "daily":
