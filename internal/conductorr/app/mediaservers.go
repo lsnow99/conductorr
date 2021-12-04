@@ -34,6 +34,10 @@ func (msm *MediaServerManager) DoTask() {
 	msm.syncMediaPaths()
 }
 
+func (m ManagedMediaServer) GetName() string {
+	return m.Name
+}
+
 func (msm *MediaServerManager) syncMediaPaths() error {
 	msm.RLock()
 	mediaServers := msm.mediaServers
