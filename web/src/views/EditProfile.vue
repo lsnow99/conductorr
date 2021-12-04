@@ -1,29 +1,65 @@
 <template>
-  <div class="flex flex-col h-screen max-h-screen" style="max-width: 100vw">
+  <div class="max-h-screen h-screen overflow-hidden w-full">
     <div class="flex flex-col bg-gray-900 bg-opacity-20">
-      <div class="p-2 flex flex-1 flex-row justify-between">
-        <div class="w-32">
-          <o-button @click="$router.go(-1)" icon-left="chevron-left"
-            >Back</o-button
-          >
+      <div
+        ref="header"
+        class="
+          p-2
+          flex flex-1 flex-col
+          items-center
+          lg:flex-row
+          justify-between
+        "
+      >
+        <div class="flex flex-row">
+          <div class="p-2">
+            <o-button @click="$router.go(-1)" icon-left="chevron-left"
+              >Back</o-button
+            >
+          </div>
+          <o-tabs type="boxed" ref="tabs" v-model="currentTab" class="p-2">
+            <o-tab-item>
+              <template v-slot:header>
+                <span class="text-2xl flex flex-row items-center">
+                  <vue-fontawesome icon="filter"></vue-fontawesome
+                  ><span style="white-space: nowrap" class="flex ml-2"
+                    >Filter</span
+                  >
+                </span>
+              </template>
+              <div />
+            </o-tab-item>
+            <o-tab-item>
+              <template v-slot:header>
+                <span class="text-2xl flex flex-row items-center">
+                  <vue-fontawesome icon="sort"></vue-fontawesome
+                  ><span style="white-space: nowrap" class="flex ml-2"
+                    >Sorter</span
+                  >
+                </span>
+              </template>
+              <div />
+            </o-tab-item>
+          </o-tabs>
         </div>
         <div class="flex text-2xl items-center">
           <span v-if="!editingName"
             >{{ `Editing Profile: ${profile.name}` }}
             <o-icon
-              @click="editingName = true"
-              @keydown.enter="editingName = true"
-              @keydown.space="editingName = true"
+              @click="startEditingName"
+              @keydown.enter="startEditingName"
+              @keydown.space="startEditingName"
               tabindex="0"
               role="button"
               aria-label="Edit name"
               class="cursor-pointer ml-4"
               icon="edit" /></span
-          ><span v-else class="flex flex-row"
-            ><o-input
+          ><span v-else class="flex flex-row">
+            <o-input
               @keydown.enter="editingName = false"
               v-model="profile.name"
-            /><o-icon
+            />
+            <o-icon
               @click="editingName = false"
               @keydown.enter="editingName = false"
               @keydown.space="editingName = false"
@@ -33,140 +69,115 @@
               class="cursor-pointer ml-4"
               icon="check"
             />
+            <o-icon
+              @click="resetEditingName"
+              @keydown.enter="resetEditingName"
+              @keydown.space="resetEditingName"
+              tabindex="0"
+              role="button"
+              aria-label="Edit name"
+              class="cursor-pointer ml-4"
+              icon="times"
+            />
           </span>
         </div>
-        <div class="w-32 hidden sm:flex"></div>
-      </div>
-      <div class="flex flex-col sm:flex-row justify-between">
-        <o-tabs type="boxed" ref="tabs" v-model="currentTab" class="mt-4">
-          <o-tab-item>
-            <template v-slot:header>
-              <span class="text-2xl flex flex-row items-center">
-                <vue-fontawesome icon="filter"></vue-fontawesome
-                ><span style="white-space: nowrap" class="flex ml-2"
-                  >Filter</span
-                >
-              </span>
-            </template>
-            <div />
-          </o-tab-item>
-          <o-tab-item>
-            <template v-slot:header>
-              <span class="text-2xl flex flex-row items-center">
-                <vue-fontawesome icon="sort"></vue-fontawesome
-                ><span style="white-space: nowrap" class="flex ml-2"
-                  >Sorter</span
-                >
-              </span>
-            </template>
-            <div />
-          </o-tab-item>
-        </o-tabs>
-        <div class="p-2 flex flex-row justify-center">
-          <o-button class="mx-1 my-1 sm:my-0" @click="initSplits(true)"
-            >Reset View</o-button
-          >
-          <o-button
-            class="mx-1 my-1 sm:my-0"
-            variant="primary"
-            @click="updateProfile"
-            >Save</o-button
-          >
+
+        <div class="flex flex-col sm:flex-row justify-between">
+          <div class="p-2 flex flex-row justify-center">
+            <o-button class="mx-1 my-1 sm:my-0" @click="initSplits(true)"
+              >Reset View</o-button
+            >
+            <o-button
+              class="mx-1 my-1 sm:my-0"
+              variant="primary"
+              @click="updateProfile"
+              >Save</o-button
+            >
+          </div>
         </div>
       </div>
     </div>
     <div
-      class="flex h-full flex-1 w-full"
-      style="max-height: calc(100vh - 104px)"
+      id="splitWrapper"
+      class="flex flex-row"
+      :style="`height: calc(100% - ${headerHeight}px);`"
     >
-      <div class="flex h-full w-full flex-1 flex-row">
-        <div id="split3" class="flex flex-col">
-          <div id="split1" class="flex flex-col">
-            <div class="titlebar">Generator</div>
-          </div>
-          <div id="split2" class="flex flex-col">
-            <div class="titlebar flex flex-row justify-between">
-              <div>Editor</div>
-              <div>
-                <o-button size="small" class="mx-1" @click="validate"
-                  >Validate</o-button
-                >
-                <o-button
-                  variant="primary"
-                  size="small"
-                  class="mx-1"
-                  icon-right="play"
-                  @click="run"
-                  >Run</o-button
-                >
-              </div>
+      <div id="split3" class="flex flex-col">
+        <div id="split1" class="flex flex-col">
+          <div class="titlebar">Generator</div>
+        </div>
+        <div id="split2" class="flex flex-col">
+          <div class="titlebar flex flex-row justify-between">
+            <div>Editor</div>
+            <div>
+              <o-button size="small" class="mx-1" @click="validate"
+                >Validate</o-button
+              >
+              <o-button
+                variant="primary"
+                size="small"
+                class="mx-1"
+                icon-right="play"
+                @click="run"
+                >Run</o-button
+              >
             </div>
-            <CSLEditor @submit="run" v-model="computedCode" />
+          </div>
+          <CSLEditor @submit="run" v-model="computedCode" />
+        </div>
+      </div>
+      <div id="split4" class="flex flex-col">
+        <div id="split5" class="flex flex-col">
+          <div class="titlebar">Test Cases</div>
+          <div
+            class="px-16 h-full overflow-y-scroll overflow-x-hidden"
+            style="width: 100%"
+          >
+            <release-builder title="Release A" v-model="releaseA" />
+            <release-builder
+              v-show="activeFunction == 'sorter'"
+              title="Release B"
+              v-model="releaseB"
+            />
+            <div class="text-xl">
+              Rendered code (you can assume that your script will be run like this):
+            </div>
+            <div class="p-4">
+              <CSLEditor readonly v-model="renderedCode" />
+            </div>
+            <div class="flex flex-row justify-center p-4">
+              <o-button @click="run" variant="primary">Run</o-button>
+            </div>
           </div>
         </div>
-        <div id="split4" class="flex flex-col">
-          <div id="split5" class="flex flex-col">
-            <div class="titlebar">Test Cases</div>
-            <div
-              class="px-16 h-full overflow-y-scroll overflow-x-hidden"
-              style="width: 100%"
-            >
-              <release-builder title="Release A" v-model="releaseA" />
-              <release-builder
-                v-show="activeFunction == 'sorter'"
-                title="Release B"
-                v-model="releaseB"
+        <div id="split6" class="flex flex-col">
+          <div class="titlebar flex flex-row justify-between">
+            <div>Output</div>
+            <div>
+              <o-icon
+                icon="times-circle"
+                class="cursor-pointer mr-3"
+                @click="outputs = []"
+                @keydown.enter="outputs = []"
+                @keydown.space="outputs = []"
+                tabindex="0"
+                role="button"
+                aria-label="Clear output"
               />
-              <div class="text-xl">
-                Rendered code (this is what you can assume is injected
-                immediately before running your script):
-              </div>
-              <div class="p-4">
-                <CSLEditor
-                  v-if="activeFunction == 'filter'"
-                  readonly
-                  v-model="releaseACode"
-                />
-                <CSLEditor
-                  v-if="activeFunction == 'sorter'"
-                  readonly
-                  v-model="releaseABCode"
-                />
-              </div>
-              <div class="flex flex-row justify-center p-4">
-                <o-button @click="run" variant="primary">Run</o-button>
-              </div>
+              <o-icon
+                icon="angle-double-down"
+                class="cursor-pointer mr-3"
+                @click="scrollOutput"
+                @keydown.enter="scrollOutput"
+                @keydown.space="scrollOutput"
+                tabindex="0"
+                role="button"
+                aria-label="Scroll output to bottom"
+              />
             </div>
           </div>
-          <div id="split6" class="flex flex-col">
-            <div class="titlebar flex flex-row justify-between">
-              <div>Output</div>
-              <div>
-                <o-icon
-                  icon="times-circle"
-                  class="cursor-pointer mr-3"
-                  @click="outputs = []"
-                  @keydown.enter="outputs = []"
-                  @keydown.space="outputs = []"
-                  tabindex="0"
-                  role="button"
-                  aria-label="Clear output"
-                />
-                <o-icon
-                  icon="angle-double-down"
-                  class="cursor-pointer mr-3"
-                  @click="scrollOutput"
-                  @keydown.enter="scrollOutput"
-                  @keydown.space="scrollOutput"
-                  tabindex="0"
-                  role="button"
-                  aria-label="Scroll output to bottom"
-                />
-              </div>
-            </div>
-            <div ref="outputScroller" class="h-full overflow-y-scroll">
-              <LogPane :logs="outputs" />
-            </div>
+          <div ref="outputScroller" class="h-full overflow-y-scroll">
+            <LogPane :logs="outputs" />
           </div>
         </div>
       </div>
@@ -240,7 +251,9 @@ export default {
       releaseA: {},
       releaseB: {},
       editingName: false,
+      oldName: "",
       currentTab: 1,
+      headerHeight: 0,
     };
   },
   components: { CSLEditor, ReleaseBuilder, LogPane },
@@ -340,25 +353,25 @@ export default {
       this.$refs.outputScroller.scrollTop =
         this.$refs.outputScroller.scrollHeight;
     },
-    renderedCode(release, releaseVar) {
-      return `(define ${releaseVar}
-  (
-    "${release.title}" 
-    "${release.indexer}" 
-    "${release.download_type}" 
-    "${release.content_type}" 
-    "${release.rip_type}" 
-    "${release.resolution}" 
-    "${release.encoding}" 
-    ${release.seeders} 
-    ${release.age} 
-    ${release.size} 
-    ${release.runtime}
-  )
-)`;
-    },
-    editName() {
-      this.editingName = true;
+    renderedReleaseCode(release, indentAmount) {
+      let indent = "";
+      for (let i = 0; i < indentAmount; i++) {
+        indent += "  ";
+      }
+      let code = `{CSL_INDENT}(
+{CSL_INDENT}  "${release.title}" 
+{CSL_INDENT}  "${release.indexer}" 
+{CSL_INDENT}  "${release.download_type}" 
+{CSL_INDENT}  "${release.content_type}" 
+{CSL_INDENT}  "${release.rip_type}" 
+{CSL_INDENT}  "${release.resolution}" 
+{CSL_INDENT}  "${release.encoding}" 
+{CSL_INDENT}  ${release.seeders} 
+{CSL_INDENT}  ${release.age} 
+{CSL_INDENT}  ${release.size} 
+{CSL_INDENT}  ${release.runtime}
+{CSL_INDENT})`;
+      return code.replaceAll("{CSL_INDENT}", indent);
     },
     updateProfile() {
       APIUtil.updateProfile(
@@ -384,13 +397,14 @@ export default {
     initCSL() {
       let go = new Go();
 
-      WebAssembly.instantiateStreaming(
-        fetch("/api/csl.wasm"),
-        go.importObject
-      ).then(async (result) => {
-        await go.run(result.instance);
-        this.initCSL();
-      });
+      WebAssembly.instantiateStreaming(fetch("/api/csl.wasm"), go.importObject)
+        .then(async (result) => {
+          await go.run(result.instance);
+          this.initCSL();
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     },
     loadProfile() {
       APIUtil.getProfile(this.profileID).then((profile) => {
@@ -409,6 +423,17 @@ export default {
         return "Profile has been modified, are you sure you want to leave without saving?";
       }
       return null;
+    },
+    onResize() {
+      this.headerHeight = this.$refs.header.clientHeight;
+    },
+    startEditingName() {
+      this.oldName = this.profile.name;
+      this.editingName = true;
+    },
+    resetEditingName() {
+      this.profile.name = this.oldName;
+      this.editingName = false;
     },
   },
   created() {
@@ -432,10 +457,12 @@ export default {
     this.loadProfile();
     this.initSplits();
     this.initCSL();
+    this.onResize();
     window.addEventListener("beforeunload", this.beforeWindowUnload);
+    window.addEventListener("resize", this.onResize);
   },
-  unmounted() {
-    console.log("unmounted");
+  beforeUnmount() {
+    window.removeEventListener("resize", this.onResize);
     window.removeEventListener("beforeunload", this.beforeWindowUnload);
   },
   watch: {
@@ -457,14 +484,22 @@ export default {
     },
   },
   computed: {
-    releaseACode() {
-      return this.renderedCode(this.releaseA, "a");
-    },
-    releaseBCode() {
-      return this.renderedCode(this.releaseB, "b");
-    },
-    releaseABCode() {
-      return this.releaseACode + "\n" + this.releaseBCode;
+    renderedCode() {
+      let code = `(import "profile:${this.activeFunction}:${this.profile.name}" fn)
+`;
+      if (this.activeFunction == "sorter") {
+        code += `
+(fn
+${this.renderedReleaseCode(this.releaseA, 1)}
+)`;
+      } else if (this.activeFunction == "filter") {
+        code += `
+(fn
+${this.renderedReleaseCode(this.releaseA, 1)}
+${this.renderedReleaseCode(this.releaseB, 1)}
+)`;
+      }
+      return code;
     },
     isProfileModified() {
       return (
