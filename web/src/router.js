@@ -62,7 +62,7 @@ const routes = [
     },
   },
   {
-    path: "/configuration",
+    path: "/configuration/:subpath?",
     name: 'configuration',
     component: Configuration,
     meta: {

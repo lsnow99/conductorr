@@ -73,11 +73,20 @@ import Downloaders from "./Downloaders.vue";
 import PostProcessing from "./PostProcessing.vue";
 import MediaServers from "./MediaServers.vue";
 
+const SUBPATHS = {
+  1: "profiles",
+  2: "indexers",
+  3: "downloaders",
+  4: "postProcessing",
+  5: "mediaServers",
+};
+
 export default {
   data() {
     return {
-      currentTab: 1
-    }
+      currentTab: 1,
+      mounted: false
+    };
   },
   components: {
     PageWrapper,
@@ -86,17 +95,31 @@ export default {
     NewDownloader,
     Downloaders,
     PostProcessing,
-    MediaServers
+    MediaServers,
   },
   methods: {
+    // Scroll the tab header into view on mobile devices
     tabsChanged(newTab) {
-      this.$refs.tabs.childItems[newTab-1].scrollIntoView
-    }
+      if (this.mounted)
+        this.$refs.tabs.childItems[newTab-1].scrollIntoView
+    },
+  },
+  created() {
+      const urlSubpath = this.$route.params.subpath;
+      for (const [tabIndex, subpath] of Object.entries(SUBPATHS)) {
+        if (subpath == urlSubpath) {
+          this.currentTab = parseInt(tabIndex);
+        }
+      }
+  },
+  mounted() {
+    this.mounted = true;
   },
   watch: {
     currentTab(newVal) {
+      this.$router.replace({name: 'configuration', params: {subpath: SUBPATHS[newVal]}})
       this.tabsChanged(newVal)
     },
-  }
+  },
 };
 </script>
