@@ -2,7 +2,7 @@
   <page-wrapper>
     <div class="flex flex-col lg:flex-row">
       <section class="flex-1">
-        <o-tabs type="boxed" navTabsClass="text-2xl">
+        <o-tabs type="boxed" navTabsClass="text-lg sm:text-2xl">
           <o-tab-item label="Active Downloads">
             <div class="h-96 overflow-y-scroll p-2">
               <DownloadStatus
