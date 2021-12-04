@@ -18,10 +18,5 @@ func TestPath(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	err := integration.CheckPath(pathInput.Path)
-	resp := make(map[string]interface{})
-	resp["success"] = err == nil
-	if err != nil {
-		resp["msg"] = err.Error()
-	}
-	Respond(w, r, nil, resp, true)
+	Respond(w, r, err, nil, true)
 }

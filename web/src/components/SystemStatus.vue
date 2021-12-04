@@ -1,6 +1,6 @@
 <template>
   <div class="p-4" :class="status.healthy === false ? 'bg-red-500' : 'bg-green-500'">
-    <div class="text-2xl flex flex-row justify-between">
+    <div class="text-2xl flex  justify-between">
       <div>
       <o-icon v-if="status.healthy === false" icon="times" />
       <o-icon v-else icon="check" />

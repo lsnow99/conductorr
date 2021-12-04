@@ -233,7 +233,7 @@ export default {
         .catch((err) => {
           this.$oruga.notification.open({
             duration: 5000,
-            message: `Test failed: ${err.msg}`,
+            message: `Test failedf: ${err}`,
             position: "bottom-right",
             variant: "danger",
             closable: false,

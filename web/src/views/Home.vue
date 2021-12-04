@@ -2,38 +2,45 @@
   <page-wrapper>
     <div class="flex flex-col lg:flex-row">
       <section class="flex-1">
-        <div class="text-xl flex flex-row justify-between">
-          Active Downloads
-        </div>
-        <div class="h-96 overflow-y-scroll p-2">
-          <DownloadStatus
-            v-for="download in orderedActiveDownloads"
-            :key="download.identifier"
-            :download="download"
-          />
-        </div>
-      </section>
-      <section class="flex-1">
-        <div class="text-xl flex flex-row justify-between">
-          Recently Completed Downloads<o-icon
-            @click="refreshDownloads"
-            @keydown.enter="refreshDownloads"
-            @keydown.space="refreshDownloads"
-            tabindex="0"
-            role="button"
-            aria-label="Refresh downloads"
-            class="cursor-pointer"
-            icon="sync-alt"
-            :spin="loadingDownloads"
-          />
-        </div>
-        <div class="h-96 overflow-y-scroll p-2">
-          <DownloadStatus
-            v-for="download in orderedFinishedDownloads"
-            :key="download.identifier"
-            :download="download"
-          />
-        </div>
+        <o-tabs type="boxed" navTabsClass="text-2xl">
+          <o-tab-item label="Active Downloads">
+            <div class="h-96 overflow-y-scroll p-2">
+              <DownloadStatus
+                v-for="download in orderedActiveDownloads"
+                :key="download.identifier"
+                :download="download"
+              />
+              <div v-if="orderedActiveDownloads.length == 0" class="flex flex-1 justify-center h-full items-center">
+                No active downloads
+              </div>
+            </div>
+          </o-tab-item>
+          <o-tab-item label="Completed Downloads">
+            <div class="text-xl flex flex-row justify-between">
+              <o-icon
+                @click="refreshDownloads"
+                @keydown.enter="refreshDownloads"
+                @keydown.space="refreshDownloads"
+                tabindex="0"
+                role="button"
+                aria-label="Refresh downloads"
+                class="cursor-pointer"
+                icon="sync-alt"
+                :spin="loadingDownloads"
+              />
+            </div>
+            <div class="h-96 overflow-y-scroll p-2">
+              <DownloadStatus
+                v-for="download in orderedFinishedDownloads"
+                :key="download.identifier"
+                :download="download"
+              />
+              <div v-if="orderedActiveDownloads.length == 0" class="flex flex-1 justify-center h-full items-center">
+                No completed downloads
+              </div>
+            </div>
+          </o-tab-item>
+        </o-tabs>
       </section>
     </div>
   </page-wrapper>
@@ -50,7 +57,7 @@ export default {
       activeDownloads: [],
       finishedDownloads: [],
       refreshInterval: -1,
-      loadingDownloads: false
+      loadingDownloads: false,
     };
   },
   components: { PageWrapper, DownloadStatus },
@@ -60,18 +67,18 @@ export default {
       let requestsCompleted = 0;
       APIUtil.getActiveDownloads().then((downloads) => {
         this.activeDownloads = downloads;
-        requestsCompleted++
+        requestsCompleted++;
         if (requestsCompleted == 2) {
           this.loadingDownloads = false;
         }
       });
       APIUtil.getFinishedDownloads().then((downloads) => {
         this.finishedDownloads = downloads;
-        requestsCompleted++
+        requestsCompleted++;
         if (requestsCompleted == 2) {
           this.loadingDownloads = false;
         }
-      })
+      });
     },
     getDownloadInfo(download) {
       if (!download.status) {
@@ -126,33 +133,41 @@ export default {
       }
     },
     sortDownloads(a, b) {
-      return b.id - a.id
-    }
+      return b.id - a.id;
+    },
   },
   mounted() {
-    this.refreshDownloads()
-    this.refreshInterval = setInterval(this.refreshDownloads, 3000)
+    this.refreshDownloads();
+    this.refreshInterval = setInterval(this.refreshDownloads, 3000);
   },
   unmounted() {
-    clearInterval(this.refreshInterval)
+    clearInterval(this.refreshInterval);
   },
   computed: {
     orderedFinishedDownloads() {
-      return this.finishedDownloads.sort(this.sortDownloads)
+      return this.finishedDownloads.sort(this.sortDownloads);
     },
     orderedActiveDownloads() {
-      let processing = this.activeDownloads.filter((elem) => (elem.status == 'cprocessing' || elem.status == 'processing'))
-      let downloading = this.activeDownloads.filter((elem) => elem.status == 'downloading')
-      let waiting = this.activeDownloads.filter((elem) => elem.status == 'waiting')
-      let paused = this.activeDownloads.filter((elem) => elem.status == 'paused')
+      let processing = this.activeDownloads.filter(
+        (elem) => elem.status == "cprocessing" || elem.status == "processing"
+      );
+      let downloading = this.activeDownloads.filter(
+        (elem) => elem.status == "downloading"
+      );
+      let waiting = this.activeDownloads.filter(
+        (elem) => elem.status == "waiting"
+      );
+      let paused = this.activeDownloads.filter(
+        (elem) => elem.status == "paused"
+      );
 
-      processing = processing.sort(this.sortDownloads)
-      downloading = downloading.sort(this.sortDownloads)
-      waiting = waiting.sort(this.sortDownloads)
-      paused = paused.sort(this.sortDownloads)
+      processing = processing.sort(this.sortDownloads);
+      downloading = downloading.sort(this.sortDownloads);
+      waiting = waiting.sort(this.sortDownloads);
+      paused = paused.sort(this.sortDownloads);
 
-      return [...processing, ...downloading, ...waiting, ...paused]
-    }
-  }
+      return [...processing, ...downloading, ...waiting, ...paused];
+    },
+  },
 };
 </script>

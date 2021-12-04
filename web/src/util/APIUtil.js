@@ -25,7 +25,7 @@ const doAPIReq = (url, options, errMsg = undefined) => {
               closable: false,
             })
           }
-          reject(resp);
+          reject(resp.msg);
         }
       })
       .catch((err) => {
