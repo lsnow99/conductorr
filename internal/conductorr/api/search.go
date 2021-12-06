@@ -51,6 +51,11 @@ func (mr *MediaResponse) Expand() error {
 	mr.PathOK = ok
 	mr.Size = size
 	mr.visited[mr.ID] = true
+
+	if mr.ContentType != "season" && mr.ContentType != "series" {
+		return nil
+	}
+	
 	children, err := dbstore.GetMediaReferencing(mr.ID)
 	if err != nil {
 		return err

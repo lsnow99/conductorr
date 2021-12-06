@@ -19,7 +19,8 @@
       "program": "${workspaceFolder}/cmd/conductorr",
       "cwd": "${workspaceFolder}",
       "env": {
-        "CONDUCTORR_DEBUG": "true"
+        "CONDUCTORR_DEBUG": "true",
+        "DB_PATH": "/home/logan/tmp/conductorrtest.sqlite"
       }
     },
     {

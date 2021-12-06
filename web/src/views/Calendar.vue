@@ -62,7 +62,13 @@
           v-for="date in dates"
           :key="date"
           class="date overflow-hidden flex flex-col"
-          :class="(date.today?'date-today':'') + ' ' + calDateClass + ' ' + (date.gray ? 'opacity-80' : '')"
+          :class="
+            (date.today ? 'date-today' : '') +
+            ' ' +
+            calDateClass +
+            ' ' +
+            (date.gray ? 'opacity-80' : '')
+          "
         >
           <div class="bg-gray-800 inline-block py-px w-7 text-center">
             {{ date.day }}
@@ -77,7 +83,12 @@
               @keydown.space="selectEvent(event, $event)"
               role="button"
               tabindex="0"
-              class="cursor-pointer focus:bg-opacity-30 focus:outline-white flex flex-col lg:block"
+              class="
+                cursor-pointer
+                focus:bg-opacity-30 focus:outline-white
+                flex flex-col
+                lg:block
+              "
             >
               <span
                 class="
@@ -85,10 +96,8 @@
                   bg-gray-900 bg-opacity-30
                   text-sm
                   font-bold
-                  lg:inline-block
-                  lg:w-4-5r
-                  flex-col
-                  flex-1
+                  lg:inline-block lg:w-4-5r
+                  flex-col flex-1
                   w-full
                   min-h-full
                 "
@@ -126,10 +135,16 @@
     <modal
       v-model="isMediaEventSelected"
       :title="mediaEventTitle"
-      @close="restoreFocus"
+      @close="closeMediaEventModal"
     >
-      <search-actions :mediaID="mediaEvent && mediaEvent.media_id" />
-      <p>{{ mediaEvent && mediaEvent.description }}</p>
+      <div class="flex flex-row justify-between">
+        <div></div>
+        <div>
+          <search-actions :mediaID="mediaEvent && mediaEvent.media_id" />
+          <o-button @click="goToMediaEvent">{{ computedGoToBtnText }}</o-button>
+        </div>
+      </div>
+      <p>{{ computedMediaEventDescription }}</p>
     </modal>
   </page-wrapper>
 </template>
@@ -197,6 +212,10 @@ export default {
   },
   mixins: [TabSaver],
   methods: {
+    closeMediaEventModal() {
+      this.mediaEvent = null;
+      this.restoreFocus();
+    },
     goPrev() {
       if (this.viewType === "monthly") {
         this.selectedDate = this.selectedDate.minus({ months: 1 });
@@ -205,6 +224,15 @@ export default {
       } else if (this.viewType === "daily") {
         this.selectedDate = this.selectedDate.minus({ days: 1 });
       }
+    },
+    goToMediaEvent() {
+      let id = 0;
+      if (this.mediaEvent.content_type == "episode") {
+        id = this.mediaEvent.series_id;
+      } else {
+        id = this.mediaEvent.media_id;
+      }
+      this.$router.push({ name: "media", params: { media_id: id } });
     },
     selectEvent(event, $event) {
       this.mediaEvent = event;
@@ -224,13 +252,13 @@ export default {
     },
     eventClass(event) {
       if (event.path_ok) {
-        return `bg-green-600`
+        return `bg-green-600`;
       } else if (!event.monitoring) {
-        return `bg-gray-500`
+        return `bg-gray-500`;
       } else if (event.timestamp > now) {
-        return `bg-purple-600`
+        return `bg-purple-600`;
       } else if (event.timestamp <= now) {
-        return `bg-red-600`
+        return `bg-red-600`;
       }
     },
     eventTitle(event) {
@@ -246,10 +274,10 @@ export default {
     },
     isTodayClass(date) {
       if (date.dayStart.toISODate() === DateTime.local().toISODate()) {
-        return `bg-red-600`
+        return `bg-red-600`;
       }
-      return ''
-    }
+      return "";
+    },
   },
   mounted() {
     const screenWidth = window.innerWidth;
@@ -261,25 +289,27 @@ export default {
       this.viewType = "monthly";
     }
     this.loading = true;
-    APIUtil.getSchedule().then((events) => {
-      for (let i = 0; i < events.length; i++) {
-        events[i].timestamp = DateTime.fromJSDate(
-          new Date(events[i].timestamp)
-        );
-        events[i].time = events[i].timestamp.toLocaleString(
-          DateTime.TIME_SIMPLE
-        );
-        const dayStart = events[i].timestamp.startOf("day");
-        if (!this.eventMap[dayStart]) {
-          this.eventMap[dayStart] = [events[i]];
-        } else {
-          this.eventMap[dayStart].push(events[i]);
+    APIUtil.getSchedule()
+      .then((events) => {
+        for (let i = 0; i < events.length; i++) {
+          events[i].timestamp = DateTime.fromJSDate(
+            new Date(events[i].timestamp)
+          );
+          events[i].time = events[i].timestamp.toLocaleString(
+            DateTime.TIME_SIMPLE
+          );
+          const dayStart = events[i].timestamp.startOf("day");
+          if (!this.eventMap[dayStart]) {
+            this.eventMap[dayStart] = [events[i]];
+          } else {
+            this.eventMap[dayStart].push(events[i]);
+          }
         }
-      }
-      this.events = events;
-    }).finally(() => {
-      this.loading = false;
-    });
+        this.events = events;
+      })
+      .finally(() => {
+        this.loading = false;
+      });
   },
   computed: {
     mediaEventTitle() {
@@ -321,7 +351,7 @@ export default {
             day: curDate.day,
             dayStart: curDate.startOf("day"),
             gray: true,
-            today: curDate.toISODate() === DateTime.local().toISODate()
+            today: curDate.toISODate() === DateTime.local().toISODate(),
           });
         }
         for (let i = 0; i < daysInMonth; i++) {
@@ -330,7 +360,7 @@ export default {
             day: curDate.day,
             dayStart: curDate.startOf("day"),
             gray: false,
-            today: curDate.toISODate() === DateTime.local().toISODate()
+            today: curDate.toISODate() === DateTime.local().toISODate(),
           });
         }
         for (let i = monthEndDoW; i < 6; i++) {
@@ -339,7 +369,7 @@ export default {
             day: curDate.day,
             dayStart: curDate.startOf("day"),
             gray: true,
-            today: curDate.toISODate() === DateTime.local().toISODate()
+            today: curDate.toISODate() === DateTime.local().toISODate(),
           });
         }
       } else if (this.viewType === "weekly") {
@@ -351,7 +381,7 @@ export default {
             day: curDate.day,
             dayStart: curDate.startOf("day"),
             gray: false,
-            today: curDate.toISODate() === DateTime.local().toISODate()
+            today: curDate.toISODate() === DateTime.local().toISODate(),
           });
         }
       } else if (this.viewType === "daily") {
@@ -359,7 +389,7 @@ export default {
           day: this.selectedDate.day,
           dayStart: this.selectedDate.startOf("day"),
           gray: false,
-          today: this.selectedDate.toISODate() === DateTime.local().toISODate()
+          today: this.selectedDate.toISODate() === DateTime.local().toISODate(),
         });
       }
       return dates;
@@ -399,6 +429,19 @@ export default {
           return "day";
       }
       return "";
+    },
+    computedMediaEventDescription() {
+      if (this.mediaEvent) {
+        if (this.mediaEvent.description) return this.mediaEvent.description;
+        return "No description available";
+      }
+      return "";
+    },
+    computedGoToBtnText() {
+      if (this.mediaEvent.content_type == "episode") {
+        return "Go to Series";
+      }
+      return "Go to Movie";
     },
   },
 };

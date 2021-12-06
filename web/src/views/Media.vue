@@ -117,6 +117,9 @@
       </div>
     </section>
     <section class="mt-4">
+      <DownloadStatusViewer wrapperClass="h-48" :mediaID="mediaID" />
+    </section>
+    <section class="mt-4">
       <div
         class="p-5 bg-gray-600 cursor-pointer rounded-md my-4"
         v-for="season in media.children"
@@ -204,6 +207,7 @@ import SearchActions from "../components/SearchActions.vue";
 import MonitoringToggle from "../components/MonitoringToggle.vue";
 import Modal from "../components/Modal.vue";
 import TabSaver from "../util/TabSaver";
+import DownloadStatusViewer from "../components/DownloadStatusViewer.vue";
 
 export default {
   data() {
@@ -234,6 +238,7 @@ export default {
     SearchActions,
     MonitoringToggle,
     Modal,
+    DownloadStatusViewer,
   },
   methods: {
     closeDelete() {

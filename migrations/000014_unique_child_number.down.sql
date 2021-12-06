@@ -1,8 +1,10 @@
+--SQLITE--
+PRAGMA foreign_keys=off;
+--END--
+
 BEGIN;
 
-ALTER TABLE media RENAME TO old_media;
-
-CREATE TABLE media(
+CREATE TABLE new_media(
     id INTEGER PRIMARY KEY,
     title VARCHAR(256),
     description VARCHAR(2048),
@@ -26,6 +28,14 @@ CREATE TABLE media(
     CONSTRAINT uq_imdb_id UNIQUE (imdb_id)
 );
 
-INSERT INTO media SELECT * FROM old_media;
+INSERT INTO new_media SELECT * FROM media;
+
+DROP TABLE media;
+
+ALTER TABLE new_media RENAME TO media;
 
 COMMIT;
+
+--SQLITE--
+PRAGMA foreign_keys=on;
+--END--

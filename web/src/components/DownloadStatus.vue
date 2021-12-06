@@ -8,7 +8,7 @@
     <span class="font-bold">{{ statusText }}</span>
     {{ truncatedFriendlyName }}
     <span class="float-right">{{
-      fraction < 1 ? fraction * 100 + "%" : ""
+      fraction < 1 ? Math.round(fraction * 100) + "%" : ""
     }}</span>
   </div>
 </template>

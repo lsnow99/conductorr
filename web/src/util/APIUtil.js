@@ -398,14 +398,14 @@ const setMonitoringMedia = (id, monitoring) => {
   })
 }
 
-const getActiveDownloads = () => {
-  return doAPIReq(`/api/v1/activeDownloads`, {
+const getActiveDownloads = (mediaID = 0) => {
+  return doAPIReq(`/api/v1/activeDownloads?media_id=${mediaID}`, {
     method: "GET",
   })
 }
 
-const getFinishedDownloads = () => {
-  return doAPIReq(`/api/v1/finishedDownloads`, {
+const getFinishedDownloads = (mediaID = 0) => {
+  return doAPIReq(`/api/v1/finishedDownloads?media_id=${mediaID}`, {
     method: "GET",
   })
 }

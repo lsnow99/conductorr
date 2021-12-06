@@ -76,9 +76,9 @@ Conductorr's profile editor page uses a WebAssembly module to do client-side val
 
 Conductorr is built on Vue 3 using Vite and [TailwindCSS](https://tailwindcss.com/).
 
+- `pnpm install`
 - `cd web`
-- `yarn install`
-- `yarn dev`
+- `pnpm dev`
 
 This will start the web frontend and should be available at http://localhost:3000
 

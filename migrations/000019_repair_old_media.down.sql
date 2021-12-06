@@ -4,7 +4,9 @@ PRAGMA foreign_keys=off;
 
 BEGIN;
 
-CREATE TABLE new_media(
+ALTER TABLE media RENAME TO old_media;
+
+CREATE TABLE media(
     id INTEGER PRIMARY KEY,
     title VARCHAR(256),
     description VARCHAR(2048),
@@ -30,11 +32,7 @@ CREATE TABLE new_media(
     CONSTRAINT uq_child_num UNIQUE (item_number, parent_media_id)
 );
 
-INSERT INTO new_media SELECT * FROM media;
-
-DROP TABLE media;
-
-ALTER TABLE new_media RENAME TO media;
+INSERT INTO media SELECT * FROM old_media;
 
 COMMIT;
 

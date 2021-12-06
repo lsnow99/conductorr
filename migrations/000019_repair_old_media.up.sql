@@ -4,7 +4,9 @@ PRAGMA foreign_keys=off;
 
 BEGIN;
 
-CREATE TABLE new_media(
+DROP TABLE IF EXISTS old_media;
+
+CREATE TABLE old_media(
     id INTEGER PRIMARY KEY,
     title VARCHAR(256),
     description VARCHAR(2048),
@@ -25,16 +27,17 @@ CREATE TABLE new_media(
     path_id INTEGER REFERENCES path(id),
     item_number INTEGER,
     monitoring BOOLEAN NOT NULL DEFAULT true,
+    tvdb_id INTEGER,
     FOREIGN KEY(parent_media_id) REFERENCES media(id) ON DELETE CASCADE,
     CONSTRAINT uq_imdb_id UNIQUE (imdb_id)
     CONSTRAINT uq_child_num UNIQUE (item_number, parent_media_id)
 );
 
-INSERT INTO new_media SELECT * FROM media;
+INSERT INTO old_media SELECT * FROM media;
 
 DROP TABLE media;
 
-ALTER TABLE new_media RENAME TO media;
+ALTER TABLE old_media RENAME TO media;
 
 COMMIT;
 

@@ -48,7 +48,7 @@ func (dm *DownloaderManager) DoTask() {
 	downloaders := dm.getDownloaders(false)
 	downloads := make([]integration.Download, 0)
 	for _, dlr := range downloaders {
-		downloadsToMonitor := getDownloadsToMonitor(dm.downloads)
+		downloadsToMonitor := getDownloadsToMonitor(dm.downloads, dlr.ID)
 		updatedDownloads, _ := dlr.PollDownloads(downloadsToMonitor)
 		// if err != nil {
 		// 	logger.LogWarn(err)
@@ -56,7 +56,9 @@ func (dm *DownloaderManager) DoTask() {
 		downloads = append(downloads, updatedDownloads...)
 	}
 	dm.processDownloads(downloads)
+	dm.Lock()
 	dm.didFirstRun = true
+	dm.Unlock()
 }
 
 func (dm *DownloaderManager) GetTaskName() string {
@@ -388,7 +390,7 @@ func (dm *DownloaderManager) handleCompletedDownload(download ManagedDownload) {
 }
 
 // getDownloadsToMonitor convert a slice of downloads to a slice of identifiers
-func getDownloadsToMonitor(downloads []ManagedDownload) (monitoring []string) {
+func getDownloadsToMonitor(downloads []ManagedDownload, downloaderID int) (monitoring []string) {
 	for _, dl := range downloads {
 		monitoring = append(monitoring, dl.Identifier)
 	}
