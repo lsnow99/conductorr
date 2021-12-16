@@ -81,7 +81,6 @@ func Respond(w http.ResponseWriter, req *http.Request, err error, data interface
 		}
 	}
 
-	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(r); err != nil {
 		log.Println(err)
 	}
