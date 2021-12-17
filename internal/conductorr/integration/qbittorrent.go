@@ -1,10 +1,12 @@
 package integration
 
 import (
+	"encoding/hex"
 	"fmt"
-	"io/ioutil"
+	"net/http"
 
 	"github.com/l3uddz/go-qbittorrent/qbt"
+	"github.com/lsnow99/conductorr/pkg/torrentfile"
 )
 
 type QBittorrent struct {
@@ -33,22 +35,27 @@ func NewQBittorrentFromConfig(configuration map[string]interface{}) (*QBittorren
 	return NewQBittorrent(username, password, baseUrl)
 }
 
+type TorrentMetadata struct {
+	Announce string `bencode:"announce"`
+	Info     []byte `bencode:"info"`
+}
+
 func (q *QBittorrent) AddRelease(release Release) (string, error) {
 
-	opts := map[string]string{}
-
-	resp, err := q.client.DownloadFromLink(release.DownloadURL, opts)
+	resp, err := http.Get(release.DownloadURL)
 	if err != nil {
 		return "", err
 	}
 
 	defer resp.Body.Close()
-	data, err := ioutil.ReadAll(resp.Body)
+
+	torrent, err := torrentfile.Unmarshal(resp.Body)
 	if err != nil {
 		return "", err
 	}
-
-	return string(data), nil
+	hash, err := torrent.Info.Hash()
+	hashStr := hex.EncodeToString(hash)
+	return hashStr, err
 }
 
 func (q *QBittorrent) DeleteDownload(identifier string) error {

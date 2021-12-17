@@ -21,7 +21,10 @@
       "env": {
         "CONDUCTORR_DEBUG": "true",
         "DB_PATH": "/home/logan/tmp/conductorrtest.sqlite"
-      }
+      },
+      "dlvFlags": [
+        "--only-same-user=false"
+      ]
     },
     {
       "name": "Test NZBGet",

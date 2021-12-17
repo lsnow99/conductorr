@@ -11,9 +11,12 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/hekmon/transmissionrpc v1.1.1-0.20210523080628-42bb8f04fdc8
 	github.com/jackc/pgx/v4 v4.14.1
+	github.com/jackpal/bencode-go v1.0.0 // indirect
 	github.com/l3uddz/go-qbittorrent v1.0.3 // indirect
 	github.com/lsnow99/go-newznab v1.1.1-0.20211104052345-8d29a69c248f
 	github.com/mholt/archiver/v3 v3.5.1
+	github.com/veggiedefender/torrent-client v0.0.0-20210223035144-d51be59e2c21 // indirect
+	github.com/zeebo/bencode v1.0.0
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
 	golang.org/x/net v0.0.0-20211215060638-4ddde0e984e9
 	modernc.org/sqlite v1.14.3
