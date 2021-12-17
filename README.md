@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./web/public/logo-rect.svg" alt="Conductorr logo image" width="200px" /> 
+  <img src="./frontend/public/logo-rect.svg" alt="Conductorr logo image" width="200px" /> 
 </p>
 
 # Conductorr
@@ -56,33 +56,53 @@ Conductorr actually began as an entirely [different project]() that glued togeth
 
 ## Developing
 
-To develop on Conductorr, first clone the repository.
+To develop for Conductorr, first clone the repository.
 
-[Visual Studio Code](https://code.visualstudio.com/) is recommended for development, and some instructions are specific to VS Code.
+[Visual Studio Code](https://code.visualstudio.com/) is recommended for development, and some instructions are specific to VS Code. However, you can simply ignore the specific instructions and use your own editor.
 
 ### Backend Development
 
 Conductorr backend requires [go](https://golang.org/) to be installed. For development, any stable Go version should be fine. However, to build the production binaries Conductorr requires Go version ^1.16.0. This is because the production binary uses the [embed](https://golang.org/pkg/embed/) package which was introduced in Go v1.16.0.
 
-Within VS Code, select "Launch Backend" from the debug menu. You can set breakpoints and debug as usual within VS Code. To run the backend without VS Code, use the command `CONDUCTORR_DEBUG=true go run ./cmd/conductorr`
+Within VS Code, select "Launch Backend" from the debug menu. You can set breakpoints and debug as usual within VS Code. To run the backend without VS Code, use the command `CONDUCTORR_DEBUG=true go run ./cmd/conductorr`.
 
 ### WebAssembly CSL Module
 
-Conductorr's profile editor page uses a WebAssembly module to do client-side validation and evaluationmsm.mediaServers of CSL scripts. Before developing on the frontend, you must generate this module using `./build.sh csl` (For Windows, you can either run this in WSL or just run the equivalent commands in cmd/PowerShell). This script assumes you have [Brotli](https://github.com/google/brotli) installed and available in your PATH.
+Conductorr's profile editor page uses a WebAssembly module to do client-side validation and evaluationms of CSL scripts. Before developing on the frontend, you must generate this module using `./build.sh csl` (For Windows, you can either run this in WSL or just run the equivalent commands in cmd/PowerShell). This script assumes you have [Brotli](https://github.com/google/brotli) installed and available in your PATH.
 
-> NOTE: If you skip this step, it is likely you will run into an issue where `wasm_exec.js` is not found when serving the frontend
+> NOTE: If you skip this step, it is likely you will run into an issue where `wasm_exec.js` is not found when serving the frontend.
+
+### Shared Library
+
+The Shared Library is a Vue 3 project that exports components which are intended to be shared accross both the documentation site and the web application.
+
+To develop the Shared Library with hot-reloading:
+
+- `pnpm install`
+- `cd shared`
+- `pnpm dev`
+
+To build the Shared Library (so that the `frontend` and `docusite` projects can use it):
+
+- `pnpm install`
+- `cd shared`
+- `pnpm build`
+
+> NOTE: This build step must be performed before developing in the docusite or the 
 
 ### Frontend Development
+
+> NOTE: Requires the [WebAssembly CSL Module](#webassembly-csl-module) and [Shared Library](#shared-library) to be built first. This only needs to happen the first time after you clone the repository or any time code is modified in the CSL module or the Shared Library.
 
 Conductorr is built on Vue 3 using Vite and [TailwindCSS](https://tailwindcss.com/).
 
 - `pnpm install`
-- `cd web`
+- `cd frontend`
 - `pnpm dev`
 
-This will start the web frontend and should be available at http://localhost:3000
+This will start the frontend app and should be available at http://localhost:3000
 
-Modifying files within `web/src` and saving them will cause the website to hot-reload in your browser, aiding in development.
+Modifying files within `frontend/src` and saving them will cause the website to hot-reload in your browser, aiding in development.
 
 Conductorr uses Tailwind for all styling. [Oruga](https://oruga.io) components are used and styled via Tailwind.
 
@@ -134,7 +154,7 @@ The direct dependencies of Conductorr are listed here:
 - [archiver](https://github.com/mholt/archiver) - Pure Go utility to interface with common archive formats
 - [go-newznab](https://github.com/mrobinsn/go-newznab) - Newznab/Torznab bindings for Go
 
-For a full list of packages used and their versions/licenses, please refer to the [go.mod](./go.mod) and [package.json](./web/package.json) files
+For a full list of packages used and their versions/licenses, please refer to the [go.mod](./go.mod) and package.json files
 
 ### License
 - [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.html)

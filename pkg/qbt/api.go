@@ -30,7 +30,7 @@ func (c *Client) Login(username, password string) error {
 	return c.doRequest("auth", "login", params, nil)
 }
 
-func (c *Client) 
+func (c *Client) AddTorrent() 
 
 func (c *Client) doRequest(apiName, methodName string, params url.Values, obj *interface{}) error {
 	c.RLock()

@@ -27,7 +27,7 @@
                   >
                 </span>
               </template>
-              <div />
+              <div></div>
             </o-tab-item>
             <o-tab-item>
               <template v-slot:header>
@@ -38,7 +38,7 @@
                   >
                 </span>
               </template>
-              <div />
+              <div></div>
             </o-tab-item>
           </o-tabs>
         </div>
@@ -229,7 +229,7 @@
 <script>
 import { nextTick } from "vue";
 import APIUtil from "../util/APIUtil";
-import CSLEditor from "../components/CSLEditor.vue";
+import { CSLEditor } from "conductorr-lib";
 import Split from "split.js";
 import "../util/wasm_exec.js";
 import { DateTime } from "luxon";

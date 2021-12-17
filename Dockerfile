@@ -5,8 +5,8 @@
 # - VERSION can be set using $(git describe --tags)
 ###
 
-# Build the CSL web assembly module
-# This stage of the build also copies the wasm_exec.js script to the web ui source
+# Build the CSL WebAssembly module
+# This stage of the build also copies the wasm_exec.js script to the frontend source folder
 FROM golang:1.17 AS csl-build-env
 WORKDIR /build
 RUN apt-get update && apt-get install -y brotli
@@ -22,13 +22,13 @@ RUN cp $(go env GOROOT)/misc/wasm/wasm_exec.js .
 FROM node:lts-alpine AS vue-build-env
 WORKDIR /build
 RUN npm install -g pnpm
-COPY ./web ./web
+COPY ./frontend ./frontend
 COPY pnpm-lock.yaml .
 COPY pnpm-workspace.yaml .
 # Copy the exact wasm_exec.js file from the installation of Go that built the wasm module
-COPY --from=csl-build-env /build/wasm_exec.js ./web/src/util
-RUN cd web && pnpm install
-RUN cd web && pnpm build
+COPY --from=csl-build-env /build/wasm_exec.js ./frontend/src/util
+RUN cd frontend && pnpm install
+RUN cd frontend && pnpm build
 
 # Build the full binary
 FROM golang:1.17-alpine AS svr-build-env
@@ -40,7 +40,7 @@ COPY go.mod .
 COPY go.sum .
 RUN go mod download
 COPY --from=csl-build-env /build/dist ./dist
-COPY --from=vue-build-env /build/web/build web/build
+COPY --from=vue-build-env /build/frontend/build frontend/build
 COPY ./embed.go ./embed.go
 COPY ./migrations ./migrations
 COPY ./internal ./internal

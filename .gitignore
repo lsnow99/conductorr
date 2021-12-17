@@ -5,7 +5,7 @@ conductorr.db-journal
 /dist
 **/dist
 /bin
-web/src/util/wasm_exec.js
+frontend/src/util/wasm_exec.js
 /conductorr
 jellyfin-openapi-stable.json
 node_modules

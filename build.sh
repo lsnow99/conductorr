@@ -15,7 +15,7 @@ fi
 
 # Parse command
 buildwasm=0
-buildweb=0
+buildfrontend=0
 buildbin=0
 buildcsl=0
 builddocusite=0
@@ -23,13 +23,13 @@ buildcorsproxy=0
 
 if [ "$1" == "conductorr" ]; then
     buildwasm=1
-    buildweb=1
+    buildfrontend=1
     buildbin=1
 fi
 
 if [ "$1" == "all" ] || [ "$1" == "" ]; then
     buildwasm=1
-    buildweb=1
+    buildfrontend=1
     buildbin=1
     buildcsl=1
     builddocusite=1
@@ -44,8 +44,8 @@ if [ "$1" == "wasm" ]; then
     buildwasm=1
 fi
 
-if [ "$1" == "web" ]; then
-    buildweb=1
+if [ "$1" == "frontend" ]; then
+    buildfrontend=1
 fi
 
 if [ "$1" == "bin" ]; then
@@ -126,8 +126,8 @@ if [ $buildwasm == 1 ]; then
     GOOS=js GOARCH=wasm go build -o dist/csl.wasm -ldflags="-s -w -X 'main.CorsProxyServer=/.netlify/functions/corsproxy'" ./cmd/cslwasm
     echo "${cyan}→ Compressing with brotli${reset}"
     brotli -f dist/csl.wasm
-    # Copy the corresponding wasm_exec.js file to the web app and docusite projects
-    cp $(go env GOROOT)/misc/wasm/wasm_exec.js ./web/src/util
+    # Copy the corresponding wasm_exec.js file to the frontend app and docusite projects
+    cp $(go env GOROOT)/misc/wasm/wasm_exec.js ./frontend/src/util
     cp $(go env GOROOT)/misc/wasm/wasm_exec.js ./docusite/docs/.vuepress
     # Copy the web assembly modules so that they are accessible for the docusite
     cp ./dist/csl.wasm ./docusite/docs/.vuepress/public
@@ -135,9 +135,9 @@ if [ $buildwasm == 1 ]; then
 fi
 
 # Build web frontend
-if [ $buildweb == 1 ]; then
+if [ $buildfrontend == 1 ]; then
     echo "==============================[    Building Frontend    ]=============================="
-    buildWebsite web
+    buildWebsite frontend
 fi
 
 # Build docusite

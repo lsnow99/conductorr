@@ -106,7 +106,7 @@ func GetRouter() http.Handler {
 	r.Use(AuthMiddleware)
 
 	if settings.BuildMode == "binary" {
-		sfs, err := fs.Sub(conductorr.WebDist, "web/build/dist")
+		sfs, err := fs.Sub(conductorr.FrontendDist, "frontend/build/dist")
 		if err != nil {
 			panic(err)
 		}
