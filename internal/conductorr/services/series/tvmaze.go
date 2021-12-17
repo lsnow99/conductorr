@@ -2,10 +2,13 @@ package series
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
 	"time"
+
+	"github.com/lsnow99/conductorr/internal/conductorr/logger"
 )
 
 type TVMaze struct {}
@@ -98,6 +101,7 @@ func (t *TVMaze) GetEpisodes(imdbID string) ([]Episode, error) {
 	u.Host = "api.tvmaze.com"
 	u.Path = "shows/" + strconv.Itoa(id) + "/episodes"
 
+	logger.LogInfo(fmt.Errorf("making request to %s", u.String()))
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		return nil, err

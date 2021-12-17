@@ -42,3 +42,11 @@ func TempDir() (string, error) {
 	}
 	return tmpDir, nil
 }
+
+func MkdirTemp(pattern string) (string, error) {
+	tmpDir, err := TempDir()
+	if err != nil {
+		return "", err
+	}
+	return os.MkdirTemp(tmpDir, pattern)
+}

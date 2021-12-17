@@ -47,7 +47,7 @@ COPY ./internal ./internal
 COPY ./pkg ./pkg
 COPY ./cmd/conductorr ./cmd/conductorr
 ARG VERSION=NULL
-RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 \
+RUN CGO_ENABLED=0 GOOS=linux \
     go build -o /build/conductorr \
     -ldflags="-s -w -X 'github.com/lsnow99/conductorr/internal/conductorr/settings.Version=${VERSION}' -X 'github.com/lsnow99/conductorr/internal/conductorr/settings.BuildMode=binary'" \
     ./cmd/conductorr

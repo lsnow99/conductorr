@@ -165,20 +165,19 @@ if [ $buildbin == 1 ]; then
     echo "==============================[   Compiling Conductorr  ]=============================="
     # Compile for Windows
     echo "${cyan}→ Compiling for Windows${reset}"
-    GOOS=windows GOARCH=386 go build -o bin/conductorr-windows_x86.exe -ldflags="-s -w -X 'github.com/lsnow99/conductorr/settings.Version=$(git describe --tags)' -X 'github.com/lsnow99/conductorr/settings.BuildMode=binary'" ./cmd/conductorr
-    GOOS=windows GOARCH=amd64 go build -o bin/conductorr-windows_x64.exe -ldflags="-s -w -X 'github.com/lsnow99/conductorr/settings.Version=$(git describe --tags)' -X 'github.com/lsnow99/conductorr/settings.BuildMode=binary'" ./cmd/conductorr
+    CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o bin/conductorr-windows_x64.exe -ldflags="-s -w -X 'github.com/lsnow99/conductorr/internal/conductorr/settings.Version=$(git describe --tags)' -X 'github.com/lsnow99/conductorr/internal/conductorr/settings.BuildMode=binary'" ./cmd/conductorr
 
     # Compile for OS X
     echo "${cyan}→ Compiling for OS X${reset}"
-    GOOS=darwin GOARCH=amd64 go build -o bin/conductorr-osx_amd64 -ldflags="-s -w -X 'github.com/lsnow99/conductorr/settings.Version=$(git describe --tags)' -X 'github.com/lsnow99/conductorr/settings.BuildMode=binary'" ./cmd/conductorr
-    GOOS=darwin GOARCH=arm64 go build -o bin/conductorr-osx_arm64 -ldflags="-s -w -X 'github.com/lsnow99/conductorr/settings.Version=$(git describe --tags)' -X 'github.com/lsnow99/conductorr/settings.BuildMode=binary'" ./cmd/conductorr
+    CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o bin/conductorr-osx_amd64 -ldflags="-s -w -X 'github.com/lsnow99/conductorr/internal/conductorr/settings.Version=$(git describe --tags)' -X 'github.com/lsnow99/conductorr/internal/conductorr/settings.BuildMode=binary'" ./cmd/conductorr
+    CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o bin/conductorr-osx_arm64 -ldflags="-s -w -X 'github.com/lsnow99/conductorr/internal/conductorr/settings.Version=$(git describe --tags)' -X 'github.com/lsnow99/conductorr/internal/conductorr/settings.BuildMode=binary'" ./cmd/conductorr
 
     # Compile for Linux
     echo "${cyan}→ Compiling for Linux${reset}"
-    GOOS=linux GOARCH=386 go build -o bin/conductorr-linux_x86 -ldflags="-s -w -X 'github.com/lsnow99/conductorr/settings.Version=$(git describe --tags)' -X 'github.com/lsnow99/conductorr/settings.BuildMode=binary'" ./cmd/conductorr
-    GOOS=linux GOARCH=amd64 go build -o bin/conductorr-linux_x64 -ldflags="-s -w -X 'github.com/lsnow99/conductorr/settings.Version=$(git describe --tags)' -X 'github.com/lsnow99/conductorr/settings.BuildMode=binary'" ./cmd/conductorr
-    GOOS=linux GOARCH=arm go build -o bin/conductorr-linux_arm -ldflags="-s -w -X 'github.com/lsnow99/conductorr/settings.Version=$(git describe --tags)' -X 'github.com/lsnow99/conductorr/settings.BuildMode=binary'" ./cmd/conductorr
-    GOOS=linux GOARCH=arm64 go build -o bin/conductorr-linux_arm64 -ldflags="-s -w -X 'github.com/lsnow99/conductorr/settings.Version=$(git describe --tags)' -X 'github.com/lsnow99/conductorr/settings.BuildMode=binary'" ./cmd/conductorr
+    CGO_ENABLED=0 GOOS=linux GOARCH=386 go build -o bin/conductorr-linux_x86 -ldflags="-s -w -X 'github.com/lsnow99/conductorr/internal/conductorr/settings.Version=$(git describe --tags)' -X 'github.com/lsnow99/conductorr/internal/conductorr/settings.BuildMode=binary'" ./cmd/conductorr
+    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bin/conductorr-linux_x64 -ldflags="-s -w -X 'github.com/lsnow99/conductorr/internal/conductorr/settings.Version=$(git describe --tags)' -X 'github.com/lsnow99/conductorr/internal/conductorr/settings.BuildMode=binary'" ./cmd/conductorr
+    CGO_ENABLED=0 GOOS=linux GOARCH=arm go build -o bin/conductorr-linux_arm -ldflags="-s -w -X 'github.com/lsnow99/conductorr/internal/conductorr/settings.Version=$(git describe --tags)' -X 'github.com/lsnow99/conductorr/internal/conductorr/settings.BuildMode=binary'" ./cmd/conductorr
+    CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o bin/conductorr-linux_arm64 -ldflags="-s -w -X 'github.com/lsnow99/conductorr/internal/conductorr/settings.Version=$(git describe --tags)' -X 'github.com/lsnow99/conductorr/internal/conductorr/settings.BuildMode=binary'" ./cmd/conductorr
 fi
 
 echo "${green}✔ Build succeeded${reset}"

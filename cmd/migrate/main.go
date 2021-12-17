@@ -11,13 +11,13 @@ import (
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
-	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
+	_ "github.com/golang-migrate/migrate/v4/database/sqlite"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 )
 
 func main() {
 
-	databasePtr := flag.String("database", "sqlite3://conductorr.db", "Database connection string to use for the force command (default sqlite://conductorrdb)")
+	databasePtr := flag.String("database", "sqlite://conductorr.db", "Database connection string to use for the force command (default sqlite://conductorrdb)")
 	sourcePtr := flag.String("source", "file://migrations", "Migrations source (default file://migrations)")
 	pathPtr := flag.String("path", "migrations/", "Migrations folder to use (default migrations/)")
 

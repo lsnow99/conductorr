@@ -18,7 +18,6 @@ type Transmission struct {
 	password  string
 	baseUrl   string
 	client    *transmissionrpc.Client
-	downloads []Download
 }
 
 func NewTransmission(username, password, baseUrl string) (*Transmission, error) {
@@ -104,15 +103,37 @@ func (t *Transmission) AddRelease(release Release) (string, error) {
 		return "", err
 	}
 
-	if torrent.HashString == nil {
-		return "", errors.New("transmission did not return a hash string")
+	if torrent.ID == nil {
+		return "", errors.New("transmission did not return an id for the torrent")
 	}
 
-	return *torrent.HashString, nil
+	return strconv.FormatInt(*torrent.ID, 10), nil
 }
 
-func (t *Transmission) PollDownloads(hashes []string) ([]Download, error) {
-	torrents, err := t.client.TorrentGetAllForHashes(hashes)
+func (t *Transmission) DeleteDownload(identifier string) error {
+	id, err := strconv.ParseInt(identifier, 10, 64)
+	if err != nil {
+		return err
+	}
+
+	payload := transmissionrpc.TorrentRemovePayload{
+		IDs: []int64{id},
+		DeleteLocalData: true,
+	}
+	return t.client.TorrentRemove(&payload)
+}
+
+func (t *Transmission) PollDownloads(identifiers []string) ([]Download, error) {
+	ids := []int64{}
+	for _, identifier := range identifiers {
+		id, err := strconv.ParseInt(identifier, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		ids = append(ids, id)
+	}
+
+	torrents, err := t.client.TorrentGetAllFor(ids)
 	if err != nil {
 		return nil, err
 	}

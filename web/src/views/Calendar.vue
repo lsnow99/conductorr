@@ -157,7 +157,6 @@
 }
 
 .date-today {
-  @apply bg-gray-500;
   @apply border-gray-300;
   @apply border-solid;
   @apply border-2;

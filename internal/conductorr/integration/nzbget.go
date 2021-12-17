@@ -3,6 +3,7 @@ package integration
 import (
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"mime"
 	"net/http"
@@ -19,7 +20,6 @@ type NZBGet struct {
 	password  string
 	baseUrl   string
 	rpcClient *rpc.Client
-	downloads []Download
 }
 
 type ItemEntry struct {
@@ -162,6 +162,20 @@ func (n *NZBGet) AddRelease(release Release) (string, error) {
 	}
 
 	return strconv.Itoa(code), nil
+}
+
+func (n *NZBGet) DeleteDownload(identifier string) error {
+	id, err := strconv.Atoi(identifier)
+	if err != nil {
+		return err
+	}
+
+	var ok bool
+	err = n.rpcClient.Call(&ok, "editqueue", "FileDelete", "", []int{id})
+	if !ok {
+		return fmt.Errorf("nzbget could not delete download with id %v", identifier)
+	}
+	return err
 }
 
 func (n *NZBGet) PollDownloads(names []string) ([]Download, error) {

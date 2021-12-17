@@ -24,7 +24,7 @@ path to a temporary directory containing the same migrations but
 with the requested dbms's conversion applied
 */
 func CreateMigrationsFor(dbmsKey, inputDir string) (string, error) {
-	outputDir, err := integration.TempDir()
+	outputDir, err := integration.MkdirTemp("conductorr_migrations_converted")
 	if err != nil {
 		return "", err
 	}

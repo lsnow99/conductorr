@@ -3,6 +3,7 @@ package settings
 import (
 	"log"
 	"net"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -76,10 +77,15 @@ func init() {
 		log.Println("Defaulting to sqlite for database")
 	}
 
+	pragmas := url.Values{}
+	pragmas.Add("_pragma", "foreign_keys = on")
+	pragmas.Add("_pragma", "cache = shared")
+	pragmas.Add("_pragma", "mode = rwc")
+
 	if dbPath, exists := os.LookupEnv("DB_PATH"); exists {
-		DBPath = "file:" + dbPath + "?_foreign_keys=on&cache=shared&mode=rwc"
+		DBPath = "file:" + dbPath + "?" + pragmas.Encode()
 	} else {
-		DBPath = "file:./conductorr.db?_foreign_keys=on&cache=shared&mode=rwc"
+		DBPath = "file:./conductorr.db?" + pragmas.Encode()
 	}
 
 	if omdbKey, exists := os.LookupEnv("OMDB_API_KEY"); exists {

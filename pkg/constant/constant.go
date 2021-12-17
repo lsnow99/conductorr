@@ -6,36 +6,6 @@ type ParsedOption struct {
 }
 
 var (
-	Genres = []string{
-		"Action",
-		"Adult",
-		"Adventure",
-		"Animation",
-		"Biography",
-		"Comedy",
-		"Crime",
-		"Documentary",
-		"Drama",
-		"Family",
-		"Fantasy",
-		"Film-Noir",
-		"Game-Show",
-		"History",
-		"Horror",
-		"Musical",
-		"Music",
-		"Mystery",
-		"News",
-		"Reality-TV",
-		"Romance",
-		"Sci-Fi",
-		"Short",
-		"Sport",
-		"Talk-Show",
-		"Thriller",
-		"War",
-		"Western",
-	}
 	RipTypes = map[string]ParsedOption{
 		"CAM": {
 			Priority:     10,

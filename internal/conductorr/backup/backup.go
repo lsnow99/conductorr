@@ -27,7 +27,7 @@ type BackupData struct {
 
 func CreateBackup(ctx context.Context) (id int, err error) {
 	var dir, tmpDir string
-	tmpDir, err = integration.TempDir()
+	tmpDir, err = integration.MkdirTemp("conductorr_backup")
 	if err != nil {
 		return
 	}

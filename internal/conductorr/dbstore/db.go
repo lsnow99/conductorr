@@ -13,13 +13,13 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
-	"github.com/golang-migrate/migrate/v4/database/sqlite3"
+	"github.com/golang-migrate/migrate/v4/database/sqlite"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/jackc/pgx/v4"
+	_ "modernc.org/sqlite"
 	"github.com/lsnow99/conductorr"
-	"github.com/lsnow99/conductorr/pkg/constant"
+	"github.com/lsnow99/conductorr/internal/conductorr/integration"
 	"github.com/lsnow99/conductorr/internal/conductorr/settings"
-	_ "github.com/mattn/go-sqlite3"
 )
 
 var db *sql.DB
@@ -45,12 +45,12 @@ func Init() error {
 			return err
 		}
 	} else {
-		db, err = sql.Open("sqlite3", settings.DBPath)
+		db, err = sql.Open("sqlite", settings.DBPath)
 		if err != nil {
 			return err
 		}
 
-		driver, err = sqlite3.WithInstance(db, &sqlite3.Config{
+		driver, err = sqlite.WithInstance(db, &sqlite.Config{
 			DatabaseName: "main",
 			NoTxWrap:     true,
 		})
@@ -65,7 +65,7 @@ func Init() error {
 	}
 
 	if settings.BuildMode == "binary" {
-		path, err := os.MkdirTemp("", "conductorr_migrations")
+		path, err := integration.MkdirTemp("conductorr_migrations")
 		if err != nil {
 			return err
 		}
@@ -102,7 +102,10 @@ func Init() error {
 		return err
 	}
 
-	m, err := migrate.NewWithDatabaseInstance("file://"+migrationPath, "conductorrdb?_foreign_keys=on", driver)
+	pragmas := url.Values{}
+	pragmas.Add("_pragma", "foreign_keys = on")
+
+	m, err := migrate.NewWithDatabaseInstance("file://"+migrationPath, "conductorrdb?"+pragmas.Encode(), driver)
 	if err != nil {
 		return err
 	}
@@ -120,9 +123,6 @@ func Init() error {
 	}
 
 	if err := initUser(); err != nil {
-		return err
-	}
-	if err := initGenres(); err != nil {
 		return err
 	}
 
@@ -154,22 +154,6 @@ func initUser() error {
 
 	if count == 0 {
 		settings.ResetUser = true
-	}
-	return nil
-}
-
-func initGenres() error {
-	for _, genre := range constant.Genres {
-		_, err := db.Exec(`
-			INSERT INTO genre (name)
-			SELECT (?)
-			WHERE NOT EXISTS (
-				SELECT * FROM genre
-				WHERE name = ?)
-			`, genre, genre)
-		if err != nil {
-			return err
-		}
 	}
 	return nil
 }

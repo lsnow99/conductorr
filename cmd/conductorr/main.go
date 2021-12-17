@@ -1,20 +1,35 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/http"
 	"os"
+	"runtime/pprof"
 	"strconv"
 
+	"github.com/lsnow99/conductorr/internal/conductorr/api"
 	"github.com/lsnow99/conductorr/internal/conductorr/app"
 	"github.com/lsnow99/conductorr/internal/conductorr/dbstore"
 	"github.com/lsnow99/conductorr/internal/conductorr/logger"
-	"github.com/lsnow99/conductorr/internal/conductorr/api"
 	"github.com/lsnow99/conductorr/internal/conductorr/scheduler"
 	"github.com/lsnow99/conductorr/internal/conductorr/settings"
 )
 
+var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
+
 func main() {
+
+	flag.Parse()
+	if *cpuprofile != "" {
+		f, err := os.Create(*cpuprofile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+	}
+
 	if err := dbstore.Init(); err != nil {
 		log.Fatal(err)
 	}

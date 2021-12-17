@@ -268,27 +268,27 @@ func (dm *DownloaderManager) handleCompletedDownload(download ManagedDownload) {
 	var season, series dbstore.Media
 	media, err := dbstore.GetMediaByID(download.MediaID)
 	if err != nil {
-		logger.LogDanger(err)
+		logger.LogDanger(fmt.Errorf("error 1 %v", err))
 		updateDBStatus(download.Identifier, constant.StatusCError)
 		return
 	}
 	if media.ParentMediaID.Valid {
 		season, err = dbstore.GetMediaByID(int(media.ParentMediaID.Int32))
 		if err != nil {
-			logger.LogDanger(err)
+			logger.LogDanger(fmt.Errorf("error 2 %v", err))
 			updateDBStatus(download.Identifier, constant.StatusCError)
 			return
 		}
 		if season.ParentMediaID.Valid {
 			series, err = dbstore.GetMediaByID(int(season.ParentMediaID.Int32))
 			if err != nil {
-				logger.LogDanger(err)
+				logger.LogDanger(fmt.Errorf("error 3 %v", err))
 				updateDBStatus(download.Identifier, constant.StatusCError)
 				return
 			}
 			dbPath, err = dbstore.GetPath(int(series.PathID.Int32))
 			if err != nil {
-				logger.LogDanger(err)
+				logger.LogDanger(fmt.Errorf("error 4 %v", err))
 				updateDBStatus(download.Identifier, constant.StatusCError)
 				return
 			}
@@ -376,16 +376,16 @@ func (dm *DownloaderManager) handleCompletedDownload(download ManagedDownload) {
 	if series.ID > 0 {
 		err = dbstore.SetMediaPath(series.ID, filepath.Dir(destFiledir))
 		if err != nil {
-			logger.LogDanger(err)
+			logger.LogDanger(fmt.Errorf("error 7 %v", err))
 		}
 		err = dbstore.SetMediaPath(season.ID, destFiledir)
 		if err != nil {
-			logger.LogDanger(err)
+			logger.LogDanger(fmt.Errorf("error 8 %v", err))
 		}
 	}
 	err = dbstore.SetMediaPath(media.ID, destFilepath)
 	if err != nil {
-		logger.LogDanger(err)
+		logger.LogDanger(fmt.Errorf("error 9 %v", err))
 	}
 }
 
@@ -421,7 +421,7 @@ func getVideoPath(dlPath string) (string, error) {
 	}
 
 	if rarfile != "" {
-		tDir, err := os.MkdirTemp("", "conductorr")
+		tDir, err := integration.MkdirTemp("conductorr")
 		if err != nil {
 			return "", err
 		}
