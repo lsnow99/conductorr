@@ -47,7 +47,7 @@ func Unmarshal(r io.Reader) (BencodeTorrent, error) {
 
 func (i *bencodeInfo) Hash() ([]byte, error) {
 	var buf bytes.Buffer
-	err := bencode.Marshal(&buf, *i)
+	err := bencode.Marshal(&buf, i.Pieces)
 	if err != nil {
 		return []byte{}, err
 	}

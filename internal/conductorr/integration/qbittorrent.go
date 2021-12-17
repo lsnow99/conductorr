@@ -1,12 +1,13 @@
 package integration
 
 import (
+	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
 	"net/http"
 
+	"github.com/jackpal/bencode-go"
 	"github.com/l3uddz/go-qbittorrent/qbt"
-	"github.com/lsnow99/conductorr/pkg/torrentfile"
 )
 
 type QBittorrent struct {
@@ -49,12 +50,14 @@ func (q *QBittorrent) AddRelease(release Release) (string, error) {
 
 	defer resp.Body.Close()
 
-	torrent, err := torrentfile.Unmarshal(resp.Body)
-	if err != nil {
+	tm := TorrentMetadata{}
+
+	if err := bencode.Unmarshal(resp.Body, &tm); err != nil {
 		return "", err
 	}
-	hash, err := torrent.Info.Hash()
-	hashStr := hex.EncodeToString(hash)
+
+	h := sha1.Sum(tm.Info)
+	hashStr := hex.EncodeToString(h[:])
 	return hashStr, err
 }
 
