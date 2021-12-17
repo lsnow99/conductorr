@@ -51,11 +51,15 @@
   </section>
 </template>
 
+<style scoped>
+@import 'conductorr-lib/dist/style.css';
+</style>
+
 <script>
 import APIUtil from "../util/APIUtil";
 import NewProfile from "../components/NewProfile.vue";
 import ConfigItem from "../components/ConfigItem.vue";
-import CSLEditor from "../components/CSLEditor.vue";
+import { CSLEditor } from "conductorr-lib";
 import TabSaver from "../util/TabSaver";
 
 export default {

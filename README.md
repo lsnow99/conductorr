@@ -88,7 +88,7 @@ To build the Shared Library (so that the `frontend` and `docusite` projects can 
 - `cd shared`
 - `pnpm build`
 
-> NOTE: This build step must be performed before developing in the docusite or the 
+> NOTE: This build step must be performed before developing in the `frontend` or `docusite` projects, and any time the Shared Library changes.
 
 ### Frontend Development
 
@@ -100,11 +100,11 @@ Conductorr is built on Vue 3 using Vite and [TailwindCSS](https://tailwindcss.co
 - `cd frontend`
 - `pnpm dev`
 
-This will start the frontend app and should be available at http://localhost:3000
+This will start the frontend app and should be available at http://localhost:3000/
 
 Modifying files within `frontend/src` and saving them will cause the website to hot-reload in your browser, aiding in development.
 
-Conductorr uses Tailwind for all styling. [Oruga](https://oruga.io) components are used and styled via Tailwind.
+Conductorr uses Tailwind for all styling. [Oruga](https://oruga.io/) components are used and styled via Tailwind.
 
 ### Database Migrations
 
