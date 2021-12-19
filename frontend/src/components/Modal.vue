@@ -2,9 +2,11 @@
   <o-modal
     v-model:active="computedValue"
     role="dialog"
-    :aria-label="title"
     :full-screen="fullScreen"
+    :aria-label="title"
     aria-modal
+    auto-focus
+    trap-focus
     @close="$emit('close')"
   >
     <header class="modal-card-header">

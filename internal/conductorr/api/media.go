@@ -299,3 +299,19 @@ func SetMonitoringMedia(w http.ResponseWriter, r *http.Request) {
 	err = dbstore.UpdateMediaMonitoring(mediaID, mi.Monitoring)
 	Respond(w, r, err, nil, true)
 }
+
+func GetRecentMedia(w http.ResponseWriter, r *http.Request) {
+	medias, err := dbstore.GetRecentlyAddedMedia(5)
+	if err != nil {
+		Respond(w, r, err, nil, true)
+		return
+	}
+
+	mediasResponse := make([]MediaResponse, 0, len(medias))
+	for _, media := range medias {
+		mr := NewMediaResponseFromDB(media)
+		mediasResponse = append(mediasResponse, mr)
+	}
+
+	Respond(w, r, nil, mediasResponse, true)
+}

@@ -12,6 +12,7 @@ import (
 
 	"github.com/lsnow99/conductorr/internal/conductorr/dbstore"
 	"github.com/lsnow99/conductorr/internal/conductorr/integration"
+	"github.com/lsnow99/conductorr/internal/conductorr/settings"
 	"github.com/mholt/archiver/v3"
 )
 
@@ -23,6 +24,7 @@ type BackupData struct {
 	Downloads    []*dbstore.Download
 	Downloaders  []*dbstore.Downloader
 	Indexers     []*dbstore.Indexer
+	Version      string
 }
 
 func CreateBackup(ctx context.Context) (id int, err error) {
@@ -114,7 +116,7 @@ func CreateBackup(ctx context.Context) (id int, err error) {
 	if err != nil {
 		return
 	}
-	
+
 	err = addMediaPosters(medias, posterDir)
 	if err != nil {
 		return
@@ -129,6 +131,7 @@ func CreateBackup(ctx context.Context) (id int, err error) {
 		Downloads:    downloads,
 		Downloaders:  downloaders,
 		Indexers:     indexers,
+		Version:      settings.Version,
 	}
 
 	// Write the backup data object to a file

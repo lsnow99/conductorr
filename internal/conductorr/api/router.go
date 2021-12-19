@@ -61,6 +61,7 @@ func GetRouter() http.Handler {
 	r.HandleFunc("/api/v1/profile/{id}", DeleteProfile).Methods("DELETE")
 	r.HandleFunc("/api/v1/profile", GetProfiles).Methods("GET")
 	r.HandleFunc("/api/v1/library/search", SearchLibraryByTitle).Methods("GET")
+	r.HandleFunc("/api/v1/library/recent", GetRecentMedia).Methods("GET")
 	r.HandleFunc("/api/v1/new/search", SearchNewByTitle).Methods("GET")
 	r.HandleFunc("/api/v1/add/{search_id}", AddMedia).Methods("POST")
 	r.HandleFunc("/api/v1/poster/{id}", GetPoster).Methods("GET")

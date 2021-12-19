@@ -12,7 +12,7 @@ func TestConnect(t *testing.T) {
 	}
 }
 
-func TestAddTorrent(t *testing.T) {
+func TestAddToqrrent(t *testing.T) {
 	q, err := NewQBittorrent("admin", "adminadmin", "http://localhost:8080")
 	if err != nil {
 		t.Fatal(err)

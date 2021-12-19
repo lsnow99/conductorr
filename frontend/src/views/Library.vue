@@ -3,6 +3,8 @@
     <section>
       <search-media
         v-model:query="query"
+        v-model:currentPage="currentPage"
+        v-model:contentType="contentType"
         :results="results"
         :total-results="totalResults"
         :per-page="perPage"
@@ -58,6 +60,8 @@ export default {
       results: [],
       totalResults: 0,
       perPage: 0,
+      currentPage: 1,
+      contentType: "",
       loading: false,
       showNewSearchModal: false,
     };
@@ -66,6 +70,10 @@ export default {
   components: { PageWrapper, MediaCard, NewMedia, SearchMedia },
   methods: {
     search(query, contentType, page) {
+      this.$router.replace({
+        name: "library",
+        query: { q: query, content_type: contentType, page: page },
+      });
       this.loading = true;
       APIUtil.searchLibrary(query, contentType, page)
         .then((data) => {
@@ -92,6 +100,22 @@ export default {
       this.showNewSearchModal = false;
       this.restoreFocus();
     },
+  },
+  mounted() {
+    let q = this.$route.query.q;
+    let contentType = this.$route.query.content_type;
+    let page = parseInt(this.$route.query.page);
+
+    q = q?q:'';
+    contentType = contentType?contentType:'';
+    page = page?page:1;
+    
+    this.query = q;
+    this.contentType = contentType;
+    this.currentPage = page;
+
+    console.log('searching with', q, contentType, page)
+    this.search(q, contentType, page);
   },
 };
 </script>

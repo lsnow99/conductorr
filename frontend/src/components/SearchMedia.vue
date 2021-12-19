@@ -17,7 +17,7 @@
     </div>
     <div class="md:my-0 md:ml-4 my-2 flex justify-center self-end">
       <radio-group
-        v-model="contentType"
+        v-model="computedContentType"
         name="contentType"
         :options="[
           {
@@ -38,9 +38,9 @@
   </div>
   <div class="mt-4">
     <o-pagination
+      v-model:current="computedCurrentPage"
       :total="totalResults"
       :per-page="perPage"
-      v-model:current="current"
       :range-before="3"
       :range-after="3"
       order="default"
@@ -49,6 +49,7 @@
       aria-previous-label="Previous page"
       aria-page-label="Page"
       aria-current-label="Current page"
+      @change="pageChanged"
     />
   </div>
   <div v-if="results && results.length > 0" :class="resultsWrapperClass">
@@ -57,11 +58,6 @@
     </div>
   </div>
   <slot name="empty" v-else />
-  <!-- <o-loading
-    :full-screen="false"
-    :can-cancel="false"
-    v-model:active="loading"
-  /> -->
 </template>
 
 <script>
@@ -71,13 +67,23 @@ import RadioGroup from "./RadioGroup.vue";
 export default {
   data() {
     return {
-      contentType: "",
       page: 1,
-      current: 1,
       lastSearchTime: null,
     };
   },
   props: {
+    currentPage: {
+      type: Number,
+      default: function() {
+        return 1
+      }
+    },
+    contentType: {
+      type: String,
+      default: function() {
+        return ''
+      }
+    },
     mediaType: {
       type: String,
       default: function () {
@@ -124,7 +130,7 @@ export default {
   components: {
     RadioGroup,
   },
-  emits: ["close", "search", "selected-media", "update:query"],
+  emits: ["close", "search", "selected-media", "update:query", "update:currentPage", "update:contentType"],
   methods: {
     search(disableDebounce) {
       const now = new Date();
@@ -133,7 +139,7 @@ export default {
         (now.getTime() - this.lastSearchTime.getTime() > 300 ||
           disableDebounce)
       ) {
-        this.$emit("search", this.computedQuery, this.contentType, this.page);
+        this.$emit("search", this.computedQuery, this.computedContentType, this.page);
         this.lastSearchTime = now;
       }
     },
@@ -141,6 +147,10 @@ export default {
       this.computedQuery = "";
       this.search();
     },
+    pageChanged(nPage) {
+      this.page = nPage
+      this.search();
+    }
   },
   mounted() {
     const screenWidth = window.innerWidth;
@@ -149,19 +159,16 @@ export default {
         this.$refs.searchbar.$el.firstChild.focus();
       });
     }
-    this.search();
   },
   watch: {
-    contentType: function (contentType) {
+    computedContentType: function () {
       this.page = 1;
+      this.computedCurrentPage = 1;
       this.search(true);
-    },
-    current: function (newVal) {
-      this.page = newVal;
-      this.search();
     },
     computedQuery: function (newVal, oldVal) {
       this.page = 1;
+      this.computedCurrentPage = 1;
       if (newVal === "" && oldVal != "") {
         this.search();
       }
@@ -172,10 +179,26 @@ export default {
       get() {
         return this.query;
       },
-      set(q) {
-        this.$emit("update:query", q);
+      set(v) {
+        this.$emit("update:query", v);
       },
     },
+    computedCurrentPage: {
+      get() {
+        return this.currentPage;
+      },
+      set(v) {
+        this.$emit("update:currentPage", v)
+      }
+    },
+    computedContentType: {
+      get() {
+        return this.contentType;
+      },
+      set(v) {
+        this.$emit("update:contentType", v)
+      }
+    }
   },
 };
 </script>

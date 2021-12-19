@@ -313,7 +313,7 @@ func (t *TmdbAPI) SearchByTitle(title, contentType string, page int) (*SearchRes
 		sr.Agent = "tmdb"
 		sr.Rating = float32(result.VoteAverage)
 		sr.Plot = result.Overview
-		if result.MediaType == "tv" {
+		if result.MediaType == "tv" || contentType == "series" {
 			sr.ID = "tv:" + strconv.Itoa(result.ID)
 			sr.Title = result.Name
 			sr.ContentType = "series"
@@ -321,7 +321,7 @@ func (t *TmdbAPI) SearchByTitle(title, contentType string, page int) (*SearchRes
 			if err != nil {
 				logger.LogWarn(err)
 			}
-		} else if result.MediaType == "movie" {
+		} else if result.MediaType == "movie" || contentType == "movie" {
 			sr.ID = "movie:" + strconv.Itoa(result.ID)
 			sr.Title = result.Title
 			sr.ContentType = "movie"

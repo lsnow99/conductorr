@@ -7,6 +7,8 @@
   >
     <search-media
       v-model:query="query"
+      v-model:currentPage="currentPage"
+      v-model:contentType="contentType"
       :results="results"
       :total-results="totalResults"
       :per-page="perPage"
@@ -56,6 +58,8 @@ export default {
       results: [],
       totalResults: 0,
       perPage: 0,
+      contentType: '',
+      currentPage: 1,
       loading: false,
       query: "",
       media: {},

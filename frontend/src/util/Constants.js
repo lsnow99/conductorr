@@ -24,3 +24,5 @@ export const RESOLUTION_TYPES = [
 ];
 
 export const ENCODING_TYPES = ["Xvid", "x264", "x265", "VP9"];
+
+export const DOCUMENTATION_URL = "https://conductorr.xyz/"

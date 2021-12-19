@@ -7,6 +7,15 @@ import (
 	"time"
 )
 
+const fullMediaCols = ` id, title, description, released_at, ended_at, content_type,
+parent_media_id, tmdb_id, imdb_id, tvdb_id, tmdb_rating, imdb_rating,
+runtime, status, profile_id, path_id, size, item_number, monitoring, path,
+added `
+
+type Scannable interface {
+	Scan(dest ...interface{}) error
+}
+
 func SearchMedia(title string, contentType string, page int) ([]*Media, int, error) {
 	title = strings.ToUpper(title)
 	row := db.QueryRow(`
@@ -24,9 +33,7 @@ func SearchMedia(title string, contentType string, page int) ([]*Media, int, err
 	}
 
 	rows, err := db.Query(`
-		SELECT id, title, description, released_at, ended_at, content_type,
-			parent_media_id, tmdb_id, imdb_id, tvdb_id, tmdb_rating, imdb_rating,
-			runtime, status, profile_id, path_id, size, item_number, monitoring, path
+		SELECT` + fullMediaCols + `
 		FROM media
 		WHERE UPPER(title) LIKE '%' || ? || '%' 
 		AND content_type LIKE '%' || ? || '%'
@@ -42,13 +49,8 @@ func SearchMedia(title string, contentType string, page int) ([]*Media, int, err
 
 	medias := make([]*Media, 0, 10)
 	for rows.Next() {
-		media := Media{}
-		if err := rows.Scan(&media.ID, &media.Title, &media.Description, &media.ReleasedAt,
-			&media.EndedAt, &media.ContentType, &media.ParentMediaID,
-			&media.TmdbID, &media.ImdbID, &media.TvdbID, &media.TmdbRating, &media.ImdbRating,
-			&media.Runtime, &media.Status, &media.ProfileID, &media.PathID, &media.Size, 
-			&media.Number, &media.Monitoring, &media.Path); 
-			err != nil {
+		media, err := scanFullMedia(rows)
+		if err != nil {
 			return nil, 0, err
 		}
 		medias = append(medias, &media)
@@ -59,9 +61,7 @@ func SearchMedia(title string, contentType string, page int) ([]*Media, int, err
 
 func GetAllMedia() ([]*Media, error) {
 	rows, err := db.Query(`
-		SELECT id, title, description, released_at, ended_at, content_type,
-			parent_media_id, tmdb_id, imdb_id, tvdb_id, tmdb_rating, imdb_rating,
-			runtime, status, profile_id, path_id, size, item_number, monitoring, path
+		SELECT` + fullMediaCols + `
 		FROM media
 		WHERE content_type in ('episode', 'movie')
 		`)
@@ -73,13 +73,8 @@ func GetAllMedia() ([]*Media, error) {
 
 	medias := make([]*Media, 0, 10)
 	for rows.Next() {
-		media := Media{}
-		if err := rows.Scan(&media.ID, &media.Title, &media.Description, &media.ReleasedAt,
-			&media.EndedAt, &media.ContentType, &media.ParentMediaID,
-			&media.TmdbID, &media.ImdbID, &media.TvdbID, &media.TmdbRating, &media.ImdbRating,
-			&media.Runtime, &media.Status, &media.ProfileID, &media.PathID, &media.Size, 
-			&media.Number, &media.Monitoring, &media.Path); 
-			err != nil {
+		media, err := scanFullMedia(rows)
+		if err != nil {
 			return nil, err
 		}
 		medias = append(medias, &media)
@@ -89,9 +84,7 @@ func GetAllMedia() ([]*Media, error) {
 
 func GetAllMediaMap() (map[int]*Media, error) {
 	rows, err := db.Query(`
-		SELECT id, title, description, released_at, ended_at, content_type,
-			parent_media_id, tmdb_id, imdb_id, tvdb_id, tmdb_rating, imdb_rating,
-			runtime, status, profile_id, path_id, size, item_number, monitoring, path
+		SELECT` + fullMediaCols + `
 		FROM media
 		`)
 
@@ -102,13 +95,8 @@ func GetAllMediaMap() (map[int]*Media, error) {
 
 	medias := make(map[int]*Media)
 	for rows.Next() {
-		media := Media{}
-		if err := rows.Scan(&media.ID, &media.Title, &media.Description, &media.ReleasedAt,
-			&media.EndedAt, &media.ContentType, &media.ParentMediaID,
-			&media.TmdbID, &media.ImdbID, &media.TvdbID, &media.TmdbRating, &media.ImdbRating,
-			&media.Runtime, &media.Status, &media.ProfileID, &media.PathID, &media.Size, 
-			&media.Number, &media.Monitoring, &media.Path); 
-			err != nil {
+		media, err := scanFullMedia(rows)
+		if err != nil {
 			return nil, err
 		}
 		medias[media.ID] = &media
@@ -161,37 +149,18 @@ func UpsertMedia(title *string, description *string, releasedAt *time.Time, ende
 		return 0, err
 	}
 
-	// for _, genre := range genres {
-	// 	_, err := tx.Exec(`
-	// 	INSERT INTO media_genre (media_id, genre_id) VALUES (
-	// 		?,
-	// 		(SELECT id FROM genre WHERE UPPER(name)=UPPER(?))
-	// 	)
-	// 	`, id, genre)
-	// 	if err != nil {
-	// 		return 0, err
-	// 	}
-	// }
 	err = tx.Commit()
 	return id, err
 }
 
-func GetMediaByImdbID(imdbID string) (media Media, err error) {
+func GetMediaByImdbID(imdbID string) (Media, error) {
 	row := db.QueryRow(`
-		SELECT id, title, description, released_at, ended_at, content_type,
-			parent_media_id, tmdb_id, imdb_id, tvdb_id, tmdb_rating, imdb_rating,
-			runtime, status, profile_id, path_id, size, item_number, monitoring, path
+		SELECT` + fullMediaCols + `
 		FROM media
 		WHERE imdb_id = ?
 		`, imdbID)
 
-	err = row.Scan(&media.ID, &media.Title, &media.Description, &media.ReleasedAt,
-		&media.EndedAt, &media.ContentType, &media.ParentMediaID,
-		&media.TmdbID, &media.ImdbID, &media.TvdbID, &media.TmdbRating, &media.ImdbRating,
-		&media.Runtime, &media.Status, &media.ProfileID, &media.PathID, &media.Size, 
-		&media.Number, &media.Monitoring)
-
-	return media, err
+	return scanFullMedia(row)
 }
 
 func GetPoster(mediaID int) (poster []byte, err error) {
@@ -206,22 +175,14 @@ func GetPoster(mediaID int) (poster []byte, err error) {
 	return poster, err
 }
 
-func GetMediaByID(id int) (media Media, err error) {
+func GetMediaByID(id int) (Media, error) {
 	row := db.QueryRow(`
-		SELECT id, title, description, released_at, ended_at, content_type,
-			parent_media_id, tmdb_id, imdb_id, tvdb_id, tmdb_rating, imdb_rating,
-			runtime, status, profile_id, path_id, size, item_number, monitoring, path
+		SELECT` + fullMediaCols + `
 		FROM media
 		WHERE id = ?
 		`, id)
 
-		err = row.Scan(&media.ID, &media.Title, &media.Description, &media.ReleasedAt,
-			&media.EndedAt, &media.ContentType, &media.ParentMediaID,
-			&media.TmdbID, &media.ImdbID, &media.TvdbID, &media.TmdbRating, &media.ImdbRating,
-			&media.Runtime, &media.Status, &media.ProfileID, &media.PathID, &media.Size, 
-			&media.Number, &media.Monitoring, &media.Path)
-
-	return media, err
+	return scanFullMedia(row)
 }
 
 func DeleteMedia(id int) error {
@@ -241,9 +202,7 @@ func UpdateMedia(id int, profileID, pathID int) (err error) {
 
 func GetMediaReferencing(parentID int) ([]*Media, error) {
 	rows, err := db.Query(`
-		SELECT id, title, description, released_at, ended_at, content_type,
-			parent_media_id, tmdb_id, imdb_id, tvdb_id, tmdb_rating, imdb_rating,
-			runtime, status, profile_id, path_id, size, item_number, monitoring, path
+		SELECT` + fullMediaCols + `
 		FROM media
 		WHERE parent_media_id = ?
 		`, parentID)
@@ -255,13 +214,8 @@ func GetMediaReferencing(parentID int) ([]*Media, error) {
 
 	medias := make([]*Media, 0, 10)
 	for rows.Next() {
-		media := Media{}
-		if err := rows.Scan(&media.ID, &media.Title, &media.Description, &media.ReleasedAt,
-			&media.EndedAt, &media.ContentType, &media.ParentMediaID,
-			&media.TmdbID, &media.ImdbID, &media.TvdbID, &media.TmdbRating, &media.ImdbRating,
-			&media.Runtime, &media.Status, &media.ProfileID, &media.PathID, &media.Size, 
-			&media.Number, &media.Monitoring, &media.Path)
-			err != nil {
+		media, err := scanFullMedia(rows)
+		if err != nil {
 			return nil, err
 		}
 		medias = append(medias, &media)
@@ -287,9 +241,7 @@ func SetMediaPath(id int, path string) error {
 func GetMonitoringMedia() (*[]Media, error) {
 	medias := make([]Media, 0, 100)
 	rows, err := db.Query(`
-		SELECT id, title, description, released_at, ended_at, content_type,
-			parent_media_id, tmdb_id, imdb_id, tvdb_id, tmdb_rating, imdb_rating,
-			runtime, status, profile_id, path_id, size, item_number, monitoring, path
+		SELECT` + fullMediaCols + `
 		FROM media AS m
 		WHERE (monitoring = true AND content_type = 'movie')
 		OR (monitoring = true AND content_type = 'episode'
@@ -305,13 +257,8 @@ func GetMonitoringMedia() (*[]Media, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		media := Media{}
-		if err := rows.Scan(&media.ID, &media.Title, &media.Description, &media.ReleasedAt,
-			&media.EndedAt, &media.ContentType, &media.ParentMediaID,
-			&media.TmdbID, &media.ImdbID, &media.TvdbID, &media.TmdbRating, &media.ImdbRating,
-			&media.Runtime, &media.Status, &media.ProfileID, &media.PathID, &media.Size, 
-			&media.Number, &media.Monitoring, &media.Path)
-			err != nil {
+		media, err := scanFullMedia(rows)
+		if err != nil {
 			return nil, err
 		}
 		medias = append(medias, media)
@@ -319,11 +266,39 @@ func GetMonitoringMedia() (*[]Media, error) {
 	return &medias, nil
 }
 
+func GetRecentlyAddedMedia(max int) ([]Media, error) {
+	medias := make([]Media, 0, max)
+
+	rows, err := db.Query(`
+		SELECT` + fullMediaCols + `
+		FROM media AS m
+		WHERE content_type = 'series'
+		OR content_type = 'movie'
+		ORDER BY added DESC
+		LIMIT ?;
+	`, max)
+
+	if err != nil && err != sql.ErrNoRows{
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		media, err := scanFullMedia(rows)
+		if err != nil {
+			return nil, err
+		}
+		medias = append(medias, media)
+	}
+	return medias, nil
+}
+
 func DumpMedias(tx *sql.Tx) ([]*Media, error) {
 	rows, err := tx.Query(`
 		SELECT id, title, description, released_at, ended_at, content_type, poster,
 			parent_media_id, tmdb_id, imdb_id, tvdb_id, tmdb_rating, imdb_rating,
-			runtime, status, profile_id, path_id, size, item_number, monitoring, path
+			runtime, status, profile_id, path_id, size, item_number, monitoring, path,
+			added
 		FROM media
 		`)
 
@@ -339,7 +314,7 @@ func DumpMedias(tx *sql.Tx) ([]*Media, error) {
 			&media.EndedAt, &media.ContentType, &media.Poster, &media.ParentMediaID,
 			&media.TmdbID, &media.ImdbID, &media.TvdbID, &media.TmdbRating, &media.ImdbRating,
 			&media.Runtime, &media.Status, &media.ProfileID, &media.PathID, &media.Size, 
-			&media.Number, &media.Monitoring, &media.Path); 
+			&media.Number, &media.Monitoring, &media.Path, &media.Added); 
 			err != nil {
 			return nil, err
 		}
@@ -353,12 +328,12 @@ func RestoreMedias(tx *sql.Tx, medias []*Media) error {
 		_, err := tx.Exec(`
 		INSERT INTO media (id, title, description, released_at, ended_at, content_type,
 			parent_media_id, tmdb_id, imdb_id, tvdb_id, tmdb_rating, imdb_rating, runtime, 
-			poster, profile_id, path_id, item_number, monitoring)
+			poster, profile_id, path_id, item_number, monitoring, added)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		`, media.ID, media.Title, media.Description, media.ReleasedAt, media.EndedAt,
 			media.ContentType, media.ParentMediaID, media.TmdbID, media.ImdbID, media.TvdbID,
 			media.ImdbRating, media.Runtime, media.Poster, media.ProfileID, media.PathID,
-			media.Number, media.Monitoring)
+			media.Number, media.Monitoring, media.Added)
 
 		if err != nil {
 			return err
@@ -366,4 +341,17 @@ func RestoreMedias(tx *sql.Tx, medias []*Media) error {
 	}
 
 	return nil
+}
+
+func scanFullMedia(rows Scannable) (Media, error) {
+	media := Media{}
+	if err := rows.Scan(&media.ID, &media.Title, &media.Description, &media.ReleasedAt,
+		&media.EndedAt, &media.ContentType, &media.ParentMediaID,
+		&media.TmdbID, &media.ImdbID, &media.TvdbID, &media.TmdbRating, &media.ImdbRating,
+		&media.Runtime, &media.Status, &media.ProfileID, &media.PathID, &media.Size, 
+		&media.Number, &media.Monitoring, &media.Path, &media.Added); 
+		err != nil {
+		return media, err
+	}
+	return media, nil
 }

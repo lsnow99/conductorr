@@ -39,3 +39,7 @@ func GetBackupFile(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Disposition", "attachment; filename="+filename)
 	http.ServeFile(w, r, bkupFile)
 }
+
+func RestoreBackupFromFile(w http.ResponseWriter, r *http.Request) {
+	
+}

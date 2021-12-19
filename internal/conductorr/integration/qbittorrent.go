@@ -4,9 +4,10 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 
-	"github.com/jackpal/bencode-go"
+	"github.com/IncSW/go-bencode"
 	"github.com/l3uddz/go-qbittorrent/qbt"
 )
 
@@ -52,9 +53,17 @@ func (q *QBittorrent) AddRelease(release Release) (string, error) {
 
 	tm := TorrentMetadata{}
 
-	if err := bencode.Unmarshal(resp.Body, &tm); err != nil {
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
 		return "", err
 	}
+
+	res, err := bencode.Unmarshal(data)
+	if err != nil {
+		return "", err
+	}
+
+	fmt.Println(res)
 
 	h := sha1.Sum(tm.Info)
 	hashStr := hex.EncodeToString(h[:])

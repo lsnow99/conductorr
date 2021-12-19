@@ -481,6 +481,12 @@ const getTaskStatuses = () => {
   })
 }
 
+const getRecentMedia = () => {
+  return doAPIReq(`/api/v1/library/recent`, {
+    method: "GET"
+  })
+}
+
 export default {
   signIn,
   signUp,
@@ -533,5 +539,6 @@ export default {
   deleteMediaServer,
   refreshMediaMetadata,
   createNewBackup,
-  getTaskStatuses
+  getTaskStatuses,
+  getRecentMedia
 };

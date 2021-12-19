@@ -121,11 +121,11 @@ In order to write effective migrations, abide by the following conventions:
 
 #### Dealing with a Failed Migration
 
-When developing, sometimes you might write a migration and run Conductorr to test it, and it fails. `go-migrate` will still increase the version of the database and mark it dirty (When starting Conductorr again it will fail due to a dirty database). In general the only thing you will need to do to fix a dirty database is to run this command: `go run ./cmd/migrate force 0 -path migrations/ -database sqlite://conductorr.db` (replace 0 with one less than the version the database just got bumped to - in other words, if Conductorr outputs "Dirty database version 12. Fix and force version" after a failed up migration, then run `go run ./cmd/migrate force 11 -path migrations/ -database sqlite://conductorr.db`). Note that these instructions are for when Conductorr tries to perform the up migration. If for some reason you see this error during a down migration, then you'll want to increase the version number by one instead of decreasing it.
+When developing, sometimes you might write a migration and run Conductorr to test it, and it fails. `go-migrate` will still increase the version of the database and mark it dirty (When starting Conductorr again it will fail due to a dirty database). In general the only thing you will need to do to fix a dirty database is to run this command: `go run ./cmd/migrate -database sqlite://conductorr.db force 0` (replace 0 with one less than the version the database just got bumped to - in other words, if Conductorr outputs "Dirty database version 12. Fix and force version" after a failed up migration, then run `go run ./cmd/migrate -database sqlite://conductorr.db force 11 `). Note that these instructions are for when Conductorr tries to perform the up migration. If for some reason you see this error during a down migration, then you'll want to increase the version number by one instead of decreasing it.
 
 #### Rolling back a Successful Migration
 
-If the migration succeeded, but you wish to undo it later on, you can run the following command to roll it back: `go run ./cmd/migrate down 1 -path migrations/ -database sqlite://conductorr.db`. Replace `1` with the number of migrations you would like to roll back.
+If the migration succeeded, but you wish to undo it later on, you can run the following command to roll it back: `go run ./cmd/migrate -database sqlite://conductorr.db down 1`. Replace `1` with the number of migrations you would like to roll back.
 
 ## Open Source
 

@@ -205,7 +205,6 @@ import ManualSearchResults from "../components/ManualSearchResults.vue";
 import EpisodeList from "../components/EpisodeList.vue";
 import SearchActions from "../components/SearchActions.vue";
 import MonitoringToggle from "../components/MonitoringToggle.vue";
-import Modal from "../components/Modal.vue";
 import TabSaver from "../util/TabSaver";
 import DownloadStatusViewer from "../components/DownloadStatusViewer.vue";
 
@@ -237,7 +236,6 @@ export default {
     EpisodeList,
     SearchActions,
     MonitoringToggle,
-    Modal,
     DownloadStatusViewer,
   },
   methods: {

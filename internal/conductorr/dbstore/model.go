@@ -34,6 +34,7 @@ type Media struct {
 	PathID        sql.NullInt32
 	Number        sql.NullInt32
 	Monitoring    bool
+	Added		  time.Time
 }
 
 type Indexer struct {
