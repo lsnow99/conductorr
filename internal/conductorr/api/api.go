@@ -107,7 +107,9 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 		if shouldAuth && strings.HasPrefix(r.URL.Path, "/api/v1") {
 			tok, err := r.Cookie(UserAuthKey)
+			// First check cookie
 			if err != nil || !checkToken(tok.Value) {
+				// Secondary check for 
 				Respond(w, r, errAuth, nil, false)
 				return
 			}

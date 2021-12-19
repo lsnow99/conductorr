@@ -64,7 +64,12 @@
           >WARNING: Restoring from a backup will wipe the database and restore
           it to the state it was when the backup was created. Only proceed if
           you are sure this is what you want. It is recommended to make a backup
-          now of your current system in case of a failed restoration. For details on restoring from old versions and other information about backups, please refer to the <a :href="backupDocUrl" target="_blank" class="font-bold">documentation</a>.</span
+          now of your current system in case of a failed restoration. For
+          details on restoring from old versions and other information about
+          backups, please refer to the
+          <a :href="backupDocUrl" target="_blank" class="font-bold"
+            >documentation</a
+          >.</span
         >
       </div>
       <o-field class="text-center mt-4">
@@ -127,7 +132,7 @@ export default {
       tasks: [],
       showRestoreBackupModal: false,
       restoreFile: null,
-      backupDocUrl: `${DOCUMENTATION_URL}backups`
+      backupDocUrl: `${DOCUMENTATION_URL}backups`,
     };
   },
   mixins: [TabSaver],

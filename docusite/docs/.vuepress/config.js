@@ -54,12 +54,11 @@ module.exports = {
         link: "/csl/introduction.md",
       },
     ],
-    sidebar: {},
-    oldsidebar:{
+    sidebar:{
       "/": [
         {
           text: "Guide",
-          children: ["/guide/download.md", "/guide/configuration.md"],
+          children: ["/guide/download.md", "/guide/configuration.md", "/guide/backups.md"],
         },
         {
           text: "Features",

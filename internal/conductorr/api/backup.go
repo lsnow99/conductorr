@@ -10,6 +10,15 @@ import (
 	"github.com/lsnow99/conductorr/internal/conductorr/backup"
 )
 
+// CreateNewbackup godoc
+// swagger:route POST /api/v1/backup backup
+// Create a new backup file
+//
+// security:
+// - apiKey: []
+// responses:
+// 401: CommonError
+// 200: CommonSuccess
 func CreateNewBackup(w http.ResponseWriter, r *http.Request) {
 	id, err := backup.CreateBackup(r.Context())
 	if err != nil {
@@ -22,6 +31,9 @@ func CreateNewBackup(w http.ResponseWriter, r *http.Request) {
 	Respond(w, r, nil, data, true)
 }
 
+// GetBackupFile
+// swagger:route GET /api/v1/backup/{id} backup
+// Download URL for a recently-generated backup file
 func GetBackupFile(w http.ResponseWriter, r *http.Request) {
 	idStr := mux.Vars(r)["id"]
 	id, err := strconv.Atoi(idStr)
