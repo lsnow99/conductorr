@@ -16,7 +16,8 @@ jobs:
     - uses: actions/checkout@master
     - name: Build
       run: |
-        bash build.sh wasm && bash build.sh docusite && bash build.sh corsproxy
+        bash build.sh wasm && bash build.sh docusite
+      # run: bash build.sh wasm && bash build.sh docusite && bash build.sh corsproxy
     - name: Deploy production to Netlify
       uses: nwtgck/actions-netlify@v1.2
       with:
