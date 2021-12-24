@@ -24,7 +24,7 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         deploy-message: "Deploy from GitHub Actions"
         publish-dir: './docusite/docs/.vuepress/dist'
-        functions-dir: './dist/functions'
+        functions-dir: './functions'
         enable-commit-comment: true
         production-branch: master
       env:
