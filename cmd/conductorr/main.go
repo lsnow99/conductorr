@@ -82,6 +82,8 @@ func main() {
 	for _, indexer := range indexers {
 		app.IM.RegisterIndexer(indexer.ID, indexer.DownloadType, indexer.UserID, indexer.Name, indexer.ApiKey, indexer.BaseUrl, indexer.ForMovies, indexer.ForSeries, indexer.LastRSSID)
 	}
+	
+	app.IM.DoTask()
 
 	// Initialize media servers
 	mediaServers, err := dbstore.GetMediaServers()

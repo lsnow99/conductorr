@@ -109,7 +109,8 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			tok, err := r.Cookie(UserAuthKey)
 			// First check cookie
 			if err != nil || !checkToken(tok.Value) {
-				// Secondary check for 
+				// TODO Secondary check for auth header
+				
 				Respond(w, r, errAuth, nil, false)
 				return
 			}

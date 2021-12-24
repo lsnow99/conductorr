@@ -1,5 +1,5 @@
 <template>
-  <modal v-model="computedActive" @close="$emit('close')" :title="title">
+  <modal v-model="computedActive" @close="close" :title="title">
     <div>
       Indexer Type
       <div class="flex justify-center">
@@ -139,6 +139,11 @@ export default {
     Modal,
   },
   methods: {
+    close() {
+      console.log('setting')
+      this.computedIndexer = null;
+      this.$emit("close");
+    },
     test() {
       this.sanitize();
       const validationErr = this.validate();
@@ -243,9 +248,8 @@ export default {
     computedIndexer: {
       get() {
         if (!this.newIndexer) {
-          if (this.indexer) {
-            this.newIndexer = this.indexer;
-          }
+          this.newIndexer = {}
+          Object.assign(this.newIndexer, this.indexer)
         }
         return this.newIndexer;
       },

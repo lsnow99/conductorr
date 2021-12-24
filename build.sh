@@ -154,6 +154,9 @@ if [ $buildcsl == 1 ]; then
 fi
 
 # Compile the CORS proxy lambda function
+# Note that the Go version of the CORS proxy is not used currently due to an issue in the Netlify CLI
+# https://github.com/netlify/cli/issues/1147
+# Currently, only the functions/corsproxy.js implementation is being used
 if [ $buildcorsproxy == 1 ]; then
     echo "==============================[   Compiling CORS Proxy  ]=============================="
     echo "${cyan}→ Compiling${reset}"
