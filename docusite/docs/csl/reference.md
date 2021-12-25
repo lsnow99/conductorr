@@ -1,10 +1,12 @@
 ---
-title: Introduction
+title: Reference
 ---
 
-# CSL (Conductorr-Specific Language)
+# CSL
 
 CSL is a stripped-down Lisp implementation intended to allow users of Conductorr to extend its capabilities and finely tune release processing.
+
+It stands for {{ standsFor }} (<a @click="orDoesIt" href="javascript:void(0);">or does it?</a>)
 
 The parsing capabilities are largely borrowed from [Jan Andersson](https://github.com/janne)'s [go-lisp](https://github.com/janne/go-lisp) project.
 
@@ -15,10 +17,10 @@ The main differences between go-lisp and CSL are that CSL is *not* Turing-Comple
 If you are familiar with Lisp syntax, CSL follows it directly. Here is an example of a script in CSL:
 
 ```lisp
-;; Define a variable
+; Define a variable
 (define x 17)
 
-;; Return the result of x * 37
+; Return the result of x * 37
 (* x 37)
 ```
 The value `629` is returned.
@@ -46,11 +48,16 @@ The full list of available suffixes is below:
 
 #### Strings
 
-String literals must be enclosed in double quotes (`"`)
+String literals must be enclosed in double quotes (`"`). To represent a double quote inside of your string literal, use `\"`. For example, `("The boy said, \"Hello, world\"")` evaluates to `The boy said, "Hello, world"`. 
+
+All escape patterns:
+- `\n` - A newline
+- `\\` - A backslash
+- `\"` - A double quote
 
 #### Booleans
 
-Boolean literals are `true` and `false`, and are case-sensitive
+Boolean literals are `true` or `false`, and are case-sensitive.
 
 #### Lists
 
@@ -83,9 +90,9 @@ Lists are implicitly defined any time expressions are joined within parentheses 
 - `(in v l)` Returns true if the value of `v` appears in list `l`
 - `(in s1 s2)` Returns true iff `s1` is a substring of `s2`
 - `(nth i l)` Returns the `i`th value in list `l` or error if out of bounds 
-- `(nths i s)` Returns the `i`th character in the string `s`
+- `(nthstr i s)` Returns the `i`th character in the string `s`
 - `(len l)` Returns the length of list `l`
-- `(lens s)` Returns the length of string `s`
+- `(lenstr s)` Returns the length of string `s`
 - `(append l v ...)` Appends `v` and all subsequent arguments in order to the right end of list `l`. If the list `l` does not yet exist, then it is initialized
 - `(appendleft l v ...)` Appends `v` and all subsequent arguments in order to the left end of list `l`. If the list `l` does not yet exist, then it is initialized
 - `(pop l ...)` Removes the rightmost element in list `l`, returning the removed element
@@ -96,6 +103,10 @@ Lists are implicitly defined any time expressions are joined within parentheses 
 - `(not p)` Returns the result of conditional inverse applied to p
 - `(join s v ...)` Joins elements elements `v1`, `v2`, ... into a string using separator `s`. Does not add a separator to the end of the resultant string. Non-string elements such as integers will display using `fmt.Sprintf(%v, v)`
 - `(split s d)` Splits a string into a list of strings using delimiter `d`
+- `(matches pattern str n=-1)` Returns the result of running Go's [FindAllStringSubmatch](https://pkg.go.dev/regexp#example-Regexp.FindAllStringSubmatch) function on `str` using the `pattern` argument as the regular expression. The `n` argument is optional and if ommitted will use a default value of `-1`.
+- `(match pattern str)` Returns the result of running Go's [MatchString](https://pkg.go.dev/regexp#example-Regexp.MatchString) function on `str` using the `pattern` argument as the regular expression
+- `(find pattern str)` Returns the result of running Go's [FindString](https://pkg.go.dev/regexp#example-Regexp.FindString) function on `str` using the `pattern` argument as the regular expression
+- `(findall pattern str n=-1)` Returns the result of running Go's [FindAll](https://pkg.go.dev/regexp#example-Regexp.FindAll) function on `str` using the `pattern` argument as the regular expression. The `n` argument is optional and if ommitted will use a default value of `-1`.
 
 > NOTE: All of the above functions are evaluated *eagerly*, meaning their arguments are evaluated before the function is called. The exceptions to this are the `if`, `append`, `appendleft`, `pop`, and `popleft` functions, which only evaluate their arguments as they are needed.
 
@@ -164,9 +175,10 @@ Available protocols:
 
 | Source Type | Syntax | Availability | Notes |
 | ----------- | ------ | ------------ | ----- |
-| filesystem  | file:/home/user/scripts/test.csl | cli |  |
-| git         | github.com/user/repo:test.csl@v2 | cli, conductorr, playground | Works with GitLab, GitHub, and Gitea (others possibly as well). The version tag is optional, and any commit hash or branch name or tag is valid. Note the colon separating the hostname and web path from the path within the repository to the script. |
-| web         | https://example.com/test.csl | cli, conductorr, playground |  |
+| filesystem  | `file:/home/user/scripts/test.csl` | cli | Will load a file from disk. It is only available in the CLI, so it is useful for local testing of CSL scripts. The exception to this is that remote modules in a Git repository can reference local files in the repository. |
+| git         | `github.com/user/repo:test.csl@v2` | cli, conductorr, playground | Works with GitLab, GitHub, and Gitea (others possibly as well). The version tag is optional, and any commit hash or branch name or tag is valid. Note the colon separating the hostname and web path from the path within the repository to the script. |
+| web         | `https://example.com/test.csl` | cli, conductorr, playground | The CSL package manager will perform a simple HTTP GET request at the given URL. No matter if https or http is specified, it will always try https first, and upon failure, it will only try http if insecure connections have been enabled in the environment. |
+| profile     | `profile:(sorter\|filter):myprof` | conductorr | Allows you to access a sorter or profile of the named profile. For example, `profile:sorter:myprof` will import the sorter function in the `myprof` profile. |
 
 You can then invoke the script at any time using `(demo-script)`. The script will execute, and the above expression will evaluate as the script's return value. Arguments to a script are accessible via an ordered list called `args` which is always accessible. Script functions are run in a separate scope and only inherit the arguments that are passed to it.
 
@@ -176,3 +188,41 @@ You can then invoke the script at any time using `(demo-script)`. The script wil
 - Depending on your execution environment (i.e. Conductorr), imported scripts may be cached. Conductorr caches scripts imported from the web and periodically refetches them to check for updates. If you know your dependent scripts have updated, you can force Conductorr to reload them, or if using the git-style imports, you can bump the version tag and the next time the script executes it will pull the updated version of the script.
 - If a script fails to load, your execution environment may instead load the script from its cache. If your script is tagged with a version, it should only look for scripts tagged with that same version in the cache.
 - For any http request made by your execution environment to resolve dependencies, it will first attempt to use https, and depending on the environment configuration, http may be used as a fallback. By default insecure requests are disabled in all execution environments, except for the playground.
+
+<script>
+// In no particular order ;)
+const STANDS_FOR = new Set([
+  "Custom Scripting Language",
+  "Content Searching Language",
+  "Conductorr-Specific Language",
+  "Custom Sorting Language",
+  "Characteristic Searching Language",
+  "Custom Shitty Lisp",
+])
+
+const pickRandom = (current) => {
+  const toSubtract = new Set([current])
+  const remaining = new Set([...STANDS_FOR].filter(x => !toSubtract.has(x)))
+
+  if (remaining.size < 1) {
+    console.log('returning current', current)
+    return current
+  }
+  const pick = Array.from(remaining)[Math.floor(Math.random() * remaining.size)]
+  console.log('returning pick', pick)
+  return pick
+}
+
+export default {
+  data() {
+    return {
+      standsFor: pickRandom("")
+    }
+  },
+  methods: {
+    orDoesIt() {
+      this.standsFor = pickRandom(this.standsFor)
+    }
+  }
+}
+</script>

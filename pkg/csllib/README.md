@@ -79,9 +79,9 @@ Lists are implicitly defined any time expressions are joined within parentheses 
 - `(in v l)` Returns true if the value of `v` appears in list `l`
 - `(in s1 s2)` Returns true iff `s1` is a substring of `s2`
 - `(nth i l)` Returns the `i`th value in list `l` or error if out of bounds 
-- `(nths i s)` Returns the `i`th character in the string `s`
+- `(nthstr i s)` Returns the `i`th character in the string `s`
 - `(len l)` Returns the length of list `l`
-- `(lens s)` Returns the length of string `s`
+- `(lenstr s)` Returns the length of string `s`
 - `(append l v ...)` Appends `v` and all subsequent arguments in order to the right end of list `l`. If the list `l` does not yet exist, then it is initialized
 - `(appendleft l v ...)` Appends `v` and all subsequent arguments in order to the left end of list `l`. If the list `l` does not yet exist, then it is initialized
 - `(pop l ...)` Removes the rightmost element in list `l`, returning the removed element

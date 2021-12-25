@@ -194,21 +194,12 @@ func TestInList(t *testing.T) {
 	}
 	res, trace = csl.Eval(expr, nil)
 	checkResult(t, false, res, trace)
-
-	expr, err = csl.Parse(`
-	(in "hello world" ("hello world"))
-	`)
-	if err != nil {
-		t.Fatal(err)
-	}
-	res, trace = csl.Eval(expr, nil)
-	checkResult(t, true, res, trace)
 }
 
 func TestInString(t *testing.T) {
 	csl := NewCSL(true)
 	expr, err := csl.Parse(`
-	(in "hello" "world")
+	(substr "hello" "world")
 	`)
 	if err != nil {
 		t.Fatal(err)
@@ -217,7 +208,7 @@ func TestInString(t *testing.T) {
 	checkResult(t, false, res, trace)
 
 	expr, err = csl.Parse(`
-	(in "hello" "hello world")
+	(substr "hello" "hello world")
 	`)
 	if err != nil {
 		t.Fatal(err)
@@ -734,7 +725,7 @@ func TestSingleElemList(t *testing.T) {
 func TestNthString(t *testing.T) {
 	csl := NewCSL(true)
 	expr, err := csl.Parse(`
-	(nths 4 "hello world")
+	(nthstr 4 "hello world")
 	`)
 	if err != nil {
 		t.Fatal(err)
@@ -746,7 +737,7 @@ func TestNthString(t *testing.T) {
 func TestLengthString(t *testing.T) {
 	csl := NewCSL(true)
 	expr, err := csl.Parse(`
-	(lens "hello world")
+	(lenstr "hello world")
 	`)
 	if err != nil {
 		t.Fatal(err)
@@ -758,7 +749,7 @@ func TestLengthString(t *testing.T) {
 func TestLengthStringNotList(t *testing.T) {
 	csl := NewCSL(true)
 	expr, err := csl.Parse(`
-	(lens ("hello world"))
+	(lenstr ("hello world"))
 	`)
 	if err != nil {
 		t.Fatal(err)
@@ -1130,6 +1121,96 @@ func TestInvoke(t *testing.T) {
 		List{int64(53), int64(3), int64(2), int64(532), int64(2)},
 	}
 	checkResult(t, expected, res, trace)
+}
+
+func TestEscapeString(t *testing.T) {
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
+	(
+		"\"Hello World!\" said the boy"
+		"ends in a backslash\\"
+	)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	res, trace := csl.Eval(expr, nil)
+	checkResult(t, List{
+		`"Hello World!" said the boy`,
+		`ends in a backslash\`,
+	}, res, trace)
+
+	expr, err = csl.Parse(`
+	(
+		"\\ = one backslash"
+		"Has a\nNewline"
+	)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	res, trace = csl.Eval(expr, nil)
+	checkResult(t, List{`\ = one backslash`, "Has a\nNewline"}, res, trace)
+}
+
+func TestMatches(t *testing.T) {
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
+	(matches "a(x*)b" "-axxb-ab-")
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	res, trace := csl.Eval(expr, nil)
+	checkResult(t, List{
+		List{"axxb", "xx"},
+		List{"ab", ""},
+	}, res, trace)
+}
+
+func TestMatch(t *testing.T) {
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
+	(match "(gopher){2}" "gophergophergopher")
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	res, trace := csl.Eval(expr, nil)
+	checkResult(t, true, res, trace)
+}
+
+func TestFind(t *testing.T) {
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
+	(find "foo.?" "seafood fool")
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	res, trace := csl.Eval(expr, nil)
+	checkResult(t, "food", res, trace)
+}
+
+func TestFindAll(t *testing.T) {
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
+	(findall "foo.?" "seafood fool")
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	res, trace := csl.Eval(expr, nil)
+	checkResult(t, List{
+		"food",
+		"fool",
+	}, res, trace)
 }
 
 func printTrace(trace Trace) {

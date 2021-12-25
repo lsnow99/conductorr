@@ -16,6 +16,7 @@ import (
 //
 // security:
 // - apiKey: []
+// - 
 // responses:
 // 401: CommonError
 // 200: CommonSuccess

@@ -1,3 +1,48 @@
+// Package api for Conductorr.
+//
+// This package provides an API for communicating with the Conductorr backend.
+//
+//     Schemes: http, https
+//     BasePath: /v1
+//     Version: 1.0.0
+//     License: GPL-3.0 https://www.gnu.org/licenses/gpl-3.0.html
+//
+//     Consumes:
+//     - application/json
+//
+//     Produces:
+//     - application/json
+//
+//     Security:
+//     - api_key:
+//	   - auth_token:
+//
+//     SecurityDefinitions:
+//     api_key:
+//          type: apiKey
+//          name: x-token
+//          in: header
+//	   auth_token:
+//			type: 
+//     oauth2:
+//         type: oauth2
+//         authorizationUrl: /oauth2/auth
+//         tokenUrl: /oauth2/token
+//         in: header
+//         scopes:
+//           bar: foo
+//         flow: accessCode
+//
+//     Extensions:
+//     x-meta-value: value
+//     x-meta-array:
+//       - value1
+//       - value2
+//     x-meta-array-obj:
+//       - name: obj
+//         value: field
+//
+// swagger:meta
 package api
 
 import (

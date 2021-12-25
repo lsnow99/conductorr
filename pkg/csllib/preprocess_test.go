@@ -17,8 +17,21 @@ func TestPreprocessScript1(t *testing.T) {
 func TestPreprocessScript2(t *testing.T) {
 	csl := NewCSL(false)
 	cslpm := NewCSLPackageManager(DefaultFetcher, false)
-	deps := csl.PreprocessScript(`(import "github.com/lsnow99/myscripts:main.csl" main)`, "", cslpm)
-	fmt.Println(deps)
+	err := csl.PreprocessScript(`(import "github.com/lsnow99/myscripts:entry.csl" main)`, "", cslpm)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(csl.builtins)
+}
+
+func TestPreprocessScript3(t *testing.T) {
+	csl := NewCSL(false)
+	cslpm := NewCSLPackageManager(DefaultFetcher, false)
+	err := csl.PreprocessScript(`(import "/home/logan/proj/myscripts/entry.csl" main)`, "", cslpm)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(csl.builtins)
 }
 
 func TestCyclicDep(t *testing.T) {

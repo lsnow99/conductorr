@@ -2,6 +2,7 @@ package csllib
 
 type CSL struct {
 	builtins map[string]operation
+	didRegisterDefaults bool
 }
 
 type CSLPackageManager struct {
@@ -24,6 +25,8 @@ func NewCSL(registerDefaults bool) *CSL {
 	return csl
 }
 
+// ResolveDepsAndCall is a convenience function that takes a given CSL package manager,
+// CSL script, and arguments, and invokes the script after resolving all dependencies.
 func (csl *CSL) ResolveDepsAndCall(cslpm *CSLPackageManager, script Script, args ...interface{}) (result interface{}, err error, trace Trace) {
 	if err = csl.PreprocessScript(script.Code, script.ImportPath, cslpm); err != nil {
 		return

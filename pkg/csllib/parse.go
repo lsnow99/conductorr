@@ -248,7 +248,11 @@ func ParseAtomicToken(tok *Token, builtins map[string]operation) (*SExpr, error)
 			err = ErrParserStrLen
 			break
 		}
-		sexpr.v = tok.val[1 : len(tok.val)-1]
+		str := tok.val[1 : len(tok.val)-1]
+		str = strings.ReplaceAll(str, `\"`, `"`)
+		str = strings.ReplaceAll(str, `\n`, "\n")
+		str = strings.ReplaceAll(str, `\\`, "\\")
+		sexpr.v = str
 		sexpr.typ = stringAtom
 	case boolToken:
 		p, err := strconv.ParseBool(tok.val)

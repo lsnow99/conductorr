@@ -1,6 +1,9 @@
 package csllib
 
-import "fmt"
+import (
+	"fmt"
+	"path/filepath"
+)
 
 type DepGraph struct {
 	Nodes []*Node
@@ -33,19 +36,30 @@ func (d *DepGraph) addEdgeCheckCyclic(n *Node, edge NodeReference) (ok bool) {
 	return
 }
 
+// DFS conducts a depth first search to and from given nodes, returning true
+// if it is possible to reach the to node from the from node, and false
+// otherwise.
 func (d *DepGraph) DFS(to *Node, from *Node) bool {
-	children := d.Edges[from]
+	// Base case if we have reached our destination
 	if to == from {
 		return true
 	}
+	children := d.Edges[from]
 	for _, child := range children {
 		if d.DFS(to, child.RefNode) {
+			// We only want to return true if there is a valid path from this
+			// child. We do not want to return false yet, because it is
+			// possible not all children have been checked.
 			return true
 		}
 	}
+	// All children have been checked recursively for a path to the to node,
+	// and no such path exists.
 	return false
 }
 
+// ResolveDependencies is a method on a node within a given dependency graph that resolves
+// all scripts imported by the node recursively to build depdency graph. Each node receives
 func (n *Node) ResolveDependencies(deps DepGraph, csl *CSL, cslpm *CSLPackageManager) error {
 	if len(deps.Nodes) > MaximumImports {
 		return fmt.Errorf("number of dependencies exceeds maximum of %d", MaximumImports)
@@ -87,14 +101,29 @@ func (n *Node) ResolveDependencies(deps DepGraph, csl *CSL, cslpm *CSLPackageMan
 				if err != nil {
 					return err
 				}
-				parentGS, pOK := parentImportableScript.(GitScript)
-				curFS, cOK := curImportableScript.(FileScript)
-				if pOK && cOK {
+				parentGS, parentIsGS := parentImportableScript.(GitScript)
+				parentFS, parentIsFS := parentImportableScript.(FileScript)
+				curFS, curIsFS := curImportableScript.(FileScript)
+				if parentIsGS && curIsFS {
+					// If the currently-being-imported script is a file script and the parent
+					// script is a git script, then treat the child script as a git script
+					// that inherits the context from the parent script.
 					is := GitScript{
 						host: parentGS.host,
 						repo: parentGS.repo,
 						filePath: curFS.filePath,
 						version: parentGS.version,
+					}
+					importPath = is.CanonicalizedImportPath()
+				} else if parentIsFS && curIsFS && filepath.IsAbs(curFS.filePath) {
+					// If the currently-being-imported script is a file script and the parent
+					// script is a file script, AND if the current filepath is not absolute,
+					// then rewrite the filepath to be absolute using the parent as the base
+					// directory.
+					parentDir := filepath.Dir(parentFS.filePath)
+					curScriptFilepath := filepath.Join(parentDir, curFS.filePath)
+					is := FileScript{
+						filePath: curScriptFilepath,
 					}
 					importPath = is.CanonicalizedImportPath()
 				}
@@ -106,6 +135,9 @@ func (n *Node) ResolveDependencies(deps DepGraph, csl *CSL, cslpm *CSLPackageMan
 					}
 				}
 				if foundNode == nil {
+					// If we are adding a brand new node to our graph, we do not need to worry
+					// about cyclic dependencies, since it is impossible for a cycle to form
+					// when we add a new leaf.
 					script, err := cslpm.Resolve(importPath)
 					if err != nil {
 						return err
@@ -120,6 +152,8 @@ func (n *Node) ResolveDependencies(deps DepGraph, csl *CSL, cslpm *CSLPackageMan
 						RefNode:    foundNode,
 					})
 				} else {
+					// Since we are referencing an existing node in our graph, we add it in a way
+					// that checks to make sure no cycle has formed.
 					if !deps.addEdgeCheckCyclic(n, NodeReference{ImportedAs: fnName, RefNode: foundNode}) {
 						return fmt.Errorf("circular dependency detected! Importing %s from %s", importPath, n.ImportPath)
 					}

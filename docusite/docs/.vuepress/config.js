@@ -51,7 +51,7 @@ module.exports = {
       },
       {
         text: "CSL",
-        link: "/csl/introduction.md",
+        link: "/csl/reference.md",
       },
     ],
     sidebar:{
@@ -74,7 +74,7 @@ module.exports = {
         {
           text: "CSL",
           children: [
-            "/csl/introduction.md",
+            "/csl/reference.md",
             "/csl/examples.md",
             "/csl/repl.md",
           ],
