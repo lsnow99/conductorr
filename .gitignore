@@ -15,3 +15,4 @@ docusite/docs/.vuepress/public/csl.wasm
 
 # Local Netlify folder
 .netlify
+**/.pnpm-debug.log

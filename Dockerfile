@@ -27,6 +27,8 @@ COPY pnpm-lock.yaml .
 COPY pnpm-workspace.yaml .
 # Copy the exact wasm_exec.js file from the installation of Go that built the wasm module
 COPY --from=csl-build-env /build/wasm_exec.js ./frontend/src/util
+RUN cd shared && pnpm install
+RUN cd shared && pnpm build
 RUN cd frontend && pnpm install
 RUN cd frontend && pnpm build
 

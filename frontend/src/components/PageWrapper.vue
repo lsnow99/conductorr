@@ -105,7 +105,7 @@
 }
 
 .route-item {
-  @apply px-3 py-2 text-xl cursor-pointer hover:bg-yellow-400 focus:bg-yellow-400 uppercase text-white;
+  @apply px-3 py-1 text-xl cursor-pointer hover:bg-yellow-400 focus:bg-yellow-400 uppercase text-white;
 }
 
 .reg-route {
