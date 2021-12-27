@@ -22,13 +22,16 @@ RUN cp $(go env GOROOT)/misc/wasm/wasm_exec.js .
 FROM node:lts-alpine AS vue-build-env
 WORKDIR /build
 RUN npm install -g pnpm
+# Build the shared library
+COPY ./shared ./shared
+RUN cd shared && pnpm install
+RUN cd shared && pnpm build
+# Build the frontend
 COPY ./frontend ./frontend
 COPY pnpm-lock.yaml .
 COPY pnpm-workspace.yaml .
 # Copy the exact wasm_exec.js file from the installation of Go that built the wasm module
 COPY --from=csl-build-env /build/wasm_exec.js ./frontend/src/util
-RUN cd shared && pnpm install
-RUN cd shared && pnpm build
 RUN cd frontend && pnpm install
 RUN cd frontend && pnpm build
 
