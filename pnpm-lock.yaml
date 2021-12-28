@@ -39,6 +39,7 @@ importers:
       '@vitejs/plugin-vue': ^1.2.2
       '@vue/compiler-sfc': ^3.1.5
       '@vue/devtools-api': ^6.0.0-beta.20
+      '@vue/runtime-core': ^3.2.26
       autoprefixer: ^10.2.5
       conductorr-lib: link:../shared
       luxon: ^1.27.0
@@ -61,6 +62,7 @@ importers:
       '@fortawesome/free-regular-svg-icons': 5.15.4
       '@fortawesome/free-solid-svg-icons': 5.15.4
       '@oruga-ui/oruga-next': 0.4.5_vue@3.2.20
+      '@vue/runtime-core': 3.2.26
       conductorr-lib: link:../shared
       luxon: 1.28.0
       prismjs: 1.25.0

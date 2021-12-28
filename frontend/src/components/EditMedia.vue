@@ -167,9 +167,10 @@ export default {
       handler: function (newVal) {
         if (newVal) {
           this.profileID = newVal.profile_id;
+
+          // Set the default path
           if (!this.media.path_id) {
             this.paths.forEach((elem) => {
-              console.log('checking ', elem, this.media)
               if (
                 (elem.movies_default && this.media.content_type == "movie") ||
                 (elem.series_default && this.media.content_type == "series")
