@@ -186,8 +186,6 @@
 </template>
 
 <style scoped>
-@import 'conductorr-lib/dist/style.css';
-
 .titlebar {
   @apply text-lg uppercase font-bold p-2 bg-gray-600 w-full border-b-4 border-gray-800;
 }

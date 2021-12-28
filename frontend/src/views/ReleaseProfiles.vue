@@ -51,10 +51,6 @@
   </section>
 </template>
 
-<style scoped>
-@import 'conductorr-lib/dist/style.css';
-</style>
-
 <script>
 import APIUtil from "../util/APIUtil";
 import NewProfile from "../components/NewProfile.vue";

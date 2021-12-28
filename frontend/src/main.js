@@ -3,6 +3,7 @@ import App from "./App.vue";
 
 import "@oruga-ui/oruga-next/dist/oruga.css";
 import "./index.css";
+import 'conductorr-lib/dist/style.css';
 
 /*
 Import third party libraries
