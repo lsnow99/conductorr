@@ -5,6 +5,8 @@
     class="my-editor h-full"
     v-model="computedValue"
     @keydown.enter.ctrl="enterPressed"
+    @click="focusEditor"
+    ref="editor"
     :highlight="highlighter"
     :readonly="readonly"
     :aria-disabled="readonly"
@@ -53,7 +55,7 @@ import "prismjs/components/prism-lisp";
 import "prismjs/themes/prism-tomorrow.css"; // import syntax highlighting styles
 
 export default {
-  name: 'csl-editor',
+  name: "csl-editor",
   props: {
     modelValue: {
       type: String,
@@ -69,27 +71,34 @@ export default {
     },
   },
   components: {
-    PrismEditor
+    PrismEditor,
   },
-  emits: ['update:modelValue', 'submit'],
+  emits: ["update:modelValue", "submit"],
   methods: {
     highlighter(code) {
       return highlight(code, languages.lisp, "lisp");
     },
     enterPressed(event) {
-      event.stopImmediatePropagation()
-      this.$emit('submit')
-    }
+      event.stopImmediatePropagation();
+      this.$emit("submit");
+    },
+    focusEditor() {
+      const editors = Array.from(this.$el.getElementsByTagName("textarea"));
+      if (editors.length < 1) {
+        return;
+      }
+      editors[0].focus();
+    },
   },
   computed: {
     computedValue: {
       get() {
-        return this.modelValue
+        return this.modelValue;
       },
       set(newVal) {
-        this.$emit('update:modelValue', newVal)
-      }
-    }
-  }
+        this.$emit("update:modelValue", newVal);
+      },
+    },
+  },
 };
 </script>

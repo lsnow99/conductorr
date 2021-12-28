@@ -1,6 +1,8 @@
 <template>
   <div>
-    <CSLEditor v-model="code" />
+    <div class="h-96">
+      <CSLEditor v-model="code" />
+    </div>
     <LogPane :logs="logs" />
     <button @click="addLog">Click</button>
   </div>
