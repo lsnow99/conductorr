@@ -8,8 +8,15 @@
     :aria-label="media.title"
     class="media-card relative"
   >
+    <!--Background poster-->
     <img :src="media.poster" :alt="`Banner image for movie ${media.title}`" />
+
+    <!--Status bar-->
+    <div class="absolute top-0 h-3 bg-red-500 z-10" :style="`width: ${progressPercent}%`"></div>
+
+    <!--Gradient overlay-->
     <div class="absolute top-0 bottom-0 left-0 right-0 overlay">
+      <!--Title and year-->
       <div class="flex flex-row h-full">
         <div class="p-2 text-2xl self-end font-bold z-10">
           {{ `${media.title} (${year})` }}
@@ -72,7 +79,8 @@
   opacity: 0;
 }
 
-.overlay:hover::before, .media-card:focus .overlay::before {
+.overlay:hover::before,
+.media-card:focus .overlay::before {
   opacity: 1;
 }
 </style>
@@ -98,6 +106,13 @@ export default {
     year() {
       return new Date(this.media.released_at).getUTCFullYear();
     },
+    progressPercent() {
+      if (this.media.content_type == 'movie') {
+        return 100
+      } else if (this.media.content_type == 'series') {
+        return 34
+      }
+    }
   },
 };
 </script>

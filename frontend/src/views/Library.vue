@@ -36,6 +36,24 @@
           >Search for New Media</o-button
         >
       </div>
+      <div class="flex flex-col md:flex-row text-lg mt-2">
+        <div class="flex flex-row items-center mx-4">
+          <div class="w-6 h-2 bg-green-600 mr-1" />
+          Complete/Available
+        </div>
+        <div class="flex flex-row items-center mx-4">
+          <div class="w-6 h-2 bg-purple-600 mr-1" />
+          Continuing/Monitored
+        </div>
+        <div class="flex flex-row items-center mx-4">
+          <div class="w-6 h-2 bg-gray-500 mr-1" />
+          Unmonitored
+        </div>
+        <div class="flex flex-row items-center mx-4">
+          <div class="w-6 h-2 bg-red-600 mr-1" />
+          Missing/Monitored
+        </div>
+      </div>
     </section>
     <new-media
       v-model:active="showNewSearchModal"
