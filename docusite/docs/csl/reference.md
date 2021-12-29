@@ -88,11 +88,12 @@ Lists are implicitly defined any time expressions are joined within parentheses 
 - `(eq x y ...)` Returns true if all arguments are equal to each other in both type and value. In the case of lists, the elements must be in the same order to be considered equal. (Under the hood we are just using Go's `reflect.DeepEqual`)
 - `(define x expr)` Defines a variable `x` initialized with the result of `expr`
 - `(in v l)` Returns true if the value of `v` appears in list `l`
-- `(in s1 s2)` Returns true iff `s1` is a substring of `s2`
+- `(contains s1 s2)` Returns true iff `s1` contains `s2`
 - `(nth i l)` Returns the `i`th value in list `l` or error if out of bounds 
 - `(nthstr i s)` Returns the `i`th character in the string `s`
 - `(len l)` Returns the length of list `l`
 - `(lenstr s)` Returns the length of string `s`
+- `(substr s i j=lenstr(s))` Returns the substring `s[i:j]`. If `j` is ommitted, it will default to the length of string `s`
 - `(append l v ...)` Appends `v` and all subsequent arguments in order to the right end of list `l`. If the list `l` does not yet exist, then it is initialized
 - `(appendleft l v ...)` Appends `v` and all subsequent arguments in order to the left end of list `l`. If the list `l` does not yet exist, then it is initialized
 - `(pop l ...)` Removes the rightmost element in list `l`, returning the removed element

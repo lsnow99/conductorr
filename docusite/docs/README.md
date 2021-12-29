@@ -1,5 +1,6 @@
 ---
 home: true
+sidebar: false
 heroImage: /logo-rect.svg
 actions:
     - text: Quick Start →

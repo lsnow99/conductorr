@@ -35,6 +35,10 @@ type GitScript struct {
 type ProfileScript struct {
 	name string
 	scriptType string
+	host string
+	apiKey string
+	username string
+	password string
 }
 
 type WebScript struct {
@@ -76,7 +80,17 @@ func (ps ProfileScript) Fetch(allowInsecureRequests bool) (string, error) {
 }
 
 func (ps ProfileScript) CanonicalizedImportPath() string {
-	return fmt.Sprintf("profile:%s:%s", ps.scriptType, ps.name)
+	var queryStr string
+	if ps.host != "" {
+		vals := url.Values{}
+		if ps.apiKey != "" {
+			vals.Set("auth_token", ps.apiKey)
+		} else if (ps.password != "" && ps.username != "") {
+
+		}
+	}
+	vals["host"] = ps.host
+	return fmt.Sprintf("profile:%s:%s%s", ps.scriptType, ps.name, queryStr)
 }
 
 func (ps ProfileScript) GetName() string {

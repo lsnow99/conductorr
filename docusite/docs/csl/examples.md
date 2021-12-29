@@ -53,9 +53,37 @@ This page contains code examples designed to demonstrate the core functionality 
 ; Nth character
 (nthstr 4 "Hello world")
 ; o
+
+; Contains
+(contains "Hello world" "world")
+; true
+
+; Substring
+(substr "Hello world" 0 5)
+; Hello
+
+
 ```
 > **NOTE**: Make sure to use the `lenstr` and `nthstr` functions instead of the `len` and `nth` functions when dealing with strings, as the latter two functions expect lists.
 
-## Using Imports
+## Importing Modules
 
+### Filesystem Modules
 
+This example assumes that you are using the [csl command line interface](ADD LINK).
+
+filter.csl
+```lisp
+; Returns false on input strings that contain the "720p" substring
+(not
+    (contains
+        (nth args 0)
+        "720p"
+    )
+)
+```
+
+main.csl
+```lisp
+; Import the filter script and test it on 
+```
