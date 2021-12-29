@@ -196,10 +196,10 @@ func TestInList(t *testing.T) {
 	checkResult(t, false, res, trace)
 }
 
-func TestInString(t *testing.T) {
+func TestContainsString(t *testing.T) {
 	csl := NewCSL(true)
 	expr, err := csl.Parse(`
-	(substr "hello" "world")
+	(contains "hello" "world")
 	`)
 	if err != nil {
 		t.Fatal(err)
@@ -208,13 +208,34 @@ func TestInString(t *testing.T) {
 	checkResult(t, false, res, trace)
 
 	expr, err = csl.Parse(`
-	(substr "hello" "hello world")
+	(contains "hello world" "hello")
 	`)
 	if err != nil {
 		t.Fatal(err)
 	}
 	res, trace = csl.Eval(expr, nil)
 	checkResult(t, true, res, trace)
+}
+
+func TestSubstring(t *testing.T) {
+	csl := NewCSL(true)
+	expr, err := csl.Parse(`
+	(substr "hello world" 0 5)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace := csl.Eval(expr, nil)
+	checkResult(t, "hello", res, trace)
+
+	expr, err = csl.Parse(`
+	(substr "hello world" 6)
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, trace = csl.Eval(expr, nil)
+	checkResult(t, "world", res, trace)
 }
 
 func TestGreaterThan(t *testing.T) {

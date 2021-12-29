@@ -2,19 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
-.btn-padding--default {
-  @apply py-1;
-  @apply px-3;
+@layer utilities {
+  .outline-black {
+    outline: 2px dotted black;
+    outline-offset: 2px;
+  }
+
+  .outline-white {
+    outline: 2px dotted white;
+    outline-offset: 2px;
+  }
 }
 
 .o-btn {
-  @apply btn-padding--default;
+  @apply py-1;
+  @apply px-3;
   @apply rounded-lg;
   @apply text-lg;
   @apply font-bold;
   @apply uppercase;
   @apply bg-gray-500;
   @apply border-gray-600;
+  @apply focus:outline-white;
 }
 
 .o-btn--small {
@@ -111,7 +120,8 @@
 .o-radio {
   @apply bg-yellow-500;
   @apply border-yellow-600;
-  @apply btn-padding--default;
+  @apply py-1;
+  @apply px-3;
   @apply text-lg;
   @apply font-bold;
   @apply uppercase;

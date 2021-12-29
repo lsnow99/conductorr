@@ -26,15 +26,9 @@ func (csl *CSL) RegisterFunction(name string, lazy bool, eagerFn eagerFnSig, laz
 		return fmt.Errorf("function name %s contains illegal character '\"'", name)
 	}
 
-	toks := NewTokens(name)
-	if len(toks) < 1 {
-		return fmt.Errorf("did not parse any tokens, expected one for function name %s", name)
-	}
-	if len(toks) > 1 {
-		return fmt.Errorf("parsed multiple tokens, expected one for function name %s", name)
-	}
-	if toks[0].typ != symbolToken {
-		return fmt.Errorf("did not parse function name %s as a symbol token", name)
+	fnNameErr := checkValidFunctionName(name)
+	if fnNameErr != nil {
+		return fnNameErr
 	}
 
 	if lazy && lazyFn == nil {
@@ -49,6 +43,27 @@ func (csl *CSL) RegisterFunction(name string, lazy bool, eagerFn eagerFnSig, laz
 		lazy:   lazy,
 		lazyFn: lazyFn,
 	}
+	return nil
+}
+
+// AliasFunction creates an alias to an existing function.
+// The alias parameter must be a valid function name. If the function
+// name is already registered to a different function, it will be 
+// remapped. The source parameter must be a currently-registered 
+// function.
+func (csl *CSL) AliasFunction(alias, source string) error {
+	src, ok := csl.builtins[alias]
+	if !ok {
+		return fmt.Errorf("attempted to register alias %s to nonexistant function %s", alias, source)
+	}
+	
+	fnNameErr := checkValidFunctionName(alias)
+	if fnNameErr != nil {
+		return fnNameErr
+	}
+
+	csl.builtins[alias] = src
+
 	return nil
 }
 
@@ -152,19 +167,41 @@ func (csl *CSL) RegisterDefaults() {
 		}
 		return false, nil
 	}, nil)
-	csl.RegisterFunction("substr", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+	csl.RegisterFunction("contains", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) != 2 {
 			return nil, ErrNumOperands
 		}
 		var str, substr string
 		var ok bool
-		if str, ok = args[1].(string); !ok {
+		if str, ok = args[0].(string); !ok {
 			return nil, ErrMismatchOperandTypes
 		}
-		if substr, ok = args[0].(string); !ok {
+		if substr, ok = args[1].(string); !ok {
 			return nil, ErrMismatchOperandTypes
 		}
 		return strings.Contains(str, substr), nil
+	}, nil)
+	csl.RegisterFunction("substr", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) < 2 || len(args) > 3 {
+			return nil, ErrNumOperands
+		}
+		var str string
+		var a, b int64
+		var ok bool
+		if str, ok = args[0].(string); !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		if a, ok = args[1].(int64); !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		if len(args) == 3 {
+			if b, ok = args[2].(int64); !ok {
+				return nil, ErrMismatchOperandTypes
+			}
+		} else {
+			b = int64(len(str))
+		}
+		return str[a:b], nil
 	}, nil)
 	csl.RegisterFunction(">", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
 		if len(args) < 2 {
@@ -667,8 +704,8 @@ func (csl *CSL) RegisterDefaults() {
 		if len(l) == 0 {
 			return nil, trace
 		}
-		val := l[len(l) - 1]
-		l = l[:len(l) - 1]
+		val := l[len(l)-1]
+		l = l[:len(l)-1]
 		env[x] = l
 		return val, trace
 	})
@@ -801,7 +838,7 @@ func (csl *CSL) RegisterDefaults() {
 				return nil, ErrMismatchOperandTypes
 			}
 			for j, elem := range list {
-				if i != len(args) - 1 && j != len(list) - 1 {
+				if i != len(args)-1 && j != len(list)-1 {
 					str += fmt.Sprintf("%v%s", elem, separator)
 				} else {
 					str += fmt.Sprintf("%v", elem)
@@ -827,42 +864,6 @@ func (csl *CSL) RegisterDefaults() {
 		for _, s := range split {
 			l = append(l, s)
 		}
-		return l, nil
-	}, nil)
-	csl.RegisterFunction("matches", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
-		if len(args) < 2 || len(args) > 3 {
-			return nil, ErrNumOperands
-		}
-		var pattern, str string
-		var ok bool
-		var n int64 = -1
-		if pattern, ok = args[0].(string); !ok {
-			return nil, ErrMismatchOperandTypes
-		}
-		if str, ok = args[1].(string); !ok {
-			return nil, ErrMismatchOperandTypes
-		}
-		if len(args) == 3 {
-			if n, ok = args[2].(int64); !ok {
-				return nil, ErrMismatchOperandTypes
-			}
-		}
-
-		regex, err := regexp.Compile(pattern)
-		if err != nil {
-			return nil, err
-		}
-		matches := regex.FindAllStringSubmatch(str, int(n))
-
-		var l List
-		for _, match := range matches {
-			var subL List
-			for _, submatch := range match {
-				subL = append(subL, submatch)
-			}
-			l = append(l, subL)
-		}
-
 		return l, nil
 	}, nil)
 	csl.RegisterFunction("match", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
@@ -932,7 +933,7 @@ func (csl *CSL) RegisterDefaults() {
 			return nil, err
 		}
 		matches := regex.FindAllString(str, int(n))
-		
+
 		// Convert to CSL list
 		var l List
 		for _, match := range matches {
@@ -941,4 +942,163 @@ func (csl *CSL) RegisterDefaults() {
 
 		return l, nil
 	}, nil)
+	csl.RegisterFunction("findallsubmatch", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		if len(args) < 2 || len(args) > 3 {
+			return nil, ErrNumOperands
+		}
+		var pattern, str string
+		var ok bool
+		var n int64 = -1
+		if pattern, ok = args[0].(string); !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		if str, ok = args[1].(string); !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		if len(args) == 3 {
+			if n, ok = args[2].(int64); !ok {
+				return nil, ErrMismatchOperandTypes
+			}
+		}
+
+		regex, err := regexp.Compile(pattern)
+		if err != nil {
+			return nil, err
+		}
+		matches := regex.FindAllStringSubmatch(str, int(n))
+
+		var l List
+		for _, match := range matches {
+			var subL List
+			for _, submatch := range match {
+				subL = append(subL, submatch)
+			}
+			l = append(l, subL)
+		}
+
+		return l, nil
+	}, nil)
+	csl.RegisterFunction("findindex", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		// Accepts exactly 2 arguments
+		if len(args) != 2 {
+			return nil, ErrNumOperands
+		}
+
+		var pattern, str string
+		var ok bool
+		if pattern, ok = args[0].(string); !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		if str, ok = args[1].(string); !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+
+		regex, err := regexp.Compile(pattern)
+		if err != nil {
+			return nil, err
+		}
+		indexes := regex.FindStringIndex(str)
+
+		// Convert to CSL list
+		var l List
+		for _, index := range indexes {
+			l = append(l, index)
+		}
+
+		return l, nil
+	}, nil)
+	csl.RegisterFunction("findallindex", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		// Accepts either exactly 2 or 3 arguments
+		if len(args) < 2 || len(args) > 3 {
+			return nil, ErrNumOperands
+		}
+
+		var pattern, str string
+		var ok bool
+		var n int64 = -1
+		if pattern, ok = args[0].(string); !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		if str, ok = args[1].(string); !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		if len(args) == 3 {
+			// If a third argument was not provided, use -1 as default
+			if n, ok = args[2].(int64); !ok {
+				return nil, ErrMismatchOperandTypes
+			}
+		}
+
+		regex, err := regexp.Compile(pattern)
+		if err != nil {
+			return nil, err
+		}
+		matches := regex.FindAllStringIndex(str, int(n))
+
+		// Convert to CSL list
+		var l List
+		for _, match := range matches {
+			var subL List
+			for _, submatch := range match {
+				subL = append(subL, submatch)
+			}
+			l = append(l, subL)
+		}
+
+		return l, nil
+	}, nil)
+	csl.RegisterFunction("findallsubmatchindex", false, func(env map[string]interface{}, args ...interface{}) (interface{}, error) {
+		// Accepts either exactly 2 or 3 arguments
+		if len(args) < 2 || len(args) > 3 {
+			return nil, ErrNumOperands
+		}
+
+		var pattern, str string
+		var ok bool
+		var n int64 = -1
+		if pattern, ok = args[0].(string); !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		if str, ok = args[1].(string); !ok {
+			return nil, ErrMismatchOperandTypes
+		}
+		if len(args) == 3 {
+			// If a third argument was not provided, use -1 as default
+			if n, ok = args[2].(int64); !ok {
+				return nil, ErrMismatchOperandTypes
+			}
+		}
+
+		regex, err := regexp.Compile(pattern)
+		if err != nil {
+			return nil, err
+		}
+		matches := regex.FindAllStringSubmatchIndex(str, int(n))
+
+		// Convert to CSL list
+		var l List
+		for _, match := range matches {
+			var subL List
+			for _, submatch := range match {
+				subL = append(subL, submatch)
+			}
+			l = append(l, subL)
+		}
+
+		return l, nil
+	}, nil)
+}
+
+func checkValidFunctionName(name string) error {
+	toks := NewTokens(name)
+	if len(toks) < 1 {
+		return fmt.Errorf("did not parse any tokens, expected one for function name %s", name)
+	}
+	if len(toks) > 1 {
+		return fmt.Errorf("parsed multiple tokens, expected one for function name %s", name)
+	}
+	if toks[0].typ != symbolToken {
+		return fmt.Errorf("did not parse function name %s as a symbol token", name)
+	}
+	return nil
 }
