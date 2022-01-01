@@ -35,9 +35,10 @@ export default {
       this.initialized = true;
     });
     this.getStatus();
-    this.interval = setInterval(() => {
-      this.getStatus();
-    }, 5000);
+    // TODO: Websocket this
+    // this.interval = setInterval(() => {
+    //   this.getStatus();
+    // }, 5000);
     // Whenever the user explicitly chooses dark mode
     localStorage.theme = "dark";
     if (

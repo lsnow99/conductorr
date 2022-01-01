@@ -127,8 +127,9 @@ func (n *Node) ResolveDependencies(deps DepGraph, csl *CSL, cslpm *CSLPackageMan
 					}
 					importPath = is.CanonicalizedImportPath()
 				}
-				// Check for existing dependency
+
 				var foundNode *Node
+				// Check for existing dependency
 				for _, node := range deps.Nodes {
 					if node.ImportPath == importPath {
 						foundNode = node
@@ -158,12 +159,12 @@ func (n *Node) ResolveDependencies(deps DepGraph, csl *CSL, cslpm *CSLPackageMan
 						return fmt.Errorf("circular dependency detected! Importing %s from %s", importPath, n.ImportPath)
 					}
 				}
-				depCSL := NewCSL(true)
+				depCSL := csl.CopyWithBuiltins()
 				err = foundNode.ResolveDependencies(deps, depCSL, cslpm)
 				if err != nil {
 					return err
 				}
-				csl.RegisterFunction(fnName, true, nil, func(env map[string]interface{}, args []*SExpr, trace Trace) (interface{}, Trace) {
+				csl.RegisterFunction(fnName, true, false, nil, func(env map[string]interface{}, args []*SExpr, trace Trace) (interface{}, Trace) {
 					argList := List{}
 					for _, arg := range args {
 						res, trace := csl.EvalSExpr(arg, env, trace)
@@ -179,7 +180,8 @@ func (n *Node) ResolveDependencies(deps DepGraph, csl *CSL, cslpm *CSLPackageMan
 					}
 					depEnv := make(map[string]interface{})
 					depEnv["args"] = argList
-					return depCSL.Eval(sexprs, depEnv)
+					res, tr := depCSL.Eval(sexprs, depEnv)
+					return res, tr
 				})
 			} else {
 				return fmt.Errorf("import called with no arguments")

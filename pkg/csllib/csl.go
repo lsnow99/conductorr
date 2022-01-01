@@ -1,7 +1,7 @@
 package csllib
 
 type CSL struct {
-	builtins map[string]operation
+	builtins            map[string]operation
 	didRegisterDefaults bool
 }
 

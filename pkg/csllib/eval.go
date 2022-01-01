@@ -18,9 +18,10 @@ type eagerFnSig func(env map[string]interface{}, args ...interface{}) (interface
 type lazyFnSig func(env map[string]interface{}, args []*SExpr, trace Trace) (interface{}, Trace)
 
 type operation struct {
-	fn     eagerFnSig
-	lazyFn lazyFnSig
-	lazy   bool
+	fn      eagerFnSig
+	builtin bool
+	lazyFn  lazyFnSig
+	lazy    bool
 }
 
 var (
@@ -124,7 +125,7 @@ func (csl *CSL) EvalSExpr(sexpr *SExpr, env map[string]interface{}, trace Trace)
 					} else {
 						val, ok := env[x]
 						if !ok {
-							trace.Err = fmt.Errorf("undefined variable: %s", x)
+							trace.Err = fmt.Errorf("variable %s is undefined: %w", x, ErrUndefinedVar)
 							return nil, trace
 						}
 						list = append(list, val)

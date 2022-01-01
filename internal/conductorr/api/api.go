@@ -23,7 +23,7 @@
 //          name: x-token
 //          in: header
 //	   auth_token:
-//			type: 
+//			type:
 //     oauth2:
 //         type: oauth2
 //         authorizationUrl: /oauth2/auth
@@ -55,6 +55,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/lsnow99/conductorr/internal/conductorr/dbstore"
 	"github.com/lsnow99/conductorr/internal/conductorr/settings"
 )
 
@@ -64,7 +65,7 @@ var whitelistPaths = []string{
 	"/api/v1/checkAuth",
 	"/api/csl.wasm",
 	"/api/v1/logout",
-	// Also whitelisted are any paths not beginning with /api/v1
+	// Also whitelisted are any paths not beginning with /api
 }
 
 var errAuth = errors.New("token failed validation")
@@ -126,6 +127,9 @@ func Respond(w http.ResponseWriter, req *http.Request, err error, data interface
 		}
 	}
 
+	if err == errAuth {
+		w.WriteHeader(http.StatusUnauthorized)
+	}
 	if err := json.NewEncoder(w).Encode(r); err != nil {
 		log.Println(err)
 	}
@@ -150,19 +154,32 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			}
 		}
 
-		if shouldAuth && strings.HasPrefix(r.URL.Path, "/api/v1") {
+		if shouldAuth && strings.HasPrefix(r.URL.Path, "/api") {
+			// Check cookie
 			tok, err := r.Cookie(UserAuthKey)
-			// First check cookie
-			if err != nil || !checkToken(tok.Value) {
-				// TODO Secondary check for auth header
-				
-				Respond(w, r, errAuth, nil, false)
-				return
+			if (err == nil) && checkToken(tok.Value) {
+				goto DoNextHandler
 			}
+
+			// Check user
+			username, password, ok := r.BasicAuth()
+			err = dbstore.CheckUser(r.Context(), username, password)
+			if (err == nil) && ok {
+				goto DoNextHandler
+			}
+
+			// TODO: Check auth token
+			// authToken := r.Header.Get("X-Auth-Token")
+
+			// Return an auth error if all three methods failed.
+			Respond(w, r, errAuth, nil, false)
+			return
 		}
 
+	DoNextHandler:
+
 		// Call the next handler, which can be another middleware in the chain, or the final handler.
-		if (next != nil ) {
+		if next != nil {
 			next.ServeHTTP(w, r)
 		}
 	})

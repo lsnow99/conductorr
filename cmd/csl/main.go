@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/lsnow99/conductorr/internal/csl"
 	"github.com/lsnow99/conductorr/pkg/csllib"
 )
 
@@ -25,7 +26,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	csl := csllib.NewCSL(true)
+	csl := csl.NewCSL()
 	action := flag.Arg(0)
 	importPath := flag.Arg(1)
 
@@ -39,7 +40,7 @@ func main() {
 		}, AllowInsecureRequests)
 		script, err := cslpm.Resolve(importPath)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 		}
 		result, err, trace := csl.ResolveDepsAndCall(cslpm, csllib.Script{
@@ -47,13 +48,14 @@ func main() {
 			ImportPath: importPath,
 		})
 		if err != nil {
-			fmt.Println("Error resolving dependencies: ", err)
+			fmt.Fprintln(os.Stderr, "Error resolving dependencies: ", err)
+			os.Exit(1)
 		}
 		if trace.Err != nil {
-			fmt.Println("Error evaluating csl script:")
-			fmt.Println(err)
-			fmt.Println("Trace:")
-			fmt.Println(trace.ExprTree)
+			fmt.Fprintln(os.Stderr, "Error evaluating csl script:")
+			fmt.Fprintln(os.Stderr, trace.Err)
+			fmt.Fprintln(os.Stderr, "Trace:")
+			fmt.Fprintln(os.Stderr, trace.ExprTree)
 			os.Exit(1)
 		}
 		fmt.Printf("%v\n", result)

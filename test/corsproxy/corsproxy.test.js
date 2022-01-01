@@ -1,4 +1,4 @@
-const corsproxy = require("../functions/corsproxy");
+const corsproxy = require("../../functions/corsproxy");
 
 async function testHandler() {
   let response = await corsproxy.handler({

@@ -13,6 +13,7 @@ const doAPIReq = (url, options, errMsg = undefined) => {
             resolve({});
           }
         } else {
+          // TODO: check this
           if (resp.failed_auth) {
             AuthUtil.logout();
             EventBus.emit('forceLogout')

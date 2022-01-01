@@ -487,12 +487,12 @@ export default {
     renderedCode() {
       let code = `(import "profile:${this.activeFunction}:${this.profile.name}" fn)
 `;
-      if (this.activeFunction == "sorter") {
+      if (this.activeFunction == "filter") {
         code += `
 (fn
 ${this.renderedReleaseCode(this.releaseA, 1)}
 )`;
-      } else if (this.activeFunction == "filter") {
+      } else if (this.activeFunction == "sorter") {
         code += `
 (fn
 ${this.renderedReleaseCode(this.releaseA, 1)}

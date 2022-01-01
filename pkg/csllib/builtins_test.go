@@ -22,7 +22,7 @@ func TestRegisterSucceed(t *testing.T) {
 
 func checkRegistration(t *testing.T, pattern string, shouldErr bool) {
 	csl := NewCSL(true)
-	err := csl.RegisterFunction(pattern, false, dummyEagerFn, nil)
+	err := csl.RegisterFunction(pattern, false, true, dummyEagerFn, nil)
 	if shouldErr && err == nil {
 		t.Fatalf("expected error from registering pattern %s but succeeded", pattern)
 	} else if !shouldErr && err != nil {

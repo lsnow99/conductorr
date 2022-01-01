@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -20,7 +21,7 @@ type Profile struct {
 	Sorter string `json:"sorter,omitempty"`
 }
 
-func NewProfileFromDB(dbProfile *dbstore.Profile) (Profile) {
+func NewProfileFromDB(dbProfile *dbstore.Profile) Profile {
 	profile := Profile{}
 	profile.ID = dbProfile.ID
 	profile.Name = dbProfile.Name.String
@@ -93,4 +94,30 @@ func DeleteProfile(w http.ResponseWriter, r *http.Request) {
 
 	err = dbstore.DeleteProfile(idInt)
 	Respond(w, r, err, nil, true)
+}
+
+func GetRawProfileScript(w http.ResponseWriter, r *http.Request) {
+	name := mux.Vars(r)["name"]
+	scriptType := mux.Vars(r)["script_type"]
+
+	profile, err := dbstore.GetProfileByName(name)
+	if err != nil {
+		Respond(w, r, err, nil, true)
+		return
+	}
+
+	fmt.Println(profile)
+	
+	if scriptType == "filter" {
+		fmt.Println("returning", profile.Filter.String)
+		w.Write([]byte(profile.Filter.String))
+		return
+	} else if scriptType == "sorter" {
+		fmt.Println("returning", profile.Sorter.String)
+		w.Write([]byte(profile.Sorter.String))
+		return
+	} else {
+		Respond(w, r, fmt.Errorf("unrecognized script type %s", scriptType), nil, true)
+		return
+	}
 }

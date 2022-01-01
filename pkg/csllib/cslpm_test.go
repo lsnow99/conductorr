@@ -61,6 +61,65 @@ func TestParseGit3(t *testing.T) {
 	checkGS(t, gs, expectedGS)
 }
 
+func TestParseProfile1(t *testing.T) {
+	cslpm := NewCSLPackageManager(DefaultFetcher, false)
+	importedScript, err := cslpm.parseImport("profile:filter:myprof?username=l&password=l&host=localhost&port=8282")
+	if err != nil {
+		t.Fatal(err)
+	}
+	ps, ok := importedScript.(ProfileScript)
+	if !ok {
+		t.Fatal("type assertion failed")
+	}
+	expectedPS := ProfileScript{
+		name:       "myprof",
+		scriptType: "filter",
+		host:       "localhost",
+		username:   "l",
+		password:   "l",
+		port:       8282,
+	}
+	checkPS(t, ps, expectedPS)
+}
+
+func TestParseProfile2(t *testing.T) {
+	cslpm := NewCSLPackageManager(DefaultFetcher, false)
+	importedScript, err := cslpm.parseImport("profile:filter:myprof")
+	if err != nil {
+		t.Fatal(err)
+	}
+	ps, ok := importedScript.(ProfileScript)
+	if !ok {
+		t.Fatal("type assertion failed")
+	}
+	expectedPS := ProfileScript{
+		name:       "myprof",
+		scriptType: "filter",
+		port:       8282,
+	}
+	checkPS(t, ps, expectedPS)
+}
+
+func TestParseProfile3(t *testing.T) {
+	cslpm := NewCSLPackageManager(DefaultFetcher, false)
+	importedScript, err := cslpm.parseImport("profile:sorter:myprof?host=example.com&port=4982&auth_token=jklfdas")
+	if err != nil {
+		t.Fatal(err)
+	}
+	ps, ok := importedScript.(ProfileScript)
+	if !ok {
+		t.Fatal("type assertion failed")
+	}
+	expectedPS := ProfileScript{
+		name:       "myprof",
+		scriptType: "sorter",
+		host:       "example.com",
+		port:       4982,
+		authToken:  "jklfdas",
+	}
+	checkPS(t, ps, expectedPS)
+}
+
 func TestParseWeb(t *testing.T) {
 	const scriptURL = "https://raw.githubusercontent.com/lsnow99/myscripts/main/main.csl"
 	cslpm := NewCSLPackageManager(DefaultFetcher, false)
@@ -105,5 +164,26 @@ func checkGS(t *testing.T, gs, expectedGS GitScript) {
 	}
 	if gs.version != expectedGS.version {
 		t.Fatalf("got version %s, expected %s", gs.version, expectedGS.version)
+	}
+}
+
+func checkPS(t *testing.T, ps, expectedPS ProfileScript) {
+	if ps.name != expectedPS.name {
+		t.Fatalf("got name %s, expected %s", ps.name, expectedPS.name)
+	}
+	if ps.scriptType != expectedPS.scriptType {
+		t.Fatalf("got scriptType %s, expected %s", ps.scriptType, expectedPS.scriptType)
+	}
+	if ps.host != expectedPS.host {
+		t.Fatalf("got host %s, expected %s", ps.host, expectedPS.host)
+	}
+	if ps.username != expectedPS.username {
+		t.Fatalf("got username %s, expected %s", ps.username, expectedPS.username)
+	}
+	if ps.password != expectedPS.password {
+		t.Fatalf("got password %s, expected %s", ps.password, expectedPS.password)
+	}
+	if ps.authToken != expectedPS.authToken {
+		t.Fatalf("got authToken %s, expected %s", ps.authToken, expectedPS.authToken)
 	}
 }
