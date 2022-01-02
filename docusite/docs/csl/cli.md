@@ -7,7 +7,7 @@ The CSL CLI is a command line utility for developing and testing CSL scripts out
 The CLI has two available commands: `get` and `run`.
 For both commands, a source script must be provided as the first argument. This can be any valid [import path](/csl/examples.html#importing-modules), not just local file paths. For example, you can run `csl run github.com/lsnow99/myscripts:main.csl` and it will fetch and run the script.
 
-> NOTE: When importing or executing profile modules that are hosted on an instance of Conductorr, you must provide credentials to allow the CLI to access those modules. For more details, see {TODO ADD LINK}
+> NOTE: When importing or executing profile modules that are hosted on an instance of Conductorr, you must provide credentials to allow the CLI to access those modules. For more details, see the note on [importing profile scripts](/csl/reference#note-on-importing-profile-scripts).
 
 ### Get
 

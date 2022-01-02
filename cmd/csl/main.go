@@ -125,6 +125,8 @@ func main() {
 	}
 }
 
+// parseArgs takes a csl instance and a slice of raw string arguments and evaluates them to
+// usable CSL types.
 func parseArgs(csl *csllib.CSL, rawArgs []string) ([]interface{}, error) {
 	parsedArgs := make([]interface{}, 0, len(rawArgs))
 	for _, arg := range rawArgs {
