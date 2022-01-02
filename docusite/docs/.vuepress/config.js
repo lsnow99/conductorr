@@ -43,7 +43,7 @@ module.exports = {
     oldnav: [
       {
         text: "Guide",
-        link: "/guide/download.md",
+        link: "/guide/install.md",
       },
       {
         text: "Features",
@@ -58,7 +58,7 @@ module.exports = {
       "/": [
         {
           text: "Guide",
-          children: ["/guide/download.md", "/guide/configuration.md", "/guide/backups.md"],
+          children: ["/guide/install.md", "/guide/configuration.md", "/guide/backups.md"],
         },
         {
           text: "Features",
@@ -76,6 +76,7 @@ module.exports = {
           children: [
             "/csl/reference.md",
             "/csl/examples.md",
+            "/csl/cli.md",
             "/csl/repl.md",
           ],
         },

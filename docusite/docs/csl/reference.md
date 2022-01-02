@@ -6,7 +6,7 @@ title: Reference
 
 CSL is a stripped-down Lisp implementation intended to allow users of Conductorr to extend its capabilities and finely tune release processing.
 
-It stands for {{ standsFor }} (<a @click="orDoesIt" href="javascript:void(0);">or does it?</a>)
+It stands for {{ standsFor }} (<a @click="orDoesIt" href="javascript:void(0);">or does it?</a>).
 
 The parsing capabilities are largely borrowed from [Jan Andersson](https://github.com/janne)'s [go-lisp](https://github.com/janne/go-lisp) project.
 
@@ -166,7 +166,7 @@ To call use one of these functions, do the following:
 
 The above snippet returns `"Manos.The.Hands.of.Fate.1966.THEATRiCAL.1080p.BluRay.x264-SADPANDA"` when `a` is defined like in the earlier example
 
-# Importing Scripts as Functions
+## Importing Scripts as Functions
 
 In a CSL script, the value of the final expression is considered to be the "return value" of the script. Scripts can be imported as functions.
 
@@ -179,13 +179,26 @@ Available protocols:
 | filesystem  | `file:/home/user/scripts/test.csl` | cli | Will load a file from disk. It is only available in the CLI, so it is useful for local testing of CSL scripts. The exception to this is that remote modules in a Git repository can reference local files in the repository. |
 | git         | `github.com/user/repo:test.csl@v2` | cli, conductorr, playground | Works with GitLab, GitHub, and Gitea (others possibly as well). The version tag is optional, and any commit hash or branch name or tag is valid. Note the colon separating the hostname and web path from the path within the repository to the script. |
 | web         | `https://example.com/test.csl` | cli, conductorr, playground | The CSL package manager will perform a simple HTTP GET request at the given URL. No matter if https or http is specified, it will always try https first, and upon failure, it will only try http if insecure connections have been enabled in the environment. |
-| profile     | `profile:(sorter\|filter):myprof` | conductorr | Allows you to access a sorter or profile of the named profile. For example, `profile:sorter:myprof` will import the sorter function in the `myprof` profile. |
+| profile     | `profile:(sorter\|filter):myprof` | cli, conductorr, playground | Allows you to access a sorter or profile of the named profile. For example, `profile:sorter:myprof` will import the sorter function in the `myprof` profile. |
 
 You can then invoke the script at any time using `(demo-script)`. The script will execute, and the above expression will evaluate as the script's return value. Arguments to a script are accessible via an ordered list called `args` which is always accessible. Script functions are run in a separate scope and only inherit the arguments that are passed to it.
 
+### Note on Importing Profile Scripts
+As shown above, you can import sorter and filter scripts from a profiles within Conductorr. By default, an import path of the form `profile:sorter:myprof` will only work when a script is run within the same instance of Conductorr that has the profile called "myprof". If you are running a script outside of Conductorr, or if you want to import a script from a different instance of Conductorr, then you need to append credentials and connection details in the import path as query parameters.
+Available query parameters are:
+- `host` the host (without port) for the Conductorr instance.
+- `port` the port for the Conductorr instance. (Usually 6416 for local instances and 443 if you are connecting over public Https)
+- `auth_token` an auth token for the Conductorr instance.
+- `username` admin username for the Conductorr instance.
+- `password` admin password for the Conductorr instance.
+
+The `host` parameter is required to connect to an external Conductorr instance. Either the `username` and `password` pair or `auth_token` are required. The port is not required, as a default value of 6416 will be used.
+
+Note that you should only use this feature of importing external profile scripts when absolutely necessary. For example, you can use the [CSL CLI](/csl/cli.html) to run a profile filter script on a running Conductorr instance by doing `csl run profile:filter:myprof?host=localhost&port=6416&username=admin&password=verysecret somearg1 somearg2`. You should not use this feature in scripts that will be published anywhere, especially to public git repositories or webservers, as leaking these credentials can compromise your Conductorr instance.
+
 ## Important Notes and Caveats
 - Your imports must come before any other code in your script.
-- Attempting to pass anything other than a string **literal** as the import statement's second argument will result in an parsing failure. 
+- Attempting to pass anything other than a string **literal** as the import statement's second argument will result in an parsing failure.
 - Depending on your execution environment (i.e. Conductorr), imported scripts may be cached. Conductorr caches scripts imported from the web and periodically refetches them to check for updates. If you know your dependent scripts have updated, you can force Conductorr to reload them, or if using the git-style imports, you can bump the version tag and the next time the script executes it will pull the updated version of the script.
 - If a script fails to load, your execution environment may instead load the script from its cache. If your script is tagged with a version, it should only look for scripts tagged with that same version in the cache.
 - For any http request made by your execution environment to resolve dependencies, it will first attempt to use https, and depending on the environment configuration, http may be used as a fallback. By default insecure requests are disabled in all execution environments, except for the playground.

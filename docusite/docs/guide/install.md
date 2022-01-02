@@ -1,4 +1,4 @@
-# Download and Installation
+# Installation
 
 Follow the instructions below depending on your system and preferred installation method. For configuration instructions post-installation, check [here](/guide/configuration.html).
 
@@ -17,15 +17,15 @@ Navigate to [http://localhost:6416/](http://localhost:6416/) and you should see 
 Create a `docker-compose.yml` file with the following contents:
 
 ```yml
-version: "3.9"
+version: "3.4"
 services:
   conductorr:
-    image: "conductorr"
+    image: "lsnow99/conductorr"
     ports:
       - "6416:6416"
     volumes:
-      # Replace the . with your preferred location on your system for the database file
-      - .:/app/conductorr.db  
+      # Replace the ./data with your preferred location on your system for the database file
+      - ./data:/app/conductorr.db  
     environment:
       TMDB_API_KEY: yourapikeyhere
       # Add any other environment variables for configuration here

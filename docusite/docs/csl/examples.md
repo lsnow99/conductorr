@@ -70,7 +70,7 @@ This page contains code examples designed to demonstrate the core functionality 
 
 ### Filesystem Modules
 
-This example assumes that you are using the [csl command line interface](ADD LINK).
+This example assumes that you are using the [csl command line interface](/csl/cli.html).
 
 filter.csl
 ```lisp
@@ -86,4 +86,5 @@ filter.csl
 main.csl
 ```lisp
 ; Import the filter script and test it on 
+
 ```

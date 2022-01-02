@@ -106,14 +106,10 @@ func GetRawProfileScript(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println(profile)
-	
 	if scriptType == "filter" {
-		fmt.Println("returning", profile.Filter.String)
 		w.Write([]byte(profile.Filter.String))
 		return
 	} else if scriptType == "sorter" {
-		fmt.Println("returning", profile.Sorter.String)
 		w.Write([]byte(profile.Sorter.String))
 		return
 	} else {

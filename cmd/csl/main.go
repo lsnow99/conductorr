@@ -14,24 +14,42 @@ var NoCache bool
 var AllowInsecureRequests bool
 
 func main() {
-	flag.BoolVar(&NoCache, "nocache", false, "If set, the dependency cache will not be used")
-	flag.BoolVar(&AllowInsecureRequests, "insecure", false, "If set, the dependency manager will allow plaintext http request fallbacks")
+	runCmd := flag.NewFlagSet("run", flag.ExitOnError)
+	runCmd.BoolVar(&NoCache, "nocache", false, "If set, the dependency cache will not be used")
+	runCmd.BoolVar(&AllowInsecureRequests, "insecure", false, "If set, the dependency manager will allow plaintext http request fallbacks")
+	
+	getCmd := flag.NewFlagSet("get", flag.ExitOnError)
+	getCmd.BoolVar(&AllowInsecureRequests, "insecure", false, "If set, the dependency manager will allow plaintext http request fallbacks")
 	flag.Parse()
 
-	if flag.NArg() < 1 {
-		fmt.Printf("missing required argument action (run, or get)\n")
-		os.Exit(1)
-	} else if flag.NArg() < 2 {
-		fmt.Printf("missing required argument script file\n")
-		os.Exit(1)
-	}
+	if len(os.Args) < 2 {
+        fmt.Println("missing required argument action (run, or get)")
+        os.Exit(1)
+    }
 
 	csl := csl.NewCSL()
-	action := flag.Arg(0)
-	importPath := flag.Arg(1)
+	action := os.Args[1]
 
 	switch action {
 	case "run":
+		if err := runCmd.Parse(os.Args[2:]); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+
+		if len(runCmd.Args()) < 1 {
+			fmt.Fprintln(os.Stderr, "no argument provided to run")
+			os.Exit(1)
+		}
+
+		importPath := runCmd.Arg(0)
+
+		runArgs, err := parseArgs(csl, runCmd.Args()[1:])
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+
 		cslpm := csllib.NewCSLPackageManager(func(is csllib.ImportableScript, importPath string, allowInsecureRequests bool) (string, error) {
 			if NoCache {
 				return is.Fetch(allowInsecureRequests)
@@ -39,6 +57,7 @@ func main() {
 			return csllib.DefaultFetcher(is, importPath, allowInsecureRequests)
 		}, AllowInsecureRequests)
 		script, err := cslpm.Resolve(importPath)
+
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
@@ -46,7 +65,7 @@ func main() {
 		result, err, trace := csl.ResolveDepsAndCall(cslpm, csllib.Script{
 			Code: script,
 			ImportPath: importPath,
-		})
+		}, runArgs...)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "Error resolving dependencies: ", err)
 			os.Exit(1)
@@ -60,6 +79,18 @@ func main() {
 		}
 		fmt.Printf("%v\n", result)
 	case "get":
+		if err := runCmd.Parse(os.Args[2:]); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+
+		if len(runCmd.Args()) < 1 {
+			fmt.Fprintln(os.Stderr, "no argument provided to get")
+			os.Exit(1)
+		}
+
+		importPath := runCmd.Arg(0)
+
 		cslpm := csllib.NewCSLPackageManager(func(is csllib.ImportableScript, importPath string, allowInsecureRequests bool) (string, error) {
 			script, err := is.Fetch(allowInsecureRequests)
 			if err != nil {
@@ -92,4 +123,20 @@ func main() {
 		fmt.Printf("Unrecognized action %s, available actions are [get, run]\n", action)
 		os.Exit(1)
 	}
+}
+
+func parseArgs(csl *csllib.CSL, rawArgs []string) ([]interface{}, error) {
+	parsedArgs := make([]interface{}, 0, len(rawArgs))
+	for _, arg := range rawArgs {
+		sexprs, err := csl.Parse(arg)
+		if err != nil {
+			return nil, err
+		}
+		res, trace := csl.Invoke(sexprs)
+		if trace.Err != nil {
+			return nil, trace.Err
+		}
+		parsedArgs = append(parsedArgs, res)
+	}
+	return parsedArgs, nil
 }
