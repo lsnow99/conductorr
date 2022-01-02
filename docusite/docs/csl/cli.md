@@ -22,7 +22,7 @@ Flags:
 
 `csl run {your_script} {your_first_argument} {your_second_argument} ...`
 
-The `run` command fetches all dependencies for a given script and invokes it with the given arguments. By default, dependencies will be served from the cache, and will fall back to fetching in the case of a cache miss.
+The `run` command fetches all dependencies for a given script and invokes it with the given arguments. By default, dependencies will be served from the cache, and will fall back to fetching in the case of a cache miss. Note that arguments can be any valid CSL expression (except for import statements). For example, if the contents of `printargs.csl` are just `(args)`, then `csl run printargs.csl 1 3 53 "(* 2 10)"` will output `[1 3 53 20]`. Note that it is necessary to surround multi-word arguments with quotes.
 
 Flags:
 - `-insecure` - Allow insecure (http) requests. Https is always attempted first by default, even if Http import paths are specified.
