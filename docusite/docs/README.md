@@ -4,7 +4,7 @@ sidebar: false
 heroImage: /logo-rect.svg
 actions:
     - text: Quick Start →
-      link: /guide/download
+      link: /guide/install
       type: primary
 features:
 - title: Full Pipeline Integration
