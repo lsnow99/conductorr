@@ -39,11 +39,11 @@
       <div class="flex flex-col md:flex-row text-lg mt-2">
         <div class="flex flex-row items-center mx-4">
           <div class="w-6 h-2 bg-green-600 mr-1" />
-          Complete/Available
+          Complete/All Monitored Available
         </div>
         <div class="flex flex-row items-center mx-4">
           <div class="w-6 h-2 bg-purple-600 mr-1" />
-          Continuing/Monitored
+          Continuing/All Monitored Available
         </div>
         <div class="flex flex-row items-center mx-4">
           <div class="w-6 h-2 bg-gray-500 mr-1" />

@@ -32,6 +32,15 @@ func SearchMedia(title string, contentType string, page int) ([]*Media, int, err
 		return nil, 0, err
 	}
 
+	/*
+
+		CASE content_type
+			WHEN 'series'
+				THEN (SELECT COUNT(id) FROM media WHERE )
+			
+		END
+	*/
+
 	rows, err := db.Query(`
 		SELECT` + fullMediaCols + `
 		FROM media
