@@ -3,9 +3,11 @@
     <section>
       <h1 class="text-2xl">Recently Added to Library</h1>
       <div class="flex flex-wrap p-2 justify-between">
-        <template v-for="media in recentMedia" :key="media.id">
-          <MediaCard :media="media" @click="gotoMedia"></MediaCard>
-        </template>
+        <o-carousel repeat>
+          <o-carousel-item v-for="media in recentMedia" :key="media.id">
+            <MediaCard :media="media" @click="gotoMedia"></MediaCard>
+          </o-carousel-item>
+        </o-carousel>
       </div>
     </section>
     <section class="flex-1">
@@ -33,7 +35,7 @@ export default {
   components: { PageWrapper, DownloadStatusViewer, MediaCard },
   methods: {
     gotoMedia(media) {
-      this.$router.push({ name: 'media', params: { media_id: media.id } });
+      // this.$router.push({ name: "media", params: { media_id: media.id } });
     },
   },
   mounted() {

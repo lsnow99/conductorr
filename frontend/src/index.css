@@ -376,3 +376,36 @@ a:hover {
   @apply focus:outline-white;
   @apply focus:opacity-80;
 }
+
+.o-car__indicator {
+  @apply flex-1;
+}
+
+.o-car__indicator__item {
+  @apply w-full;
+  @apply h-3;
+  @apply cursor-pointer;
+  @apply rounded-none;
+  @apply bg-gray-500;
+  @apply border-black;
+  @apply border-opacity-0;
+}
+
+.o-car__indicator__item:hover {
+  @apply opacity-75;
+}
+
+.o-car__indicator__item--active {
+  @apply bg-yellow-500;
+}
+
+.o-car__arrow__icon {
+  @apply rounded-full;
+  @apply h-10;
+  @apply w-10;
+  @apply text-3xl;
+}
+
+.o-car__indicators {
+  @apply mt-4;
+}
