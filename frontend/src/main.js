@@ -3,7 +3,7 @@ import App from "./App.vue";
 
 import "@oruga-ui/oruga-next/dist/oruga.css";
 import "./index.css";
-import 'conductorr-lib/dist/style.css';
+import "conductorr-lib/dist/style.css";
 
 /*
 Import third party libraries
@@ -65,6 +65,7 @@ import {
   faHourglassStart,
   faRss,
   faUpload,
+  faFrownOpen,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
@@ -158,6 +159,7 @@ library.add(faSort);
 library.add(faHourglassStart);
 library.add(faRss);
 library.add(faUpload);
+library.add(faFrownOpen);
 
 const app = createApp(App);
 
@@ -173,7 +175,7 @@ app.use(Oruga, {
   statusIcon: false,
 });
 app.component("vue-fontawesome", FontAwesomeIcon);
-app.component("PlexAuthTokenInput", PlexAuthTokenInput)
+app.component("PlexAuthTokenInput", PlexAuthTokenInput);
 app.mount("#app");
 
 if (import.meta.env.DEV) {

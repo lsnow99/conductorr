@@ -8,6 +8,7 @@ import Media from "./views/Media.vue";
 import Calendar from "./views/Calendar.vue";
 import System from "./views/System.vue";
 import Logout from "./views/Logout.vue";
+import NotFound from "./views/NotFound.vue";
 import AuthUtil from "./util/AuthUtil.js";
 import store from "./store"
 
@@ -81,6 +82,14 @@ const routes = [
     path: "/logout",
     name: 'logout',
     component: Logout,
+    meta: {
+      requiresAuth: false
+    }
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: "404",
+    component: NotFound,
     meta: {
       requiresAuth: false
     }

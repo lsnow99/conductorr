@@ -368,6 +368,10 @@ a:focus {
   @apply outline-white;
 }
 
+a:hover {
+  @apply underline;
+}
+
 [role=button] {
   @apply focus:outline-white;
   @apply focus:opacity-80;
