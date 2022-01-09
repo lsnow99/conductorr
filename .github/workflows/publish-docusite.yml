@@ -1,5 +1,7 @@
 on:
   push:
+    paths:
+    - 'docusite/**'
   workflow_dispatch:
 
 jobs:
