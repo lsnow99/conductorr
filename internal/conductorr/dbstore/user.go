@@ -3,6 +3,7 @@ package dbstore
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -51,7 +52,7 @@ func CheckUser(ctx context.Context, username, password string) error {
 	}
 
 	passwordMatches := bcrypt.CompareHashAndPassword(dbPassword, []byte(password)) == nil
-	if username != dbUsername || !passwordMatches {
+	if !strings.EqualFold(username, dbUsername) || !passwordMatches {
 		return errors.New("credentials don't match")
 	}
 
