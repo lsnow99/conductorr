@@ -130,8 +130,8 @@ export default {
     },
   },
   mounted() {
-    this.refreshDownloads();
-    this.refreshInterval = setInterval(this.refreshDownloads, 3000);
+    // this.refreshDownloads();
+    // this.refreshInterval = setInterval(this.refreshDownloads, 3000);
   },
   unmounted() {
     clearInterval(this.refreshInterval);
