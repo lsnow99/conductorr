@@ -21,7 +21,7 @@ jobs:
       #   bash build.sh wasm && bash build.sh docusite
       run: bash build.sh wasm && bash build.sh docusite && bash build.sh corsproxy
     - name: Deploy production to Netlify
-      uses: lsnow99/actions-netlify@v1.2.4
+      uses: lsnow99/actions-netlify@v1.2.5
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         deploy-message: "Deploy from GitHub Actions"
