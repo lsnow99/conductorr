@@ -20,8 +20,8 @@ jobs:
         # run: |
         #   bash build.sh wasm && bash build.sh docusite
         run: |
-          bash build.sh wasm && 
-          bash build.sh docusite && 
-          bash build.sh corsproxy && 
-          pnpm i -g netlify && 
+          bash build.sh wasm && \
+          bash build.sh docusite && \
+          bash build.sh corsproxy && \
+          pnpm i -g netlify-cli && \
           netlify deploy -a ${{ secrets.NETLIFY_AUTH_TOKEN }} -s ${{ secrets.NETLIFY_SITE_ID }} -f ./dist/functions -d ./docusite/docs/.vuepress/dist -m "Deploy from GitHub Actions"
