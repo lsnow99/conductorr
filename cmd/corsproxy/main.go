@@ -15,7 +15,7 @@ func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResp
 
 	log.Printf("Got request with data: %v\n", request)
 
-	urlString, ok := request.PathParameters["url"]
+	urlString, ok := request.QueryStringParameters["url"]
 	if !ok {
 		return makeErrorResponse(http.StatusBadRequest, fmt.Errorf("path parameter 'url' is missing"))
 	}
