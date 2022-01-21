@@ -32,6 +32,10 @@ func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResp
 		return makeErrorResponse(http.StatusBadGateway, fmt.Errorf("error performing proxy request: %s", err.Error()))
 	}
 
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		return makeErrorResponse(http.StatusBadGateway, fmt.Errorf("got non 2xx status code %d", resp.StatusCode))
+	}
+
 	defer resp.Body.Close()
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
