@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 
@@ -12,8 +11,6 @@ import (
 )
 
 func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
-
-	log.Printf("Got request with data: %v\n", request)
 
 	urlString, ok := request.QueryStringParameters["url"]
 	if !ok {
