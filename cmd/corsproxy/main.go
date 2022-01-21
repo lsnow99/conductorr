@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 
@@ -11,6 +12,8 @@ import (
 )
 
 func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
+
+	log.Printf("Got request with data: %v\n", request)
 
 	urlString, ok := request.PathParameters["url"]
 	if !ok {
@@ -39,10 +42,10 @@ func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResp
 	}
 
 	return &events.APIGatewayProxyResponse{
-		StatusCode:        200,
-		Headers:           map[string]string{"Content-Type": "text/plain"},
-		Body:              string(data),
-		IsBase64Encoded:   false,
+		StatusCode:      200,
+		Headers:         map[string]string{"Content-Type": "text/plain"},
+		Body:            string(data),
+		IsBase64Encoded: false,
 	}, nil
 }
 
