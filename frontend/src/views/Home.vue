@@ -3,7 +3,7 @@
     <section>
       <h1 class="text-2xl">Recently Added to Library</h1>
       <div class="flex flex-wrap p-2 justify-between">
-        <o-carousel ref="carousel" repeat>
+        <o-carousel ref="carousel" autoplay :interval="10000" repeat>
           <template v-slot:arrow="props">
             <div
               v-if="props.hasPrev"
