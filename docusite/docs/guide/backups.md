@@ -8,13 +8,13 @@ In Conductorr, navigate to the System tab and click the button to download a sys
 
 ## Restoring a Backup
 
-To restore a backup, you must have Conductorr running this can be a brand new instance or an existing one. If it is an existing one, all existing data will be wiped. In Conductorr, navigate to the system tab and click the button to restore from a backup. A window will appear with a warning and a button to select your backup file. After selecting your file click the restore button and the restoration will begin. 
+To restore a backup, you must have Conductorr running. This can be a brand new instance or an existing one. If it is an existing one, all existing data will be wiped. In Conductorr, navigate to the System tab and click the button to restore from a backup. A window will appear with a warning and a button to select your backup file. After selecting your file click the restore button and the restoration will begin. 
 
 ## Caveats
 
 ### Restoring from a Different Version
 
-Conductorr only allows restoration of backups that were created with the same version as the currently-running version of Conductorr. This is to ensure the guarantees that backup restoration provide. It may be the case that you wish to restore a backup that was made on an older version of Conductorr. To do this, you will need to temporarily downgrade your current instance to restore the backup. After the backup has been restored, you can upgrade Conductorr to the desired version.
+Conductorr only allows restoration of backups that were created with the same version as the currently-running version of Conductorr. This is to ensure the guarantees that backup restoration provides. It may be the case that you wish to restore a backup that was made on an older version of Conductorr. To do this, you will need to temporarily downgrade your current instance to restore the backup. After the backup has been restored, you can upgrade Conductorr to the desired version.
 
 ## Automatic Backup Creation (advanced) 
 

@@ -1,6 +1,6 @@
 # Profiles
 
-For processing releases, Conductorr has a robust system for defining **profiles**. Profiles are assigned to movies or TV series by the user within the application. Profiles are a way to define exactly what type of release we want to use do download content. 
+For processing releases, Conductorr has a robust system for defining **profiles**. Profiles are assigned to movies or TV series by the user within the application. Profiles are a way to define exactly what type of release we want to use to download content. 
 
 Profiles consist of both a filtering and a sorting mechanism. The filtering step is used to rule out releases that should not be downloaded under any circumstances. The sorting step is used to decide the order of preference for releases, so that Conductorr can automatically queue the best releases for downloading, and attempt them in order until one succeeds.
 

@@ -6,11 +6,11 @@ Follow the instructions below depending on your system and preferred installatio
 
 Download the latest release for your operating system [here](https://github.com/lsnow99/conductorr/releases).
 
-Put the binary file in a suitable location. Simply double click the binary or run `./conductorr` in your terminal to start Conductorr. On some systems you may need to first run `chmod +x conductorr` in your terminal before launching.
-
-To launch automatically at startup, please refer to your operating system's instructions.
+Put the executable file in a suitable location. Simply double click the executable or run `./conductorr` in your terminal to start Conductorr. On some systems you may need to first run `chmod +x conductorr` in your terminal before launching.
 
 Navigate to [http://localhost:6416/](http://localhost:6416/) and you should see the setup screen prompting you to create the admin user.
+
+> NOTE: To launch Conductorr automatically at startup, you will need to follow instructions provided by your operating system. Alternatively, you can configure Conductorr via Docker to launch automatically.
 
 ## Docker Compose
 
@@ -24,9 +24,10 @@ services:
     ports:
       - "6416:6416"
     volumes:
-      # Replace the ./data with your preferred location on your system for the database file
-      - ./data:/app/conductorr.db  
+      # Replace the paths before the colon with the corresponding paths on your host system
+      - ./data:/app/conductorr.db
+      - ./library:/app/library
+      - ./downloads:/app/downloads
     environment:
-      TMDB_API_KEY: yourapikeyhere
-      # Add any other environment variables for configuration here
+      # Add any environment variables for configuration here
 ```

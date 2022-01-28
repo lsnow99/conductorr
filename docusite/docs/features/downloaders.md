@@ -2,7 +2,7 @@
 
 Conductorr does not download torrents or NZBs from the internet. If configured, Conductorr will use supported downloader backends to download content. 
 
-Status of Downloader Support (in no particular order)
+Status of downloader support (in no particular order)
 
 | Downloader | Supported | Planned |
 |------------|:---------:|:-------:|

@@ -4,13 +4,13 @@ title: Reference
 
 # CSL
 
-CSL is a stripped-down Lisp implementation intended to allow users of Conductorr to extend its capabilities and finely tune release processing.
+CSL specifically designed to allow for fine-tuned release processing. If you have a specific way that you want to filter or rank preference for releases, then chances are you can express it in CSL!
 
 It stands for {{ standsFor }} (<a @click="orDoesIt" href="javascript:void(0);">or does it?</a>).
 
-The parsing capabilities are largely borrowed from [Jan Andersson](https://github.com/janne)'s [go-lisp](https://github.com/janne/go-lisp) project.
+CSL has a lisp-like syntax, with its own library of built in functions and module system. CSL is *not* Turing-Complete in such a way that looping mechanisms and recursion are impossible to implement. This keeps the language simple and safe to use. In cases where a function or loop might be desired, an imported module or built-in function is likely sufficient.
 
-The main differences between go-lisp and CSL are that CSL is *not* Turing-Complete, such that loops or recursion are impossible to implement. This allows us to keep the language simple and avoid the halting problem when running user-defined scripts. This means user scripts in CSL cannot contain loops or function definitions. The other main difference is that CSL has a number of predefined functions that are specifically written to aid in the processing of Newznab releases. This helps avoid the loss of functionality due to the restricted iteration and function-defining capabilities of CSL.
+Currently, the parser for CSL scripts uses code borrowed from [Jan Andersson](https://github.com/janne)'s [go-lisp](https://github.com/janne/go-lisp) project. Eventually it may be dropped in favor of a new parser built from scratch.
 
 ## Syntax
 
@@ -18,12 +18,12 @@ If you are familiar with Lisp syntax, CSL follows it directly. Here is an exampl
 
 ```lisp
 ; Define a variable
-(define x 17)
+(define x 4)
 
-; Return the result of x * 37
-(* x 37)
+; Return the result of x * 6
+(* x 6)
 ```
-The value `629` is returned.
+The value `24` is returned.
 
 ### Data Types and Literals
 
@@ -194,7 +194,7 @@ Available query parameters are:
 
 The `host` parameter is required to connect to an external Conductorr instance. Either the `username` and `password` pair or `auth_token` are required. The port is not required, as a default value of 6416 will be used.
 
-Note that you should only use this feature of importing external profile scripts when absolutely necessary. For example, you can use the [CSL CLI](/csl/cli.html) to run a profile filter script on a running Conductorr instance by doing `csl run profile:filter:myprof?host=localhost&port=6416&username=admin&password=verysecret somearg1 somearg2`. You should not use this feature in scripts that will be published anywhere, especially to public git repositories or webservers, as leaking these credentials can compromise your Conductorr instance.
+Note that you should only use this feature of importing external profile scripts when absolutely necessary. For example, you can use the [CSL CLI](/csl/cli.html) to run a profile filter script on a running Conductorr instance by doing `csl run profile:filter:myprof?host=localhost&port=6416&username=admin&password=verysecret somearg1 somearg2`. You should not use this feature in scripts that will be published anywhere, especially in ones published to public git repositories or webservers, as leaking these credentials can compromise your Conductorr instance.
 
 ## Important Notes and Caveats
 - Your imports must come before any other code in your script.
