@@ -50,6 +50,8 @@ func Init() error {
 			return err
 		}
 
+		db.SetMaxOpenConns(1)
+
 		driver, err = sqlite.WithInstance(db, &sqlite.Config{
 			DatabaseName: "main",
 			NoTxWrap:     true,

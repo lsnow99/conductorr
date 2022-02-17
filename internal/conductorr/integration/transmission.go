@@ -128,7 +128,9 @@ func (t *Transmission) PollDownloads(identifiers []string) ([]Download, error) {
 	for _, identifier := range identifiers {
 		id, err := strconv.ParseInt(identifier, 10, 64)
 		if err != nil {
-			return nil, err
+			// Bad identifier
+			continue
+			// return nil, err
 		}
 		ids = append(ids, id)
 	}
@@ -178,7 +180,7 @@ func (t *Transmission) PollDownloads(identifiers []string) ([]Download, error) {
 		d.BytesLeft = uint64(*torrent.LeftUntilDone)
 		d.FullSize = uint64(*torrent.TotalSize)/8
 		d.FriendlyName = *torrent.Name
-		d.Identifier = *torrent.HashString
+		d.Identifier = strconv.FormatInt(*torrent.ID, 10)
 		downloads = append(downloads, d)
 	}
 

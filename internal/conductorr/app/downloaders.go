@@ -49,10 +49,10 @@ func (dm *DownloaderManager) DoTask() {
 	downloads := make([]integration.Download, 0)
 	for _, dlr := range downloaders {
 		downloadsToMonitor := getDownloadsToMonitor(dm.downloads, dlr.ID)
-		updatedDownloads, _ := dlr.PollDownloads(downloadsToMonitor)
-		// if err != nil {
-		// 	logger.LogWarn(err)
-		// }
+		updatedDownloads, err := dlr.PollDownloads(downloadsToMonitor)
+		if err != nil {
+			logger.LogWarn(err)
+		}
 		downloads = append(downloads, updatedDownloads...)
 	}
 	dm.processDownloads(downloads)

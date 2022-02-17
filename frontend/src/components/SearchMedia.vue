@@ -159,6 +159,7 @@ export default {
         this.$refs.searchbar.$el.firstChild.focus();
       });
     }
+    this.search();
   },
   watch: {
     computedContentType: function () {
