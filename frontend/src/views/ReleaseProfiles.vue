@@ -36,13 +36,6 @@
         <CSLEditor readonly v-model="profile.sorter" />
       </div>
     </config-item>
-    <!-- <release-profile
-      v-for="(profile, index) in profiles"
-      v-model="profiles[index]"
-      v-model:expanded="profile.expanded"
-      @reload="loadProfiles"
-      :key="index"
-    /> -->
     <new-profile
       v-model:active="showNewProfileModal"
       @close="closeNewProfileModal"

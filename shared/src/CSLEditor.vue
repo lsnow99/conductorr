@@ -1,17 +1,16 @@
 <template>
-  <prism-editor
+  <PrismEditor
     aria-label="Edit CSL"
     label="edit csl"
     class="my-editor h-full"
     v-model="computedValue"
     @keydown.enter.ctrl="enterPressed"
     @click="focusEditor"
-    ref="editor"
     :highlight="highlighter"
     :readonly="readonly"
     :aria-disabled="readonly"
     line-numbers
-  ></prism-editor>
+  ></PrismEditor>
 </template>
 
 <style scoped>

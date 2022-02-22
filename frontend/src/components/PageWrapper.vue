@@ -36,10 +36,10 @@
           <span class="ml-1">Logout</span>
         </router-link>
       </div>
-      <main :class="class" class="mt-4">
-        <slot />
-      </main>
     </nav>
+    <main :class="class" class="mt-4 container mx-auto">
+      <slot />
+    </main>
     <footer class="mt-auto">
       <div
         class="
