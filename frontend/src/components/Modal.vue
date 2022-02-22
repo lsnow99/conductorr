@@ -7,16 +7,28 @@
     aria-modal
     auto-focus
     trap-focus
+    :can-cancel="['escape', 'outside']"
     @close="$emit('close')"
   >
     <header class="modal-card-header">
       <slot name="header">
-        <p class="text-3xl font-light">
+        <h1 class="text-3xl font-light">
           {{ title }}
-        </p>
+        </h1>
+        <span
+          class="cursor-pointer text-2xl"
+          role="button"
+          tabindex="0"
+          @click="doClose"
+          @keydown.enter="doClose"
+          @keydown.space="doClose"
+          ><o-icon icon="times"></o-icon
+        ></span>
       </slot>
     </header>
-    <section class="border-t-2 border-b-2 border-gray-300 p-4 flex-1 overflow-y-scroll">
+    <section
+      class="border-t-2 border-b-2 border-gray-300 p-4 flex-1 overflow-y-scroll"
+    >
       <slot />
     </section>
     <footer class="modal-card-footer">
@@ -42,6 +54,7 @@
   @apply justify-between;
   @apply px-4;
   @apply py-3;
+  @apply items-center;
 }
 </style>
 
@@ -62,10 +75,10 @@ export default {
     },
     fullScreen: {
       type: Boolean,
-      default: function() {
-        return false
-      }
-    }
+      default: function () {
+        return false;
+      },
+    },
   },
   emits: ["close", "update:modelValue"],
   methods: {
