@@ -1,0 +1,5 @@
+BEGIN;
+
+ALTER TABLE media ADD COLUMN tvdb_id INTEGER;
+
+COMMIT;

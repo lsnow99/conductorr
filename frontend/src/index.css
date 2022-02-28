@@ -1,0 +1,415 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .outline-black {
+    outline: 2px dotted black;
+    outline-offset: 2px;
+  }
+
+  .outline-white {
+    outline: 2px dotted white;
+    outline-offset: 2px;
+  }
+}
+
+.o-btn {
+  @apply py-1;
+  @apply px-3;
+  @apply rounded-lg;
+  @apply text-lg;
+  @apply font-bold;
+  @apply uppercase;
+  @apply bg-gray-500;
+  @apply border-gray-600;
+  @apply focus:outline-white;
+}
+
+.o-btn--small {
+  @apply py-1;
+  @apply px-2;
+  @apply text-sm;
+}
+
+.o-btn--primary {
+  @apply bg-yellow-500;
+  @apply border-yellow-600;
+}
+
+.o-btn--danger {
+  @apply bg-red-500;
+  @apply border-red-600;
+}
+
+.o-input:not(.o-inputit__input) {
+  @apply text-gray-900;
+  @apply px-2;
+  @apply text-lg;
+  @apply rounded-lg;
+  @apply border-gray-900;
+  @apply border-4;
+  @apply border-opacity-50;
+  @apply focus:outline-white;
+}
+
+.o-inputit {
+  @apply text-gray-900;
+  @apply text-lg;
+  @apply rounded-lg;
+  @apply border-gray-900;
+  @apply border-4;
+  @apply border-opacity-50;
+  @apply bg-white;
+}
+
+.o-inputit__container {
+  @apply rounded-lg;
+  @apply bg-white;
+}
+
+.o-sel {
+  @apply focus:outline-white;
+  @apply text-gray-900;
+  @apply pl-2;
+  @apply pr-8;
+  @apply rounded-lg;
+  @apply border-gray-900;
+  @apply border-4;
+  @apply border-opacity-50;
+  @apply text-lg;
+  @apply w-full;
+}
+
+.o-load__overlay {
+  @apply bg-gray-300;
+  @apply bg-opacity-50;
+}
+
+.o-load__icon {
+  @apply text-gray-900;
+  @apply text-4xl;
+}
+
+.o-notification--danger {
+  @apply bg-red-500;
+}
+
+.o-notification--success {
+  @apply bg-green-500;
+}
+
+.o-notices {
+  @apply z-50;
+}
+
+.o-notification {
+  @apply p-4;
+  @apply -inset-4;
+  @apply font-semibold;
+  @apply rounded-md;
+  @apply text-lg;
+}
+
+.o-radio__check {
+  @apply opacity-0;
+  @apply h-0;
+  @apply w-0;
+}
+
+.o-radio {
+  @apply bg-yellow-500;
+  @apply border-yellow-600;
+  @apply py-1;
+  @apply px-3;
+  @apply text-lg;
+  @apply font-bold;
+  @apply uppercase;
+  @apply m-0;
+}
+
+.radio-wrapper:focus-within {
+  @apply outline-white;
+}
+
+.o-radio:focus {
+  @apply bg-opacity-30;
+  @apply outline-white;
+}
+
+.o-radio--checked {
+  @apply bg-yellow-600;
+  @apply border-yellow-700;
+}
+
+.o-pag__link {
+  @apply bg-yellow-500;
+  @apply border-yellow-600;
+  @apply py-2;
+  @apply px-4;
+  @apply rounded-lg;
+  @apply mx-1;
+  @apply font-bold;
+}
+
+.o-pag__link--current {
+  @apply bg-yellow-600;
+  @apply border-yellow-700;
+}
+
+.o-tabs__nav-item-boxed {
+  @apply text-gray-400;
+  @apply px-2;
+  @apply pt-1;
+  @apply border-t-2;
+  @apply border-l-2;
+  @apply border-r-2;
+  @apply border-b-0;
+  @apply focus:outline-white;
+  @apply focus:bg-opacity-30;
+}
+
+.o-tabs__nav-item-boxed--active {
+  @apply text-yellow-500;
+  @apply border-yellow-500;
+  @apply rounded-lg;
+  @apply rounded-b-none;
+  @apply z-10;
+  @apply relative;
+}
+
+.o-tabs__nav {
+  @apply relative;
+  @apply overflow-y-hidden;
+  @apply z-0;
+}
+
+.o-modal__content {
+  @apply dark:bg-gray-600;
+  @apply rounded-xl;
+  @apply flex;
+  @apply flex-col;
+}
+
+.o-modal__content--fullscreen {
+  @apply h-full;
+  @apply container;
+  @apply flex;
+  @apply flex-col;
+}
+
+.o-modal__close {
+  @apply right-10;
+  @apply top-10;
+}
+
+.o-input__icon-left {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: var(--oruga-input-height, 2.25em);
+  z-index: var(--oruga-input-icon-zindex, 4);
+}
+
+.o-input-iconspace-left {
+  padding-left: var(--oruga-input-height, 2.25em);
+}
+
+.o-acp__item {
+  @apply px-4;
+  @apply py-2;
+  @apply text-lg;
+  @apply hover:bg-gray-200;
+}
+
+.inputit-item {
+  @apply bg-yellow-500;
+  @apply py-1;
+  @apply px-2;
+  @apply m-1;
+  @apply rounded-xl;
+  @apply text-white;
+  @apply cursor-pointer;
+}
+
+.o-acp__item--hover {
+  @apply bg-gray-200;
+}
+
+.o-acp__menu--bottom {
+  @apply rounded-lg;
+  @apply rounded-t-none;
+}
+
+.o-switch__check--checked {
+  @apply bg-yellow-500;
+}
+
+.o-switch:focus-within {
+  @apply outline-white;
+}
+
+.o-slide__thumb--rounded,
+.o-slide__track,
+.o-slide__fill {
+  @apply rounded-full;
+}
+
+.o-slide__fill,
+.o-tip__content {
+  @apply bg-yellow-500;
+}
+
+.o-tip__content--info {
+  @apply bg-gray-900;
+  @apply shadow-xl;
+}
+
+.o-tip__content--top .o-tip__arrow--info,
+.o-tip__content--bottom .o-tip__arrow--info {
+  border-top-color: #111827;
+  border-bottom-color: #111827;
+}
+
+.o-tip__content--left .o-tip__arrow--info,
+.o-tip__content--right .o-tip__arrow--info {
+  border-left-color: #111827;
+  border-right-color: #111827;
+}
+
+.o-slide--disabled {
+  @apply opacity-50;
+}
+
+.o-tip__content {
+  @apply rounded-lg;
+  @apply p-2;
+}
+
+.o-input__icon-right {
+  @apply mr-2;
+  @apply text-gray-800;
+}
+
+.o-pag__previous,
+.o-pag__next {
+  @apply text-xl;
+}
+
+.o-drop__item {
+  @apply w-40;
+  @apply p-2;
+  @apply bg-yellow-500;
+  @apply hover:bg-yellow-600;
+}
+
+.o-drop__menu {
+  @apply rounded-md;
+  @apply overflow-hidden;
+  @apply py-2;
+  @apply bg-yellow-500;
+  @apply font-bold;
+  @apply uppercase;
+}
+
+.o-pag__link--disabled {
+  @apply opacity-60;
+}
+
+.o-chk__check {
+  @apply bg-yellow-500;
+  @apply p-3;
+  @apply rounded-md;
+}
+
+.o-chk__label {
+  @apply ml-1;
+}
+
+.o-ctrl-sel {
+  min-width: 75px;
+}
+
+.o-sel--danger {
+  @apply border-red-400;
+}
+
+.o-sel--placeholder {
+  @apply text-gray-400;
+}
+
+.o-table__wrapper--mobile tr:not(.o-table__tr--selected) {
+  @apply bg-gray-800;
+}
+
+.o-table__wrapper--mobile tr:not(.o-table__tr--selected):hover {
+  @apply bg-gray-900;
+}
+
+.o-table--striped tr:nth-child(2n) {
+  @apply bg-gray-900;
+}
+
+.o-table__td {
+  @apply break-all;
+}
+
+.o-table__td::before {
+  @apply break-normal;
+  @apply font-bold;
+}
+
+.o-table--hoverable tr:hover {
+  @apply bg-gray-900;
+}
+
+a:focus {
+  @apply bg-opacity-30;
+  @apply outline-white;
+}
+
+a:hover {
+  @apply underline;
+}
+
+[role=button] {
+  @apply focus:outline-white;
+  @apply focus:opacity-80;
+}
+
+.o-car__indicator {
+  @apply flex-1;
+}
+
+.o-car__indicator__item {
+  @apply w-full;
+  @apply h-3;
+  @apply cursor-pointer;
+  @apply rounded-none;
+  @apply bg-gray-500;
+  @apply border-black;
+  @apply border-opacity-0;
+}
+
+.o-car__indicator__item:hover {
+  @apply opacity-75;
+}
+
+.o-car__indicator__item--active {
+  @apply bg-yellow-500;
+}
+
+.o-car__arrow__icon {
+  @apply rounded-full;
+  @apply h-10;
+  @apply w-10;
+  @apply text-3xl;
+}
+
+.o-car__indicators {
+  @apply mt-4;
+}
+
+.o-modal__content--full-screen {
+  @apply rounded-none;
+}

@@ -1,0 +1,19 @@
+cmd/conductorr/__debug_bin
+migrate.linux-amd64
+conductorr.db
+conductorr.db-journal
+/dist
+**/dist
+/bin
+frontend/src/util/wasm_exec.js
+/conductorr
+jellyfin-openapi-stable.json
+node_modules
+docusite/docs/.vuepress/wasm_exec.js
+docusite/docs/.vuepress/public/csl.wasm.br
+docusite/docs/.vuepress/public/csl.wasm
+
+# Local Netlify folder
+.netlify
+**/.pnpm-debug.log
+/test/csl

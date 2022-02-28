@@ -1,0 +1,42 @@
+# This GitHub Actions workflow compiles the code for several architectures and
+# generates a release on GitHub
+
+name: Compile and Release
+
+on:
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Compile for different operating systems and release
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+
+      # Conductorr requires Go version 1.16+
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '^1.16.0'
+      # Conductorr requires node (for yarn/web) TODO: switch to pnpm
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install Build Dependencies
+        run : |
+          sudo apt update -y && sudo apt install -y brotli && sudo apt install -y yarn
+      - name: Setup
+        run: |
+          mkdir -p bin
+      - name: Run build script
+        run: |
+          bash build.sh
+      - name: Update release
+        uses: johnwbyrd/update-release@v1.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: ./bin/conductorr-windows_x86.exe ./bin/conductorr-windows_x64.exe ./bin/conductorr-osx_arm64 ./bin/conductorr-osx_amd64 ./bin/conductorr-linux_x86 ./bin/conductorr-linux_x64 ./bin/conductorr-linux_arm64 ./bin/conductorr-linux_arm

@@ -1,0 +1,186 @@
+#!/bin/bash
+# Build script for Conductorr
+# Author Logan Snow
+
+# Set script to fail if any sub commands fail
+set -e
+
+# Terminal color definitions
+if tty -s ; then 
+    green=`tput setaf 2`
+    blue=`tput setaf 4`
+    cyan=`tput setaf 6`
+    reset=`tput sgr0`
+fi
+
+# Parse command
+buildwasm=0
+buildfrontend=0
+buildbin=0
+buildcsl=0
+builddocusite=0
+buildcorsproxy=0
+
+if [ "$1" == "conductorr" ]; then
+    buildwasm=1
+    buildfrontend=1
+    buildbin=1
+fi
+
+if [ "$1" == "all" ] || [ "$1" == "" ]; then
+    buildwasm=1
+    buildfrontend=1
+    buildbin=1
+    buildcsl=1
+    builddocusite=1
+    buildcorsproxy=1
+fi
+
+if [ "$1" == "docusite" ]; then
+    builddocusite=1
+fi
+
+if [ "$1" == "wasm" ]; then
+    buildwasm=1
+fi
+
+if [ "$1" == "frontend" ]; then
+    buildfrontend=1
+fi
+
+if [ "$1" == "bin" ]; then
+    buildbin=1
+fi
+
+if [ "$1" == "csl" ]; then
+    buildcsl=1
+fi
+
+if [ "$1" == "corsproxy" ]; then
+    buildcorsproxy=1
+fi
+
+# Helper functions
+mustHaveInstalled() {
+    if ! builtin type -P "$1" &> /dev/null
+    then
+        echo "build process requires $1"
+        exit 1
+    fi
+}
+
+# Build one of the frontends for Conductorr (either application frontend or docusite)
+buildWebsite() {
+    echo "${cyan}→ Installing dependencies${reset}"
+    pnpm install
+
+    echo "${cyan}→ Building shared library${reset}"
+    wd=$(pwd)
+    cd shared
+    success=$(pnpm build)
+    if [ success ]
+    then
+        cd $wd
+    else
+        cd $wd
+        exit 1
+    fi
+
+    cd $1
+    success=$(pnpm install)
+    if [ success ]
+    then
+        echo "${cyan}→ Building $1 for distribution${reset}"
+        success=$(pnpm build)
+        if [ success ]
+        then
+            cd $wd
+        else
+            cd $wd
+            exit 1
+        fi
+    else
+        cd $wd
+        exit 1
+    fi
+}
+
+# Check for build requirements
+mustHaveInstalled "pnpm"
+mustHaveInstalled "go"
+mustHaveInstalled "brotli"
+
+mv="1.16.0"
+v=`go version | { read _ _ v _; echo ${v#go}; }`
+
+if ! go run ./cmd/semcmp $mv $v &> /dev/null
+then
+    echo "build requires go version > $mv but version $v is installed"
+    exit 1
+fi
+
+# Build CSL WASM module
+if [ $buildwasm == 1 ]; then
+    echo "==============================[    Building CSL WASM    ]=============================="
+    echo "${cyan}→ Compiling to WASM${reset}"
+    GOOS=js GOARCH=wasm go build -o dist/csl.wasm -ldflags="-s -w -X 'main.CorsProxyServer=/.netlify/functions/corsproxy'" ./cmd/cslwasm
+    echo "${cyan}→ Compressing with brotli${reset}"
+    brotli -f dist/csl.wasm
+    # Copy the corresponding wasm_exec.js file to the frontend app and docusite projects
+    cp $(go env GOROOT)/misc/wasm/wasm_exec.js ./frontend/src/util
+    cp $(go env GOROOT)/misc/wasm/wasm_exec.js ./docusite/docs/.vuepress
+    # Copy the web assembly modules so that they are accessible for the docusite
+    cp ./dist/csl.wasm ./docusite/docs/.vuepress/public
+    cp ./dist/csl.wasm.br ./docusite/docs/.vuepress/public
+fi
+
+# Build web frontend
+if [ $buildfrontend == 1 ]; then
+    echo "==============================[    Building Frontend    ]=============================="
+    buildWebsite frontend
+fi
+
+# Build docusite
+if [ $builddocusite == 1 ]; then
+    echo "==============================[    Building Docusite    ]=============================="
+    buildWebsite docusite
+fi
+
+# Compile the CSL command line interface
+if [ $buildcsl == 1 ]; then
+    echo "==============================[    Compiling CSL CLI    ]=============================="
+    echo "${cyan}→ Compiling${reset}"
+    go build -o dist/csl ./cmd/csl
+fi
+
+# Compile the CORS proxy lambda function
+# Note that the Go version of the CORS proxy is not used currently due to an issue in the Netlify CLI
+# https://github.com/netlify/cli/issues/1147
+# Currently, only the functions/corsproxy.js implementation is being used
+if [ $buildcorsproxy == 1 ]; then
+    echo "==============================[   Compiling CORS Proxy  ]=============================="
+    echo "${cyan}→ Compiling${reset}"
+    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o dist/functions/corsproxy -ldflags="-s -w" ./cmd/corsproxy
+fi
+
+# Build the full conductorr binaries
+if [ $buildbin == 1 ]; then
+    echo "==============================[   Compiling Conductorr  ]=============================="
+    # Compile for Windows
+    echo "${cyan}→ Compiling for Windows${reset}"
+    CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o bin/conductorr-windows_x64.exe -ldflags="-s -w -X 'github.com/lsnow99/conductorr/internal/conductorr/settings.Version=$(git describe --tags)' -X 'github.com/lsnow99/conductorr/internal/conductorr/settings.BuildMode=binary'" ./cmd/conductorr
+
+    # Compile for OS X
+    echo "${cyan}→ Compiling for OS X${reset}"
+    CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -o bin/conductorr-osx_amd64 -ldflags="-s -w -X 'github.com/lsnow99/conductorr/internal/conductorr/settings.Version=$(git describe --tags)' -X 'github.com/lsnow99/conductorr/internal/conductorr/settings.BuildMode=binary'" ./cmd/conductorr
+    CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 go build -o bin/conductorr-osx_arm64 -ldflags="-s -w -X 'github.com/lsnow99/conductorr/internal/conductorr/settings.Version=$(git describe --tags)' -X 'github.com/lsnow99/conductorr/internal/conductorr/settings.BuildMode=binary'" ./cmd/conductorr
+
+    # Compile for Linux
+    echo "${cyan}→ Compiling for Linux${reset}"
+    CGO_ENABLED=0 GOOS=linux GOARCH=386 go build -o bin/conductorr-linux_x86 -ldflags="-s -w -X 'github.com/lsnow99/conductorr/internal/conductorr/settings.Version=$(git describe --tags)' -X 'github.com/lsnow99/conductorr/internal/conductorr/settings.BuildMode=binary'" ./cmd/conductorr
+    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bin/conductorr-linux_x64 -ldflags="-s -w -X 'github.com/lsnow99/conductorr/internal/conductorr/settings.Version=$(git describe --tags)' -X 'github.com/lsnow99/conductorr/internal/conductorr/settings.BuildMode=binary'" ./cmd/conductorr
+    CGO_ENABLED=0 GOOS=linux GOARCH=arm go build -o bin/conductorr-linux_arm -ldflags="-s -w -X 'github.com/lsnow99/conductorr/internal/conductorr/settings.Version=$(git describe --tags)' -X 'github.com/lsnow99/conductorr/internal/conductorr/settings.BuildMode=binary'" ./cmd/conductorr
+    CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o bin/conductorr-linux_arm64 -ldflags="-s -w -X 'github.com/lsnow99/conductorr/internal/conductorr/settings.Version=$(git describe --tags)' -X 'github.com/lsnow99/conductorr/internal/conductorr/settings.BuildMode=binary'" ./cmd/conductorr
+fi
+
+echo "${green}✔ Build succeeded${reset}"

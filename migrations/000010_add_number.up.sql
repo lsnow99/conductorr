@@ -1,0 +1,5 @@
+BEGIN;
+
+ALTER TABLE media ADD COLUMN item_number INTEGER;
+
+COMMIT;

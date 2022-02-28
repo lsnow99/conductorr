@@ -1,0 +1,10 @@
+.dockerignore
+Dockerfile
+node_modules/
+frontend/node_modules/
+bin/
+.vscode/
+.github/
+.git/
+./dist/
+./docusite/

@@ -1,0 +1,167 @@
+<template>
+  <o-tooltip
+    variant="info"
+    :position="tooltipPosition"
+    :active="tooltipActive"
+    label="Search/Download Automatically"
+  >
+    <div :class="fontSize" class="mx-2 text-gray-300">
+      <div
+        v-if="!loadingAutoSearch"
+        @click="searchAuto"
+        @keydown.enter="searchAuto"
+        @keydown.space="searchAuto"
+        tabindex="0"
+        role="button"
+        aria-label="Search automatically"
+      >
+        <o-icon class="cursor-pointer" icon="bolt" />
+      </div>
+      <o-icon v-else icon="sync-alt" spin />
+    </div>
+  </o-tooltip>
+  <o-tooltip
+    variant="info"
+    :position="tooltipPosition"
+    label="Search Manually"
+    :active="tooltipActive"
+  >
+    <div :class="fontSize" class="mx-2 text-gray-300">
+      <div
+        v-if="!loadingManualSearch"
+        @click="searchManual"
+        @keydown.space="searchManual"
+        @keydown.enter="searchManual"
+        tabindex="0"
+        role="button"
+        aria-label="Search manually"
+      >
+        <o-icon class="cursor-pointer" icon="search" />
+      </div>
+      <o-icon v-else icon="sync-alt" spin />
+    </div>
+  </o-tooltip>
+    <manual-search-results
+      v-model:active="showManualReleasesModal"
+      @close="closeManualReleases"
+      :releases="releases"
+      :loading="loadingManualSearch"
+      :mediaID="mediaID"
+    />
+</template>
+
+<script>
+import APIUtil from "../util/APIUtil";
+import ManualSearchResults from "./ManualSearchResults.vue";
+import TooltipUtil from "../util/TooltipUtil";
+import TabSaver from "../util/TabSaver";
+
+export default {
+  data() {
+    return {
+      releases: [],
+      showManualReleasesModal: false,
+      tooltipPosition: "bottom",
+      loadingManualSearch: false,
+      loadingAutoSearch: false,
+    };
+  },
+  props: {
+    mediaID: {
+      type: Number,
+      default: function () {
+        return undefined;
+      },
+    },
+    size: {
+      type: String,
+      default: function () {
+        return "";
+      },
+    },
+  },
+  components: { ManualSearchResults },
+  mixins: [TooltipUtil, TabSaver],
+  methods: {
+    searchManual() {
+      this.loadingManualSearch = true;
+      APIUtil.searchReleasesManual(this.mediaID)
+        .then((releases) => {
+          this.releases = releases;
+          this.showManualReleasesModal = true;
+        })
+        .catch((re) => {
+          this.$oruga.notification.open({
+            duration: 3000,
+            message: `Error searching: ${re.msg}`,
+            variant: "danger",
+            closable: false,
+            position: "bottom-right",
+          });
+        })
+        .finally(() => {
+          this.loadingManualSearch = false;
+          this.resetTooltips();
+        });
+    },
+    searchAuto() {
+      this.loadingAutoSearch = true;
+      APIUtil.searchReleasesAuto(this.mediaID)
+        .then((num) => {
+          if (num > 0) {
+            this.$oruga.notification.open({
+              duration: 3000,
+              message: `Successfully queued ${num} releases for auto downloading`,
+              variant: "success",
+              closable: false,
+              position: "bottom-right",
+            });
+          } else {
+            this.$oruga.notification.open({
+              duration: 3000,
+              message: `Could not find any releases to queue`,
+              variant: "danger",
+              closable: false,
+              position: "bottom-right",
+            });
+          }
+        })
+        .catch((re) => {
+          this.$oruga.notification.open({
+            duration: 3000,
+            message: `Error searching: ${re.msg}`,
+            variant: "danger",
+            closable: false,
+            position: "bottom-right",
+          });
+        })
+        .finally(() => {
+          this.loadingAutoSearch = false;
+          this.resetTooltips();
+        });
+    },
+    closeManualReleases() {
+      this.showManualReleasesModal = false
+      this.restoreFocus()
+    }
+  },
+  mounted() {
+    const screenWidth = window.innerWidth;
+    if (screenWidth < 768) {
+      this.tooltipPosition = "left";
+    }
+  },
+  computed: {
+    fontSize() {
+      switch (this.size) {
+        case "small":
+          return "text-md";
+        case "large":
+          return "text-2xl";
+        default:
+          return "text-lg";
+      }
+    },
+  },
+};
+</script>

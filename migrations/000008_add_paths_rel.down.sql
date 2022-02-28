@@ -1,0 +1,5 @@
+BEGIN;
+
+ALTER TABLE media DROP COLUMN path_id;
+
+COMMIT;
