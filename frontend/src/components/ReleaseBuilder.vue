@@ -279,6 +279,14 @@ export default {
       }
       this.$emit("update:modelValue", newRelease);
     },
+    forceInt(obj, field, fallback=-1) {
+      const val = parseInt(obj[field])
+      if (val === NaN) {
+        obj[field] = fallback
+      } else {
+        obj[field] = val
+      }
+    }
   },
   mounted() {
     APIUtil.getIndexers().then((indexers) => {
@@ -307,6 +315,11 @@ export default {
         return release;
       },
       set(newVal) {
+        this.forceInt(newVal, 'seeders')
+        this.forceInt(newVal, 'age')
+        this.forceInt(newVal, 'runtime')
+        this.forceInt(newVal, 'size')
+        console.log(newVal)
         this.$emit("update:modelValue", newVal);
       },
     },

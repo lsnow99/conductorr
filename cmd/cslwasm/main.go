@@ -150,18 +150,22 @@ func buildRelease(release js.Value) (csllib.List, error) {
 	if encoding == nil {
 		return csllib.List{}, fmt.Errorf("encoding is nil")
 	}
+	fmt.Println("seeders")
 	seeders := intOrNil(release.Get("seeders"))
 	if seeders == nil {
 		return csllib.List{}, fmt.Errorf("seeders is nil")
 	}
+	fmt.Println("age")
 	age := intOrNil(release.Get("age"))
 	if age == nil {
 		return csllib.List{}, fmt.Errorf("age is nil")
 	}
+	fmt.Println("size")
 	size := intOrNil(release.Get("size"))
 	if size == nil {
 		return csllib.List{}, fmt.Errorf("size is nil")
 	}
+	fmt.Println("runtime")
 	runtime := intOrNil(release.Get("runtime"))
 	if runtime == nil {
 		return csllib.List{}, fmt.Errorf("runtime is nil")
