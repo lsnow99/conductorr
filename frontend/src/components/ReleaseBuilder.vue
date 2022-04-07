@@ -48,6 +48,7 @@
         <o-field label="Seeders">
           <o-input
             type="number"
+            @change="numberChanged"
             placeholder="Number of seeders"
             v-model="computedRelease.seeders"
           />
@@ -55,6 +56,7 @@
         <o-field label="Age">
           <o-input
             type="number"
+            @change="numberChanged"
             placeholder="Release age (days)"
             v-model="computedRelease.age"
           />
@@ -62,6 +64,7 @@
         <o-field label="Runtime (minutes)">
           <o-input
             type="number"
+            @change="numberChanged"
             placeholder="Runtime (minutes)"
             v-model="computedRelease.runtime"
             min="0"
@@ -70,6 +73,7 @@
         <o-field addons grouped label="Size">
           <o-input
             type="number"
+            @change="numberChanged"
             placeholder="Size"
             expanded
             v-model="size"
@@ -151,6 +155,7 @@
 </style>
 
 <script>
+import { nextTick } from "vue";
 import APIUtil from "../util/APIUtil";
 import { RESOLUTION_TYPES, RIP_TYPES, ENCODING_TYPES } from "../util/Constants";
 
@@ -279,6 +284,22 @@ export default {
       }
       this.$emit("update:modelValue", newRelease);
     },
+    forceInt(obj, field, fallback=-1) {
+      const val = parseInt(obj[field])
+      if (val === NaN) {
+        obj[field] = fallback
+      } else {
+        obj[field] = val
+      }
+    },
+    numberChanged() {
+      nextTick(() => {
+        this.forceInt(this.computedRelease, 'seeders')
+        this.forceInt(this.computedRelease, 'age')
+        this.forceInt(this.computedRelease, 'runtime')
+        this.forceInt(this.computedRelease, 'size')
+      })
+    }
   },
   mounted() {
     APIUtil.getIndexers().then((indexers) => {
