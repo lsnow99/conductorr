@@ -3,13 +3,7 @@
     <div class="flex flex-col bg-gray-900 bg-opacity-20">
       <div
         ref="header"
-        class="
-          p-2
-          flex flex-1 flex-col
-          items-center
-          lg:flex-row
-          justify-between
-        "
+        class="p-2 flex flex-1 flex-col items-center lg:flex-row justify-between"
       >
         <div class="flex flex-row">
           <div class="p-2">
@@ -140,7 +134,8 @@
               v-model="releaseB"
             />
             <div class="text-xl">
-              Rendered code (you can assume that your script will be run like this):
+              Rendered code (you can assume that your script will be run like
+              this):
             </div>
             <div class="p-4">
               <CSLEditor readonly v-model="renderedCode" />
