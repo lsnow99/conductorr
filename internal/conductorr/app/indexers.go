@@ -2,6 +2,7 @@ package app
 
 import (
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 
@@ -38,7 +39,7 @@ func (im *IndexerManager) DoTask() {
 			continue
 		}
 		if len(results) > 0 {
-			im.updateIndexerLastRSSID(indexer.ID, results[len(results)-1].ID)
+			im.updateIndexerLastRSSID(indexer.ID, results[0].ID)
 			monitoringMedia, err := dbstore.GetMonitoringMedia()
 			if err != nil || monitoringMedia == nil {
 				return
@@ -55,6 +56,9 @@ func (im *IndexerManager) DoTask() {
 }
 
 func (im *IndexerManager) updateIndexerLastRSSID(indexerID int, rssID string) {
+	if err := dbstore.SetIndexerLastRSSID(indexerID, rssID); err != nil {
+		logger.LogWarn(err)
+	}
 	im.Lock()
 	defer im.Unlock()
 	for i, indexer := range im.indexers {
@@ -82,6 +86,7 @@ func (im *IndexerManager) getIndexers() []ManagedIndexer {
 func (im *IndexerManager) RegisterIndexer(id int, downloadType string, userID int, name, apiKey, baseUrl string, forMovies, forSeries bool, lastRSSID string) {
 	indexer := integration.NewXnab(userID, apiKey, baseUrl, name, downloadType)
 	mi := ManagedIndexer{
+		ID:        id,
 		Name:      name,
 		ForMovies: forMovies,
 		ForSeries: forSeries,
@@ -109,7 +114,7 @@ func (im *IndexerManager) RegisterIndexer(id int, downloadType string, userID in
 	}
 }
 
-func (im *IndexerManager) doSearch(searchFunc func(indexer integration.Indexer)([]integration.Release, error)) ([]integration.Release, error) {
+func (im *IndexerManager) doSearch(searchFunc func(indexer integration.Indexer) ([]integration.Release, error)) ([]integration.Release, error) {
 	results := make([]integration.Release, 0)
 	indexers := im.getIndexers()
 

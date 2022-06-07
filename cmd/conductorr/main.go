@@ -5,8 +5,10 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"runtime/pprof"
 	"strconv"
+	"syscall"
 
 	"github.com/lsnow99/conductorr/internal/conductorr/api"
 	"github.com/lsnow99/conductorr/internal/conductorr/app"
@@ -27,7 +29,15 @@ func main() {
 			log.Fatal(err)
 		}
 		pprof.StartCPUProfile(f)
-		defer pprof.StopCPUProfile()
+
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+		go func() {
+			for range c {
+				pprof.StopCPUProfile()
+				os.Exit(0)
+			}
+		}()
 	}
 
 	if err := dbstore.Init(); err != nil {
@@ -82,7 +92,7 @@ func main() {
 	for _, indexer := range indexers {
 		app.IM.RegisterIndexer(indexer.ID, indexer.DownloadType, indexer.UserID, indexer.Name, indexer.ApiKey, indexer.BaseUrl, indexer.ForMovies, indexer.ForSeries, indexer.LastRSSID)
 	}
-	
+
 	app.IM.DoTask()
 
 	// Initialize media servers
