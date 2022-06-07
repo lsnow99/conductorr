@@ -391,9 +391,11 @@ func (t *TmdbAPI) SearchByID(id string) (*IndividualResult, error) {
 
 	if mediaType == "tv" {
 		if len(result.EpisodeRunTime) < 1 {
-			return nil, fmt.Errorf("could not determine runtime for item id %s", id)
+			fmt.Println("could not determine runtime")
+			// return nil, fmt.Errorf("could not determine runtime for item id %s", id)
+		} else {
+			ir.Runtime = result.EpisodeRunTime[0]
 		}
-		ir.Runtime = result.EpisodeRunTime[0]
 		ir.Title = result.Name
 		ir.ContentType = "series"
 		if result.ExternalIds.ImdbID == "" {

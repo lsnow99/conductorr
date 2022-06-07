@@ -4,12 +4,13 @@
       class="absolute left-0 top-0 bottom-0 opacity-30"
       :class="background"
       :style="`width: ${Math.round(fraction * 100)}%`"
-    />
+    ></div>
     <span class="font-bold">{{ statusText }}</span>
     {{ truncatedFriendlyName }}
-    <span class="float-right">{{
-      fraction < 1 ? Math.round(fraction * 100) + "%" : ""
-    }}</span>
+    <span class="float-right"
+      >{{ fraction < 1 ? Math.round(fraction * 100) + "%" : "" }}
+      <o-icon icon="times"></o-icon
+    ></span>
   </div>
 </template>
 
