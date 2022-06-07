@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,9 +12,10 @@ import (
 	"github.com/lsnow99/conductorr/internal/conductorr/api"
 	"github.com/lsnow99/conductorr/internal/conductorr/app"
 	"github.com/lsnow99/conductorr/internal/conductorr/dbstore"
-	"github.com/lsnow99/conductorr/internal/conductorr/logger"
+	_ "github.com/lsnow99/conductorr/internal/conductorr/logger"
 	"github.com/lsnow99/conductorr/internal/conductorr/scheduler"
 	"github.com/lsnow99/conductorr/internal/conductorr/settings"
+	"github.com/rs/zerolog/log"
 )
 
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
@@ -26,7 +26,10 @@ func main() {
 	if *cpuprofile != "" {
 		f, err := os.Create(*cpuprofile)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal().
+				Stack().
+				Err(err).
+				Msg("")
 		}
 		pprof.StartCPUProfile(f)
 
@@ -41,44 +44,56 @@ func main() {
 	}
 
 	if err := dbstore.Init(); err != nil {
-		log.Fatal(err)
+		log.Fatal().
+			Stack().
+			Err(err).
+			Msg("")
 	}
 	defer dbstore.Close()
 
 	// Initialize downloaders
 	downloaders, err := dbstore.GetDownloaders()
 	if err != nil {
-		logger.LogToStdout(err)
-		os.Exit(1)
+		log.Fatal().
+			Stack().
+			Err(err).
+			Msg("error getting downloaders from database")
 	}
 	for _, downloader := range downloaders {
 		if err := app.DM.RegisterDownloader(downloader.ID, downloader.DownloaderType, downloader.Name, downloader.Config); err != nil {
-			logger.LogDanger(err)
+			log.Error().
+				Stack().
+				Err(err).
+				Msgf("error registering downloader id %d", downloader.ID)
 		}
 	}
 
 	// Initialize the downloads
 	downloads, err := dbstore.GetActiveDownloads()
 	if err != nil {
-		logger.LogToStdout(err)
-		os.Exit(1)
+		log.Fatal().
+			Stack().
+			Err(err).
+			Msgf("error retrieving active downloads from database")
 	}
 	for _, download := range downloads {
-		if err != nil {
-			logger.LogToStdout(err)
-			os.Exit(1)
-		}
 		if download.MediaID.Valid {
+			// TODO: verify that this shouldn't throw an error
 			var releaseID *string
 			if download.ReleaseID.Valid {
 				releaseID = &download.ReleaseID.String
 			}
 			app.DM.RegisterDownload(download.ID, int(download.MediaID.Int32), download.FriendlyName, download.Status, download.Identifier, releaseID)
 		} else {
-			// This download was registered with a downloader that no longer exists. Record it as an error
+			// This download was attached to a media that no longer exists
+			log.Warn().
+				Msgf("download %s registered with a downloader that no longer exists, recording it as an error")
 			err = dbstore.UpdateDownloadStatusByIdentifier(download.Identifier, "error")
 			if err != nil {
-				logger.LogToStdout(err)
+				log.Error().
+					Stack().
+					Err(err).
+					Msgf("error updating download %s", download.Identifier)
 			}
 		}
 	}
@@ -86,8 +101,10 @@ func main() {
 	// Initialize indexers
 	indexers, err := dbstore.GetIndexers()
 	if err != nil {
-		logger.LogToStdout(err)
-		os.Exit(1)
+		log.Fatal().
+			Stack().
+			Err(err).
+			Msg("error retrieving indexers from database")
 	}
 	for _, indexer := range indexers {
 		app.IM.RegisterIndexer(indexer.ID, indexer.DownloadType, indexer.UserID, indexer.Name, indexer.ApiKey, indexer.BaseUrl, indexer.ForMovies, indexer.ForSeries, indexer.LastRSSID)
@@ -98,19 +115,25 @@ func main() {
 	// Initialize media servers
 	mediaServers, err := dbstore.GetMediaServers()
 	if err != nil {
-		logger.LogToStdout(err)
-		os.Exit(1)
+		log.Fatal().
+			Stack().
+			Err(err).
+			Msg("error retrieving media servers from database")
 	}
 	for _, mediaServer := range mediaServers {
 		if err := app.MSM.RegisterMediaServer(mediaServer.ID, mediaServer.MediaServerType, mediaServer.Name, mediaServer.Config); err != nil {
-			logger.LogToStdout(err)
-			os.Exit(1)
+			log.Fatal().
+				Stack().
+				Err(err).
+				Msg("error registering media server")
 		}
 	}
 
 	scheduler.StartTasks()
 
-	log.Fatal(serveRoutes(8282))
+	log.Fatal().
+		Stack().
+		Err(serveRoutes(8282)).Msg("")
 }
 
 func serveRoutes(port int) error {
@@ -118,9 +141,11 @@ func serveRoutes(port int) error {
 	http.Handle("/", api.GetRouter())
 
 	if settings.DebugMode {
-		log.Println("Warning: starting in debug mode")
+		log.Warn().
+			Msg("Warning: starting in debug mode")
 	}
 
-	log.Printf("Listening on :%d\n", port)
+	log.Info().
+		Msgf("Listening on :%d\n", port)
 	return http.ListenAndServe(":"+strconv.Itoa(port), http.DefaultServeMux)
 }

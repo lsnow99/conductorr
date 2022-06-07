@@ -15,7 +15,8 @@ require (
 	github.com/l3uddz/go-qbittorrent v1.0.3
 	github.com/lsnow99/go-newznab v1.1.1-0.20211104052345-8d29a69c248f
 	github.com/mholt/archiver/v3 v3.5.1
-	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
+	github.com/rs/zerolog v1.26.1 // indirect
+	golang.org/x/crypto v0.0.0-20211215165025-cf75a172585e
 	golang.org/x/net v0.0.0-20211215060638-4ddde0e984e9
 	modernc.org/sqlite v1.14.3
 )

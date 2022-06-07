@@ -7,7 +7,7 @@ import (
 
 	"github.com/lsnow99/conductorr/internal/conductorr/dbstore"
 	"github.com/lsnow99/conductorr/internal/conductorr/integration"
-	"github.com/lsnow99/conductorr/internal/conductorr/logger"
+	"github.com/rs/zerolog/log"
 )
 
 type ManagedMediaServer struct {
@@ -108,12 +108,15 @@ func (msm *MediaServerManager) ImportMedia(path string) error {
 		err := mediaServer.ImportMedia(path)
 		if err != nil {
 			hadError = true
-			logger.LogDanger(err)
+			log.Error().
+				Err(err).
+				Int("media_server_id", mediaServer.ID).
+				Msgf("error importing media to media server %s", mediaServer.GetName())
 		}
 	}
 
 	if hadError {
-		return errors.New("could not import media path in one or more media servers. See log for details")
+		return errors.New("could not import media path in one or more media servers; see log for details")
 	}
 
 	return nil

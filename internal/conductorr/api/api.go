@@ -48,7 +48,6 @@ package api
 import (
 	"encoding/json"
 	"errors"
-	"log"
 	"net"
 	"net/http"
 	"strings"
@@ -56,6 +55,7 @@ import (
 
 	"github.com/golang-jwt/jwt"
 	"github.com/lsnow99/conductorr/internal/conductorr/dbstore"
+	"github.com/rs/zerolog/log"
 	"github.com/lsnow99/conductorr/internal/conductorr/settings"
 )
 
@@ -131,7 +131,10 @@ func Respond(w http.ResponseWriter, req *http.Request, err error, data interface
 		w.WriteHeader(http.StatusUnauthorized)
 	}
 	if err := json.NewEncoder(w).Encode(r); err != nil {
-		log.Println(err)
+		log.Error().
+			Err(err).
+			Bool("internal", true).
+			Msg("error encoding json api response")
 	}
 }
 

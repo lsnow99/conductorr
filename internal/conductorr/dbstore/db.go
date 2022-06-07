@@ -2,9 +2,11 @@ package dbstore
 
 import (
 	"context"
+	"crypto/rand"
 	"database/sql"
 	"fmt"
 	"io"
+	"math/big"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -16,10 +18,10 @@ import (
 	"github.com/golang-migrate/migrate/v4/database/sqlite"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/jackc/pgx/v4"
-	_ "modernc.org/sqlite"
 	"github.com/lsnow99/conductorr"
 	"github.com/lsnow99/conductorr/internal/conductorr/integration"
 	"github.com/lsnow99/conductorr/internal/conductorr/settings"
+	_ "modernc.org/sqlite"
 )
 
 var db *sql.DB
@@ -124,6 +126,10 @@ func Init() error {
 		}
 	}
 
+	if err := initSystem(); err != nil {
+		return err
+	}
+
 	if err := initUser(); err != nil {
 		return err
 	}
@@ -158,6 +164,31 @@ func initUser() error {
 		settings.ResetUser = true
 	}
 	return nil
+}
+
+var charList = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+func initSystem() error {
+	row := db.QueryRow(`SELECT jwt_secret FROM system_data WHERE id = ?`, 1)
+	var nullSecret sql.NullString
+	var secret string
+	if err := row.Scan(&nullSecret); err != nil {
+		return err
+	}
+	if len(nullSecret.String) < 32 {
+		secret = ""
+		for i := 0; i < 128; i++ {
+			index, err := rand.Int(rand.Reader, big.NewInt(int64(len(charList))))
+			if err != nil {
+				return err
+			}
+			secret += string(charList[index.Int64()])
+		}
+	}
+	settings.JWTSecret = secret
+
+	_, err := db.Exec(`UPDATE system_data SET jwt_secret = ? where id = ?`, secret, 1)
+	return err
 }
 
 func ptrToNullString(str *string) (nstr sql.NullString) {

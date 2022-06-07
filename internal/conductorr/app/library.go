@@ -5,7 +5,7 @@ import (
 
 	"github.com/lsnow99/conductorr/internal/conductorr/dbstore"
 	"github.com/lsnow99/conductorr/internal/conductorr/integration"
-	"github.com/lsnow99/conductorr/internal/conductorr/logger"
+	"github.com/rs/zerolog/log"
 )
 
 type updatePathRequest struct {
@@ -77,7 +77,10 @@ func (lm *LibraryManager) DoTask() {
 func (lm *LibraryManager) checkPaths() {
 	medias, err := dbstore.GetAllMedia()
 	if err != nil {
-		logger.LogDanger(err)
+		log.Error().
+			Stack().
+			Err(err).
+			Msg("failed getting all media")
 		return
 	}
 	for _, media := range medias {

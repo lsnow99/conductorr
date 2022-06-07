@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/lsnow99/conductorr/internal/conductorr/logger"
+	"github.com/rs/zerolog"
 )
 
 type LogResponse struct {
@@ -20,11 +21,11 @@ func GetLogs(w http.ResponseWriter, r *http.Request) {
 	for _, log := range logs {
 		var variant string
 		switch log.Level {
-		case logger.Danger:
+		case zerolog.ErrorLevel:
 			variant = "danger"
-		case logger.Warn:
+		case zerolog.WarnLevel:
 			variant = "warning"
-		case logger.Info:
+		case zerolog.InfoLevel:
 			variant = ""
 		}
 		logsResp = append(logsResp, LogResponse{

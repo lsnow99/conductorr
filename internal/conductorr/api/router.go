@@ -3,7 +3,6 @@ package api
 import (
 	"io"
 	"io/fs"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -12,6 +11,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/lsnow99/conductorr"
 	"github.com/lsnow99/conductorr/internal/conductorr/settings"
+	"github.com/rs/zerolog/log"
 )
 
 func GetRouter() http.Handler {
@@ -133,7 +133,8 @@ func GetRouter() http.Handler {
 	}
 
 	if settings.ResetUser {
-		log.Println("Warning: allowing user registration either because no user exists in the database currenly, or the RESET_USER environment variable has been set. After the signup route successfully registers a user, the route will be disabled until the server exits.")
+		log.Warn().
+			Msg("allowing user registration either because no user exists in the database currenly, or the RESET_USER environment variable has been set. After the signup route successfully registers a user, the route will be disabled until the server exits")
 		http.HandleFunc("/api/v1/signup", SignUp)
 	}
 

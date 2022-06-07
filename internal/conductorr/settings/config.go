@@ -1,7 +1,7 @@
 package settings
 
 import (
-	"log"
+	"github.com/rs/zerolog/log"
 	"net"
 	"net/url"
 	"os"
@@ -38,21 +38,14 @@ var AllowInsecureRequests bool
 func init() {
 	DebugMode = checkBool("CONDUCTORR_DEBUG")
 
-	if len(os.Getenv("JWT_SECRET")) >= 64 {
-		JWTSecret = os.Getenv("JWT_SECRET")
-	} else if DebugMode {
-		// In debug mode just use a stupid JWT secret
-		JWTSecret = "abcdefghijklmnopqrstuvwxyz0123456789"
-	} else {
-		// TODO log.Fatal(errors.New("required environment variable JWT_SECRET not provided, or was not at least 64 characters. Set JWT_SECRET to a random string of 64+ characters"))
-		JWTSecret = "abcdefghijklmnopqrstuvwxyz0123456789"
-	}
+	
 
 	if jwtExp, exists := os.LookupEnv("JWT_EXP_DAYS"); exists {
 		jwtExpDaysStr := jwtExp
 		jwtExpDaysInt, err := strconv.Atoi(jwtExpDaysStr)
 		if err != nil {
-			log.Fatalf("error parsing JWT_EXP_DAYS (%s) as integer", jwtExpDaysStr)
+			log.Fatal().
+				Msgf("error parsing JWT_EXP_DAYS (%s) as integer", jwtExpDaysStr)
 		}
 		JWTExpDays = jwtExpDaysInt
 	} else {
@@ -61,7 +54,8 @@ func init() {
 
 	if checkBool("RESET_USER") {
 		ResetUser = true
-		log.Println("Allowing user reset since RESET_USER environment variable is set")
+		log.Info().
+			Msg("allowing user reset since RESET_USER environment variable is set")
 	}
 
 	if _, exists := os.LookupEnv("PG_USER"); exists {
@@ -72,9 +66,11 @@ func init() {
 		PGPort = os.Getenv("PG_PORT")
 		_, PGSSL = os.LookupEnv("PG_SSL")
 		UsePG = true
-		log.Println("Using postgres for database")
+		log.Info().
+			Msg("using postgres for database")
 	} else {
-		log.Println("Defaulting to sqlite for database")
+		log.Info().
+			Msg("defaulting to sqlite for database")
 	}
 
 	pragmas := url.Values{}

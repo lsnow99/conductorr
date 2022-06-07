@@ -12,8 +12,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/lsnow99/conductorr/internal/conductorr/logger"
 	"github.com/lsnow99/conductorr/internal/conductorr/settings"
+	"github.com/rs/zerolog/log"
 )
 
 type TmdbAPI struct{}
@@ -319,7 +319,10 @@ func (t *TmdbAPI) SearchByTitle(title, contentType string, page int) (*SearchRes
 			sr.ContentType = "series"
 			sr.ReleasedAt, err = time.Parse(dateFormat, result.FirstAirDate)
 			if err != nil {
-				logger.LogWarn(err)
+				log.Warn().
+					Err(err).
+					Str("result_id", sr.ID).
+					Msgf("could not parse release date %s", result.FirstAirDate)
 			}
 		} else if result.MediaType == "movie" || contentType == "movie" {
 			sr.ID = "movie:" + strconv.Itoa(result.ID)
@@ -327,7 +330,10 @@ func (t *TmdbAPI) SearchByTitle(title, contentType string, page int) (*SearchRes
 			sr.ContentType = "movie"
 			sr.ReleasedAt, err = time.Parse(dateFormat, result.ReleaseDate)
 			if err != nil {
-				logger.LogWarn(err)
+				log.Warn().
+					Err(err).
+					Str("result_id", sr.ID).
+					Msgf("could not parse release date %s", result.FirstAirDate)
 			}
 		} else {
 			continue
@@ -409,7 +415,10 @@ func (t *TmdbAPI) SearchByID(id string) (*IndividualResult, error) {
 		}
 		ir.ReleasedAt, err = time.Parse(dateFormat, result.FirstAirDate)
 		if err != nil {
-			logger.LogWarn(err)
+			log.Warn().
+				Err(err).
+				Str("result_id", ir.ID).
+				Msgf("could not parse release date %s", result.FirstAirDate)
 		}
 		if result.LastAirDate != "" {
 			ir.EndedAt, err = time.Parse(dateFormat, result.LastAirDate)
@@ -427,7 +436,10 @@ func (t *TmdbAPI) SearchByID(id string) (*IndividualResult, error) {
 		ir.ImdbID = result.ExternalIds.ImdbID
 		ir.ReleasedAt, err = time.Parse(dateFormat, result.ReleaseDate)
 		if err != nil {
-			logger.LogWarn(err)
+			log.Warn().
+				Err(err).
+				Str("result_id", ir.ID).
+				Msgf("could not parse release date %s", result.FirstAirDate)
 		}
 		// Get the soonest physical or dvd release date
 		for _, res := range result.ReleaseDates.Results {

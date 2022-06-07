@@ -7,7 +7,7 @@ import (
 
 	"github.com/lsnow99/conductorr/internal/conductorr/dbstore"
 	"github.com/lsnow99/conductorr/internal/conductorr/integration"
-	"github.com/lsnow99/conductorr/internal/conductorr/logger"
+	"github.com/rs/zerolog/log"
 )
 
 type ManagedIndexer struct {
@@ -34,13 +34,24 @@ func (im *IndexerManager) DoTask() {
 	for _, indexer := range indexers {
 		results, err := indexer.SyncRSS(indexer.LastRSSID)
 		if err != nil {
-			logger.LogWarn(err)
+			log.Warn().
+				Err(err).
+				Int("indexer_id", indexer.ID).
+				Msgf("failed to sync rss feeds for indexer %s", indexer.GetName())
+
 			continue
 		}
 		if len(results) > 0 {
 			im.updateIndexerLastRSSID(indexer.ID, results[0].ID)
 			monitoringMedia, err := dbstore.GetMonitoringMedia()
-			if err != nil || monitoringMedia == nil {
+			if err != nil {
+				log.Error().
+					Err(err).
+					Msg("could not get monitoring media")
+
+				return
+			}
+			if monitoringMedia == nil {
 				return
 			}
 			for _, result := range results {
@@ -56,7 +67,12 @@ func (im *IndexerManager) DoTask() {
 
 func (im *IndexerManager) updateIndexerLastRSSID(indexerID int, rssID string) {
 	if err := dbstore.SetIndexerLastRSSID(indexerID, rssID); err != nil {
-		logger.LogWarn(err)
+		log.Error().
+			Stack().
+			Err(err).
+			Str("rss_id", rssID).
+			Int("indexer_id", indexerID).
+			Msg("could not set indexer last rss id")
 	}
 	im.Lock()
 	defer im.Unlock()
@@ -93,7 +109,10 @@ func (im *IndexerManager) RegisterIndexer(id int, downloadType string, userID in
 	}
 	err := mi.TestConnection()
 	if err != nil {
-		logger.LogWarn(err)
+		log.Warn().
+			Err(err).
+			Int("indexer_id", mi.ID).
+			Msg("could not connect to indexer")
 	}
 
 	im.Lock()
@@ -130,7 +149,10 @@ func (im *IndexerManager) doSearch(searchFunc func(indexer integration.Indexer) 
 		go func(wg *sync.WaitGroup, indexer integration.Indexer, results *[]integration.Release) {
 			indexerResults, err := searchFunc(indexer)
 			if err != nil {
-				logger.LogWarn(err)
+				log.Warn().
+					Stack().
+					Err(err).
+					Msgf("error performing indexer search")
 			}
 			*results = indexerResults
 			defer wg.Done()

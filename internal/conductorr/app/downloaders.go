@@ -11,17 +11,17 @@ import (
 	"sync"
 	"time"
 
-	"github.com/lsnow99/conductorr/pkg/constant"
 	"github.com/lsnow99/conductorr/internal/conductorr/dbstore"
 	"github.com/lsnow99/conductorr/internal/conductorr/integration"
-	"github.com/lsnow99/conductorr/internal/conductorr/logger"
+	"github.com/lsnow99/conductorr/pkg/constant"
 	"github.com/mholt/archiver/v3"
+	"github.com/rs/zerolog/log"
 )
 
 type ManagedDownload struct {
-	ID int
+	ID             int
 	TryAgainOnFail bool
-	ReleaseID *string
+	ReleaseID      *string
 	integration.Download
 }
 
@@ -34,10 +34,10 @@ type ManagedDownloader struct {
 
 type DownloaderManager struct {
 	sync.RWMutex
-	didFirstRun bool
+	didFirstRun      bool
 	backupReleaseMap map[int][]integration.Release
-	downloaders []ManagedDownloader
-	downloads   []ManagedDownload
+	downloaders      []ManagedDownloader
+	downloads        []ManagedDownload
 }
 
 func (md ManagedDownloader) GetName() string {
@@ -51,7 +51,9 @@ func (dm *DownloaderManager) DoTask() {
 		downloadsToMonitor := getDownloadsToMonitor(dm.downloads, dlr.ID)
 		updatedDownloads, err := dlr.PollDownloads(downloadsToMonitor)
 		if err != nil {
-			logger.LogWarn(err)
+			log.Warn().
+				Err(err).
+				Msg("error polling for downloads")
 		}
 		downloads = append(downloads, updatedDownloads...)
 	}
@@ -118,14 +120,23 @@ func (dm *DownloaderManager) AutoDownload(mediaID int, releases []integration.Re
 }
 
 func (dm *DownloaderManager) doAutoDownload(mediaID int, releases []integration.Release) {
-	for index := 0; index < len(releases); index++ { 
-		fmt.Printf("Attempting to download: %v", releases[index])
+	for index := 0; index < len(releases); index++ {
+		log.Info().
+			Int("media_id", mediaID).
+			Str("release_title", releases[index].Title).
+			Str("release_id", releases[index].ID).
+			Msgf("attempting to download release, %d remaining", len(releases)-1)
 		if err := dm.Download(mediaID, releases[index], false, true, true); err == nil {
 			// Return if there are no errors, after adding the remaining releases to the backup map
 			dm.backupReleaseMap[mediaID] = releases[index+1:]
 			break
 		} else {
-			logger.LogWarn(err)
+			log.Warn().
+				Err(err).
+				Int("media_id", mediaID).
+				Str("release_title", releases[index].Title).
+				Str("release_id", releases[index].ID).
+				Msg("error downloading release")
 		}
 	}
 }
@@ -144,7 +155,9 @@ func (dm *DownloaderManager) Download(mediaID int, release integration.Release, 
 			if identifier, err := downloader.AddRelease(release); err == nil {
 				id, err := dbstore.NewDownload(mediaID, downloader.ID, identifier, constant.StatusWaiting, release.Title, release.ID)
 				if err != nil {
-					logger.LogDanger(fmt.Errorf("database error! could not save download: %v", err))
+					log.Error().
+						Err(err).
+						Msg("could not save download")
 				}
 				if !haveLock {
 					dm.Lock()
@@ -164,7 +177,9 @@ func (dm *DownloaderManager) Download(mediaID int, release integration.Release, 
 				return nil
 			} else {
 				hadError = true
-				logger.LogDanger(err)
+				log.Error().
+					Err(err).
+					Msg("could not add release to downloader")
 			}
 		}
 	}
@@ -225,10 +240,15 @@ func (dm *DownloaderManager) processDownloads(curState []integration.Download) {
 						if prevStateDL.TryAgainOnFail {
 							dm.doAutoDownload(dm.downloads[i].MediaID, dm.backupReleaseMap[dm.downloads[i].MediaID])
 						}
-						logger.LogWarn(fmt.Errorf("release failed to download for %s", curStateDL.FriendlyName))
+						log.Warn().
+							Str("download_identifier", curStateDL.Identifier).
+							Msgf("failed to download release %s", curStateDL.FriendlyName)
 						if prevStateDL.ReleaseID != nil {
 							if err := dbstore.UpdateReleaseHistory(prevStateDL.MediaID, *prevStateDL.ReleaseID); err != nil {
-								logger.LogWarn(fmt.Errorf("failed to update release history %v", err))
+								log.Error().
+									Stack().
+									Err(err).
+									Msg("failed to update release history")
 							}
 						}
 					case constant.StatusComplete:
@@ -238,12 +258,13 @@ func (dm *DownloaderManager) processDownloads(curState []integration.Download) {
 						// Trigger conductorr post processing
 						dm.downloads[i].Status = constant.StatusCProcessing
 						go dm.handleCompletedDownload(dm.downloads[i])
-					// Do nothing for these statuses
 					case constant.StatusCError:
 						if prevStateDL.TryAgainOnFail {
 							dm.doAutoDownload(dm.downloads[i].MediaID, dm.backupReleaseMap[dm.downloads[i].MediaID])
 						}
-						logger.LogDanger(fmt.Errorf("conductorr had an error processing %v", curStateDL))
+						log.Error().
+							Int("download_id", curStateDL.ID).
+							Msgf("conductorr had an error processing download id %d", curStateDL.ID)
 						// case constant.StatusCProcessing:
 					}
 				}
@@ -257,7 +278,11 @@ func updateDBStatus(identifier, status string) {
 	go func(identifier, status string) {
 		err := dbstore.UpdateDownloadStatusByIdentifier(identifier, status)
 		if err != nil {
-			logger.LogDanger(err)
+			log.Error().
+				Stack().
+				Err(err).
+				Str("download_identifier", identifier).
+				Msg("failed to update download status in database")
 		}
 	}(identifier, status)
 }
@@ -268,27 +293,55 @@ func (dm *DownloaderManager) handleCompletedDownload(download ManagedDownload) {
 	var season, series dbstore.Media
 	media, err := dbstore.GetMediaByID(download.MediaID)
 	if err != nil {
-		logger.LogDanger(fmt.Errorf("error 1 %v", err))
+		log.Error().
+			Stack().
+			Err(err).
+			Int("media_id", download.MediaID).
+			Int("download_id", download.ID).
+			Msg("failed to get media from database")
+
 		updateDBStatus(download.Identifier, constant.StatusCError)
 		return
 	}
 	if media.ParentMediaID.Valid {
 		season, err = dbstore.GetMediaByID(int(media.ParentMediaID.Int32))
 		if err != nil {
-			logger.LogDanger(fmt.Errorf("error 2 %v", err))
+			log.Error().
+				Stack().
+				Err(err).
+				Int("media_id", download.MediaID).
+				Int("parent_media_id", int(media.ParentMediaID.Int32)).
+				Int("download_id", download.ID).
+				Msg("failed to get media from database")
+
 			updateDBStatus(download.Identifier, constant.StatusCError)
 			return
 		}
 		if season.ParentMediaID.Valid {
 			series, err = dbstore.GetMediaByID(int(season.ParentMediaID.Int32))
 			if err != nil {
-				logger.LogDanger(fmt.Errorf("error 3 %v", err))
+				log.Error().
+					Stack().
+					Err(err).
+					Int("media_id", download.MediaID).
+					Int("parent_media_id", int(season.ParentMediaID.Int32)).
+					Int("parent_parent_media_id", int(season.ParentMediaID.Int32)).
+					Int("download_id", download.ID).
+					Msg("failed to get media from database")
+
 				updateDBStatus(download.Identifier, constant.StatusCError)
 				return
 			}
 			dbPath, err = dbstore.GetPath(int(series.PathID.Int32))
 			if err != nil {
-				logger.LogDanger(fmt.Errorf("error 4 %v", err))
+				log.Error().
+					Stack().
+					Err(err).
+					Int("media_id", series.ID).
+					Int("path_id", int(series.PathID.Int32)).
+					Int("download_id", download.ID).
+					Msg("failed to get path from database")
+
 				updateDBStatus(download.Identifier, constant.StatusCError)
 				return
 			}
@@ -298,14 +351,28 @@ func (dm *DownloaderManager) handleCompletedDownload(download ManagedDownload) {
 			outputFile = filepath.Join(outputFile, fmt.Sprintf("Season %02d", season.Number.Int32))
 			outputFile = filepath.Join(outputFile, fmt.Sprintf("%s - S%02dE%02d", media.Title.String, season.Number.Int32, media.Number.Int32))
 		} else {
-			logger.LogDanger(fmt.Errorf("bad media hierarchy"))
+			log.Error().
+				Int("media_id", download.MediaID).
+				Int("parent_media_id", int(season.ParentMediaID.Int32)).
+				Int("parent_parent_media_id", int(season.ParentMediaID.Int32)).
+				Int("download_id", download.ID).
+				Bool("internal", true).
+				Msg("bad media hierarchy")
+
 			updateDBStatus(download.Identifier, constant.StatusCError)
 			return
 		}
 	} else {
 		dbPath, err = dbstore.GetPath(int(media.PathID.Int32))
 		if err != nil {
-			logger.LogDanger(err)
+			log.Error().
+				Stack().
+				Err(err).
+				Int("media_id", media.ID).
+				Int("path_id", int(series.PathID.Int32)).
+				Int("download_id", download.ID).
+				Msg("failed to get path from database")
+
 			updateDBStatus(download.Identifier, constant.StatusCError)
 			return
 		}
@@ -316,11 +383,23 @@ func (dm *DownloaderManager) handleCompletedDownload(download ManagedDownload) {
 	dlPath := download.FinalDir
 	videoPath, err := getVideoPath(dlPath)
 	if err != nil {
-		logger.LogDanger(err)
+		log.Error().
+			Stack().
+			Err(err).
+			Str("search_dir", dlPath).
+			Int("media_id", download.MediaID).
+			Int("download_id", download.ID).
+			Msg("error walking output directory")
 	}
 
 	if videoPath == "" {
-		logger.LogDanger(fmt.Errorf("could not find output file for %v", download.FriendlyName))
+		log.Error().
+			Err(err).
+			Str("search_dir", dlPath).
+			Int("media_id", download.MediaID).
+			Int("download_id", download.ID).
+			Msgf("could not find output file for %s", download.FriendlyName)
+
 		updateDBStatus(download.Identifier, constant.StatusCError)
 		return
 	}
@@ -328,29 +407,51 @@ func (dm *DownloaderManager) handleCompletedDownload(download ManagedDownload) {
 	destFilepath := filepath.Join(dbPath.Path, outputFile) + filepath.Ext(videoPath)
 	destFiledir := filepath.Dir(destFilepath)
 	if err := os.MkdirAll(destFiledir, 0777); err != nil {
-		logger.LogDanger(err)
+		log.Error().
+			Err(err).
+			Str("dest_filedir", destFiledir).
+			Int("download_id", download.ID).
+			Msg("could not build output directories")
+
 		updateDBStatus(download.Identifier, constant.StatusCError)
 		return
 	}
 	destFile, err := os.OpenFile(destFilepath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0777)
 	if err != nil {
-		logger.LogDanger(err)
+		log.Error().
+			Err(err).
+			Str("dest_filepath", destFilepath).
+			Str("dest_filedir", destFiledir).
+			Int("download_id", download.ID).
+			Msg("could not open output file")
+
 		updateDBStatus(download.Identifier, constant.StatusCError)
 		return
 	}
 	srcFile, err := os.OpenFile(videoPath, os.O_RDONLY, os.ModePerm)
 	if err != nil {
-		logger.LogDanger(err)
+		log.Error().
+			Err(err).
+			Str("video_path", videoPath).
+			Int("download_id", download.ID).
+			Msg("could not open source file")
+
 		updateDBStatus(download.Identifier, constant.StatusCError)
 		return
 	}
 	n, err := io.Copy(destFile, srcFile)
 	if err != nil {
-		logger.LogDanger(fmt.Errorf("got error after copying %d bytes: %v", n, err))
+		log.Error().
+			Err(err).
+			Int("download_id", download.ID).
+			Msgf("got error after copying %d bytes", n)
+
 		updateDBStatus(download.Identifier, constant.StatusCError)
 		return
 	}
-	logger.LogInfo(fmt.Errorf("successfully copied %s to %s", videoPath, destFilepath))
+	log.Info().
+		Int("download_id", download.ID).
+		Msgf("successfully copied %s to %s", videoPath, destFilepath)
 
 	dm.Lock()
 
@@ -365,27 +466,53 @@ func (dm *DownloaderManager) handleCompletedDownload(download ManagedDownload) {
 
 	err = dbstore.UpdateDownloadStatusByIdentifier(download.Identifier, constant.StatusDone)
 	if err != nil {
-		logger.LogDanger(err)
+		log.Error().
+			Stack().
+			Err(err).
+			Int("download_id", download.ID).
+			Msg("error updating download status")
 	}
 
 	err = MSM.ImportMedia(destFiledir)
 	if err != nil {
-		logger.LogDanger(err)
+		log.Error().
+			Stack().
+			Err(err).
+			Int("download_id", download.ID).
+			Msg("error importing completed download into media server")
 	}
 
 	if series.ID > 0 {
 		err = dbstore.SetMediaPath(series.ID, filepath.Dir(destFiledir))
 		if err != nil {
-			logger.LogDanger(fmt.Errorf("error 7 %v", err))
+			log.Error().
+				Stack().
+				Err(err).
+				Int("download_id", download.ID).
+				Str("path", destFiledir).
+				Int("media_id", series.ID).
+				Msg("failed to set series media path")
 		}
 		err = dbstore.SetMediaPath(season.ID, destFiledir)
 		if err != nil {
-			logger.LogDanger(fmt.Errorf("error 8 %v", err))
+			log.Error().
+				Stack().
+				Err(err).
+				Int("download_id", download.ID).
+				Str("path", destFiledir).
+				Int("media_id", season.ID).
+				Msg("failed to set season media path")
 		}
 	}
 	err = dbstore.SetMediaPath(media.ID, destFilepath)
 	if err != nil {
-		logger.LogDanger(fmt.Errorf("error 9 %v", err))
+		log.Error().
+			Stack().
+			Err(err).
+			Int("download_id", download.ID).
+			Str("path", destFiledir).
+			Int("media_id", media.ID).
+			Msg("failed to set media path")
 	}
 }
 
@@ -402,10 +529,8 @@ func getVideoPath(dlPath string) (string, error) {
 	var rarfile string
 	err := filepath.WalkDir(dlPath, func(s string, d fs.DirEntry, e error) error {
 		if e != nil {
-			fmt.Println(e)
 			return e
 		}
-		fmt.Println(s, d.Name(), filepath.Ext(d.Name()))
 		if filepath.Ext(d.Name()) == ".rar" {
 			rarfile = s
 		}

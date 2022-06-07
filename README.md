@@ -37,7 +37,6 @@ Conductorr has a public [Docker image](https://hub.docker.com/r/logansnow/conduc
 
 ### Environment Variables
 
-- `JWT_SECRET` Secret string that JWTs will be signed with. (**required**)
 - `OMDB_API_KEY` API Key for [The Open Movie Database](https://omdbapi.com/). (**required** for searching new content)
 - `CONDUCTORR_DEBUG` Run Conductorr in debug mode if this environment variable is set to anything other than the empty string (optional, default is empty string)
 - `JWT_EXP_DAYS` Number of days you want a session to stay valid for (optional, default 7)
