@@ -16,13 +16,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	minV, err := semver.Make(args[0])
+	minV, err := semver.ParseTolerant(args[0])
 	if err != nil {
 		fmt.Println(fmt.Errorf("error parsing version %s: %v", args[0], err))
 		os.Exit(1)
 	}
 
-	testV, err := semver.Make(args[1])
+	testV, err := semver.ParseTolerant(args[1])
 	if err != nil {
 		fmt.Println(fmt.Errorf("error parsing version %s: %v", args[1], err))
 		os.Exit(1)
