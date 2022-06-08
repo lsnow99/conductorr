@@ -3,21 +3,21 @@
       v-for="output in logs"
       :key="output.timestamp"
       :class="outputClass(output.variant)"
-      class="p-2 text-lg relative"
+      class="relative p-2 text-lg"
     >
       <div v-if="output.variant == 'success'" class="absolute">
         <vue-fontawesome icon="check-circle" />
       </div>
-      <div v-if="output.variant == 'danger'" class="absolute">
+      <div v-else-if="output.variant == 'danger'" class="absolute">
         <vue-fontawesome icon="exclamation-circle" />
       </div>
-      <div v-if="output.variant == 'warning'" class="absolute">
+      <div v-else-if="output.variant == 'warning'" class="absolute">
         <vue-fontawesome icon="exclamation-triangle" />
       </div>
-      <div v-if="output.variant == ''" class="absolute">
+      <div v-else class="absolute">
         <vue-fontawesome icon="info-circle" />
       </div>
-      <div class="mr-3 ml-8 float-left">
+      <div class="float-left ml-8 mr-3">
         {{ formatTime(output.timestamp) }}
       </div>
       <div class="text-gray-100" :class="msgClass(output.decoration)">

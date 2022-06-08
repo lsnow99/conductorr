@@ -488,6 +488,12 @@ const getRecentMedia = () => {
   })
 }
 
+const downloadLogs = () => {
+  return doAPIReq(`/api/v1/logs`, {
+    method: "GET"
+  })
+}
+
 export default {
   signIn,
   signUp,
@@ -541,5 +547,6 @@ export default {
   refreshMediaMetadata,
   createNewBackup,
   getTaskStatuses,
-  getRecentMedia
+  getRecentMedia,
+  downloadLogs
 };

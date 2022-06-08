@@ -35,10 +35,8 @@ var Version string
 var TempDir string
 var AllowInsecureRequests bool
 
-func init() {
+func Init() {
 	DebugMode = checkBool("CONDUCTORR_DEBUG")
-
-	
 
 	if jwtExp, exists := os.LookupEnv("JWT_EXP_DAYS"); exists {
 		jwtExpDaysStr := jwtExp

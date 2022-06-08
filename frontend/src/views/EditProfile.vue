@@ -1,15 +1,9 @@
 <template>
-  <div class="max-h-screen h-screen overflow-hidden w-full">
+  <div class="w-full h-screen max-h-screen overflow-hidden">
     <div class="flex flex-col bg-gray-900 bg-opacity-20">
       <div
         ref="header"
-        class="
-          p-2
-          flex flex-1 flex-col
-          items-center
-          lg:flex-row
-          justify-between
-        "
+        class="flex flex-col items-center justify-between flex-1 p-2 lg:flex-row"
       >
         <div class="flex flex-row">
           <div class="p-2">
@@ -20,7 +14,7 @@
           <o-tabs type="boxed" ref="tabs" v-model="currentTab" class="p-2">
             <o-tab-item>
               <template v-slot:header>
-                <span class="text-2xl flex flex-row items-center">
+                <span class="flex flex-row items-center text-2xl">
                   <vue-fontawesome icon="filter"></vue-fontawesome
                   ><span style="white-space: nowrap" class="flex ml-2"
                     >Filter</span
@@ -31,7 +25,7 @@
             </o-tab-item>
             <o-tab-item>
               <template v-slot:header>
-                <span class="text-2xl flex flex-row items-center">
+                <span class="flex flex-row items-center text-2xl">
                   <vue-fontawesome icon="sort"></vue-fontawesome
                   ><span style="white-space: nowrap" class="flex ml-2"
                     >Sorter</span
@@ -42,7 +36,7 @@
             </o-tab-item>
           </o-tabs>
         </div>
-        <div class="flex text-2xl items-center">
+        <div class="flex items-center text-2xl">
           <span v-if="!editingName"
             >{{ `Editing Profile: ${profile.name}` }}
             <o-icon
@@ -52,7 +46,7 @@
               tabindex="0"
               role="button"
               aria-label="Edit name"
-              class="cursor-pointer ml-4"
+              class="ml-4 cursor-pointer"
               icon="edit" /></span
           ><span v-else class="flex flex-row">
             <o-input
@@ -66,7 +60,7 @@
               tabindex="0"
               role="button"
               aria-label="Edit name"
-              class="cursor-pointer ml-4"
+              class="ml-4 cursor-pointer"
               icon="check"
             />
             <o-icon
@@ -76,14 +70,14 @@
               tabindex="0"
               role="button"
               aria-label="Edit name"
-              class="cursor-pointer ml-4"
+              class="ml-4 cursor-pointer"
               icon="times"
             />
           </span>
         </div>
 
-        <div class="flex flex-col sm:flex-row justify-between">
-          <div class="p-2 flex flex-row justify-center">
+        <div class="flex flex-col justify-between sm:flex-row">
+          <div class="flex flex-row justify-center p-2">
             <o-button class="mx-1 my-1 sm:my-0" @click="initSplits(true)"
               >Reset View</o-button
             >
@@ -107,7 +101,7 @@
           <div class="titlebar">Generator</div>
         </div>
         <div id="split2" class="flex flex-col">
-          <div class="titlebar flex flex-row justify-between">
+          <div class="flex flex-row justify-between titlebar">
             <div>Editor</div>
             <div>
               <o-button size="small" class="mx-1" @click="validate"
@@ -129,34 +123,36 @@
       <div id="split4" class="flex flex-col">
         <div id="split5" class="flex flex-col">
           <div class="titlebar">Test Cases</div>
-          <div
-            class="px-16 h-full overflow-y-scroll overflow-x-hidden"
-            style="width: 100%"
-          >
-            <release-builder title="Release A" v-model="releaseA" />
-            <release-builder
-              v-show="activeFunction == 'sorter'"
-              title="Release B"
-              v-model="releaseB"
-            />
-            <div class="text-xl">
-              Rendered code (you can assume that your script will be run like this):
-            </div>
-            <div class="p-4">
-              <CSLEditor readonly v-model="renderedCode" />
-            </div>
-            <div class="flex flex-row justify-center p-4">
-              <o-button @click="run" variant="primary">Run</o-button>
+          <div class="overflow-x-auto">
+            <div
+              class="h-full px-2 lg:px-16 overflow-y-scroll min-w-[500px]"
+              style="width: 100%"
+            >
+              <release-builder title="Release A" v-model="releaseA" />
+              <release-builder
+                v-show="activeFunction == 'sorter'"
+                title="Release B"
+                v-model="releaseB"
+              />
+              <div class="text-xl">
+                Rendered code (you can assume that your script will be run like this):
+              </div>
+              <div class="p-4">
+                <CSLEditor readonly v-model="renderedCode" />
+              </div>
+              <div class="flex flex-row justify-center p-4">
+                <o-button @click="run" variant="primary">Run</o-button>
+              </div>
             </div>
           </div>
         </div>
         <div id="split6" class="flex flex-col">
-          <div class="titlebar flex flex-row justify-between">
+          <div class="flex flex-row justify-between titlebar">
             <div>Output</div>
             <div>
               <o-icon
                 icon="times-circle"
-                class="cursor-pointer mr-3"
+                class="mr-3 cursor-pointer"
                 @click="outputs = []"
                 @keydown.enter="outputs = []"
                 @keydown.space="outputs = []"
@@ -166,7 +162,7 @@
               />
               <o-icon
                 icon="angle-double-down"
-                class="cursor-pointer mr-3"
+                class="mr-3 cursor-pointer"
                 @click="scrollOutput"
                 @keydown.enter="scrollOutput"
                 @keydown.space="scrollOutput"
@@ -229,12 +225,11 @@
 <script>
 import { nextTick } from "vue";
 import APIUtil from "../util/APIUtil";
-import { CSLEditor } from "conductorr-lib";
+import { CSLEditor, LogPane } from "conductorr-lib";
 import Split from "split.js";
 import "../util/wasm_exec.js";
 import { DateTime } from "luxon";
 import ReleaseBuilder from "../components/ReleaseBuilder.vue";
-import LogPane from "../components/LogPane.vue";
 
 export default {
   data() {

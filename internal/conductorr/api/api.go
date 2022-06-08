@@ -84,6 +84,9 @@ func Respond(w http.ResponseWriter, req *http.Request, err error, data interface
 	if err != nil {
 		r.Success = false
 		r.Msg = err.Error()
+		log.Warn().
+			Err(err).
+			Msg("api error")
 	} else {
 		r.Success = true
 	}
@@ -142,7 +145,7 @@ func GenerateIDToken() (string, error) {
 	// Create token claims
 	claims := make(jwt.MapClaims)
 	claims["sub"] = true
-	claims["exp"] = time.Now().Add(time.Hour * 24 * 7).Unix()
+	claims["exp"] = time.Now().Add(time.Hour * 24 * time.Duration(settings.JWTExpDays)).Unix()
 
 	tok := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
 	return tok.SignedString([]byte(settings.JWTSecret))
@@ -226,5 +229,11 @@ func checkToken(tok string) bool {
 	_, err := jwt.Parse(tok, func(t *jwt.Token) (interface{}, error) {
 		return []byte(settings.JWTSecret), nil
 	})
+	if err != nil {
+		log.Warn().
+			Err(err).
+			Str("token", tok).
+			Msg("invalid auth token")
+	}
 	return err == nil
 }

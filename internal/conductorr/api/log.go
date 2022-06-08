@@ -30,10 +30,16 @@ func GetLogs(w http.ResponseWriter, r *http.Request) {
 		}
 		logsResp = append(logsResp, LogResponse{
 			Timestamp: log.Timestamp,
-			Variant: variant,
-			Msg: log.Message,
+			Variant:   variant,
+			Msg:       log.Message,
 		})
 	}
 
 	Respond(w, r, nil, logsResp, true)
+}
+
+func GetLogFile(w http.ResponseWriter, r *http.Request) {
+	filename := "conductorr.log"
+	w.Header().Set("Content-Disposition", "attachment; filename="+filename)
+	http.ServeFile(w, r, "conductorr.log")
 }

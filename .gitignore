@@ -13,6 +13,7 @@ docusite/docs/.vuepress/wasm_exec.js
 docusite/docs/.vuepress/public/csl.wasm.br
 docusite/docs/.vuepress/public/csl.wasm
 *.prof
+*.log
 
 # Local Netlify folder
 .netlify

@@ -4,14 +4,10 @@ import (
 	"os"
 	"time"
 
+	"github.com/lsnow99/conductorr/internal/conductorr/helpers"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-)
-
-const (
-	Info = iota
-	Warn
-	Danger
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 type LogMessage struct {
@@ -30,22 +26,40 @@ type logsContainer struct {
 	logMessages []LogMessage
 }
 
-var logs logsContainer
-
 type LogHook struct{}
 
-func init() {
-	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-	log.Logger = zerolog.New(zerolog.ConsoleWriter{Out: os.Stdout}).With().Caller().Logger()
+var logs logsContainer
+const cacheSize = 500
 
-	logs.sendChan = make(chan LogMessage)
+func Init() {
+	zerolog.TimestampFieldName = "timestamp"
+	zerolog.SetGlobalLevel(zerolog.DebugLevel)
+
+	log.Logger = zerolog.New(
+		zerolog.MultiLevelWriter(zerolog.ConsoleWriter{Out: os.Stdout}, &lumberjack.Logger{
+			Filename:   "./conductorr.log",
+			MaxSize:    30, // megabytes
+			MaxBackups: 3,
+			MaxAge:     28,    //days
+			Compress:   false,
+		})).
+		With().
+		Caller().
+		Logger().
+		Hook(LogHook{})
+
+	logs.sendChan = make(chan LogMessage, cacheSize * 2)
 	logs.recvChan = make(chan getLogsReq)
 	go func() {
 		for {
 			select {
 			case log := <-logs.sendChan:
-				// Append a log while chopping off one at the beginning if there are at least 500 logs
-				logs.logMessages = append([]LogMessage{log}, logs.logMessages[min(len(logs.logMessages), 1):min(len(logs.logMessages), 500)]...)
+				// Append a log while ensuring there can never be more than cacheSize logs
+				logs.logMessages = append(
+					logs.logMessages[
+						helpers.Min(0, helpers.Max(cacheSize-1-len(logs.logMessages), 1)):
+						helpers.Min(len(logs.logMessages), cacheSize-1)],
+				log)
 			case req := <-logs.recvChan:
 				req.logsChan <- logs.logMessages
 			}
@@ -54,7 +68,7 @@ func init() {
 }
 
 func (h LogHook) Run(e *zerolog.Event, level zerolog.Level, msg string) {
-	if level != zerolog.NoLevel {
+	if level != zerolog.NoLevel && len(msg) > 0 {
 		timestamp := time.Now()
 		e.Time("timestamp", timestamp)
 		logs.sendChan <- LogMessage{
@@ -71,11 +85,4 @@ func GetLogs() []LogMessage {
 	}
 	logs.recvChan <- req
 	return <-req.logsChan
-}
-
-func min(x, y int) int {
-	if x < y {
-		return x
-	}
-	return y
 }

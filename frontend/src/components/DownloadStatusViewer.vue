@@ -1,7 +1,7 @@
 <template>
   <o-tabs type="boxed" navTabsClass="text-lg sm:text-2xl">
     <o-tab-item label="Active Downloads">
-      <div :class="wrapperClass" class="overflow-y-scroll p-2">
+      <div :class="wrapperClass" class="p-2 overflow-y-scroll">
         <DownloadStatus
           v-for="download in orderedActiveDownloads"
           :key="download.identifier"
@@ -9,14 +9,14 @@
         />
         <div
           v-if="orderedActiveDownloads.length == 0"
-          class="flex flex-1 justify-center h-full items-center"
+          class="flex items-center justify-center flex-1 h-full"
         >
           No active downloads
         </div>
       </div>
     </o-tab-item>
     <o-tab-item label="Completed Downloads">
-      <div :class="wrapperClass" class="overflow-y-scroll p-2">
+      <div :class="wrapperClass" class="p-2 overflow-y-scroll">
         <DownloadStatus
           v-for="download in orderedFinishedDownloads"
           :key="download.identifier"
@@ -24,7 +24,7 @@
         />
         <div
           v-if="orderedFinishedDownloads.length == 0"
-          class="flex flex-1 justify-center h-full items-center"
+          class="flex items-center justify-center flex-1 h-full"
         >
           No completed downloads
         </div>
@@ -106,20 +106,20 @@ export default {
         case "processing":
         case "cprocessing":
           return {
-            fraction,
+            fraction: 1,
             status_text: "PROCESSING",
             background: "bg-gray-900",
           };
         case "done":
           return {
-            fraction,
+            fraction: 1,
             status_text: "DONE",
             background: "bg-green-600",
           };
         case "error":
         case "cerror":
           return {
-            fraction,
+            fraction: 1,
             status_text: "ERROR",
             background: "bg-red-700",
           };

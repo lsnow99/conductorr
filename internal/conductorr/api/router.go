@@ -11,6 +11,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/lsnow99/conductorr"
 	"github.com/lsnow99/conductorr/internal/conductorr/settings"
+	"github.com/rs/zerolog/hlog"
 	"github.com/rs/zerolog/log"
 )
 
@@ -92,6 +93,7 @@ func GetRouter() http.Handler {
 	r.HandleFunc("/api/v1/schedule", GetSchedule).Methods("GET")
 	r.HandleFunc("/api/v1/status", GetStatus).Methods("GET")
 	r.HandleFunc("/api/v1/logs", GetLogs).Methods("GET")
+	r.HandleFunc("/api/v1/logFile", GetLogFile).Methods("GET")
 	r.HandleFunc("/api/v1/activeDownloads", GetActiveDownloads).Methods("GET")
 	r.HandleFunc("/api/v1/finishedDownloads", GetDoneDownloads).Methods("GET")
 	r.HandleFunc("/api/v1/plexAuthToken", FetchPlexAuthToken).Methods("POST")
@@ -106,6 +108,15 @@ func GetRouter() http.Handler {
 	r.HandleFunc("/api/v1/tasks", GetTasks).Methods("GET")
 
 	r.Use(AuthMiddleware)
+	r.Use(hlog.AccessHandler(func(r *http.Request, status, size int, duration time.Duration) {
+		log.Debug().
+			Str("method", r.Method).
+			Stringer("url", r.URL).
+			Int("status", status).
+			Int("size", size).
+			Dur("duration", duration).
+			Msg("")
+	}))
 
 	if settings.BuildMode == "binary" {
 		sfs, err := fs.Sub(conductorr.FrontendDist, "frontend/build/dist")

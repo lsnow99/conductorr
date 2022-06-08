@@ -7,6 +7,7 @@ import (
 
 	"github.com/lsnow99/conductorr/internal/conductorr/app"
 	"github.com/lsnow99/conductorr/internal/conductorr/dbstore"
+	"github.com/lsnow99/conductorr/internal/conductorr/helpers"
 )
 
 type DownloadResponse struct {
@@ -51,7 +52,7 @@ func GetActiveDownloads(w http.ResponseWriter, r *http.Request) {
 
 	downloads := app.DM.GetDownloads()
 	downloadsResponse := make([]DownloadResponse, 0, len(downloads))
-	for _, download := range downloads {
+	for _, download := range downloads[:helpers.Min(len(downloads), 100)] {
 		if shouldInclude(download.MediaID, ids) {
 			downloadsResponse = append(downloadsResponse, NewDownloadResponseFromManagedDownload(download))
 		}
@@ -71,7 +72,7 @@ func GetDoneDownloads(w http.ResponseWriter, r *http.Request) {
 		Respond(w, r, err, nil, true)
 	}
 	downloadsResponse := make([]DownloadResponse, 0, len(downloads))
-	for _, download := range downloads {
+	for _, download := range downloads[:helpers.Min(len(downloads), 100)] {
 		if shouldInclude(int(download.MediaID.Int32), ids) {
 			downloadsResponse = append(downloadsResponse, NewDownloadResponseFromDBDownload(download))
 		}

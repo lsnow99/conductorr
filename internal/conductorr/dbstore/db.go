@@ -171,11 +171,11 @@ var charList = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 func initSystem() error {
 	row := db.QueryRow(`SELECT jwt_secret FROM system_data WHERE id = ?`, 1)
 	var nullSecret sql.NullString
-	var secret string
 	if err := row.Scan(&nullSecret); err != nil {
 		return err
 	}
-	if len(nullSecret.String) < 32 {
+	secret := nullSecret.String
+	if len(secret) < 32 {
 		secret = ""
 		for i := 0; i < 128; i++ {
 			index, err := rand.Int(rand.Reader, big.NewInt(int64(len(charList))))

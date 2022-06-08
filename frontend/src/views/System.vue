@@ -2,7 +2,7 @@
   <page-wrapper>
     <section>
       <h2 class="text-xl">System Health</h2>
-      <div class="rounded-md overflow-hidden">
+      <div class="overflow-hidden rounded-md">
         <SystemStatus
           :status="$store.getters.status['downloader']"
           system="Downloaders"
@@ -29,7 +29,7 @@
             Download System Backup
           </action-button>
         </o-button>
-        <iframe :src="backupUrl" class="hidden"></iframe>
+        <iframe :src="downloadUrl" class="hidden"></iframe>
         <o-button
           class="mt-2 sm:mt-0"
           icon-left="upload"
@@ -43,11 +43,11 @@
     <section class="mt-10">
       <div class="flex flex-row justify-between">
         <h2 class="text-xl">Logs</h2>
-        <o-button icon-left="download" variant="primary">
+        <o-button icon-left="download" @click="downloadLogs" variant="primary">
           Download Logs
         </o-button>
       </div>
-      <div class="h-72 overflow-y-scroll">
+      <div class="overflow-y-scroll h-72">
         <LogPane :logs="logs" />
       </div>
     </section>
@@ -56,9 +56,9 @@
       title="Restore from Backup"
       @close="stopRestoreBackup"
     >
-      <div class="bg-red-500 bg-opacity-50 rounded-md p-4">
+      <div class="p-4 bg-red-500 bg-opacity-50 rounded-md">
         <o-icon
-          class="text-4xl float-left mr-2"
+          class="float-left mr-2 text-4xl"
           icon="exclamation-circle"
         /><span
           >WARNING: Restoring from a backup will wipe the database and restore
@@ -72,9 +72,9 @@
           >.</span
         >
       </div>
-      <o-field class="text-center mt-4">
+      <o-field class="mt-4 text-center">
         <o-upload v-model="restoreFile" drag-drop>
-          <div class="border-dashed border-2 border-gray-300 p-4 rounded-lg">
+          <div class="p-4 border-2 border-gray-300 border-dashed rounded-lg">
             <p>
               <o-icon icon="upload" size="is-large"> </o-icon>
             </p>
@@ -82,11 +82,11 @@
           </div>
         </o-upload>
       </o-field>
-      <div class="w-full flex flex-row justify-center">
+      <div class="flex flex-row justify-center w-full">
         <div class="text-bold" v-if="restoreFile">{{ restoreFile.name }}</div>
       </div>
       <template v-slot:footer>
-        <div class="flex flex-row w-full justify-between">
+        <div class="flex flex-row justify-between w-full">
           <o-button
             @click="stopRestoreBackup"
             @keydown.space="stopRestoreBackup"
@@ -115,7 +115,7 @@
 import PageWrapper from "../components/PageWrapper.vue";
 import SystemStatus from "../components/SystemStatus.vue";
 import ActionButton from "../components/ActionButton.vue";
-import LogPane from "../components/LogPane.vue";
+import { LogPane } from "conductorr-lib";
 import APIUtil from "../util/APIUtil";
 import { DateTime } from "luxon";
 import Modal from "../components/Modal.vue";
@@ -128,7 +128,7 @@ export default {
     return {
       logs: [],
       backupMode: "",
-      backupUrl: "",
+      downloadUrl: "",
       tasks: [],
       showRestoreBackupModal: false,
       restoreFile: null,
@@ -142,7 +142,7 @@ export default {
       APIUtil.createNewBackup()
         .then((backupData) => {
           this.backupMode = "success";
-          this.backupUrl = backupData.url;
+          this.downloadUrl = backupData.url;
         })
         .catch((err) => {
           this.$oruga.notification.open({
@@ -159,6 +159,9 @@ export default {
             this.backupMode = "";
           }, 5000);
         });
+    },
+    downloadLogs() {
+      this.downloadUrl = `/api/v1/logFile?time=${new Date().getTime()}`
     },
     startRestoreBackup($event) {
       this.lastButton = $event.currentTarget;

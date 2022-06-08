@@ -390,6 +390,9 @@ func (dm *DownloaderManager) handleCompletedDownload(download ManagedDownload) {
 			Int("media_id", download.MediaID).
 			Int("download_id", download.ID).
 			Msg("error walking output directory")
+
+		updateDBStatus(download.Identifier, constant.StatusCError)
+		return
 	}
 
 	if videoPath == "" {
@@ -449,6 +452,7 @@ func (dm *DownloaderManager) handleCompletedDownload(download ManagedDownload) {
 		updateDBStatus(download.Identifier, constant.StatusCError)
 		return
 	}
+	
 	log.Info().
 		Int("download_id", download.ID).
 		Msgf("successfully copied %s to %s", videoPath, destFilepath)

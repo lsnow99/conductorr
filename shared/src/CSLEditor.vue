@@ -2,7 +2,7 @@
   <PrismEditor
     aria-label="Edit CSL"
     label="edit csl"
-    class="my-editor h-full"
+    class="h-full my-editor"
     v-model="computedValue"
     @keydown.enter.ctrl="enterPressed"
     @click="focusEditor"
@@ -22,7 +22,7 @@
 
   /* you must provide font-family font-size line-height. Example: */
   font-family: Fira code, Fira Mono, Consolas, Menlo, Courier, monospace;
-  font-size: 20px;
+  font-size: 16px;
   line-height: 1.5;
   padding: 5px;
   cursor: text;

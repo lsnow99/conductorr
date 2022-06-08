@@ -12,7 +12,7 @@ import (
 	"github.com/lsnow99/conductorr/internal/conductorr/api"
 	"github.com/lsnow99/conductorr/internal/conductorr/app"
 	"github.com/lsnow99/conductorr/internal/conductorr/dbstore"
-	_ "github.com/lsnow99/conductorr/internal/conductorr/logger"
+	"github.com/lsnow99/conductorr/internal/conductorr/logger"
 	"github.com/lsnow99/conductorr/internal/conductorr/scheduler"
 	"github.com/lsnow99/conductorr/internal/conductorr/settings"
 	"github.com/rs/zerolog/log"
@@ -21,6 +21,8 @@ import (
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
 
 func main() {
+	logger.Init()
+	settings.Init()
 
 	flag.Parse()
 	if *cpuprofile != "" {
@@ -146,6 +148,6 @@ func serveRoutes(port int) error {
 	}
 
 	log.Info().
-		Msgf("Listening on :%d\n", port)
+		Msgf("Listening on :%d", port)
 	return http.ListenAndServe(":"+strconv.Itoa(port), http.DefaultServeMux)
 }
