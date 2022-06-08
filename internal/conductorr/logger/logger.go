@@ -68,9 +68,10 @@ func Init() {
 }
 
 func (h LogHook) Run(e *zerolog.Event, level zerolog.Level, msg string) {
+	timestamp := time.Now()
+	e.Time("timestamp", timestamp)
+	
 	if level != zerolog.NoLevel && len(msg) > 0 {
-		timestamp := time.Now()
-		e.Time("timestamp", timestamp)
 		logs.sendChan <- LogMessage{
 			Level:     level,
 			Message:   msg,
