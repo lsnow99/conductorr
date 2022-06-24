@@ -1,22 +1,22 @@
 <template>
-  <page-wrapper>
+  <page-wrapper v-if="media">
     <section class="flex flex-row">
       <img
         v-if="media.poster"
-        class="hidden md:block rounded-md w-72"
+        class="hidden rounded-md md:block w-72"
         :src="media.poster"
         :alt="`Poster for ${media.title}`"
       />
-      <div class="ml-4 flex flex-1 flex-col" v-show="media.id">
+      <div class="flex flex-col flex-1 ml-4" v-show="media.id">
         <h1 class="text-4xl lg:text-6xl">
           <monitoring-toggle
             class="text-3xl lg:text-5xl"
             :monitoring="media.monitoring"
-            @toggle="toggleMonitoring(media)"
+            @toggle="toggleMonitoring(media!)"
           />
           {{ media.title }}
         </h1>
-        <div class="text-xl flex flex-row">
+        <div class="flex flex-row text-xl">
           <div
             class="w-1 h-full"
             :class="media.path_ok ? 'bg-green-600' : 'bg-red-600'"
@@ -24,21 +24,15 @@
           <span class="ml-2">{{ media.path }}</span>
         </div>
         <div
-          class="
-            py-4
-            flex flex-col
-            lg:flex-row lg:items-center
-            justify-between
-            px-4
-          "
+          class="flex flex-col justify-between px-4 py-4 lg:flex-row lg:items-center"
         >
           <div class="flex flex-row justify-evenly lg:items-center">
-            <div class="text-2xl lg:mr-4 text-gray-300">
+            <div class="text-2xl text-gray-300 lg:mr-4">
               {{ mediaYear(media) }}
             </div>
-            <div class="text-2xl lg:mx-4 text-gray-300">
+            <div class="text-2xl text-gray-300 lg:mx-4">
               <o-icon class="text-lg" icon="star" />
-              {{ media.imdb_rating }}%
+              {{`${media.imdb_rating}%`}}
             </div>
             <a
               :href="`https://www.imdb.com/title/${media.imdb_id}`"
@@ -59,7 +53,7 @@
               :position="tooltipPosition"
               label="Delete Media"
             >
-              <div class="text-2xl lg:mx-2 text-gray-300">
+              <div class="text-2xl text-gray-300 lg:mx-2">
                 <div
                   @click="showConfirmDeleteModal = true"
                   @keydown.space="showConfirmDeleteModal = true"
@@ -77,7 +71,7 @@
               :position="tooltipPosition"
               label="Edit Media"
             >
-              <div class="text-2xl lg:mx-2 text-gray-300">
+              <div class="text-2xl text-gray-300 lg:mx-2">
                 <div
                   @click="editMedia"
                   @keydown.space="editMedia"
@@ -95,7 +89,7 @@
               :position="tooltipPosition"
               label="Refresh Metadata"
             >
-              <div class="text-2xl lg:mx-2 text-gray-300">
+              <div class="text-2xl text-gray-300 lg:mx-2">
                 <div
                   v-if="!loadingRefreshMetadata"
                   @click="refreshMediaMetadata"
@@ -121,7 +115,7 @@
     </section>
     <section class="mt-4">
       <div
-        class="p-5 bg-gray-600 cursor-pointer rounded-md my-4"
+        class="p-5 my-4 bg-gray-600 rounded-md cursor-pointer"
         v-for="season in media.children"
         :key="season.id"
         @click="expand(season.id)"
@@ -131,7 +125,7 @@
         role="button"
         :aria-label="`Expand ${season.title}`"
       >
-        <div class="text-2xl flex flex-row justify-between">
+        <div class="flex flex-row justify-between text-2xl">
           <div>
             <monitoring-toggle
               class="text-xl"
@@ -149,7 +143,7 @@
           <div
             @click.prevent
             @click.stop
-            class="bg-gray-800 rounded-md p-1 cursor-default"
+            class="p-1 bg-gray-800 rounded-md cursor-default"
             v-show="expandedCfg[season.id]"
           >
             <episode-list
@@ -160,7 +154,7 @@
             />
           </div>
         </transition>
-        <div class="text-center mt-2">
+        <div class="mt-2 text-center">
           <o-icon
             v-if="loadingCfg[season.id]"
             size="large"
@@ -195,115 +189,105 @@
   </page-wrapper>
 </template>
 
-<script>
+<script setup lang="ts">
 import PageWrapper from "../components/PageWrapper.vue";
 import APIUtil from "../util/APIUtil";
-import MediaUtil from "../util/MediaUtil";
 import EditMedia from "../components/EditMedia.vue";
 import ConfirmDelete from "../components/ConfirmDelete.vue";
-import ManualSearchResults from "../components/ManualSearchResults.vue";
 import EpisodeList from "../components/EpisodeList.vue";
 import SearchActions from "../components/SearchActions.vue";
 import MonitoringToggle from "../components/MonitoringToggle.vue";
-import TabSaver from "../util/TabSaver";
 import DownloadStatusViewer from "../components/DownloadStatusViewer.vue";
+import { nextTick, onMounted, ref } from "vue";
+import { Media } from "@/types/api/media";
+import useTabSaver from "@/util/TabSaver";
+import useMediaUtil from "@/util/MediaUtil";
+import { useRouter, useRoute } from "vue-router";
 
-export default {
-  data() {
-    return {
-      media: {},
-      mediaID: 0,
-      releases: [],
-      loadingManualSearch: false,
-      loadingAutoSearch: false,
-      loadingRefreshMetadata: false,
-      loading: true,
-      tooltipPosition: "bottom",
-      showEditMediaModal: false,
-      showConfirmDeleteModal: false,
-      showManualReleasesModal: false,
-      expandedCfg: {},
-      loadedCfg: {},
-      loadingCfg: {},
-    };
-  },
-  mixins: [MediaUtil, TabSaver],
-  components: {
-    PageWrapper,
-    EditMedia,
-    ConfirmDelete,
-    ManualSearchResults,
-    EpisodeList,
-    SearchActions,
-    MonitoringToggle,
-    DownloadStatusViewer,
-  },
-  methods: {
-    closeDelete() {
-      this.restoreFocus();
-      this.showConfirmDeleteModal = false;
-    },
-    closeEditMedia() {
-      this.restoreFocus();
-      this.showEditMediaModal = false;
-    },
-    toggleMonitoring(media) {
-      APIUtil.setMonitoringMedia(media.id, !media.monitoring).then(() => {
-        this.loadMedia();
-      });
-    },
-    editMedia($event) {
-      this.lastButton = $event.currentTarget;
-      this.showEditMediaModal = true;
-    },
-    updateMedia({ profileID, pathID }) {
-      APIUtil.updateMedia(this.mediaID, profileID, pathID).then(() => {
-        this.loadMedia();
-        this.showEditMediaModal = false;
-      });
-    },
-    doDelete() {
-      APIUtil.deleteMedia(this.mediaID).then(() => {
-        this.$router.push({ name: "library" });
-      });
-    },
-    refreshMediaMetadata() {
-      this.loadingRefreshMetadata = true;
-      APIUtil.refreshMediaMetadata(this.mediaID)
-        .then(() => {
-          this.loadMedia();
-        })
-        .finally(() => {
-          this.loadingRefreshMetadata = false;
-        });
-    },
-    loadMedia() {
-      APIUtil.getMedia(this.mediaID)
-        .then((media) => {
-          this.media = media;
-        })
-        .finally(() => {
-          this.loading = false;
-        });
-    },
-    expand(id) {
-      this.expandedCfg[id] = !this.expandedCfg[id];
-      this.loadingCfg[id] = true;
-      setTimeout(() => {
-        this.loadedCfg[id] = true;
-        this.loadingCfg[id] = false;
-      }, 0);
-    },
-  },
-  created() {
-    this.mediaID = parseInt(this.$route.params.media_id);
-  },
-  mounted() {
-    this.loadMedia();
-    const screenWidth = window.innerWidth;
-    if (screenWidth < 768) {
-      this.tooltipPosition = "left";
-    }
-  },
+const route = useRoute();
+
+const media = ref<Media | null>(null);
+const mediaID = ref(parseInt(route.params.media_id as string));
+const loadingRefreshMetadata = ref(false);
+const loading = ref(true);
+const tooltipPosition = ref("bottom");
+const showEditMediaModal = ref(false);
+const showConfirmDeleteModal = ref(false);
+const expandedCfg = ref<{ [key: number]: boolean }>({});
+const loadedCfg = ref<{ [key: number]: boolean }>({});
+const loadingCfg = ref<{ [key: number]: boolean }>({});
+
+const { lastButton, restoreFocus } = useTabSaver();
+const { mediaYear } = useMediaUtil();
+
+const router = useRouter();
+
+const closeDelete = () => {
+  restoreFocus();
+  showConfirmDeleteModal.value = false;
 };
+const closeEditMedia = () => {
+  restoreFocus();
+  showEditMediaModal.value = false;
+};
+const loadMedia = () => {
+  APIUtil.getMedia(mediaID.value)
+    .then((media) => {
+      media.value = media;
+    })
+    .finally(() => {
+      loading.value = false;
+    });
+};
+const toggleMonitoring = (media: Media) => {
+  APIUtil.setMonitoringMedia(media.id, !media.monitoring).then(() => {
+    loadMedia();
+  });
+};
+const editMedia = ($event: Event) => {
+  lastButton.value = $event.currentTarget as HTMLElement;
+  showEditMediaModal.value = true;
+};
+const updateMedia = ({
+  profileID,
+  pathID,
+}: {
+  profileID: number;
+  pathID: number;
+}) => {
+  APIUtil.updateMedia(mediaID.value, profileID, pathID).then(() => {
+    loadMedia();
+    showEditMediaModal.value = false;
+  });
+};
+const doDelete = () => {
+  APIUtil.deleteMedia(mediaID.value).then(() => {
+    router.push({ name: "library" });
+  });
+};
+const refreshMediaMetadata = () => {
+  loadingRefreshMetadata.value = true;
+  APIUtil.refreshMediaMetadata(mediaID)
+    .then(() => {
+      loadMedia();
+    })
+    .finally(() => {
+      loadingRefreshMetadata.value = false;
+    });
+};
+const expand = (id: number) => {
+  expandedCfg.value[id] = !expandedCfg.value[id];
+  loadingCfg.value[id] = true;
+  nextTick(() => {
+    loadedCfg.value[id] = true;
+    loadingCfg.value[id] = false;
+  });
+};
+
+onMounted(() => {
+  loadMedia();
+  if (window.innerWidth < 768) {
+    tooltipPosition.value = "left";
+  }
+});
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <div class="my-2 w-full rounded-lg p-2 border-gray-100 border-1 bg-gray-700">
+  <div class="w-full p-2 my-2 bg-gray-700 border-gray-100 rounded-lg border-1">
     <div
       @click="doExpand"
       @keydown.enter="doExpand"
@@ -9,15 +9,7 @@
       :aria-label="ariaLabel"
       :aria-disabled="!collapsible"
       :class="collapsible ? 'cursor-pointer' : ''"
-      class="
-        text-3xl
-        w-full
-        select-none
-        border-gray-100 border-b-2
-        focus:outline-white focus:opacity-80
-        flex flex-row
-        justify-between
-      "
+      class="flex flex-row justify-between w-full text-3xl border-b-2 border-gray-100 select-none focus:outline-white focus:opacity-80"
     >
       <div>
         {{ title }}
@@ -35,79 +27,62 @@
       <o-button variant="primary" @click="$emit('edit', $event)">Edit</o-button>
     </div>
   </div>
-    <ConfirmDelete
-      v-model:active="showConfirmDeleteModal"
-      @delete="$emit('delete')"
-      @close="closeDelete"
-      :delete-message="deleteMessage"
-    />
+  <ConfirmDelete
+    v-model:active="showConfirmDeleteModal"
+    @delete="$emit('delete')"
+    @close="closeDelete"
+    :delete-message="deleteMessage"
+  />
 </template>
 
-<script>
+<script setup lang="ts">
 import ConfirmDelete from "./ConfirmDelete.vue";
-import TabSaver from "../util/TabSaver";
+import useTabSaver from "../util/TabSaver";
+import { computed, ref, watch } from "vue";
 
-export default {
-  data() {
-    return {
-      showConfirmDeleteModal: false,
-      isExpanded: this.expanded || false
-    };
-  },
-  props: {
-    title: {
-      type: String,
-      default: function () {
-        return "";
-      },
-    },
-    collapsible: {
-      type: Boolean,
-      default: function () {
-        return false;
-      },
-    },
-    deleteMessage: {
-      type: String,
-      default: function () {
-        return "";
-      },
-    },
-    expanded: {
-      type: Boolean,
-      default: function() {
-        return false
-      }
-    }
-  },
-  components: { ConfirmDelete },
-  emits: ["delete", "edit", "update:expanded"],
-  mixins: [TabSaver],
-  methods: {
-    closeDelete() {
-      this.showConfirmDeleteModal = false;
-      this.restoreFocus();
-    },
-    confirmDelete($event) {
-      this.lastButton = $event.currentTarget;
-      this.showConfirmDeleteModal = true;
-    },
-    doExpand() {
-      if (this.collapsible) {
-        this.$emit('update:expanded', !this.isExpanded)
-        this.isExpanded = !this.isExpanded
-      }
-    },
-  },
-  watch: {
-    expanded(v) {
-      this.isExpanded = v
-    }
-  },
-  computed: {
-    ariaLabel() {
-      return this.expanded ? "Collapse" : "Expand";
-    },
-  },
+const props = defineProps<{
+  title: string;
+  collapsible: boolean;
+  deleteMessage: string;
+  expanded: boolean;
+}>();
+
+const emit = defineEmits<{
+  (e: "update:expanded", expanded: boolean): void;
+  (e: "delete"): void;
+  (e: "edit", $event: Event): void;
+}>();
+
+const showConfirmDeleteModal = ref(false);
+const isExpanded = ref(props.expanded);
+
+const { lastButton, restoreFocus } = useTabSaver();
+
+const closeDelete = () => {
+  showConfirmDeleteModal.value = false;
+  restoreFocus();
 };
+
+const confirmDelete = ($event: Event) => {
+  lastButton.value = $event.currentTarget as HTMLElement;
+  showConfirmDeleteModal.value = true;
+};
+
+const doExpand = () => {
+  if (props.collapsible) {
+    emit("update:expanded", !isExpanded.value);
+    isExpanded.value = !isExpanded.value;
+  }
+};
+
+watch(
+  () => props.expanded,
+  (v: boolean) => {
+    isExpanded.value = v;
+  }
+);
+
+const ariaLabel = computed(() => {
+  isExpanded.value ? "Collapse" : "Expand";
+});
 </script>

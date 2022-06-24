@@ -1,24 +1,24 @@
 <template>
   <div
-    @click="$emit('click', media, $event)"
-    @keydown.space="$emit('click', media, $event)"
-    @keydown.enter="$emit('click', media, $event)"
+    @click="emit('click', media, $event)"
+    @keydown.space="emit('click', media, $event)"
+    @keydown.enter="emit('click', media, $event)"
     tabindex="0"
     role="button"
     :aria-label="media.title"
-    class="media-card relative"
+    class="relative media-card"
   >
     <!--Background poster-->
     <img :src="media.poster" :alt="`Banner image for movie ${media.title}`" />
 
     <!--Status bar-->
-    <div class="absolute top-0 h-3 bg-red-500 z-10" :style="`width: ${progressPercent}%`"></div>
+    <div class="absolute top-0 z-10 h-3 bg-red-500" :style="`width: ${progressPercent}%`"></div>
 
     <!--Gradient overlay-->
     <div class="absolute top-0 bottom-0 left-0 right-0 overlay">
       <!--Title and year-->
       <div class="flex flex-row h-full">
-        <div class="p-2 text-2xl self-end font-bold z-10">
+        <div class="z-10 self-end p-2 text-2xl font-bold">
           {{ `${media.title} (${year})` }}
         </div>
       </div>
@@ -86,39 +86,26 @@
 </style>
 
 <script setup lang="ts">
-import MediaUtil from "../util/MediaUtil";
+import useMediaUtil from "@/util/MediaUtil"
+import { Media } from "@/types/api/media"
+import { computed } from "vue";
 
-const props = defineProps({
-  media: {
-    type: 
+const props = defineProps<{
+  media: Media
+}>()
+
+const { mediaYear } = useMediaUtil()
+
+const year = computed(() => mediaYear(props.media))
+const progressPercent = computed(() => {
+  if (props.media.content_type === 'movie') {
+    return 100
+  } else if (props.media.content_type === 'series') {
+    return 57
   }
 })
 
-export default {
-  props: {
-    media: {
-      type: Object,
-      default: function () {
-        return {
-          title: "",
-          poster: "",
-        };
-      },
-    },
-  },
-  mixins: [MediaUtil],
-  emits: ["click"],
-  computed: {
-    year() {
-      return new Date(this.media.released_at).getUTCFullYear();
-    },
-    progressPercent() {
-      if (this.media.content_type == 'movie') {
-        return 100
-      } else if (this.media.content_type == 'series') {
-        return 34
-      }
-    }
-  },
-};
+const emit = defineEmits<{
+  (e: 'click', media: Media, $event: Event): void
+}>()
 </script>

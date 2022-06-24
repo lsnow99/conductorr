@@ -19,8 +19,9 @@
       <div :class="wrapperClass" class="p-2 overflow-y-scroll">
         <DownloadStatus
           v-for="download in orderedFinishedDownloads"
-          :key="download.identifier"
+          :key="download.id"
           :download="download"
+          @fda="tes"
         />
         <div
           v-if="orderedFinishedDownloads.length == 0"
@@ -31,10 +32,17 @@
       </div>
     </o-tab-item>
   </o-tabs>
+  <ConfirmDelete
+    v-model:active="showConfirmDeleteModal"
+    @delete="doDelete"
+    @close="closeDelete"
+    delete-message="Are you sure you want to delete this download?"
+  />
 </template>
 
 <script>
 import DownloadStatus from "../components/DownloadStatus.vue";
+import ConfirmDelete from "../components/ConfirmDelete.vue";
 import APIUtil from "../util/APIUtil";
 
 export default {
@@ -46,11 +54,11 @@ export default {
       },
     },
     wrapperClass: {
-        type: String,
-        default: function() {
-            return ""
-        }
-    }
+      type: String,
+      default: function () {
+        return "";
+      },
+    },
   },
   data() {
     return {
@@ -58,12 +66,18 @@ export default {
       finishedDownloads: [],
       refreshInterval: -1,
       loadingDownloads: false,
+      deletingIdentifier: null,
+      showConfirmDeleteModal: false
     };
   },
   components: {
     DownloadStatus,
+    ConfirmDelete
   },
   methods: {
+    tes() {
+      console.log('tes')
+    },
     refreshDownloads() {
       this.loadingDownloads = true;
       APIUtil.getActiveDownloads(this.mediaID).then((downloads) => {
@@ -73,60 +87,22 @@ export default {
         this.finishedDownloads = downloads;
       });
     },
-    getDownloadInfo(download) {
-      if (!download.status) {
-        return;
-      }
-
-      let fraction = 1;
-      if (download.full_size && download.bytes_left) {
-        fraction =
-          (download.full_size - download.bytes_left) / download.full_size;
-      }
-
-      switch (download.status) {
-        case "waiting":
-          return {
-            fraction,
-            status_text: "QUEUED",
-            background: "bg-purple-600",
-          };
-        case "paused":
-          return {
-            fraction,
-            status_text: "PAUSED",
-            background: "bg-yellow-400",
-          };
-        case "downloading":
-          return {
-            fraction,
-            status_text: "DOWNLOADING",
-            background: "bg-blue-400",
-          };
-        case "processing":
-        case "cprocessing":
-          return {
-            fraction: 1,
-            status_text: "PROCESSING",
-            background: "bg-gray-900",
-          };
-        case "done":
-          return {
-            fraction: 1,
-            status_text: "DONE",
-            background: "bg-green-600",
-          };
-        case "error":
-        case "cerror":
-          return {
-            fraction: 1,
-            status_text: "ERROR",
-            background: "bg-red-700",
-          };
-      }
-    },
     sortDownloads(a, b) {
       return b.id - a.id;
+    },
+    doDelete() {
+      alert('deleted' + this.deletingIdentifier)
+      this.closeDelete();
+    },
+    closeDelete() {
+      this.showConfirmDeleteModal = false;
+      this.restoreFocus();
+    },
+    confirmDelete($event, identifier) {
+      console.log('test')
+      this.lastButton = $event.currentTarget;
+      this.showConfirmDeleteModal = true;
+      this.deletingIdentifier = identifier;
     },
   },
   mounted() {

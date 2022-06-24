@@ -57,160 +57,155 @@
   />
 </template>
 
-<script>
-import APIUtil from "../util/APIUtil";
-import NewProfile from "../components/NewProfile.vue";
-import EditPath from "../components/EditPath.vue";
-import ActionButton from "../components/ActionButton.vue";
-import Modal from "../components/Modal.vue";
-import TabSaver from "../util/TabSaver";
+<script setup lang="ts">
+import APIUtil from "@/util/APIUtil";
+import NewProfile from "@/components/NewProfile.vue";
+import EditPath from "@/components/EditPath.vue";
+import ActionButton from "@/components/ActionButton.vue";
+import Modal from "@/components/Modal.vue";
+import useTabSaver from "@/util/TabSaver";
+import { computed, onMounted, ref, watch, WritableComputedRef } from "vue";
+import { Media } from "@/types/api/media";
+import { inject } from "vue";
+import { Path } from "@/types/api/path";
 
-export default {
-  data() {
-    return {
-      profiles: [],
-      paths: [],
-      profileID: null,
-      pathID: null,
-      showNewProfileModal: false,
-      showNewPathModal: false,
-      submittedOnce: false,
-    };
-  },
-  props: {
-    media: {
-      type: Object,
-      default: function () {
-        return {};
-      },
-    },
-    loading: {
-      type: Boolean,
-      default: function () {
-        return false;
-      },
-    },
-    active: {
-      type: Boolean,
-      default: function () {
-        return false;
-      },
-    },
-  },
-  components: { NewProfile, EditPath, ActionButton, Modal },
-  emits: ["close", "submit", "update:active"],
-  mixins: [TabSaver],
-  methods: {
-    save() {
-      this.submittedOnce = true;
-      if (this.profileID && this.pathID) {
-        this.$emit("submit", {
-          profileID: this.profileID,
-          pathID: this.pathID,
-        });
-      }
-    },
-    loadProfiles() {
-      APIUtil.getProfiles().then((profiles) => {
-        this.profiles = profiles;
-      });
-    },
-    loadPaths() {
-      APIUtil.getPaths().then((paths) => {
-        this.paths = paths;
-      });
-    },
-    newPath($event) {
-      this.showNewPathModal = true;
-      this.lastButton = $event.currentTarget;
-    },
-    newPathSubmitted(path) {
-      APIUtil.createNewPath(path.path, path.moviesDefault, path.seriesDefault)
-        .then(() => {
-          this.$oruga.notification.open({
-            duration: 3000,
-            message: `Created path ${path.path}`,
-            position: "bottom-right",
-            variant: "success",
-            closable: false,
-          });
-        })
-        .finally(() => {
-          this.showNewPathModal = false;
-          this.loadPaths();
-        });
-    },
-    newProfile($event) {
-      this.lastButton = $event.currentTarget;
-      this.showNewProfileModal = true;
-    },
-    closeNewPath() {
-      this.showNewPathModal = false;
-      this.restoreFocus();
-    },
-    closeNewProfile() {
-      this.showNewProfileModal = false;
-      this.restoreFocus();
-    },
-    newProfileSubmitted() {
-      this.loadProfiles();
-      this.showNewProfileModal = false;
-      this.restoreFocus();
-    },
-  },
-  mounted() {
-    this.loadProfiles();
-    this.loadPaths();
-  },
-  watch: {
-    media: {
-      handler: function (newVal) {
-        if (newVal) {
-          this.profileID = newVal.profile_id;
+const oruga = inject("oruga");
 
-          // Set the default path
-          if (!this.media.path_id) {
-            this.paths.forEach((elem) => {
-              if (
-                (elem.movies_default && this.media.content_type == "movie") ||
-                (elem.series_default && this.media.content_type == "series")
-              ) {
-                this.pathID = elem.id;
-              }
-            });
-          } else {
-            this.pathID = this.media.path_id;
-          }
-        }
-      },
-      immediate: true,
-    },
-  },
-  computed: {
-    computedActive: {
-      get() {
-        return this.active;
-      },
-      set(v) {
-        this.$emit("update:active", v);
-      },
-    },
-    profileVariant() {
-      if (!this.submittedOnce) {
-        return "";
-      }
-      if (!this.profileID) {
-        return "danger";
-      }
-    },
-    pathVariant() {
-      if (!this.submittedOnce) {
-        return "";
-      }
-      if (!this.pathID) {
-        return "danger";
-      }
-    },
-  },
+const { lastButton, restoreFocus } = useTabSaver();
+
+const profiles = ref([]);
+const paths = ref([]);
+const profileID = ref(null);
+const pathID = ref(null);
+const showNewProfileModal = ref(false);
+const showNewPathModal = ref(false);
+const submittedOnce = ref(false);
+
+const props = defineProps<{
+  media: Media;
+  loading: boolean;
+  active: boolean;
+}>();
+
+const emit = defineEmits<{
+  (e: "close"): void;
+  (e: "submit", data: { profileID: number; pathID: number }): void;
+  (e: "update:active", active: boolean): void;
+}>();
+
+const save = () => {
+  submittedOnce.value = true;
+  if (profileID.value && pathID.value) {
+    emit("submit", {
+      profileID: profileID.value,
+      pathID: pathID.value,
+    });
+  }
 };
+
+const loadProfiles = async () => {
+  profiles.value = await APIUtil.getProfiles();
+};
+
+const loadPaths = async () => {
+  paths.value = await APIUtil.getPaths();
+};
+
+const newPath = ($event: Event) => {
+  showNewPathModal.value = true;
+  lastButton.value = $event.currentTarget as HTMLElement;
+};
+
+const newPathSubmitted = async (path: Path) => {
+  try {
+    await APIUtil.createNewPath(
+      path.path,
+      path.moviesDefault,
+      path.seriesDefault
+    );
+    oruga.notification.open({
+      duration: 3000,
+      message: `Created path ${path.path}`,
+      position: "bottom-right",
+      variant: "success",
+      closable: false,
+    });
+  } finally {
+    showNewPathModal.value = false;
+    loadPaths();
+  }
+};
+
+const newProfile = ($event: Event) => {
+  lastButton.value = $event.currentTarget as HTMLElement;
+  showNewProfileModal.value = true;
+};
+
+const closeNewPath = () => {
+  showNewPathModal.value = false;
+  restoreFocus();
+};
+
+const closeNewProfile = () => {
+  showNewProfileModal.value = false;
+  restoreFocus();
+};
+
+const newProfileSubmitted = () => {
+  loadProfiles();
+  showNewProfileModal.value = false;
+  restoreFocus();
+};
+
+onMounted(() => {
+  loadProfiles();
+  loadPaths();
+});
+
+watch(() => props.media, (newVal: Media) => {
+  if(newVal) {
+    profileID.value = newVal.profile_id
+
+    // Set the default path
+    if (!props.media.path_id) {
+      paths.value.forEach((elem: Path) => {
+        if (
+          (elem.movies_default && props.media.content_type == "movie") ||
+          (elem.series_default && props.media.content_type == "series")
+        ) {
+          pathID.value = elem.id;
+        }
+      })
+    } else {
+      pathID.value = props.media.path_id
+    }
+  }
+}, {immediate: true})
+
+const computedActive: WritableComputedRef<boolean> = computed({
+  get(): boolean {
+    return props.active
+  },
+  set(v): void {
+    emit("update:active", v)
+  }
+})
+
+const profileVariant = computed(() => {
+  if(!submittedOnce.value) {
+    return ""
+  }
+  if (!profileID.value) {
+    return "danger"
+  }
+})
+
+const pathVariant = computed(() => {
+  if(!submittedOnce.value) {
+    return ""
+  }
+  if (!pathID.value) {
+    return "danger"
+  }
+})
 </script>

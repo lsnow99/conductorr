@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import viteCompression from "vite-plugin-compression";
+import tsconfigPaths from 'vite-tsconfig-paths'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -10,6 +11,9 @@ export default defineConfig({
       algorithm: "brotliCompress",
       ext: "br",
     }),
+    tsconfigPaths({
+      extensions: ["ts", "tsx", "js", "jsx", "mjs", "vue"]
+    })
   ],
   server: {
     proxy: {

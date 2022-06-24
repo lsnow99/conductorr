@@ -13,6 +13,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/lsnow99/conductorr/pkg/constant"
+	"github.com/rs/zerolog/log"
 )
 
 type NZBGet struct {
@@ -160,6 +161,8 @@ func (n *NZBGet) AddRelease(release Release) (string, error) {
 	if code <= 0 {
 		return "", errors.New("error adding media to nzbget")
 	}
+
+	log.Info().Int("nzbid", code).Msg("new download successfully sent to nzbget")
 
 	return strconv.Itoa(code), nil
 }
