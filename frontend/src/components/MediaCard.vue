@@ -85,8 +85,14 @@
 }
 </style>
 
-<script>
+<script setup lang="ts">
 import MediaUtil from "../util/MediaUtil";
+
+const props = defineProps({
+  media: {
+    type: 
+  }
+})
 
 export default {
   props: {
