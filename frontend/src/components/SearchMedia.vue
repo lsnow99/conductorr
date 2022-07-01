@@ -1,5 +1,5 @@
 <template>
-  <div class="md:flex flex-col md:flex-row justify-between items-center">
+  <div class="flex-col items-center justify-between md:flex md:flex-row">
     <o-field label="Search" class="flex-1">
       <o-input
         @change="search"
@@ -12,10 +12,10 @@
         ref="searchbar"
       />
     </o-field>
-    <div class="flex my-2 md:my-0 self-end md:ml-4 justify-center">
+    <div class="flex self-end justify-center my-2 md:my-0 md:ml-4">
       <o-button variant="primary" @click="search">Search</o-button>
     </div>
-    <div class="md:my-0 md:ml-4 my-2 flex justify-center self-end">
+    <div class="flex self-end justify-center my-2 md:my-0 md:ml-4">
       <radio-group
         v-model="computedContentType"
         name="contentType"
@@ -60,146 +60,103 @@
   <slot name="empty" v-else />
 </template>
 
-<script>
-import { nextTick } from "vue";
+<script setup lang="ts">
+import { Component, computed, nextTick, onMounted, ref, VueElement, watch, WritableComputedRef } from "vue";
 import RadioGroup from "./RadioGroup.vue";
+import { ContentType, MediaSearchResult } from "@/types/api/media";
 
-export default {
-  data() {
-    return {
-      page: 1,
-      lastSearchTime: null,
-    };
+const page = ref(1)
+const lastSearchTime = ref<Date | null>(null)
+const searchbar = ref<Element | null>(null)
+
+const props = withDefaults(defineProps<{
+  currentPage: number,
+  contentType: ContentType | null,
+  results: MediaSearchResult[],
+  loading: boolean,
+  totalResults: number,
+  perPage: number,
+  resultsWrapperClass: string,
+  query: string
+}>(), {
+  currentPage: 1
+})
+
+const emit = defineEmits<{
+  (e: "close"): void
+  (e: "search", query: string, contentType: ContentType, page: number): void
+  (e: "update:query", query: string): void
+  (e: "update:currentPage", currentPage: number): void
+  (e: "update:contentType", contentType: ContentType): void
+}>()
+
+const computedQuery: WritableComputedRef<string> = computed({
+  get(): string {
+    return props.query
   },
-  props: {
-    currentPage: {
-      type: Number,
-      default: function() {
-        return 1
-      }
-    },
-    contentType: {
-      type: String,
-      default: function() {
-        return ''
-      }
-    },
-    mediaType: {
-      type: String,
-      default: function () {
-        return "";
-      },
-    },
-    results: {
-      type: Array,
-      default: function () {
-        return [];
-      },
-    },
-    loading: {
-      type: Boolean,
-      default: function () {
-        return false;
-      },
-    },
-    totalResults: {
-      type: Number,
-      default: function () {
-        return 0;
-      },
-    },
-    perPage: {
-      type: Number,
-      default: function() {
-        return 0;
-      }
-    },
-    resultsWrapperClass: {
-      type: String,
-      default: function () {
-        return "";
-      },
-    },
-    query: {
-      type: String,
-      default: function () {
-        return "";
-      },
-    },
+  set(v: string) {
+    emit("update:query", v)
+  }
+})
+
+const computedCurrentPage: WritableComputedRef<number> = computed({
+  get() {
+    return props.currentPage
   },
-  components: {
-    RadioGroup,
+  set(v) {
+    emit("update:currentPage", v)
+  }
+})
+
+const computedContentType: WritableComputedRef<ContentType | null> = computed({
+  get() {
+    return props.contentType
   },
-  emits: ["close", "search", "selected-media", "update:query", "update:currentPage", "update:contentType"],
-  methods: {
-    search(disableDebounce) {
-      const now = new Date();
-      if (
-        !this.lastSearchTime ||
-        (now.getTime() - this.lastSearchTime.getTime() > 300 ||
-          disableDebounce)
-      ) {
-        this.$emit("search", this.computedQuery, this.computedContentType, this.page);
-        this.lastSearchTime = now;
-      }
-    },
-    clear() {
-      this.computedQuery = "";
-      this.search();
-    },
-    pageChanged(nPage) {
-      this.page = nPage
-      this.search();
+  set(v: ContentType) {
+    emit("update:contentType", v)
+  }
+})
+
+const search = (disableDebounce = false) => {
+  const now = new Date();
+  if ((
+    !lastSearchTime.value || (now.getTime() - lastSearchTime.value.getTime() > 300) || disableDebounce) && computedContentType.value) {
+      emit("search", computedQuery.value, computedContentType.value, page.value)
+      lastSearchTime.value = now;
     }
-  },
-  mounted() {
-    const screenWidth = window.innerWidth;
-    if (screenWidth >= 768) {
-      nextTick(() => {
-        this.$refs.searchbar.$el.firstChild.focus();
-      });
-    }
-    this.search();
-  },
-  watch: {
-    computedContentType: function () {
-      this.page = 1;
-      this.computedCurrentPage = 1;
-      this.search(true);
-    },
-    computedQuery: function (newVal, oldVal) {
-      this.page = 1;
-      this.computedCurrentPage = 1;
-      if (newVal === "" && oldVal != "") {
-        this.search();
-      }
-    },
-  },
-  computed: {
-    computedQuery: {
-      get() {
-        return this.query;
-      },
-      set(v) {
-        this.$emit("update:query", v);
-      },
-    },
-    computedCurrentPage: {
-      get() {
-        return this.currentPage;
-      },
-      set(v) {
-        this.$emit("update:currentPage", v)
-      }
-    },
-    computedContentType: {
-      get() {
-        return this.contentType;
-      },
-      set(v) {
-        this.$emit("update:contentType", v)
-      }
-    }
-  },
-};
+}
+
+const clear = () =>  {
+  computedQuery.value = "";
+  search()
+}
+
+const pageChanged = (nPage: number) => {
+  page.value = nPage
+  search()
+}
+
+onMounted(() => {
+  const screenWidth = window.innerWidth;
+  if (screenWidth >= 768) {
+    nextTick(() => {
+      searchbar.value?.firstChild.focus();
+    })
+  }
+  search();
+})
+
+watch(computedContentType, () => {
+  page.value = 1
+  computedCurrentPage.value = 1
+  search(true);
+})
+
+watch(computedQuery, (newVal, oldVal) => {
+  page.value = 1
+  computedCurrentPage.value = 1;
+  if (newVal === "" && oldVal !== "") {
+    search();
+  }
+})
 </script>

@@ -4,77 +4,63 @@
   </div>
 </template>
 
-<script>
+<script setup lang="ts">
+import { computed, inject, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { useRouter } from "vue-router";
+import store from "./store";
 import APIUtil from "./util/APIUtil";
 import EventBus from "./util/EventBus";
 
-export default {
-  data() {
-    return {
-      initialized: false,
-      interval: 0,
-    };
-  },
-  methods: {
-    getStatus() {
-      if (this.loggedIn) {
-        APIUtil.getStatus().then((status) => {
-          this.$store.commit("setStatus", status);
-        });
-      }
-    },
-  },
-  mounted() {
-    APIUtil.checkAuth().then((isLoggedIn) => {
-      this.$store.commit("setLoggedIn", isLoggedIn);
-      if (isLoggedIn) {
-        // this.$router.push({ name: "home" });
-      } else {
-        this.$router.push({ name: "auth" });
-      }
-      this.initialized = true;
-    });
-    this.getStatus();
-    // TODO: Websocket this
-    // this.interval = setInterval(() => {
-    //   this.getStatus();
-    // }, 5000);
-    // Whenever the user explicitly chooses dark mode
-    localStorage.theme = "dark";
-    if (
-      localStorage.theme === "dark" ||
-      (!("theme" in localStorage) &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches)
-    ) {
-      document.documentElement.classList.add("dark");
-    } else {
+const initialized = ref(false)
+const interval = ref(0)
+
+const router = useRouter();
+const oruga = inject("oruga")
+
+const loggedIn = computed(() => {
+  return store.getters.loggedIn
+})
+
+const getStatus = async() => {
+  if (loggedIn) {
+    const status = await APIUtil.getStatus()
+    store.commit("setStatus", status)
+  }
+}
+
+onMounted(async() => {
+  const isLoggedIn = await APIUtil.checkAuth()
+  store.commit("setLoggedIn", isLoggedIn)
+  if (!isLoggedIn) {
+    router.push({name: "auth"})
+  }
+
+  getStatus()
+
+  localStorage.theme = "dark";
+  if (localStorage.theme === "dark" || (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+    document.documentElement.classList.add("dark")
+  } else {
       document.documentElement.classList.remove("dark");
-    }
-  },
-  computed: {
-    loggedIn() {
-      return this.$store.getters.loggedIn;
-    },
-  },
-  watch: {
-    loggedIn: function (newVal) {
-      if (!newVal) {
-        this.$router.push({ name: "home" });
-      }
-    },
-  },
-  created() {
-    EventBus.on("notification", (data) => {
-      this.$oruga.notification.open(data);
-    });
-    EventBus.on("forceLogout", () => {
-      this.$router.push({name: "auth"})
-    });
-  },
-  beforeUnmount() {
-    clearInterval(this.interval);
-  },
-};
+  }
+})
+
+watch(loggedIn, (newVal) => {
+  if (!newVal) {
+    router.push({ name: "home" });
+  }
+})
+
+EventBus.on("notification", (data) => {
+  oruga.notification.open(data);
+});
+EventBus.on("forceLogout", () => {
+  router.push({name: "auth"})
+});
+
+onBeforeUnmount(() => {
+  clearInterval(interval.value)
+})
 </script>
 
 <style>

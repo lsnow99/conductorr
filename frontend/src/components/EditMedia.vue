@@ -75,8 +75,8 @@ const { lastButton, restoreFocus } = useTabSaver();
 
 const profiles = ref([]);
 const paths = ref([]);
-const profileID = ref(null);
-const pathID = ref(null);
+const profileID = ref<number | null>(null);
+const pathID = ref<number | null>(null);
 const showNewProfileModal = ref(false);
 const showNewPathModal = ref(false);
 const submittedOnce = ref(false);
@@ -120,8 +120,8 @@ const newPathSubmitted = async (path: Path) => {
   try {
     await APIUtil.createNewPath(
       path.path,
-      path.moviesDefault,
-      path.seriesDefault
+      path.movies_default,
+      path.series_default
     );
     oruga.notification.open({
       duration: 3000,

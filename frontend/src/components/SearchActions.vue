@@ -50,118 +50,102 @@
     />
 </template>
 
-<script>
+<script setup lang="ts">
 import APIUtil from "../util/APIUtil";
 import ManualSearchResults from "./ManualSearchResults.vue";
-import TooltipUtil from "../util/TooltipUtil";
-import TabSaver from "../util/TabSaver";
+import { computed, inject, onMounted, ref } from "vue";
+import { TooltipPosition } from "@/types/tooltip"
+import { useTabSaver, useTooltip } from "@/util"
 
-export default {
-  data() {
-    return {
-      releases: [],
-      showManualReleasesModal: false,
-      tooltipPosition: "bottom",
-      loadingManualSearch: false,
-      loadingAutoSearch: false,
-    };
-  },
-  props: {
-    mediaID: {
-      type: Number,
-      default: function () {
-        return undefined;
-      },
-    },
-    size: {
-      type: String,
-      default: function () {
-        return "";
-      },
-    },
-  },
-  components: { ManualSearchResults },
-  mixins: [TooltipUtil, TabSaver],
-  methods: {
-    searchManual() {
-      this.loadingManualSearch = true;
-      APIUtil.searchReleasesManual(this.mediaID)
-        .then((releases) => {
-          this.releases = releases;
-          this.showManualReleasesModal = true;
-        })
-        .catch((re) => {
-          this.$oruga.notification.open({
-            duration: 3000,
-            message: `Error searching: ${re.msg}`,
-            variant: "danger",
-            closable: false,
-            position: "bottom-right",
-          });
-        })
-        .finally(() => {
-          this.loadingManualSearch = false;
-          this.resetTooltips();
-        });
-    },
-    searchAuto() {
-      this.loadingAutoSearch = true;
-      APIUtil.searchReleasesAuto(this.mediaID)
-        .then((num) => {
-          if (num > 0) {
-            this.$oruga.notification.open({
-              duration: 3000,
-              message: `Successfully queued ${num} releases for auto downloading`,
-              variant: "success",
-              closable: false,
-              position: "bottom-right",
-            });
-          } else {
-            this.$oruga.notification.open({
-              duration: 3000,
-              message: `Could not find any releases to queue`,
-              variant: "danger",
-              closable: false,
-              position: "bottom-right",
-            });
-          }
-        })
-        .catch((re) => {
-          this.$oruga.notification.open({
-            duration: 3000,
-            message: `Error searching: ${re.msg}`,
-            variant: "danger",
-            closable: false,
-            position: "bottom-right",
-          });
-        })
-        .finally(() => {
-          this.loadingAutoSearch = false;
-          this.resetTooltips();
-        });
-    },
-    closeManualReleases() {
-      this.showManualReleasesModal = false
-      this.restoreFocus()
+const oruga = inject('oruga')
+
+const props = defineProps<{
+  mediaID: number,
+  size: string
+}>()
+
+const releases = ref([])
+const showManualReleasesModal = ref(false)
+const tooltipPosition = ref<TooltipPosition>("bottom")
+const loadingManualSearch = ref(false)
+const loadingAutoSearch = ref(false)
+
+const { restoreFocus } = useTabSaver()
+const { tooltipActive, resetTooltips } = useTooltip()
+
+const searchManual = async() => {
+  loadingManualSearch.value = true
+  try {
+    const releases = await APIUtil.searchReleasesManual(props.mediaID)
+  } catch (re) {
+    oruga.notification.open({
+      duration: 3000,
+      message: `Error searching: ${re.msg}`,
+      variant: "danger",
+      closable: false,
+      position: "bottom-right",
+    });
+  } finally {
+    loadingManualSearch.value = false
+    resetTooltips()
+  }
+}
+
+const searchAuto = async() => {
+  loadingAutoSearch.value = true;
+  try {
+    const num = await APIUtil.searchReleasesAuto(props.mediaID)
+    if (num > 0) {
+      oruga.notification.open({
+        duration: 3000,
+        message: `Successfully queued ${num} releases for auto downloading`,
+        variant: "success",
+        closable: false,
+        position: "bottom-right",
+      });
+    } else {
+      oruga.notification.open({
+        duration: 3000,
+        message: `Could not find any releases to queue`,
+        variant: "danger",
+        closable: false,
+        position: "bottom-right",
+      });
     }
-  },
-  mounted() {
-    const screenWidth = window.innerWidth;
-    if (screenWidth < 768) {
-      this.tooltipPosition = "left";
-    }
-  },
-  computed: {
-    fontSize() {
-      switch (this.size) {
-        case "small":
-          return "text-md";
-        case "large":
-          return "text-2xl";
-        default:
-          return "text-lg";
-      }
-    },
-  },
-};
+  } catch (re) {
+    oruga.notification.open({
+      duration: 3000,
+      message: `Error searching: ${re.msg}`,
+      variant: "danger",
+      closable: false,
+      position: "bottom-right",
+    });
+  } finally {
+    loadingAutoSearch.value = false;
+    resetTooltips();
+  }
+}
+
+const closeManualReleases = () => {
+  showManualReleasesModal.value = false;
+  restoreFocus()
+}
+
+onMounted(() => {
+  const screenWidth = window.innerWidth;
+  if (screenWidth < 768) {
+    tooltipPosition.value = "left";
+  }
+})
+
+const fontSize = computed(() => {
+  switch(props.size) {
+    case "small":
+      return "text-md"
+    case "large":
+      return "text-2xl"
+    default:
+      return "text-lg"
+  }
+})
 </script>

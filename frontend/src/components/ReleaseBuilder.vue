@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="flex flex-row justify-between text-2xl mt-2">
+    <div class="flex flex-row justify-between mt-2 text-2xl">
       <div>{{ title }}</div>
       <div>
         <o-tooltip
@@ -11,7 +11,7 @@
         >
           <o-icon
             @click="clear"
-            class="text-2xl cursor-pointer mx-1"
+            class="mx-1 text-2xl cursor-pointer"
             icon="times-circle"
           />
         </o-tooltip>
@@ -23,14 +23,14 @@
         >
           <o-icon
             @click="randomize"
-            class="text-2xl cursor-pointer mx-1"
+            class="mx-1 text-2xl cursor-pointer"
             icon="dice"
           />
         </o-tooltip>
       </div>
     </div>
     <div class="flex flex-row">
-      <div class="flex flex-1 flex-col p-4">
+      <div class="flex flex-col flex-1 p-4">
         <o-field label="Title" class="min-w-full">
           <o-input
             type="text"
@@ -88,7 +88,7 @@
           </o-select>
         </o-field>
       </div>
-      <div class="flex flex-1 flex-col p-4">
+      <div class="flex flex-col flex-1 p-4">
         <o-field label="Content Type">
           <o-select
             v-model="computedRelease.content_type"
@@ -154,12 +154,17 @@
 }
 </style>
 
-<script>
-import { nextTick } from "vue";
+<script setup lang="ts">
+import { computed, nextTick, onMounted, ref, watch, WritableComputedRef } from "vue";
 import APIUtil from "../util/APIUtil";
 import { RESOLUTION_TYPES, RIP_TYPES, ENCODING_TYPES } from "../util/Constants";
+import { TooltipPosition } from "@/types/tooltip";
+import { Release } from "@/types/api/release"
 
-const EXAMPLE_MOVIES = [
+const encodingTypes = ref(ENCODING_TYPES)
+const ripTypes = ref(RIP_TYPES)
+const resolutionTypes = ref(RESOLUTION_TYPES)
+const exampleMovies = ref<Release[]>([
   {
     title: "Manos.The.Hands.of.Fate.1966.THEATRiCAL.1080p.BluRay.x264-SADPANDA",
     resolution: "1080p",
@@ -198,51 +203,58 @@ const EXAMPLE_MOVIES = [
     rip_type: "TELESYNC",
     content_type: "movie",
   },
-];
+]);
 
-export default {
-  data() {
-    return {
-      RESOLUTION_TYPES,
-      RIP_TYPES,
-      ENCODING_TYPES,
-      size: null,
-      indexers: [],
-      tooltipPosition: "bottom",
-    };
+const size = ref<number | null>(null)
+const indexers = ref<Indexer[]>([])
+const tooltipPosition = ref<TooltipPosition>("bottom")
+
+const props = defineProps<{
+  modelValue: Release,
+  title: string
+}>()
+
+const emit = defineEmits<{
+  (e: "update:modelValue", newVal: Release): void
+}>()
+
+
+const computedRelease: WritableComputedRef<Release> = computed({
+  get() {
+    const release = props.modelValue;
+    if (release.sizeUnit) {
+      return release;
+    }
+    let sizes = ["B", "KB", "MB", "GB", "TB"];
+    if (release.size == 0 || !release.size || isNaN(release.size)) {
+      return release;
+    }
+    let i = Math.floor(Math.log(release.size) / Math.log(1024));
+    size.value = Math.round(release.size / Math.pow(1024, i));
+    release.sizeUnit = sizes[i];
+    return release;
   },
-  props: {
-    modelValue: {
-      type: Object,
-      default: function () {
-        return {};
-      },
-    },
-    title: {
-      type: String,
-      default: function () {
-        return "";
-      },
-    },
-  },
-  emits: ["update:modelValue"],
-  methods: {
-    randomize() {
-      const release =
-        EXAMPLE_MOVIES[Math.floor(Math.random() * EXAMPLE_MOVIES.length)];
-      if (release.title == this.computedRelease.title) {
-        this.randomize();
+  set(newVal) {
+    emit("update:modelValue", newVal)
+  }
+})
+
+const randomize = () => {
+  const release =
+        exampleMovies.value[Math.floor(Math.random() * exampleMovies.value.length)];
+      if (release.title == computedRelease.value.title) {
+        randomize();
         return;
       }
-      const size = Math.floor(Math.random() * 15 * Math.pow(2, 30));
-      release.size = size;
+      const randSize = Math.floor(Math.random() * 15 * Math.pow(2, 30));
+      release.size = randSize;
       release.sizeUnit = undefined;
       release.runtime = Math.floor(Math.random() * 300);
       release.age = Math.floor(Math.random() * 3000);
 
-      if (this.indexers && this.indexers.length > 0) {
+      if (indexers.value && indexers.value.length > 0) {
         const randomIndexer =
-          this.indexers[Math.floor(Math.random() * this.indexers.length)];
+          indexers.value[Math.floor(Math.random() * indexers.value.length)];
         release.indexer = randomIndexer.name;
         release.download_type = randomIndexer.download_type;
         if (release.download_type == "torrent") {
@@ -252,96 +264,82 @@ export default {
         }
       }
 
-      this.computedRelease = release;
-    },
-    clear() {
-      this.size = null
-      this.$emit('update:modelValue', {})
-    },
-    updateSize() {
-      if(this.size == null) {
-        return
-      }
-      let newRelease = this.computedRelease;
-      newRelease.size = this.size;
-      switch (newRelease.sizeUnit) {
-        case "B":
-          break;
-        case "KB":
-          newRelease.size *= Math.pow(2, 10);
-          break;
-        case "MB":
-          newRelease.size *= Math.pow(2, 20);
-          break;
-        case "GB":
-          newRelease.size *= Math.pow(2, 30);
-          break;
-        case "TB":
-          newRelease.size *= Math.pow(2, 40);
-          break;
-        default:
-          break;
-      }
-      this.$emit("update:modelValue", newRelease);
-    },
-    forceInt(obj, field, fallback=-1) {
-      const val = parseInt(obj[field])
-      if (val === NaN) {
-        obj[field] = fallback
-      } else {
-        obj[field] = val
-      }
-    },
-    numberChanged() {
-      nextTick(() => {
-        this.forceInt(this.computedRelease, 'seeders')
-        this.forceInt(this.computedRelease, 'age')
-        this.forceInt(this.computedRelease, 'runtime')
-        this.forceInt(this.computedRelease, 'size')
-      })
-    }
-  },
-  mounted() {
-    APIUtil.getIndexers().then((indexers) => {
-      this.indexers = indexers;
-      this.randomize()
-    });
-    const screenWidth = window.innerWidth;
-    if (screenWidth < 768) {
-      this.tooltipPosition = "left";
-    }
-  },
-  computed: {
-    computedRelease: {
-      get() {
-        const release = this.modelValue;
-        if (release.sizeUnit) {
-          return release;
-        }
-        let sizes = ["B", "KB", "MB", "GB", "TB"];
-        if (release.size == 0 || isNaN(release.size)) {
-          return release;
-        }
-        let i = parseInt(Math.floor(Math.log(release.size) / Math.log(1024)));
-        this.size = Math.round(release.size / Math.pow(1024, i), 2);
-        release.sizeUnit = sizes[i];
-        return release;
-      },
-      set(newVal) {
-        this.$emit("update:modelValue", newVal);
-      },
-    },
-    sizeUnit() {
-      return this.modelValue.sizeUnit;
-    },
-  },
-  watch: {
-    sizeUnit() {
-      this.updateSize();
-    },
-    size() {
-      this.updateSize();
-    },
-  },
-};
+      computedRelease.value = release;
+}
+
+const clear = () => {
+  size.value = null
+  emit('update:modelValue', {})
+}
+
+const updateSize = () => {
+  if (!size.value) {
+    return
+  }
+  let newRelease = computedRelease.value;
+  newRelease.size = size.value;
+  switch (newRelease.sizeUnit) {
+    case "B":
+      break;
+    case "KB":
+      newRelease.size *= Math.pow(2, 10);
+      break;
+    case "MB":
+      newRelease.size *= Math.pow(2, 20);
+      break;
+    case "GB":
+      newRelease.size *= Math.pow(2, 30);
+      break;
+    case "TB":
+      newRelease.size *= Math.pow(2, 40);
+      break;
+    default:
+      break;
+  }
+  emit("update:modelValue", newRelease);
+}
+
+
+const forceInt = (x: string | number | undefined | null, fallback=-1) => {
+  const val = parseInt(`${x}`)
+  if (val === NaN) {
+    return fallback
+  }
+  return val
+}
+
+const numberChanged = () => {
+  nextTick(() => {
+    computedRelease.value.seeders = forceInt(computedRelease.value.seeders)
+    computedRelease.value.age = forceInt(computedRelease.value.age)
+    computedRelease.value.runtime = forceInt(computedRelease.value.runtime)
+    computedRelease.value.size = forceInt(computedRelease.value.size)
+  })
+}
+
+onMounted(async() => {
+  try {
+    const loadedIndexers = await APIUtil.getIndexers()
+    indexers.value = loadedIndexers
+    randomize()
+  } catch (error) {
+    // TODO: error to user
+  }
+  const screenWidth = window.innerWidth;
+  if (screenWidth < 768) {
+    tooltipPosition.value = "left";
+  }
+})
+
+const sizeUnit = computed(() => {
+  return props.modelValue.sizeUnit
+})
+
+watch(sizeUnit, () => {
+  updateSize()
+})
+
+watch(size, () => {
+  updateSize()
+})
 </script>

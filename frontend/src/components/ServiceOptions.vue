@@ -27,32 +27,18 @@
 }
 </style>
 
-<script>
-export default {
-    props: {
-        modelValue: {
-            type: String,
-            default: function() {
-                return undefined
-            }
-        },
-        services: {
-            type: Array,
-            default: function() {
-                return []
-            }
-        }
-    },
-    emits: ['update:modelValue'],
-    computed: {
-        computedValue: {
-            get() {
-                return this.modelValue
-            },
-            set(newVal) {
-                this.$emit('update:modelValue', newVal)
-            }
-        }
-    }
-}
+<script setup lang="ts">
+import useComputedValue from "@/util/ComputedValue"
+import { Service, ServiceIdentifier } from "@/types/api/service"
+
+const props = defineProps<{
+    modelValue: string,
+    services: Service[]
+}>()
+
+const emit = defineEmits<{
+    (e: "update:modelValue", newVal: ServiceIdentifier): void
+}>()
+
+const { computedValue } = useComputedValue<ServiceIdentifier>(props, emit)
 </script>

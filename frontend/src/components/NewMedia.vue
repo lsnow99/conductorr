@@ -11,19 +11,7 @@
       v-model:contentType="contentType"
       :results="results"
       :total-results="totalResults"
-      :per-page="perPage"
-      :loading="loading"
-      @search="search"
-      @selected-media="selectedMedia"
-      results-wrapper-class="
-        mt-10
-        flex
-        flex-row
-        flex-wrap
-        justify-center
-        gap-y-10
-        gap-x-10
-      "
+      results-wrapper-class="flex flex-row flex-wrap justify-center mt-10 gap-y-10 gap-x-10"
     >
       <template v-slot:empty class="flex justify-center">
         <div class="flex flex-col mt-24">
@@ -55,9 +43,8 @@ import SearchMedia from "./SearchMedia.vue";
 import EditMedia from "./EditMedia.vue";
 import useTabSaver from "../util/TabSaver";
 import Modal from "./Modal.vue";
-import { ContentType } from "@/types/api/media";
+import { ContentType, MediaSearchResult } from "@/types/api/media";
 import { computed, ref, watch, WritableComputedRef } from "vue";
-import { MediaSearchResult } from "@/types/api/media";
 import { useRouter } from "vue-router";
 
 const results = ref([]);
