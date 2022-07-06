@@ -20,44 +20,30 @@
 }
 </style>
 
-<script>
-export default {
-  props: {
-    class: {
-      type: String,
-      default: function () {
-        return "";
-      },
-    },
-    monitoring: {
-      type: Boolean,
-      default: function () {
-        return false;
-      },
-    },
-    disabled: {
-      type: Boolean,
-      default: function () {
-        return false;
-      },
-    },
-  },
-  emits: ["toggle"],
-  methods: {
-    doToggle() {
-      if (!this.disabled) {
-        this.$emit("toggle");
-      }
-    },
-  },
-  computed: {
-    computedClass() {
-      let disabledClass = "";
-      if (this.disabled) {
-        disabledClass = "disabled";
-      }
-      return this.class + " cursor-pointer " + disabledClass;
-    },
-  },
-};
+<script setup lang="ts">
+import { computed } from '@vue/reactivity';
+
+const props = defineProps<{
+  class: string,
+  monitoring: boolean,
+  disabled: false
+}>()
+
+const emit = defineEmits<{
+  (e: "toggle"): void
+}>()
+
+const doToggle = () => {
+  if (!props.disabled) {
+    emit("toggle")
+  }
+}
+
+const computedClass = computed(() => {
+  let disabledClass = "";
+  if (props.disabled) {
+    disabledClass = "disabled";
+  }
+  return props.class + " cursor-pointer " + disabledClass
+})
 </script>

@@ -1,29 +1,31 @@
 <template>
-  <modal
+  <Modal
     title="New Downloader"
     v-model="computedActive"
-    @close="$emit('close')"
+    @close="emit('close')"
   >
-    <service-options :services="downloaderTypes" v-model="selectedDownloader" />
+    <ServiceOptions :services="downloaderTypes" v-model="selectedDownloader" />
     <template v-slot:footer>
-      <o-button @click="$emit('close')">Cancel</o-button>
+      <o-button @click="emit('close')">Cancel</o-button>
       <div>
         <o-button
           variant="primary"
-          :disabled="selectedDownloader == ''"
+          :disabled="selectedDownloader === null"
           @click="next"
           >Next</o-button
         >
       </div>
     </template>
-  </modal>
+  </Modal>
 </template>
 
-<script>
+<script setup lang="ts">
 import ServiceOptions from "./ServiceOptions.vue";
 import Modal from "./Modal.vue";
+import { ref } from "vue";
+import { useComputedActive } from "@/util";
 
-const downloaderTypes = [
+const downloaderTypes = ref([
   {
     name: "Transmission",
     value: "transmission",
@@ -32,43 +34,24 @@ const downloaderTypes = [
     name: "NZBGet",
     value: "nzbget",
   },
-];
+])
 
-export default {
-  data() {
-    return {
-      downloaderTypes,
-      selectedDownloader: "",
-    };
-  },
-  props: {
-    active: {
-      type: Boolean,
-      default: function () {
-        return false;
-      },
-    },
-  },
-  components: {
-    ServiceOptions,
-    Modal,
-  },
-  emits: ["close", "selected", "update:active"],
-  methods: {
-    next() {
-      this.$emit("selected", this.selectedDownloader);
-      this.selectedDownloader = "";
-    },
-  },
-  computed: {
-    computedActive: {
-      get() {
-        return this.active;
-      },
-      set(v) {
-        this.$emit("update:active", v);
-      },
-    },
-  },
-};
+const selectedDownloader = ref(null)
+
+const props = defineProps<{
+  active: boolean
+}>()
+
+const emit = defineEmits<{
+  (e: "close"): void,
+  (e: "selected", downloader: string): void,
+  (e: "update:active", active: boolean): void
+}>()
+
+const next = () => {
+  emit("selected", selectedDownloader.value)
+  selectedDownloader.value = null
+}
+
+const computedActive = useComputedActive(props, emit)
 </script>

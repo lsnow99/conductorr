@@ -40,5 +40,5 @@ const emit = defineEmits<{
     (e: "update:modelValue", newVal: ServiceIdentifier): void
 }>()
 
-const { computedValue } = useComputedValue<ServiceIdentifier>(props, emit)
+const computedValue = useComputedValue<ServiceIdentifier>(props, emit)
 </script>

@@ -13,7 +13,5 @@ export default function <T>(
     },
   });
 
-  return {
-    computedValue,
-  };
+  return computedValue
 }

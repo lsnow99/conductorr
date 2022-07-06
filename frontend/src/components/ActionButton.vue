@@ -62,24 +62,8 @@
 }
 </style>
 
-<script>
-export default {
-  props: {
-    mode: {
-      type: String,
-      default: function () {
-        return "";
-      },
-    },
-  },
-  computed: {
-    contentVisible() {
-      return !(
-        this.mode === "loading" ||
-        this.mode === "success" ||
-        this.mode === "danger"
-      );
-    },
-  },
-};
+<script setup lang="ts">
+const props = defineProps<{
+  mode: "loading" | "success" | "danger" | null
+}>()
 </script>

@@ -6,17 +6,17 @@ export interface Media {
     description: string
     poster: string
     released_at: string
-    content_type: ContentType
+    contentType: ContentType
     monitoring: boolean
-    path_ok: boolean
+    pathOk: boolean
     path: string
-    imdb_rating: number
-    imdb_id: string
+    imdbRating: number
+    imdbId: string
     children: Media[]
-    path_id: number
-    profile_id: number
+    pathId: number
+    profileId: number
 }
 
 export interface MediaSearchResult extends Media {
-    search_id: string
+    searchId: string
 }

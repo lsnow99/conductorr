@@ -54,54 +54,41 @@
   </o-table>
 </template>
 
-<script>
+<script setup lang="ts">
 import { DateTime } from "luxon";
 import SearchActions from "./SearchActions.vue";
 import MonitoringToggle from "./MonitoringToggle.vue";
 import APIUtil from "../util/APIUtil";
+import { Media } from "@/types/api/media";
+import { computed } from "@vue/reactivity";
 
-export default {
-  props: {
-    episodes: {
-      type: Array,
-      default: function () {
-        return [];
-      },
-    },
-    monitoringDisabled: {
-      type: Boolean,
-      default: function () {
-        return false;
-      },
-    },
-    load: {
-      type: Boolean,
-      default: function() {
-        return false;
-      }
-    }
-  },
-  emits: ["reload"],
-  components: { SearchActions, MonitoringToggle },
-  methods: {
-    formatDate(timestamp) {
-      return DateTime.fromJSDate(new Date(timestamp)).toLocaleString(
-        DateTime.DATE_SHORT
-      );
-    },
-    toggleMonitoring(media) {
-      APIUtil.setMonitoringMedia(media.id, !media.monitoring).then(() => {
-        this.$emit("reload");
-      });
-    },
-  },
-  computed: {
-    formattedEpisodes() {
-      return this.episodes.map((elem) => {
-        elem.formattedDate = this.formatDate(elem.released_at)
-        return elem
-      })
-    }
-  }
-};
+const props = defineProps<{
+  episodes: Media[],
+  monitoringDisabled: boolean,
+  load: boolean
+}>()
+
+const emit = defineEmits<{
+  (e: "reload"): void
+}>()
+
+const formatDate = (timestamp: string) => {
+  return DateTime.fromJSDate(new Date(timestamp)).toLocaleString(
+    DateTime.DATE_SHORT
+  )
+}
+
+const formattedEpisodes = computed(() => {
+  return props.episodes.map(elem => {
+    elem.formattedDate = formatDate(elem.released_at)
+    return elem
+  })
+})
+
+const toggleMonitoring = async(media: Media) => {
+  try {
+    await APIUtil.setMonitoringMedia(media.id, !media.monitoring)
+    emit("reload")
+  } catch {}
+}
 </script>

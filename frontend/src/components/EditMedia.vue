@@ -120,8 +120,8 @@ const newPathSubmitted = async (path: Path) => {
   try {
     await APIUtil.createNewPath(
       path.path,
-      path.movies_default,
-      path.series_default
+      path.moviesDefault,
+      path.seriesDefault
     );
     oruga.notification.open({
       duration: 3000,
@@ -164,20 +164,20 @@ onMounted(() => {
 
 watch(() => props.media, (newVal: Media) => {
   if(newVal) {
-    profileID.value = newVal.profile_id
+    profileID.value = newVal.profileId
 
     // Set the default path
-    if (!props.media.path_id) {
+    if (!props.media.pathId) {
       paths.value.forEach((elem: Path) => {
         if (
-          (elem.movies_default && props.media.content_type == "movie") ||
-          (elem.series_default && props.media.content_type == "series")
+          (elem.moviesDefault && props.media.contentType == "movie") ||
+          (elem.seriesDefault && props.media.contentType == "series")
         ) {
           pathID.value = elem.id;
         }
       })
     } else {
-      pathID.value = props.media.path_id
+      pathID.value = props.media.pathId
     }
   }
 }, {immediate: true})

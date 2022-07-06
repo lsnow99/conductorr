@@ -1,43 +1,29 @@
 <template>
-  <modal title="Confirm Delete" v-model="computedActive">
+  <Modal title="Confirm Delete" v-model="computedActive">
     <p class="text-2xl">{{ deleteMessage }}</p>
-  <template v-slot:footer>
-    <o-button @click="$emit('close')">Cancel</o-button>
-    <o-button @click="$emit('delete')" variant="danger">Delete</o-button>
-  </template>
-  </modal>
+    <template v-slot:footer>
+      <o-button @click="emit('close')">Cancel</o-button>
+      <o-button @click="emit('delete')" variant="danger">Delete</o-button>
+    </template>
+  </Modal>
 </template>
 
-<script>
+<script setup lang="ts">
+import { useComputedActive } from "@/util";
 import Modal from "./Modal.vue"
 
-export default {
-  props: {
-    deleteMessage: {
-      type: String,
-      default: function () {
-        return "You sure?";
-      },
-    },
-    active: {
-      type: Boolean,
-      default: function () {
-        return false;
-      },
-    },
-  },
-  components: {
-    Modal,
-  },
-  computed: {
-    computedActive: {
-      get() {
-        return this.active;
-      },
-      set(v) {
-        this.$emit("update:active", v);
-      },
-    },
-  },
-};
+const props = withDefaults(defineProps<{
+  deleteMessage: string,
+  active: boolean
+}>(), {
+  deleteMessage: "You sure?"
+})
+
+const emit = defineEmits<{
+  (e: "update:active", newVal: boolean): void,
+  (e: "close"): void
+  (e: "delete"): void
+}>()
+
+const computedActive = useComputedActive(props, emit);
 </script>

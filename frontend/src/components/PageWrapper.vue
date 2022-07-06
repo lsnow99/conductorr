@@ -1,12 +1,9 @@
 <template>
   <div class="flex flex-col min-h-screen">
-    <nav class="container mx-auto mt-4 pb-4">
-      <div
-        class="menu cursor-auto"
-        :class="expandMenu ? 'expanded' : ''"
-      >
+    <nav class="container pb-4 mx-auto mt-4">
+      <div class="cursor-auto menu" :class="expandMenu ? 'expanded' : ''">
         <div
-          class="visible lg:hidden px-3 py-2 text-xl w-full focus:outline-white"
+          class="visible w-full px-3 py-2 text-xl lg:hidden focus:outline-white"
           @click="toggleMenu"
           @keydown.enter="toggleMenu"
           @keydown.space="toggleMenu"
@@ -14,14 +11,14 @@
           tabindex="0"
           aria-label="Expand navigation menu"
         >
-          <div class="rounded-md cursor-pointer inline-block py-px px-2">
+          <div class="inline-block px-2 py-px rounded-md cursor-pointer">
             <vue-fontawesome icon="bars" class="text-white" />
           </div>
         </div>
         <router-link
           v-for="route in routeTree"
           :key="route.name"
-          class="route-item reg-route hidden lg:visible"
+          class="hidden route-item reg-route lg:visible"
           :class="curRouteName === route.name ? 'cur-route' : ''"
           :to="{ name: route.name }"
         >
@@ -30,28 +27,19 @@
         </router-link>
         <router-link
           :to="{ name: 'logout' }"
-          class="route-item ml-auto logout flex items-center"
+          class="flex items-center ml-auto route-item logout"
         >
           <vue-fontawesome icon="sign-out-alt" />
           <span class="ml-1">Logout</span>
         </router-link>
       </div>
     </nav>
-    <main :class="class" class="mt-4 container mx-auto">
+    <main :class="class" class="container mx-auto mt-4">
       <slot />
     </main>
     <footer class="mt-auto">
       <div
-        class="
-          container
-          mx-auto
-          flex flex-row
-          justify-center
-          items-center
-          bg-gray-700
-          rounded-t-md
-          h-14
-        "
+        class="container flex flex-row items-center justify-center mx-auto bg-gray-700 rounded-t-md h-14"
       >
         <o-tooltip variant="info">
           <a
@@ -136,63 +124,52 @@
 }
 </style>
 
-<script>
-export default {
-  data() {
-    return {
-      expandMenu: false,
-      routeTree: [
-        {
-          title: "Home",
-          name: "home",
-          icon: "home",
-        },
-        {
-          title: "Library",
-          name: "library",
-          icon: "book",
-        },
-        {
-          title: "Calendar",
-          name: "calendar",
-          icon: "calendar-alt",
-        },
-        {
-          title: "Configuration",
-          name: "configuration",
-          icon: "sliders-h",
-        },
-        {
-          title: "System",
-          name: "system",
-          icon: "server",
-        },
-      ],
-    };
+<script setup lang="ts">
+import { computed, ref } from "vue";
+import { useRoute } from "vue-router";
+
+const expandMenu = ref(false);
+const routeTree = ref([
+  {
+    title: "Home",
+    name: "home",
+    icon: "home",
   },
-  props: {
-    class: {
-      type: String,
-      default: function () {
-        return "";
-      },
-    },
+  {
+    title: "Library",
+    name: "library",
+    icon: "book",
   },
-  methods: {
-    toggleMenu(event) {
-      if (event) {
-        event.preventDefault();
-      }
-      this.expandMenu = !this.expandMenu;
-    },
+  {
+    title: "Calendar",
+    name: "calendar",
+    icon: "calendar-alt",
   },
-  computed: {
-    curRouteName() {
-      if (this.$route.meta.navName) {
-        return this.$route.meta.navName;
-      }
-      return this.$route.name;
-    },
+  {
+    title: "Configuration",
+    name: "configuration",
+    icon: "sliders-h",
   },
+  {
+    title: "System",
+    name: "system",
+    icon: "server",
+  },
+]);
+
+const props = defineProps<{
+  class?: string;
+}>();
+
+const toggleMenu = ($event?: Event) => {
+  if ($event) {
+    $event.preventDefault();
+  }
+  expandMenu.value = !expandMenu.value;
 };
+
+const route = useRoute();
+const curRouteName = computed(() => {
+  return route.meta.navName ?? route.name;
+});
 </script>

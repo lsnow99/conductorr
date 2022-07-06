@@ -1,11 +1,11 @@
 <template>
-  <modal
+  <Modal
     title="New Media"
     v-model="computedActive"
     @close="emit('close')"
     full-screen
   >
-    <search-media
+    <SearchMedia
       v-model:query="query"
       v-model:currentPage="currentPage"
       v-model:contentType="contentType"
@@ -19,14 +19,14 @@
         </div>
       </template>
       <template v-slot:result="{ media }">
-        <media-card
+        <MediaCard
           :media="media"
           @click="(m, $e) => selectedMedia(m as MediaSearchResult, $e)"
         />
       </template>
-    </search-media>
-  </modal>
-  <edit-media
+    </SearchMedia>
+  </Modal>
+  <EditMedia
     v-if="media"
     v-model:active="showNewMediaModal"
     :loading="loadingNewMedia"
@@ -104,7 +104,7 @@ const addMedia = async ({
   }
   loadingNewMedia.value = true;
   try {
-    const id = await APIUtil.addMedia(media.value.search_id, profileID, pathID);
+    const id = await APIUtil.addMedia(media.value.searchId, profileID, pathID);
     router.push({ name: "media", params: { media_id: id } });
   } catch (err) {
     console.log(err);

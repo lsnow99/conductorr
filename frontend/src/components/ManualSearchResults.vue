@@ -102,68 +102,42 @@
   </modal>
 </template>
 
-<script>
+<script setup lang="ts">
+import { Release } from "@/types/api/release";
+import { useComputedActive } from "@/util";
 import APIUtil from "../util/APIUtil";
 import Helpers from "../util/Helpers";
 import Modal from "./Modal.vue";
 
-export default {
-  props: {
-    releases: {
-      type: Array,
-      default: function () {
-        return [];
-      },
-    },
-    mediaID: {
-      type: Number,
-      default: function () {
-        return 0;
-      },
-    },
-    loading: {
-      type: Boolean,
-      default: function () {
-        return false;
-      },
-    },
-    active: {
-      type: Boolean,
-      default: function() {
-        return false
-      }
+
+const props = defineProps<{
+  releases: Release[],
+  mediaID: number,
+  loading: boolean,
+  active: boolean
+}>()
+
+const emit = defineEmits<{
+  (e: "close"): void,
+  (e: "update:active"): void
+}>()
+
+const computedActive = useComputedActive(props, emit)
+
+const niceSize = Helpers.niceSize
+
+const download = async(release: Release) => {
+  let index = props.releases.findIndex(elem => elem.downloadUrl === release.downloadUrl)
+  if (index >= 0) {
+    props.releases[index].search = 1;
+    try {
+      await APIUtil.downloadMediaRelease(props.mediaID, release)
+    } finally {
+      index = props.releases.findIndex(
+        (elem) => elem.downloadUrl === release.downloadUrl
+      )
+      props.releases[index].search = 2;
     }
-  },
-  components: { Modal },
-  emits: ["close", "update:active"],
-  methods: {
-    niceSize: Helpers.niceSize,
-    download(release) {
-      let index = this.releases.findIndex(
-        (elem) => elem.download_url == release.download_url
-      );
-      if (index >= 0) {
-        this.releases[index].search = 1;
-        APIUtil.downloadMediaRelease(this.mediaID, release)
-          .then(() => {})
-          .finally(() => {
-            let index = this.releases.findIndex(
-              (elem) => elem.download_url == release.download_url
-            );
-            this.releases[index].search = 2;
-          });
-      }
-    },
-  },
-  computed: {
-    computedActive: {
-      get() {
-        return this.active;
-      },
-      set(v) {
-        this.$emit("update:active", v);
-      },
-    },
-  },
-};
+  }
+}
 </script>

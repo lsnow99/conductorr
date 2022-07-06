@@ -41,7 +41,7 @@ const emit = defineEmits<{
   (e: "update:active", newValue: boolean): void
 }>()
 
-const { computedActive } = useComputedActive(props, emit);
+const computedActive = useComputedActive(props, emit);
 
 const sanitize = () => {
   name.value = name.value ? name.value.trim() : "";

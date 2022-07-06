@@ -4,3 +4,8 @@ export interface Service {
     name: string
     value: ServiceIdentifier
 }
+
+export interface ConfigurableService {
+    name: string
+    config: any
+}

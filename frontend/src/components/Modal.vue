@@ -8,7 +8,7 @@
     auto-focus
     trap-focus
     :can-cancel="['escape', 'outside']"
-    @close="$emit('close')"
+    @close="emit('close')"
   >
     <header class="modal-card-header">
       <slot name="header">
@@ -16,7 +16,7 @@
           {{ title }}
         </h1>
         <span
-          class="cursor-pointer text-2xl ml-3"
+          class="ml-3 text-2xl cursor-pointer"
           role="button"
           tabindex="0"
           @click="doClose"
@@ -27,7 +27,7 @@
       </slot>
     </header>
     <section
-      class="border-t-2 border-b-2 border-gray-300 p-4 flex-1 overflow-y-scroll"
+      class="flex-1 p-4 overflow-y-scroll border-t-2 border-b-2 border-gray-300"
     >
       <slot />
     </section>
@@ -58,44 +58,24 @@
 }
 </style>
 
-<script>
-export default {
-  props: {
-    modelValue: {
-      type: Boolean,
-      default: function () {
-        return false;
-      },
-    },
-    title: {
-      type: String,
-      default: function () {
-        return "";
-      },
-    },
-    fullScreen: {
-      type: Boolean,
-      default: function () {
-        return false;
-      },
-    },
-  },
-  emits: ["close", "update:modelValue"],
-  methods: {
-    doClose() {
-      this.$emit("close");
-      this.computedValue = false;
-    },
-  },
-  computed: {
-    computedValue: {
-      get() {
-        return this.modelValue;
-      },
-      set(v) {
-        this.$emit("update:modelValue", v);
-      },
-    },
-  },
-};
+<script setup lang="ts">
+import { useComputedValue } from '@/util';
+
+const props = defineProps<{
+  modelValue: boolean,
+  title: string,
+  fullScreen: boolean
+}>()
+
+const emit = defineEmits<{
+  (e: "close"): void,
+  (e: "update:modelValue", newVal: boolean): void
+}>()
+
+const computedValue = useComputedValue<boolean>(props, emit)
+
+const doClose = () => {
+  emit("close")
+  computedValue.value = false;
+}
 </script>

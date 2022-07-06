@@ -1,5 +1,5 @@
 <template>
-  <Modal :title="title" v-model:active="computedActive" @close="$emit('close')">
+  <Modal :title="title" v-model:active="computedActive" @close="emit('close')">
     <div>
       <o-field label="Name">
         <o-input type="text" v-model="computedValue.name" placeholder="Name" />
@@ -22,7 +22,7 @@
       <slot />
     </div>
     <template v-slot:footer>
-      <o-button @click="$emit('close')">Cancel</o-button>
+      <o-button @click="emit('close')">Cancel</o-button>
       <div>
         <o-button variant="primary" @click="test" class="mr-3">
           <action-button :mode="testingMode"> Test </action-button>
@@ -33,122 +33,84 @@
   </Modal>
 </template>
 
-<script>
+<script setup lang="ts">
 import Modal from "./Modal.vue";
 import ActionButton from "./ActionButton.vue";
+import { ConfigurableService } from "@/types/api/service";
+import { useComputedActive, useComputedValue } from "@/util";
+import { inject } from "vue";
 
-export default {
-  props: {
-    modelValue: {
-      type: Object,
-      default: function () {
-        return {
-          config: {},
-        };
-      },
-    },
-    active: {
-      type: Boolean,
-      default: function () {
-        return false;
-      },
-    },
-    fields: {
-      type: Array,
-      default: function () {
-        return [];
-      },
-    },
-    title: {
-      type: String,
-      default: function () {
-        return "";
-      },
-    },
-    extraSanitizer: {
-      type: Function,
-      default() {},
-    },
-    extraValidator: {
-      type: Function,
-      default() {},
-    },
-    testingMode: {
-      type: String,
-      default: function () {
-        return "";
-      },
-    },
-  },
-  components: {
-    Modal,
-    ActionButton,
-  },
-  emits: ["update:modelValue", "update:active", "save", "close", "test"],
-  methods: {
-    test() {
-      this.sanitize();
-      this.$emit("test", this.computedValue);
-    },
-    save() {
-      this.sanitize();
-      const validationErr = this.validate();
-      if (validationErr) {
-        this.$oruga.notification.open({
-          duration: 5000,
-          message: validationErr,
-          position: "bottom-right",
-          variant: "danger",
-          closable: false,
-        });
-        return;
-      }
-      this.$emit("save", this.computedValue);
-    },
-    validate(configOnly) {
-      if (!this.computedValue.name && !configOnly) {
-        return "Name is required";
-      }
-      for (const field of this.fields) {
-        if (field.required && !this.computedValue.config[field.property]) {
-          return `${field.label} is required`;
-        }
-      }
-      return this.extraValidator();
-    },
-    sanitize() {
-      this.computedValue.name = this.computedValue.name
-        ? this.computedValue.name.trim()
+const oruga = inject("oruga")
+
+const props = withDefaults(defineProps<{
+  modelValue: ConfigurableService,
+  active: boolean,
+  fields: any[],
+  title: string,
+  extraSanitizer: () => void,
+  extraValidator: () => string | null,
+  testingMode: string
+}>(), {
+  extraSanitizer: () => {},
+  extraValidator: () => null
+})
+
+const emit = defineEmits<{
+  (e: "update:modelValue", newVal: ConfigurableService): void,
+  (e: "update:active", newVal: boolean): void,
+  (e: "save", savedVal: ConfigurableService): void,
+  (e: "test", savedVal: ConfigurableService): void,
+  (e: "close"): void
+}>()
+
+const computedValue = useComputedValue<ConfigurableService>(props, emit)
+const computedActive = useComputedActive(props, emit)
+
+const sanitize = () => {
+  computedValue.value.name = computedValue.value.name?.trim() ?? ""
+  for (const field of props.fields) {
+    if (field.trim) {
+      computedValue.value.config[field.property] = computedValue.value.config[
+        field.property
+      ]
+        ? computedValue.value.config[field.property].trim()
         : "";
-      for (const field of this.fields) {
-        if (field.trim) {
-          this.computedValue.config[field.property] = this.computedValue.config[
-            field.property
-          ]
-            ? this.computedValue.config[field.property].trim()
-            : "";
-        }
-      }
-      this.extraSanitizer();
-    },
-  },
-  computed: {
-    computedValue: {
-      get() {
-        return this.modelValue;
-      },
-      set(v) {
-        this.$emit("update:modelValue", v);
-      },
-    },
-    computedActive: {
-      get() {
-        return this.active;
-      },
-      set(v) {
-        this.$emit("update:active", v);
-      },
-    },
-  },
-};
+    }
+  }
+  props.extraSanitizer();
+}
+
+const validate = (configOnly: boolean = false) => {
+  if(!computedValue.value.name && !configOnly) {
+    return "Name is required"
+  }
+  for (const field of props.fields) {
+    if (field.required && !computedValue.value.config[field.property]) {
+      return `${field.label} is required`;
+    }
+  }
+  return props.extraValidator();
+}
+
+const test = () => {
+  sanitize();
+  emit("test", computedValue.value)
+}
+
+const save = () => {
+  sanitize();
+  const validationErr = validate();
+  if (validationErr) {
+    oruga.notification.open({
+      duration: 5000,
+      message: validationErr,
+      position: "bottom-right",
+      variant: "danger",
+      closable: false,
+    });
+    return
+  }
+  emit("save", computedValue.value)
+}
+
 </script>

@@ -51,32 +51,26 @@
   </page-wrapper>
 </template>
 
-<script>
+<script setup lang="ts">
 import PageWrapper from "../components/PageWrapper.vue";
 import DownloadStatusViewer from "../components/DownloadStatusViewer.vue";
 import APIUtil from "../util/APIUtil";
 import MediaCard from "../components/MediaCard.vue";
+import { onMounted, ref } from "vue";
+import { Media } from "@/types/api/media";
+import { useRouter } from "vue-router";
 
-export default {
-  data() {
-    return {
-      activeDownloads: [],
-      finishedDownloads: [],
-      refreshInterval: -1,
-      loadingDownloads: false,
-      recentMedia: [],
-    };
-  },
-  components: { PageWrapper, DownloadStatusViewer, MediaCard },
-  methods: {
-    gotoMedia(media) {
-      this.$router.push({ name: "media", params: { media_id: media.id } });
-    },
-  },
-  mounted() {
-    APIUtil.getRecentMedia().then((media) => {
-      this.recentMedia = media;
-    });
-  },
-};
+const recentMedia = ref<Media[]>([])
+
+const router = useRouter();
+const gotoMedia = (media: Media) => {
+  router.push({name: "media", params: {media_id: media.id}})
+}
+
+onMounted(async() => {
+  try {
+    const media = await APIUtil.getRecentMedia()
+    recentMedia.value = media;
+  } catch {}
+})
 </script>

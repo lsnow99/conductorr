@@ -2,7 +2,7 @@
   <header class="modal-card-header">
     <p class="modal-card-title">{{ title }}</p>
   </header>
-  <section class="modal-card-content w-96 min-w-full">
+  <section class="min-w-full modal-card-content w-96">
     <div>
       <o-field label="Name">
         <o-input
@@ -38,16 +38,11 @@
   </footer>
 </template>
 
-<script>
+<script setup lang="ts">
+import { Media } from '@/types/api/media';
 
-export default {
-    props: {
-        media: {
-            type: Object,
-            default: function() {
-                return {}
-            }
-        }
-    }
-}
+const props = defineProps<{
+  media: Media
+}>()
+
 </script>

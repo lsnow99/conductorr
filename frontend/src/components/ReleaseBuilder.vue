@@ -100,7 +100,7 @@
         </o-field>
         <o-field label="Download Type">
           <o-select
-            v-model="computedRelease.download_type"
+            v-model="computedRelease.downloadType"
             placeholder="Download type"
           >
             <option value="torrent">Torrent</option>
@@ -256,8 +256,8 @@ const randomize = () => {
         const randomIndexer =
           indexers.value[Math.floor(Math.random() * indexers.value.length)];
         release.indexer = randomIndexer.name;
-        release.download_type = randomIndexer.download_type;
-        if (release.download_type == "torrent") {
+        release.downloadType = randomIndexer.downloadType;
+        if (release.downloadType == "torrent") {
           release.seeders = Math.floor(Math.random() * 50);
         } else {
           release.seeders = 0;

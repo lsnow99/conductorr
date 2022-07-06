@@ -19,7 +19,5 @@ export default function (props: ActiveProps, emit: ActiveEmit) {
     },
   });
 
-  return {
-    computedActive,
-  };
+  return computedActive
 }

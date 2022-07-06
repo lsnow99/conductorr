@@ -40,103 +40,89 @@
   />
 </template>
 
-<script>
+<script setup lang="ts">
 import DownloadStatus from "../components/DownloadStatus.vue";
 import ConfirmDelete from "../components/ConfirmDelete.vue";
 import APIUtil from "../util/APIUtil";
+import { onMounted, onUnmounted, computed, ref } from "vue";
+import { useTabSaver } from "@/util";
 
-export default {
-  props: {
-    mediaID: {
-      type: Number,
-      default: function () {
-        return 0;
-      },
-    },
-    wrapperClass: {
-      type: String,
-      default: function () {
-        return "";
-      },
-    },
-  },
-  data() {
-    return {
-      activeDownloads: [],
-      finishedDownloads: [],
-      refreshInterval: -1,
-      loadingDownloads: false,
-      deletingIdentifier: null,
-      showConfirmDeleteModal: false
-    };
-  },
-  components: {
-    DownloadStatus,
-    ConfirmDelete
-  },
-  methods: {
-    tes() {
-      console.log('tes')
-    },
-    refreshDownloads() {
-      this.loadingDownloads = true;
-      APIUtil.getActiveDownloads(this.mediaID).then((downloads) => {
-        this.activeDownloads = downloads;
-      });
-      APIUtil.getFinishedDownloads(this.mediaID).then((downloads) => {
-        this.finishedDownloads = downloads;
-      });
-    },
-    sortDownloads(a, b) {
-      return b.id - a.id;
-    },
-    doDelete() {
-      alert('deleted' + this.deletingIdentifier)
-      this.closeDelete();
-    },
-    closeDelete() {
-      this.showConfirmDeleteModal = false;
-      this.restoreFocus();
-    },
-    confirmDelete($event, identifier) {
-      console.log('test')
-      this.lastButton = $event.currentTarget;
-      this.showConfirmDeleteModal = true;
-      this.deletingIdentifier = identifier;
-    },
-  },
-  mounted() {
-    this.refreshDownloads();
-    this.refreshInterval = setInterval(this.refreshDownloads, 3000);
-  },
-  unmounted() {
-    clearInterval(this.refreshInterval);
-  },
-  computed: {
-    orderedFinishedDownloads() {
-      return this.finishedDownloads.sort(this.sortDownloads);
-    },
-    orderedActiveDownloads() {
-      let processing = this.activeDownloads.filter(
-        (elem) => elem.status == "cprocessing" || elem.status == "processing"
-      );
-      let downloading = this.activeDownloads.filter(
-        (elem) => elem.status == "downloading"
-      );
-      let waiting = this.activeDownloads.filter(
-        (elem) => elem.status == "waiting"
-      );
-      let paused = this.activeDownloads.filter(
-        (elem) => elem.status == "paused"
-      );
+const props = defineProps<{
+  mediaID?: number,
+  wrapperClass: string
+}>()
 
-      processing = processing.sort(this.sortDownloads);
-      downloading = downloading.sort(this.sortDownloads);
-      waiting = waiting.sort(this.sortDownloads);
-      paused = paused.sort(this.sortDownloads);
+const activeDownloads = ref<Download[]>([])
+const finishedDownloads = ref<Download[]>([])
+const refreshInterval = ref(-1)
+const loadingDownloads = ref(false)
+const deletingIdentifier = ref<string | null>(null)
+const showConfirmDeleteModal = ref(false)
 
-      return [...processing, ...downloading, ...waiting, ...paused];
-    },
-  },
-};
+const { lastButton, restoreFocus } = useTabSaver()
+
+const refreshDownloads = async() => {
+  loadingDownloads.value = true;
+  try {
+    const downloads = await APIUtil.getActiveDownloads(props.mediaID)
+    activeDownloads.value = downloads
+  } catch {}
+  try {
+    const downloads = await APIUtil.getFinishedDownloads(props.mediaID)
+    activeDownloads.value = downloads
+  } catch {}
+}
+
+const sortDownloads = (a: Download, b: Download) => {
+  return b.id - a.id;
+}
+
+const closeDelete = () => {
+  showConfirmDeleteModal.value = false;
+  restoreFocus()
+}
+
+const doDelete = () => {
+  closeDelete();
+}
+
+const confirmDelete = ($event: Event, identifier: string) => {
+  lastButton.value = ($event.currentTarget as HTMLElement);
+  showConfirmDeleteModal.value = false
+  deletingIdentifier.value = identifier;
+}
+
+onMounted(() => {
+  refreshDownloads()
+  refreshInterval.value = setInterval(refreshDownloads, 3000)
+})
+
+onUnmounted(() => {
+  clearInterval(refreshInterval.value)
+})
+
+const orderedFinishedDownloads = computed(() => {
+  return finishedDownloads.value.sort(sortDownloads)
+})
+
+const orderedActiveDownloads = computed(() => {
+  let processing = activeDownloads.value.filter(
+    (elem: Download) => elem.status === "cprocessing" || elem.status === "processing"
+  )
+  let downloading = activeDownloads.value.filter(
+    (elem: Download) => elem.status === "downloading"
+  );
+  let waiting = activeDownloads.value.filter(
+    (elem: Download) => elem.status === "waiting"
+  );
+  let paused = activeDownloads.value.filter(
+    (elem: Download) => elem.status === "paused"
+  );
+  processing = processing.sort(sortDownloads);
+    downloading = downloading.sort(sortDownloads);
+    waiting = waiting.sort(sortDownloads);
+    paused = paused.sort(sortDownloads);
+
+    return [...processing, ...downloading, ...waiting, ...paused];
+})
 </script>

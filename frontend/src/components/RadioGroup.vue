@@ -1,6 +1,6 @@
 <template>
   <div
-    class="overflow-hidden rounded-lg inline-block mt-4 sm:mt-0 radio-wrapper"
+    class="inline-block mt-4 overflow-hidden rounded-lg sm:mt-0 radio-wrapper"
   >
     <template v-for="option in options" :key="option.value">
       <o-radio
@@ -14,37 +14,21 @@
   </div>
 </template>
 
-<script>
-export default {
-  props: {
-    modelValue: {
-      type: String,
-      default: function () {
-        return "";
-      },
-    },
-    name: {
-      type: String,
-      default: function () {
-        return "";
-      },
-    },
-    options: {
-      type: Array,
-      default: function () {
-        return [];
-      },
-    },
-  },
-  computed: {
-    computedValue: {
-      get() {
-        return this.modelValue;
-      },
-      set(v) {
-        this.$emit("update:modelValue", v);
-      },
-    },
-  },
-};
+<script setup lang="ts">
+import { useComputedValue } from '@/util';
+
+const props = defineProps<{
+  modelValue: string;
+  name: string;
+  options: {
+    text: string;
+    value: string | number;
+  }[];
+}>();
+
+const emit = defineEmits<{
+  (e: "update:modelValue", newVal: string):void
+}>()
+
+const computedValue = useComputedValue<string>(props, emit);
 </script>

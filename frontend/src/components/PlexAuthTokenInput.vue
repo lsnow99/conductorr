@@ -34,67 +34,55 @@
   </modal>
 </template>
 
-<script>
+<script setup lang="ts">
+import { useComputedValue } from "@/util";
+import { inject, ref } from "vue";
 import APIUtil from "../util/APIUtil";
 import ActionButton from "./ActionButton.vue";
 import Modal from "./Modal.vue";
 
-export default {
-  data() {
-    return {
-      plexUsername: "",
-      plexPassword: "",
-      fetchTestingMode: "",
-      showFetchAuthTokenModal: false,
-    };
-  },
-  props: {
-    modelValue: {
-      type: String,
-      default: function () {
-        return "";
-      },
-    },
-  },
-  emits: ["update:modelValue"],
-  components: { ActionButton, Modal },
-  methods: {
-    fetchPlexAuthToken() {
-      this.fetchTestingMode = "loading";
-      APIUtil.getPlexAuthToken(this.plexUsername, this.plexPassword)
-        .then((response) => {
-          this.computedValue = response.token;
-          this.showFetchAuthTokenModal = false;
-          this.fetchTestingMode = "";
-          this.$oruga.notification.open({
-            duration: 5000,
-            message: `Successfully fetched Plex auth token`,
-            position: "bottom-right",
-            variant: "success",
-            closable: false,
-          });
-        })
-        .catch((err) => {
-          this.fetchTestingMode = "danger";
-          this.$oruga.notification.open({
-            duration: 5000,
-            message: `Plex login failed: ${err}`,
-            position: "bottom-right",
-            variant: "danger",
-            closable: false,
-          });
-        });
-    },
-  },
-  computed: {
-    computedValue: {
-      get() {
-        return this.modelValue;
-      },
-      set(v) {
-        this.$emit("update:modelValue", v);
-      },
-    },
-  },
+const oruga = inject("oruga");
+const plexUsername = ref("");
+const plexPassword = ref("");
+const fetchTestingMode = ref("");
+const showFetchAuthTokenModal = ref(false);
+
+const props = defineProps<{
+  modelValue: string;
+}>();
+
+const emit = defineEmits<{
+  (e: "update:modelValue"): void;
+}>();
+
+const computedValue = useComputedValue<string>(props, emit);
+
+const fetchPlexAuthToken = async () => {
+  fetchTestingMode.value = "loading";
+  try {
+    const response = await APIUtil.getPlexAuthToken(
+      plexUsername.value,
+      plexPassword.value
+    );
+    computedValue.value = response.token;
+    showFetchAuthTokenModal.value = false;
+    fetchTestingMode.value = "";
+    oruga.notification.open({
+      duration: 5000,
+      message: `Successfully fetched Plex auth token`,
+      position: "bottom-right",
+      variant: "success",
+      closable: false,
+    });
+  } catch (err) {
+    fetchTestingMode.value = "danger";
+    oruga.notification.open({
+      duration: 5000,
+      message: `Plex login failed: ${err}`,
+      position: "bottom-right",
+      variant: "danger",
+      closable: false,
+    });
+  }
 };
 </script>
