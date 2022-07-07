@@ -1,6 +1,6 @@
 <template>
   <section class="mt-3">
-    <div class="flex flex-col sm:flex-row justify-between">
+    <div class="flex flex-col justify-between sm:flex-row">
       <div class="flex justify-center">
         <o-button variant="primary" @click="openNewMediaServerModal"
           >New Media Server</o-button
@@ -33,7 +33,7 @@
     >
       <div class="flex flex-col">
         Configuration:
-        <code class="bg-gray-800 whitespace-pre p-2">
+        <code class="p-2 whitespace-pre bg-gray-800">
           {{ JSON.stringify(mediaServer.config, null, 4) }}
         </code>
       </div>
@@ -179,19 +179,6 @@ export default {
         this.loadMediaServers();
       });
     },
-    newMediaServer(mediaServerType, name, config) {
-      APIUtil.newMediaServer(mediaServerType, name, config).then(() => {
-        this.$oruga.notification.open({
-          duration: 3000,
-          message: `Created successfully`,
-          position: "bottom-right",
-          variant: "success",
-          closable: false,
-        });
-        this.showNewMediaServerModal = false;
-        this.loadMediaServers();
-      });
-    },
     closeEditMediaServerModal() {
       this.restoreFocus();
       this.mode = ""
@@ -200,16 +187,6 @@ export default {
         config: {}
       }
       this.showEditMediaServerModal = false;
-    },
-    newPlex(config) {
-      this.newMediaServer("plex", this.editingMediaServer.name, config);
-    },
-    updatePlex(config) {
-      this.updateMediaServer(
-        this.editingMediaServer.id,
-        this.editingMediaServer.name,
-        config
-      );
     },
     submittedMediaServer(mediaServer) {
       if (this.mode == "new") {

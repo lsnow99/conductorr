@@ -58,8 +58,8 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   (e: "update:modelValue", newVal: ConfigurableService): void,
   (e: "update:active", newVal: boolean): void,
-  (e: "save", savedVal: ConfigurableService): void,
-  (e: "test", savedVal: ConfigurableService): void,
+  (e: "save", savedVal: ConfigurableService): Promise<void>,
+  (e: "test", savedVal: ConfigurableService): Promise<void>,
   (e: "close"): void
 }>()
 

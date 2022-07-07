@@ -65,7 +65,7 @@
           <o-switch v-model="allTV"> Select All TV Categories </o-switch>
         </div>
       </o-field> -->
-      <div class="mt-3 flex flex-col">
+      <div class="flex flex-col mt-3">
         <o-switch v-model="computedIndexer.for_movies">Use for Movies</o-switch>
         <o-switch v-model="computedIndexer.for_series">Use for TV</o-switch>
       </div>
@@ -82,62 +82,53 @@
   </modal>
 </template>
 
-<script>
+<script setup lang="ts">
 import APIUtil from "../util/APIUtil";
 import ActionButton from "./ActionButton.vue";
 import RadioGroup from "../components/RadioGroup.vue";
 import Modal from "../components/Modal.vue";
+import {TestingMode} from "@/types/testing_mode"
+import {ActiveProps, ActiveEmit} from "@/util/ComputedActive"
+import { ref } from "vue";
+import { useComputedActive } from "@/util";
 
-const possibleTags = [
-  { name: "TV", code: 5000 },
-  { name: "WEB-DL", code: 5010 },
-  { name: "Foreign", code: 5020 },
-  { name: "SD", code: 5030 },
-  { name: "HD", code: 5040 },
-  { name: "UHD", code: 5045 },
-  { name: "Other", code: 5050 },
-  { name: "Sport", code: 5060 },
-  { name: "Anime", code: 5070 },
-  { name: "Documentary", code: 5080 },
-];
+const selectedType = ref<string | null>(null)
+const newIndexer = ref<Indexer | null>(null)
+const testingMode = ref<TestingMode>(TestingMode.OFF)
+
+const props = defineProps<{
+  indexer: Indexer,
+  title: string
+} & ActiveProps>()
+
+const emit = defineEmits<{
+  (e: "submit", submittedIndexer: Indexer): void
+  (e: "close"): void
+} & ActiveEmit>()
+
+const computedActive = useComputedActive(props, emit)
+
+const close = () => {
+  computedIndexer.value = null
+  emit("close")
+}
+
+const test = () => {
+  sanitize();
+  const validationErr = validate();
+  if (validationErr) {
+    oruga.notification.open({
+          duration: 5000,
+          message: validationErr,
+          position: "bottom-right",
+          variant: "danger",
+          closable: false,
+        });
+        return;
+  }
+}
 
 export default {
-  data() {
-    return {
-      selectedType: "",
-      filteredTags: possibleTags,
-      newIndexer: null,
-      testingMode: "",
-    };
-  },
-  props: {
-    active: {
-      type: Boolean,
-      default: function () {
-        return false;
-      },
-    },
-    indexer: {
-      type: Object,
-      default: function () {
-        return {
-          download_type: "torrent",
-        };
-      },
-    },
-    title: {
-      type: String,
-      default: function () {
-        return "";
-      },
-    },
-  },
-  emits: ["submit", "close", "update:active"],
-  components: {
-    ActionButton,
-    RadioGroup,
-    Modal,
-  },
   methods: {
     close() {
       console.log('setting')

@@ -1,10 +1,11 @@
 import { computed, type WritableComputedRef } from "vue";
+import ComputedValue from "./ComputedValue";
 
-type ActiveProps = Readonly<{
+export type ActiveProps = Readonly<{
     active: boolean;
 }>
 
-type ActiveEmit = {
+export type ActiveEmit = {
     (e: "update:active", newValue: boolean): void
 }
 
