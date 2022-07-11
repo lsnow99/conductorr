@@ -87,7 +87,7 @@ const emit = defineEmits<{
   (e: "search", query: string, contentType: ContentType, page: number): void
   (e: "update:query", query: string): void
   (e: "update:currentPage", currentPage: number): void
-  (e: "update:contentType", contentType: ContentType): void
+  (e: "update:contentType", contentType: ContentType | null): void
 }>()
 
 const computedQuery: WritableComputedRef<string> = computed({
@@ -110,9 +110,9 @@ const computedCurrentPage: WritableComputedRef<number> = computed({
 
 const computedContentType: WritableComputedRef<ContentType | null> = computed({
   get() {
-    return props.contentType
+    return null
   },
-  set(v: ContentType) {
+  set(v: ContentType | null) {
     emit("update:contentType", v)
   }
 })

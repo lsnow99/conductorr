@@ -1,5 +1,5 @@
 
-const niceSize = (size) => {
+const niceSize = (size: number) => {
     let suffix = ""
     if (size < 1000000) {
         size = size / 1000

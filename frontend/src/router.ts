@@ -10,7 +10,7 @@ import System from "./views/System.vue";
 import Logout from "./views/Logout.vue";
 import NotFound from "./views/NotFound.vue";
 import AuthUtil from "./util/AuthUtil.js";
-import store from "./store"
+import { useAppStore } from "@/store"
 
 const routes = [
   {
@@ -102,14 +102,10 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  /*
-      If a path requires authentication, we first check that the user is logged in
-      and if the check fails, send them to the login page.
-      TODO: implement
-      */
+  const appStore = useAppStore()
   if (to.matched.some((record) => record.meta.requiresAuth)) {
     // Only allow the requested route if the logged in check passes
-    if (store.getters.loggedIn) {
+    if (appStore.loggedIn) {
       next()
     } else {
       AuthUtil.logout();

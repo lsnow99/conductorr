@@ -5,11 +5,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { inject, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
-import store from "./store";
 import APIUtil from "./util/APIUtil";
 import EventBus from "./util/EventBus";
+import { useAppStore } from "@/store"
+import { storeToRefs } from "pinia";
 
 const initialized = ref(false)
 const interval = ref(0)
@@ -17,23 +18,21 @@ const interval = ref(0)
 const router = useRouter();
 const oruga = inject("oruga")
 
-const loggedIn = computed(() => {
-  return store.getters.loggedIn
-})
+const { loggedIn, status } = storeToRefs(useAppStore())
 
 const getStatus = async() => {
-  if (loggedIn) {
-    const status = await APIUtil.getStatus()
-    store.commit("setStatus", status)
+  if (loggedIn.value) {
+    status.value = await APIUtil.getStatus()
   }
 }
 
 onMounted(async() => {
-  const isLoggedIn = await APIUtil.checkAuth()
-  store.commit("setLoggedIn", isLoggedIn)
-  if (!isLoggedIn) {
+  loggedIn.value = await APIUtil.checkAuth()
+  if (!loggedIn.value) {
     router.push({name: "auth"})
   }
+
+  initialized.value = true
 
   getStatus()
 
@@ -41,11 +40,11 @@ onMounted(async() => {
   if (localStorage.theme === "dark" || (!("theme" in localStorage) && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
     document.documentElement.classList.add("dark")
   } else {
-      document.documentElement.classList.remove("dark");
+    document.documentElement.classList.remove("dark");
   }
 })
 
-watch(loggedIn, (newVal) => {
+watch(() => loggedIn, (newVal) => {
   if (!newVal) {
     router.push({ name: "home" });
   }

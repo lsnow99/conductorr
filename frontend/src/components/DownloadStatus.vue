@@ -22,6 +22,7 @@
 </template>
 
 <script setup lang="ts">
+import { Download } from "@/types/api/download";
 import { computed } from "@vue/reactivity";
 
 const props = defineProps<{
@@ -87,10 +88,10 @@ const statusText = computed(() => {
 
 const fraction = computed(() => {
   let fraction = 1;
-  if (props.download.download.fullSize && props.download.download.bytesSeft) {
+  if (props.download.fullSize && props.download.bytesLeft) {
     fraction =
-      (props.download.download.fullSize - props.download.download.bytesSeft) /
-      props.download.download.fullSize;
+      (props.download.fullSize - props.download.bytesLeft) /
+      props.download.fullSize;
   }
   fraction = Math.round(fraction * 100) / 100;
   return fraction;

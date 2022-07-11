@@ -15,20 +15,22 @@
 </template>
 
 <script setup lang="ts">
-import { useComputedValue } from '@/util';
+import { useComputedValue } from "conductorr-lib";
 
-const props = defineProps<{
-  modelValue: string;
-  name: string;
-  options: {
-    text: string;
-    value: string | number;
-  }[];
-}>();
+const props = defineProps<
+  {
+    name: string;
+    options: {
+      text: string;
+      value: string | number;
+    }[];
+    modelValue: string | null
+  }
+>();
 
 const emit = defineEmits<{
-  (e: "update:modelValue", newVal: string):void
-}>()
+  (e: "update:modelValue", newVal: string | null): void
+}>();
 
-const computedValue = useComputedValue<string>(props, emit);
+const computedValue = useComputedValue<string | null>(props, emit);
 </script>

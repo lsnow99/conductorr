@@ -11,7 +11,7 @@ import (
 
 type SystemStatus struct {
 	Msg        string `json:"msg,omitempty"`
-	SystemName string `json:"system_name,omitempty"`
+	SystemName string `json:"systemName,omitempty"`
 }
 
 type SystemTypeStatus struct {

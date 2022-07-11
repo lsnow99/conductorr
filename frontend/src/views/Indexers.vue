@@ -2,7 +2,7 @@
   <section class="mt-3">
     <div class="flex flex-col justify-between sm:flex-row">
       <div class="flex justify-center">
-        <o-button variant="primary" @click="doShowNewIndexerModal($event)"
+        <o-button variant="primary" @click="openNewServiceModal($event)"
           >Add Indexer</o-button
         >
       </div>
@@ -28,26 +28,27 @@
       v-model:expanded="indexer.expanded"
       :key="indexer.id"
       :title="indexer.name"
-      @edit="editIndexer(indexer, $event)"
+      @edit="editService(indexer, $event)"
       @delete="deleteIndexer(indexer)"
     >
       <div>
         <o-field label="Base URL">
-          <o-input type="text" disabled v-model="indexer.base_url" />
+          <o-input type="text" disabled v-model="indexer.baseUrl" />
         </o-field>
         <o-field label="API Key">
-          <o-input type="text" disabled v-model="indexer.api_key" />
+          <o-input type="text" disabled v-model="indexer.apiKey" />
         </o-field>
         <div class="flex flex-col mt-3">
-          <o-switch disabled v-model="indexer.for_movies"
+          <o-switch disabled v-model="indexer.forMovies"
             >Use for Movies</o-switch
           >
-          <o-switch disabled v-model="indexer.for_series">Use for TV</o-switch>
+          <o-switch disabled v-model="indexer.forSeries">Use for TV</o-switch>
         </div>
       </div>
     </ConfigItem>
     <EditService
-      v-model:active="showEditServiceModal"
+      v-if="editingIndexer"
+      v-model:active="showModal"
       v-model="editingIndexer"
       :title="computedTitle"
       :fields="computedFields"
@@ -61,15 +62,14 @@
 </template>
 
 <script setup lang="ts">
-import { ConfigurableIndexer, EditServiceMode } from "@/types/api/service"
 import APIUtil from "../util/APIUtil";
 import ConfigItem from "../components/ConfigItem.vue";
-import EditIndexer from "../components/EditIndexer.vue";
 import EditService from "../components/EditService.vue";
 import { inject, onMounted, ref } from "vue";
 import { TestingMode } from "@/types/testing_mode";
 import { useTabSaver, useServiceUtil } from "@/util";
 import { Indexer } from "@/types/api/indexer";
+import { ConfigurableService } from "@/types/api/service";
 
 const XNAB_FIELDS = [
   {
@@ -86,30 +86,35 @@ const XNAB_FIELDS = [
     placeholder: "API Key",
     property: "apiKey",
     required: false,
-    trim: true
+    trim: true,
   },
 ];
 
-const oruga = inject('oruga')
+const oruga = inject("oruga");
 
-const editingIndexer = ref<ConfigurableIndexer | null>(null)
-const testingMode = ref<TestingMode>(TestingMode.OFF)
-const indexers = ref<Indexer[]>([])
+const editingIndexer = ref<ConfigurableService | null>(null);
+const testingMode = ref<TestingMode>(TestingMode.OFF);
+const indexers = ref<(Indexer & { expanded: boolean })[]>([]);
 
-const { lastButton, restoreFocus } = useTabSaver()
+const { lastButton, restoreFocus } = useTabSaver();
 
-
-const loadIndexers = async() => {
+const loadIndexers = async () => {
   try {
-    const indexers = await APIUtil.getIndexers()
-    indexers.value = indexers
-  } catch (err) {
-    
-  }
-}
+    const indexers = await APIUtil.getIndexers();
+    indexers.value = indexers;
+  } catch (err) {}
+};
 
-const editIndexer = async(indexer: Indexer) => {
-  await APIUtil.updateIndexer(indexer.id, indexer.name, indexer.baseUrl, indexer.apiKey, indexer.forMovies, indexer.forSeries, indexer.downloadType)
+const editIndexer = async (indexer: Indexer) => {
+  await APIUtil.updateIndexer(
+    indexer.id,
+    indexer.name,
+    indexer.baseUrl,
+    indexer.apiKey,
+    indexer.forMovies,
+    indexer.forSeries,
+    indexer.downloadType
+  );
   oruga.notification.open({
     duration: 3000,
     message: `Saved successfully`,
@@ -118,10 +123,17 @@ const editIndexer = async(indexer: Indexer) => {
     closable: false,
   });
   loadIndexers();
-}
+};
 
-const newIndexer = async(indexer: Indexer) => {
-  await APIUtil.newIndexer(indexer.name, indexer.baseUrl, indexer.apiKey, indexer.forMovies, indexer.forSeries, indexer.downloadType)
+const newIndexer = async (indexer: Indexer) => {
+  await APIUtil.newIndexer(
+    indexer.name,
+    indexer.baseUrl,
+    indexer.apiKey,
+    indexer.forMovies,
+    indexer.forSeries,
+    indexer.downloadType
+  );
   oruga.notification.open({
     duration: 3000,
     message: `Saved successfully`,
@@ -130,57 +142,66 @@ const newIndexer = async(indexer: Indexer) => {
     closable: false,
   });
   loadIndexers();
-}
+};
 
-const testIndexer = async(indexer: Indexer) => {
-  testingMode.value = TestingMode.LOADING
+const testIndexer = async (indexerService: ConfigurableService) => {
+  const indexer = indexerService as Indexer
+  testingMode.value = TestingMode.LOADING;
   try {
     await APIUtil.testIndexer(
-        indexer.name,
-        indexer.baseUrl,
-        indexer.apiKey,
-        indexer.forMovies,
-        indexer.forSeries,
-        indexer.downloadType
-      )
-      oruga.notification.open({
-            duration: 5000,
-            message: `Connected successfully`,
-            position: "bottom-right",
-            variant: "success",
-            closable: false,
-          });
-      testingMode.value = TestingMode.SUCCESS
+      indexer.name,
+      indexer.baseUrl,
+      indexer.apiKey,
+      indexer.forMovies,
+      indexer.forSeries,
+      indexer.downloadType
+    );
+    oruga.notification.open({
+      duration: 5000,
+      message: `Connected successfully`,
+      position: "bottom-right",
+      variant: "success",
+      closable: false,
+    });
+    testingMode.value = TestingMode.SUCCESS;
   } catch (err) {
     oruga.notification.open({
-            duration: 5000,
-            message: `Test failed: ${err}`,
-            position: "bottom-right",
-            variant: "danger",
-            closable: false,
-          });
-          testingMode.value = TestingMode.DANGER
+      duration: 5000,
+      message: `Test failed: ${err}`,
+      position: "bottom-right",
+      variant: "danger",
+      closable: false,
+    });
+    testingMode.value = TestingMode.DANGER;
   } finally {
     setTimeout(() => {
-      testingMode.value = TestingMode.OFF
-    }, 5000)
+      testingMode.value = TestingMode.OFF;
+    }, 5000);
   }
-}
+};
 
-const { showNewServiceModal, showEditServiceModal, closeModal, openNewServiceModal, openEditServiceModal, editService, onSubmit } = useServiceUtil<Indexer>(lastButton, restoreFocus, newIndexer, editIndexer)
+const {
+  showNewServiceModal,
+  showEditServiceModal,
+  closeModal,
+  openNewServiceModal,
+  openEditServiceModal,
+  editService,
+  onSubmit,
+} = useServiceUtil<Indexer>(lastButton, restoreFocus, newIndexer, editIndexer);
 
 const setExpanded = (expanded: boolean) => {
-  indexers.value.forEach(elem => {
-    elem.expanded = expanded
-  })
-}
+  indexers.value.forEach((elem) => {
+    elem.expanded = expanded;
+  });
+};
 
-const deleteIndexer = async(indexer: Indexer) => {
-  await APIUtil.deleteIndexer(indexer.id)
+const deleteIndexer = async (indexer: Indexer) => {
+  await APIUtil.deleteIndexer(indexer.id);
   loadIndexers();
-}
+};
 
 onMounted(() => {
-  loadIndexers()
-})
+  loadIndexers();
+});
 </script>

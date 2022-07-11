@@ -24,7 +24,7 @@ type AuthTokenResponse struct {
 type MediaServerResponse struct {
 	ID              int                    `json:"id,omitempty"`
 	Name            string                 `json:"name,omitempty"`
-	MediaServerType string                 `json:"media_server_type,omitempty"`
+	MediaServerType string                 `json:"mediaServerType,omitempty"`
 	Config          map[string]interface{} `json:"config,omitempty"`
 }
 
@@ -51,7 +51,7 @@ func FetchPlexAuthToken(w http.ResponseWriter, r *http.Request) {
 
 type MediaServerInput struct {
 	Name            string                 `json:"name,omitempty"`
-	MediaServerType string                 `json:"media_server_type,omitempty"`
+	MediaServerType string                 `json:"mediaServerType,omitempty"`
 	Config          map[string]interface{} `json:"config,omitempty"`
 }
 

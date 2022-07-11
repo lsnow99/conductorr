@@ -2,17 +2,19 @@
     Logging you out
 </template>
 
-<script>
+<script setup lang="ts">
+import { useAppStore } from '@/store';
+import { storeToRefs } from 'pinia';
+import { onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import APIUtil from '../util/APIUtil'
 
-export default {
-    mounted() {
-        APIUtil.logout().then(() => {
-            this.$store.commit('setLoggedIn', false)
-            if (!this.$store.getters.loggedIn) {
-                this.$router.push({name: 'home'})
-            }
-        })
-    }
-}
+const { loggedIn } = storeToRefs(useAppStore())
+const router = useRouter()
+
+onMounted(async() => {
+    await APIUtil.logout()
+    loggedIn.value = false
+    router.push({name: 'home'})
+})
 </script>

@@ -1,16 +1,9 @@
 import { computed, type WritableComputedRef } from "vue";
-import ComputedValue from "./ComputedValue";
 
-export type ActiveProps = Readonly<{
-    active: boolean;
-}>
-
-export type ActiveEmit = {
-    (e: "update:active", newValue: boolean): void
-}
+export type ActiveProps = Readonly<{ active: boolean }>;
+export type ActiveEmit = { (e: "update:active", newValue: boolean): void };
 
 export default function (props: ActiveProps, emit: ActiveEmit) {
-
   const computedActive: WritableComputedRef<boolean> = computed({
     get(): boolean {
       return props.active;
@@ -20,5 +13,5 @@ export default function (props: ActiveProps, emit: ActiveEmit) {
     },
   });
 
-  return computedActive
+  return computedActive;
 }

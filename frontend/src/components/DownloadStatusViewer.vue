@@ -21,7 +21,6 @@
           v-for="download in orderedFinishedDownloads"
           :key="download.id"
           :download="download"
-          @fda="tes"
         />
         <div
           v-if="orderedFinishedDownloads.length == 0"
@@ -46,9 +45,10 @@ import ConfirmDelete from "../components/ConfirmDelete.vue";
 import APIUtil from "../util/APIUtil";
 import { onMounted, onUnmounted, computed, ref } from "vue";
 import { useTabSaver } from "@/util";
+import { Download } from "@/types/api/download";
 
 const props = defineProps<{
-  mediaID?: number,
+  mediaId?: number,
   wrapperClass: string
 }>()
 
@@ -64,11 +64,11 @@ const { lastButton, restoreFocus } = useTabSaver()
 const refreshDownloads = async() => {
   loadingDownloads.value = true;
   try {
-    const downloads = await APIUtil.getActiveDownloads(props.mediaID)
+    const downloads = await APIUtil.getActiveDownloads(props.mediaId)
     activeDownloads.value = downloads
   } catch {}
   try {
-    const downloads = await APIUtil.getFinishedDownloads(props.mediaID)
+    const downloads = await APIUtil.getFinishedDownloads(props.mediaId)
     activeDownloads.value = downloads
   } catch {}
 }
@@ -94,7 +94,7 @@ const confirmDelete = ($event: Event, identifier: string) => {
 
 onMounted(() => {
   refreshDownloads()
-  refreshInterval.value = setInterval(refreshDownloads, 3000)
+  refreshInterval.value = setInterval(refreshDownloads, 8000)
 })
 
 onUnmounted(() => {

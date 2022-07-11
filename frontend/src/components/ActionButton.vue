@@ -1,10 +1,10 @@
 <template>
-  <div :class="mode ? 'loading' : ''">
+  <div :class="mode !== TestingMode.OFF ? 'loading' : ''">
     <slot />
   </div>
-  <div v-if="mode === 'loading'" class="loader" />
-  <div v-if="mode === 'success'" class="success"><o-icon icon="check" /></div>
-  <div v-if="mode === 'danger'" class="danger"><o-icon icon="times" /></div>
+  <div v-if="mode === TestingMode.LOADING" class="loader" />
+  <div v-if="mode === TestingMode.SUCCESS" class="success"><o-icon icon="check" /></div>
+  <div v-if="mode === TestingMode.DANGER" class="danger"><o-icon icon="times" /></div>
 </template>
 
 <style scoped>
@@ -63,7 +63,9 @@
 </style>
 
 <script setup lang="ts">
-const props = defineProps<{
-  mode: "loading" | "success" | "danger" | null
+import { TestingMode } from '@/types/testing_mode';
+
+defineProps<{
+  mode: TestingMode
 }>()
 </script>

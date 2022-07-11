@@ -1,5 +1,5 @@
 import { computed, Ref, ref, WritableComputedRef } from "vue";
-import { EditServiceMode } from "@/types/api/service";
+import { ConfigurableService, EditServiceMode } from "@/types/api/service";
 
 export default function <T>(
   lastButton: Ref<HTMLElement | null>,
@@ -57,13 +57,13 @@ export default function <T>(
     openEditServiceModal($event);
   };
 
-  const onSubmit = async(service: T) => {
+  const onSubmit = async(service: ConfigurableService) => {
     try {
         if (mode.value === "new") {
-          await newServiceCallback(service);
+          await newServiceCallback(service as T);
           showNewServiceModal.value = false
         } else if (mode.value === "edit") {
-          await editServiceCallback(service);
+          await editServiceCallback(service as T);
           showEditServiceModal.value = false
         }
     } catch {

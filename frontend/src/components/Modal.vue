@@ -59,16 +59,16 @@
 </style>
 
 <script setup lang="ts">
-import { useComputedValue } from '@/util';
+import { useComputedValue } from 'conductorr-lib';
 
 const props = defineProps<{
-  modelValue: boolean,
   title: string,
-  fullScreen: boolean
+  fullScreen?: boolean
+  modelValue: boolean
 }>()
 
 const emit = defineEmits<{
-  (e: "close"): void,
+  (e: "close"): void
   (e: "update:modelValue", newVal: boolean): void
 }>()
 

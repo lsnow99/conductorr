@@ -46,7 +46,7 @@
       @close="closeManualReleases"
       :releases="releases"
       :loading="loadingManualSearch"
-      :mediaID="mediaID"
+      :mediaID="mediaId"
     />
 </template>
 
@@ -60,8 +60,8 @@ import { useTabSaver, useTooltip } from "@/util"
 const oruga = inject('oruga')
 
 const props = defineProps<{
-  mediaID: number,
-  size: string
+  mediaId: number,
+  size?: string
 }>()
 
 const releases = ref([])
@@ -76,7 +76,7 @@ const { tooltipActive, resetTooltips } = useTooltip()
 const searchManual = async() => {
   loadingManualSearch.value = true
   try {
-    const releases = await APIUtil.searchReleasesManual(props.mediaID)
+    releases.value = await APIUtil.searchReleasesManual(props.mediaId)
   } catch (re) {
     oruga.notification.open({
       duration: 3000,
@@ -94,7 +94,7 @@ const searchManual = async() => {
 const searchAuto = async() => {
   loadingAutoSearch.value = true;
   try {
-    const num = await APIUtil.searchReleasesAuto(props.mediaID)
+    const num = await APIUtil.searchReleasesAuto(props.mediaId)
     if (num > 0) {
       oruga.notification.open({
         duration: 3000,

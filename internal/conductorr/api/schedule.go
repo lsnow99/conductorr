@@ -11,16 +11,16 @@ import (
 
 type Event struct {
 	Timestamp   time.Time `json:"timestamp,omitempty"`
-	MediaID     int       `json:"media_id,omitempty"`
+	MediaID     int       `json:"mediaId,omitempty"`
 	Title       string    `json:"title,omitempty"`
 	Description string    `json:"description,omitempty"`
-	ContentType string    `json:"content_type,omitempty"`
-	SeasonNum   int       `json:"season_num,omitempty"`
-	EpisodeNum  int       `json:"episode_num,omitempty"`
-	SeriesID    int       `json:"series_id,omitempty"`
-	SeriesTitle string    `json:"series_title,omitempty"`
+	ContentType string    `json:"contentType,omitempty"`
+	SeasonNum   int       `json:"seasonNum,omitempty"`
+	EpisodeNum  int       `json:"episodeNum,omitempty"`
+	SeriesID    int       `json:"seriesId,omitempty"`
+	SeriesTitle string    `json:"seriesTitle,omitempty"`
 	Monitoring  bool      `json:"monitoring,omitempty"`
-	PathOK      bool      `json:"path_ok,omitempty"`
+	PathOK      bool      `json:"pathOk,omitempty"`
 }
 
 func GetSchedule(w http.ResponseWriter, r *http.Request) {

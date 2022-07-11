@@ -3,19 +3,10 @@
     <section>
       <h2 class="text-xl">System Health</h2>
       <div class="overflow-hidden rounded-md">
-        <SystemStatus
-          :status="$store.getters.status['downloader']"
-          system="Downloaders"
-        />
-        <SystemStatus
-          :status="$store.getters.status['indexer']"
-          system="Indexers"
-        />
-        <SystemStatus
-          :status="$store.getters.status['media_server']"
-          system="Media Servers"
-        />
-        <SystemStatus :status="$store.getters.status['path']" system="Paths" />
+        <SystemStatus :status="status['downloader']" system="Downloaders" />
+        <SystemStatus :status="status['indexer']" system="Indexers" />
+        <SystemStatus :status="status['media_server']" system="Media Servers" />
+        <SystemStatus :status="status['path']" system="Paths" />
       </div>
     </section>
     <section>
@@ -29,7 +20,7 @@
             Download System Backup
           </action-button>
         </o-button>
-        <iframe :src="downloadUrl" class="hidden"></iframe>
+        <iframe v-if="downloadUrl" :src="downloadUrl" class="hidden"></iframe>
         <o-button
           class="mt-2 sm:mt-0"
           icon-left="upload"
@@ -111,78 +102,81 @@
   </page-wrapper>
 </template>
 
-<script>
+<script setup lang="ts">
 import PageWrapper from "../components/PageWrapper.vue";
 import SystemStatus from "../components/SystemStatus.vue";
 import ActionButton from "../components/ActionButton.vue";
-import { LogPane } from "conductorr-lib";
+import { LogPane, LogMessage } from "conductorr-lib";
 import APIUtil from "../util/APIUtil";
-import { DateTime } from "luxon";
 import Modal from "../components/Modal.vue";
-import TabSaver from "../util/TabSaver";
 import { DOCUMENTATION_URL } from "../util/Constants";
+import { storeToRefs } from "pinia";
+import { useAppStore } from "@/store";
+import { inject, onMounted, ref } from "vue";
+import { TestingMode } from "@/types/testing_mode";
+import { useTabSaver } from "@/util";
+import { TaskStatus } from "@/types/api/task";
 
-export default {
-  components: { PageWrapper, SystemStatus, LogPane, ActionButton, Modal },
-  data() {
-    return {
-      logs: [],
-      backupMode: "",
-      downloadUrl: "",
-      tasks: [],
-      showRestoreBackupModal: false,
-      restoreFile: null,
-      backupDocUrl: `${DOCUMENTATION_URL}backups`,
-    };
-  },
-  mixins: [TabSaver],
-  methods: {
-    createBackup() {
-      this.backupMode = "loading";
-      APIUtil.createNewBackup()
-        .then((backupData) => {
-          this.backupMode = "success";
-          this.downloadUrl = backupData.url;
-        })
-        .catch((err) => {
-          this.$oruga.notification.open({
-            duration: 5000,
-            message: `Failed to create backup: ${err}`,
-            position: "bottom-right",
-            variant: "danger",
-            closable: false,
-          });
-          this.backupMode = "danger";
-        })
-        .finally(() => {
-          setTimeout(() => {
-            this.backupMode = "";
-          }, 5000);
-        });
-    },
-    downloadLogs() {
-      this.downloadUrl = `/api/v1/logFile?time=${new Date().getTime()}`
-    },
-    startRestoreBackup($event) {
-      this.lastButton = $event.currentTarget;
-      this.showRestoreBackupModal = true;
-    },
-    stopRestoreBackup() {
-      this.showRestoreBackupModal = false;
-      this.restoreFile = null;
-      this.restoreFocus();
-    },
-  },
-  mounted() {
-    APIUtil.getLogs().then((logs) => {
-      for (let i = 0; i < logs.length; i++) {
-        logs[i].timestamp = DateTime.fromJSDate(new Date(logs[i].timestamp));
-      }
-      this.logs = logs;
+const { status } = storeToRefs(useAppStore());
+const logs = ref<LogMessage[]>();
+const backupMode = ref<TestingMode>(TestingMode.OFF);
+const downloadUrl = ref<string | null>(null);
+const tasks = ref<TaskStatus[]>([]);
+const showRestoreBackupModal = ref(false);
+const restoreFile = ref<File | null>(null);
+const backupDocUrl = <Readonly<string>>`${DOCUMENTATION_URL}backups`;
+
+const { lastButton, restoreFocus } = useTabSaver();
+
+const oruga = inject("oruga");
+
+const createBackup = async () => {
+  backupMode.value = TestingMode.LOADING;
+  try {
+    const backupData = await APIUtil.createNewBackup();
+    backupMode.value = TestingMode.SUCCESS;
+    downloadUrl.value = backupData.url;
+  } catch (err) {
+    oruga.notification.open({
+      duration: 5000,
+      message: `Failed to create backup: ${err}`,
+      position: "bottom-right",
+      variant: "danger",
+      closable: false,
     });
-    APIUtil.getTaskStatuses().then((tasks) => {
-      this.tasks = tasks;
-    });
-  },
+    backupMode.value = TestingMode.DANGER;
+  } finally {
+    setTimeout(() => {
+      backupMode.value = TestingMode.OFF;
+    }, 5000);
+  }
 };
+
+const downloadLogs = () => {
+  downloadUrl.value = `/api/v1/logFile?time=${new Date().getTime()}`;
+};
+
+const startRestoreBackup = ($event: Event) => {
+  lastButton.value = $event.currentTarget as HTMLElement;
+  showRestoreBackupModal.value = true;
+};
+
+const stopRestoreBackup = () => {
+  showRestoreBackupModal.value = false;
+  restoreFile.value = null;
+  restoreFocus();
+};
+
+const doRestore = () => {
+  
+}
+
+onMounted(async () => {
+  try {
+    logs.value = await APIUtil.getLogs();
+  } catch {}
+  try {
+    tasks.value = await APIUtil.getTaskStatuses();
+  } catch {}
+});
 </script>

@@ -1,5 +1,6 @@
 <template>
   <PrismEditor
+    ref="editor"
     aria-label="Edit CSL"
     label="edit csl"
     class="h-full my-editor"
@@ -45,59 +46,45 @@
 } */
 </style>
 
-<script>
+<script lang="ts">
+export default {
+  name: "csl-editor",
+};
+</script>
+
+<script setup lang="ts">
 import { PrismEditor } from "vue-prism-editor";
 import { highlight, languages } from "prismjs/components/prism-core";
 import "vue-prism-editor/dist/prismeditor.min.css";
 import "prismjs/components/prism-clike";
 import "prismjs/components/prism-lisp";
 import "prismjs/themes/prism-tomorrow.css"; // import syntax highlighting styles
+import { Component, ref } from "vue";
+import { useComputedValue } from "@/util"
 
-export default {
-  name: "csl-editor",
-  props: {
-    modelValue: {
-      type: String,
-      default: function () {
-        return "";
-      },
-    },
-    readonly: {
-      type: Boolean,
-      default: function () {
-        return false;
-      },
-    },
-  },
-  components: {
-    PrismEditor,
-  },
-  emits: ["update:modelValue", "submit"],
-  methods: {
-    highlighter(code) {
-      return highlight(code, languages.lisp, "lisp");
-    },
-    enterPressed(event) {
-      event.stopImmediatePropagation();
-      this.$emit("submit");
-    },
-    focusEditor() {
-      const editors = Array.from(this.$el.getElementsByTagName("textarea"));
-      if (editors.length < 1) {
-        return;
-      }
-      editors[0].focus();
-    },
-  },
-  computed: {
-    computedValue: {
-      get() {
-        return this.modelValue;
-      },
-      set(newVal) {
-        this.$emit("update:modelValue", newVal);
-      },
-    },
-  },
+const props = defineProps<{
+  modelValue: string;
+  readonly?: boolean;
+}>();
+
+const emit = defineEmits<{
+  (e: "update:modelValue", newVal: string): void;
+  (e: "submit"): void;
+}>();
+
+const highlighter = (code: string) => highlight(code, languages.lisp, "lisp");
+
+const enterPressed = ($event: Event) => {
+  $event?.stopImmediatePropagation();
+  emit("submit");
 };
+
+const editor = ref<Element>();
+const focusEditor = () => {
+  Array.from(editor.value?.getElementsByTagName("textarea")).forEach(
+    (elem) => elem.focus()
+  );
+};
+
+const computedValue = useComputedValue<string>(props, emit)
 </script>

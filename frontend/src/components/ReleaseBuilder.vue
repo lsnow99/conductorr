@@ -35,14 +35,14 @@
           <o-input
             type="text"
             placeholder="Release title"
-            v-model="computedRelease.title"
+            v-model="computedRelease!.title"
           />
         </o-field>
         <o-field label="Indexer">
           <o-input
             type="text"
             placeholder="Indexer name"
-            v-model="computedRelease.indexer"
+            v-model="computedRelease!.indexer"
           />
         </o-field>
         <o-field label="Seeders">
@@ -50,7 +50,7 @@
             type="number"
             @change="numberChanged"
             placeholder="Number of seeders"
-            v-model="computedRelease.seeders"
+            v-model="computedRelease!.seeders"
           />
         </o-field>
         <o-field label="Age">
@@ -58,7 +58,7 @@
             type="number"
             @change="numberChanged"
             placeholder="Release age (days)"
-            v-model="computedRelease.age"
+            v-model="computedRelease!.age"
           />
         </o-field>
         <o-field label="Runtime (minutes)">
@@ -66,7 +66,7 @@
             type="number"
             @change="numberChanged"
             placeholder="Runtime (minutes)"
-            v-model="computedRelease.runtime"
+            v-model="computedRelease!.runtime"
             min="0"
           />
         </o-field>
@@ -79,7 +79,7 @@
             v-model="size"
             min="0"
           />
-          <o-select v-model="computedRelease.sizeUnit" placeholder="Units">
+          <o-select v-model="computedRelease!.sizeUnit" placeholder="Units">
             <option value="B">B</option>
             <option value="KB">KB</option>
             <option value="MB">MB</option>
@@ -91,7 +91,7 @@
       <div class="flex flex-col flex-1 p-4">
         <o-field label="Content Type">
           <o-select
-            v-model="computedRelease.content_type"
+            v-model="computedRelease!.contentType"
             placeholder="Content type"
           >
             <option value="movie">Movie</option>
@@ -100,7 +100,7 @@
         </o-field>
         <o-field label="Download Type">
           <o-select
-            v-model="computedRelease.downloadType"
+            v-model="computedRelease!.downloadType"
             placeholder="Download type"
           >
             <option value="torrent">Torrent</option>
@@ -108,7 +108,7 @@
           </o-select>
         </o-field>
         <o-field label="Rip Type">
-          <o-select v-model="computedRelease.rip_type" placeholder="Rip type">
+          <o-select v-model="computedRelease!.ripType" placeholder="Rip type">
             <option
               v-for="ripType in RIP_TYPES"
               :key="ripType"
@@ -120,7 +120,7 @@
         </o-field>
         <o-field label="Resolution">
           <o-select
-            v-model="computedRelease.resolution"
+            v-model="computedRelease!.resolution"
             placeholder="Resolution"
           >
             <option
@@ -133,7 +133,7 @@
           </o-select>
         </o-field>
         <o-field label="Encoding">
-          <o-select v-model="computedRelease.encoding" placeholder="Encoding">
+          <o-select v-model="computedRelease!.encoding" placeholder="Encoding">
             <option
               v-for="encoding in ENCODING_TYPES"
               :key="encoding"
@@ -155,78 +155,85 @@
 </style>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch, WritableComputedRef } from "vue";
+import {
+  computed,
+  nextTick,
+  onMounted,
+  ref,
+  watch,
+  WritableComputedRef,
+} from "vue";
 import APIUtil from "../util/APIUtil";
 import { RESOLUTION_TYPES, RIP_TYPES, ENCODING_TYPES } from "../util/Constants";
 import { TooltipPosition } from "@/types/tooltip";
-import { Release } from "@/types/api/release"
+import { Release } from "@/types/api/release";
+import { Indexer } from "@/types/api/indexer";
 
-const encodingTypes = ref(ENCODING_TYPES)
-const ripTypes = ref(RIP_TYPES)
-const resolutionTypes = ref(RESOLUTION_TYPES)
+const encodingTypes = ref(ENCODING_TYPES);
+const ripTypes = ref(RIP_TYPES);
+const resolutionTypes = ref(RESOLUTION_TYPES);
 const exampleMovies = ref<Release[]>([
   {
     title: "Manos.The.Hands.of.Fate.1966.THEATRiCAL.1080p.BluRay.x264-SADPANDA",
     resolution: "1080p",
     encoding: "x264",
-    rip_type: "BDRip",
-    content_type: "movie",
+    ripType: "BDRip",
+    contentType: "movie",
   },
   {
     title:
       "The.Last.Man.On.Earth.1964.1080p.BluRay.Plus.Comm.DTS.x264-MaG-Obfuscated",
     resolution: "1080p",
     encoding: "x264",
-    rip_type: "TELESYNC",
-    content_type: "movie",
+    ripType: "TELESYNC",
+    contentType: "movie",
   },
   {
     title:
       "Night.of.the.Living.Dead.1968.1080p.BluRay.CRITERION.Plus.Comms.FLAC.x264-MaG-Obfuscated",
     resolution: "1080p",
     encoding: "x264",
-    rip_type: "BDRip",
-    content_type: "movie",
+    ripType: "BDRip",
+    contentType: "movie",
   },
   {
     title:
       "Santa.Claus.Conquers.the.Martians.1964.1080p.BDRip.DTS.x265.10bit-MarkII",
     resolution: "1080p",
     encoding: "x265",
-    rip_type: "TELESYNC",
-    content_type: "movie",
+    ripType: "TELESYNC",
+    contentType: "movie",
   },
   {
     title: "The.Terror.1963.720p.BluRay.DTS.x264-DJ",
     resolution: "720p",
     encoding: "x264",
-    rip_type: "TELESYNC",
-    content_type: "movie",
+    ripType: "TELESYNC",
+    contentType: "movie",
   },
 ]);
 
-const size = ref<number | null>(null)
-const indexers = ref<Indexer[]>([])
-const tooltipPosition = ref<TooltipPosition>("bottom")
+const size = ref<number | null>(null);
+const indexers = ref<Indexer[]>([]);
+const tooltipPosition = ref<TooltipPosition>("bottom");
 
 const props = defineProps<{
-  modelValue: Release,
-  title: string
-}>()
+  modelValue: Release | null;
+  title: string;
+}>();
 
 const emit = defineEmits<{
-  (e: "update:modelValue", newVal: Release): void
-}>()
+  (e: "update:modelValue", newVal: Release | null): void;
+}>();
 
-
-const computedRelease: WritableComputedRef<Release> = computed({
+const computedRelease: WritableComputedRef<Release | null> = computed({
   get() {
     const release = props.modelValue;
-    if (release.sizeUnit) {
+    if (release?.sizeUnit) {
       return release;
     }
     let sizes = ["B", "KB", "MB", "GB", "TB"];
-    if (release.size == 0 || !release.size || isNaN(release.size)) {
+    if (release?.size == 0 || !release?.size || isNaN(release.size)) {
       return release;
     }
     let i = Math.floor(Math.log(release.size) / Math.log(1024));
@@ -235,48 +242,55 @@ const computedRelease: WritableComputedRef<Release> = computed({
     return release;
   },
   set(newVal) {
-    emit("update:modelValue", newVal)
-  }
-})
+    emit("update:modelValue", newVal);
+  },
+});
 
 const randomize = () => {
   const release =
-        exampleMovies.value[Math.floor(Math.random() * exampleMovies.value.length)];
-      if (release.title == computedRelease.value.title) {
-        randomize();
-        return;
-      }
-      const randSize = Math.floor(Math.random() * 15 * Math.pow(2, 30));
-      release.size = randSize;
-      release.sizeUnit = undefined;
-      release.runtime = Math.floor(Math.random() * 300);
-      release.age = Math.floor(Math.random() * 3000);
+    exampleMovies.value[Math.floor(Math.random() * exampleMovies.value.length)];
+  if (release.title == computedRelease.value?.title) {
+    randomize();
+    return;
+  }
+  const randSize = Math.floor(Math.random() * 15 * Math.pow(2, 30));
+  release.size = randSize;
+  release.sizeUnit = undefined;
+  release.runtime = Math.floor(Math.random() * 300);
+  release.age = Math.floor(Math.random() * 3000);
 
-      if (indexers.value && indexers.value.length > 0) {
-        const randomIndexer =
-          indexers.value[Math.floor(Math.random() * indexers.value.length)];
-        release.indexer = randomIndexer.name;
-        release.downloadType = randomIndexer.downloadType;
-        if (release.downloadType == "torrent") {
-          release.seeders = Math.floor(Math.random() * 50);
-        } else {
-          release.seeders = 0;
-        }
-      }
+  if (indexers.value && indexers.value.length > 0) {
+    const randomIndexer =
+      indexers.value[Math.floor(Math.random() * indexers.value.length)];
+    release.indexer = randomIndexer.name;
+    release.downloadType = randomIndexer.downloadType;
+    if (release.downloadType == "torrent") {
+      release.seeders = Math.floor(Math.random() * 50);
+    } else {
+      release.seeders = 0;
+    }
+  }
 
-      computedRelease.value = release;
-}
+  computedRelease.value = release;
+};
 
 const clear = () => {
-  size.value = null
-  emit('update:modelValue', {})
-}
+  size.value = null;
+  emit("update:modelValue", null);
+};
 
 const updateSize = () => {
   if (!size.value) {
-    return
+    return;
   }
-  let newRelease = computedRelease.value;
+  let newRelease: Release = computedRelease.value ?? {
+    size: 0,
+    title: "",
+    encoding: "",
+    ripType: "",
+    contentType: "",
+    resolution: "",
+  };
   newRelease.size = size.value;
   switch (newRelease.sizeUnit) {
     case "B":
@@ -297,31 +311,32 @@ const updateSize = () => {
       break;
   }
   emit("update:modelValue", newRelease);
-}
+};
 
-
-const forceInt = (x: string | number | undefined | null, fallback=-1) => {
-  const val = parseInt(`${x}`)
+const forceInt = (x: string | number | undefined | null, fallback = -1) => {
+  const val = parseInt(`${x}`);
   if (val === NaN) {
-    return fallback
+    return fallback;
   }
-  return val
-}
+  return val;
+};
 
 const numberChanged = () => {
   nextTick(() => {
-    computedRelease.value.seeders = forceInt(computedRelease.value.seeders)
-    computedRelease.value.age = forceInt(computedRelease.value.age)
-    computedRelease.value.runtime = forceInt(computedRelease.value.runtime)
-    computedRelease.value.size = forceInt(computedRelease.value.size)
-  })
-}
+    if (computedRelease.value) {
+      computedRelease.value.seeders = forceInt(computedRelease.value.seeders);
+      computedRelease.value.age = forceInt(computedRelease.value.age);
+      computedRelease.value.runtime = forceInt(computedRelease.value.runtime);
+      computedRelease.value.size = forceInt(computedRelease.value.size);
+    }
+  });
+};
 
-onMounted(async() => {
+onMounted(async () => {
   try {
-    const loadedIndexers = await APIUtil.getIndexers()
-    indexers.value = loadedIndexers
-    randomize()
+    const loadedIndexers = await APIUtil.getIndexers();
+    indexers.value = loadedIndexers;
+    randomize();
   } catch (error) {
     // TODO: error to user
   }
@@ -329,17 +344,17 @@ onMounted(async() => {
   if (screenWidth < 768) {
     tooltipPosition.value = "left";
   }
-})
+});
 
 const sizeUnit = computed(() => {
-  return props.modelValue.sizeUnit
-})
+  return props.modelValue?.sizeUnit;
+});
 
 watch(sizeUnit, () => {
-  updateSize()
-})
+  updateSize();
+});
 
 watch(size, () => {
-  updateSize()
-})
+  updateSize();
+});
 </script>

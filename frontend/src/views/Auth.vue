@@ -1,8 +1,8 @@
 <template>
   <div class="flex flex-row justify-center">
     <section class="max-w-lg mt-40">
-      <img src="/logo-rect-transparent.svg" width="100" class="m-auto pb-16" />
-      <div v-if="first_time" class="text-2xl">Create User</div>
+      <img src="/logo-rect-transparent.svg" width="100" class="pb-16 m-auto" />
+      <div v-if="firstTime" class="text-2xl">Create User</div>
       <div v-else class="text-2xl">Login</div>
       <o-field label="Username">
         <o-input type="text" @keydown.enter="submit" v-model="username" />
@@ -10,7 +10,7 @@
       <o-field label="Password">
         <o-input type="password" @keydown.enter="submit" v-model="password" />
       </o-field>
-      <o-field v-if="first_time" label="Confirm Password">
+      <o-field v-if="firstTime" label="Confirm Password">
         <o-input
           type="password"
           @keydown.enter="submit"
@@ -19,7 +19,7 @@
       </o-field>
       <div class="flex flex-row justify-between mt-2">
         <div />
-        <o-button variant="primary" v-if="first_time" @click="submit"
+        <o-button variant="primary" v-if="firstTime" @click="submit"
           >Register</o-button
         >
         <o-button variant="primary" v-else @click="submit">Login</o-button>
@@ -33,95 +33,93 @@
   </div>
 </template>
 
-<script>
+<script setup lang="ts">
+import { inject, onMounted, ref } from "vue";
 import APIUtil from "../util/APIUtil";
-import AuthUtil from "../util/AuthUtil";
+import { useRouter } from "vue-router";
+import { storeToRefs } from "pinia";
+import { useAppStore } from "@/store";
 
-export default {
-  data() {
-    return {
-      username: "",
-      password: "",
-      confirmPassword: "",
-      loading: true,
-      first_time: false,
-    };
-  },
-  methods: {
-    submit() {
-      if (this.first_time) {
-        this.submitRegister();
-      } else {
-        this.submitLogin();
-      }
-    },
-    submitLogin() {
-      this.loading = true;
-      APIUtil.signIn(this.username, this.password)
-        .then(() => {
-          this.$store.commit("setLoggedIn", true);
-          this.$router.push({ name: "home" });
-        })
-        .catch((msg) => {
-          this.$oruga.notification.open({
-            duration: 5000,
-            message: `Error logging in: ${msg}`,
-            position: "bottom-right",
-            variant: "danger",
-            closable: false,
-          });
-          this.$store.commit("setLoggedIn", false);
-        })
-        .finally(() => {
-          this.loading = false;
-        });
-    },
-    submitRegister() {
-      if (this.confirmPassword != this.password) {
-        this.$oruga.notification.open({
-          duration: 5000,
-          message: `Passwords do not match`,
-          position: "bottom-right",
-          variant: "danger",
-          closable: false,
-        });
-        return;
-      }
-      this.loading = true;
-      APIUtil.signUp(this.username, this.password)
-        .then(() => {
-          this.$store.commit("setLoggedIn", true);
-          this.$router.push({ name: "home" });
-        })
-        .catch((msg) => {
-          this.$oruga.notification.open({
-            duration: 5000,
-            message: `Error signing up: ${msg}`,
-            position: "bottom-right",
-            variant: "danger",
-            closable: false,
-          });
-        })
-        .finally(() => {
-          this.loading = false;
-        });
-    },
-  },
-  mounted() {
-      if (this.$store.getters.loggedIn) {
-        this.$router.push({ name: "home" });
-      } else {
-        APIUtil.isFirstTime()
-          .then(() => {
-            this.first_time = true;
-          })
-          .catch(() => {
-            this.first_time = false;
-          })
-          .finally(() => {
-            this.loading = false;
-          });
-      }
-  },
+const username = ref("");
+const password = ref("");
+const confirmPassword = ref("");
+const loading = ref(true);
+const firstTime = ref(false);
+
+const router = useRouter();
+const oruga = inject("oruga");
+
+const { loggedIn } = storeToRefs(useAppStore())
+
+const submitLogin = async () => {
+  loading.value = true;
+  try {
+    await APIUtil.signIn(username.value, password.value);
+    loggedIn.value = true
+    router.push({ name: "home" });
+  } catch (err) {
+    oruga.notification.open({
+      duration: 5000,
+      message: `Error logging in: ${err}`,
+      position: "bottom-right",
+      variant: "danger",
+      closable: false,
+    });
+    loggedIn.value = false
+  } finally {
+    loading.value = false;
+  }
 };
+
+const submitRegister = async () => {
+  if (confirmPassword.value != password.value) {
+    oruga.notification.open({
+      duration: 5000,
+      message: `Passwords do not match`,
+      position: "bottom-right",
+      variant: "danger",
+      closable: false,
+    });
+    return;
+  }
+  loading.value = true;
+  try {
+    await APIUtil.signUp(username.value, password.value);
+    loggedIn.value = true
+    router.push({ name: "home" });
+  } catch (err) {
+    oruga.notification.open({
+      duration: 5000,
+      message: `Error signing up: ${err}`,
+      position: "bottom-right",
+      variant: "danger",
+      closable: false,
+    });
+  } finally {
+    loading.value = false;
+  }
+};
+
+const submit = async () => {
+  if (firstTime.value) {
+    submitRegister();
+  } else {
+    submitLogin();
+  }
+};
+
+onMounted(async () => {
+  if (loggedIn.value) {
+    router.push({ name: "home" });
+  } else {
+    try {
+      await APIUtil.isFirstTime();
+      firstTime.value = true;
+    } catch (err) {
+      firstTime.value = false;
+    } finally {
+      loading.value = false;
+    }
+  }
+});
 </script>

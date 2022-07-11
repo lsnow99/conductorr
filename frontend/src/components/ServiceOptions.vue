@@ -1,20 +1,20 @@
 <template>
-    <div class="grid md:grid-cols-2">
-      <div
-        v-for="service in services"
-        :key="service.value"
-        class="service"
-        :class="computedValue == service.value ? 'active' : ''"
-        @click="computedValue = service.value"
-        @keydown.space="computedValue = service.value"
-        @keydown.enter="computedValue = service.value"
-        tabindex="0"
-        role="button"
-        :aria-label="service.name"
-      >
-        {{ service.name }}
-      </div>
+  <div class="grid md:grid-cols-2">
+    <div
+      v-for="service in services"
+      :key="service.value"
+      class="service"
+      :class="computedValue == service.value ? 'active' : ''"
+      @click="computedValue = service.value"
+      @keydown.space="computedValue = service.value"
+      @keydown.enter="computedValue = service.value"
+      tabindex="0"
+      role="button"
+      :aria-label="service.name"
+    >
+      {{ service.name }}
     </div>
+  </div>
 </template>
 
 <style scoped>
@@ -28,17 +28,17 @@
 </style>
 
 <script setup lang="ts">
-import useComputedValue from "@/util/ComputedValue"
-import { Service, ServiceIdentifier } from "@/types/api/service"
+import { useComputedValue } from "conductorr-lib";
+import { Service, ServiceIdentifier } from "@/types/api/service";
 
 const props = defineProps<{
-    modelValue: string,
-    services: Service[]
-}>()
+  services: Service[];
+  modelValue: string | null;
+}>();
 
 const emit = defineEmits<{
-    (e: "update:modelValue", newVal: ServiceIdentifier): void
-}>()
+  (e: "update:modelValue", newVal: string | null): void;
+}>();
 
-const computedValue = useComputedValue<ServiceIdentifier>(props, emit)
+const computedValue = useComputedValue<ServiceIdentifier | null>(props, emit);
 </script>

@@ -24,6 +24,7 @@ import ServiceOptions from "./ServiceOptions.vue";
 import Modal from "./Modal.vue";
 import { ref } from "vue";
 import { useComputedActive } from "@/util";
+import { DownloaderType } from "@/types/api/downloader";
 
 const downloaderTypes = ref([
   {
@@ -36,7 +37,7 @@ const downloaderTypes = ref([
   },
 ])
 
-const selectedDownloader = ref(null)
+const selectedDownloader = ref<DownloaderType | null>(null)
 
 const props = defineProps<{
   active: boolean
@@ -49,7 +50,7 @@ const emit = defineEmits<{
 }>()
 
 const next = () => {
-  emit("selected", selectedDownloader.value)
+  emit("selected", selectedDownloader.value!)
   selectedDownloader.value = null
 }
 

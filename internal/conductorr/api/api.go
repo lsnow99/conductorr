@@ -76,7 +76,7 @@ type response struct {
 	Success    bool        `json:"success"`
 	Data       interface{} `json:"data"`
 	Msg        string      `json:"msg"`
-	FailedAuth bool        `json:"failed_auth"`
+	FailedAuth bool        `json:"failedAuth"`
 }
 
 func Respond(w http.ResponseWriter, req *http.Request, err error, data interface{}, authorize bool) {

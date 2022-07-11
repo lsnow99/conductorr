@@ -1,6 +1,6 @@
 <template>
-  <modal title="New Media Server" v-model="computedActive" @close="close">
-    <service-options
+  <Modal title="New Media Server" v-model="computedActive" @close="close">
+    <ServiceOptions
       :services="mediaServerTypes"
       v-model="selectedMediaServer"
     />
@@ -9,75 +9,56 @@
       <div>
         <o-button
           variant="primary"
-          :disabled="selectedMediaServer == ''"
+          :disabled="!!selectedMediaServer"
           @click="next"
           >Next</o-button
         >
       </div>
     </template>
-  </modal>
+  </Modal>
 </template>
 
-<script>
+<script setup lang="ts">
 import ServiceOptions from "./ServiceOptions.vue";
 import Modal from "./Modal.vue";
+import { MediaServerType, MediaServer } from "@/types/api/media_server";
+import { ref, watch } from "vue";
+import { useComputedActive } from "@/util";
 
-const mediaServerTypes = [
+const selectedMediaServer = ref<MediaServerType | null>(null)
+const mediaServerTypes = ref<{name: string, value: MediaServerType}[]>([
   {
     name: "Plex",
-    value: "plex",
+    value: MediaServerType.PLEX,
   },
   {
     name: "Jellyfin",
-    value: "jellyfin",
+    value: MediaServerType.JELLYFIN,
   },
-];
+]);
 
-export default {
-  data() {
-    return {
-      mediaServerTypes,
-      selectedMediaServer: "",
-    };
-  },
-  props: {
-    active: {
-      type: Boolean,
-      default: function () {
-        return false;
-      },
-    },
-  },
-  components: {
-    ServiceOptions,
-    Modal,
-  },
-  emits: ["close", "selected", "update:active"],
-  methods: {
-    next() {
-      this.$emit("selected", this.selectedMediaServer);
-    },
-    close() {
-      this.selectedMediaServer = "";
-      this.$emit("close");
-    },
-  },
-  watch: {
-    active(v) {
-      if (!v) {
-        this.selectedMediaServer = "";
-      }
-    },
-  },
-  computed: {
-    computedActive: {
-      get() {
-        return this.active;
-      },
-      set(v) {
-        this.$emit("update:active", v);
-      },
-    },
-  },
-};
+const props = defineProps<{
+  active: boolean
+}>()
+
+const emit = defineEmits<{
+  (e: "close"): void
+  (e: "selected", selectedVal: MediaServer): void
+  (e: "update:active", active: boolean): void
+}>()
+
+const next = () => selectedMediaServer.value && emit("selected", selectedMediaServer.value)
+
+const close = () => {
+  selectedMediaServer.value = null
+  emit("close")
+}
+
+watch(() => props.active, (newVal) => {
+  if (!newVal) {
+    selectedMediaServer.value = null
+  }
+})
+
+const computedActive = useComputedActive(props, emit)
 </script>

@@ -1,5 +1,5 @@
 <template>
-  <Modal :title="title" v-model:active="computedActive" @close="emit('close')">
+  <Modal :title="title" v-model="computedActive" @close="emit('close')">
     <div>
       <o-field label="Name">
         <o-input type="text" v-model="computedValue.name" placeholder="Name" />
@@ -8,13 +8,13 @@
         <template v-if="field.component">
           <component
             :is="field.component"
-            v-model="computedValue.config[field.property]"
+            v-model="computedValue[field.property]"
           />
         </template>
         <o-field v-else :label="field.label">
           <o-input
             :type="field.type"
-            v-model="computedValue.config[field.property]"
+            v-model="computedValue[field.property]"
             :placeholder="field.placeholder"
           />
         </o-field>
@@ -37,65 +37,66 @@
 import Modal from "./Modal.vue";
 import ActionButton from "./ActionButton.vue";
 import { ConfigurableService } from "@/types/api/service";
-import { useComputedActive, useComputedValue } from "@/util";
+import { useComputedActive } from "@/util";
 import { inject } from "vue";
+import { TestingMode } from "@/types/testing_mode";
+import { useComputedValue } from "conductorr-lib"
 
-const oruga = inject("oruga")
+const oruga = inject("oruga");
 
-const props = withDefaults(defineProps<{
-  modelValue: ConfigurableService,
-  active: boolean,
-  fields: any[],
-  title: string,
-  extraSanitizer: () => void,
-  extraValidator: () => string | null,
-  testingMode: string
-}>(), {
-  extraSanitizer: () => {},
-  extraValidator: () => null
-})
+const props = withDefaults(
+  defineProps<{
+    modelValue: ConfigurableService;
+    active: boolean;
+    fields: any[];
+    title: string;
+    extraSanitizer: () => void;
+    extraValidator: () => string | null;
+    testingMode: TestingMode;
+  }>(),
+  {
+    extraSanitizer: () => {},
+    extraValidator: () => null,
+  }
+);
 
 const emit = defineEmits<{
-  (e: "update:modelValue", newVal: ConfigurableService): void,
-  (e: "update:active", newVal: boolean): void,
-  (e: "save", savedVal: ConfigurableService): Promise<void>,
-  (e: "test", savedVal: ConfigurableService): Promise<void>,
-  (e: "close"): void
-}>()
+  (e: "update:modelValue", newVal: ConfigurableService): void;
+  (e: "update:active", newVal: boolean): void;
+  (e: "save", savedVal: ConfigurableService): Promise<void>;
+  (e: "test", savedVal: ConfigurableService): Promise<void>;
+  (e: "close"): void;
+}>();
 
-const computedValue = useComputedValue<ConfigurableService>(props, emit)
-const computedActive = useComputedActive(props, emit)
+const computedValue = useComputedValue<ConfigurableService>(props, emit);
+const computedActive = useComputedActive(props, emit);
 
 const sanitize = () => {
-  computedValue.value.name = computedValue.value.name?.trim() ?? ""
   for (const field of props.fields) {
     if (field.trim) {
-      computedValue.value.config[field.property] = computedValue.value.config[
-        field.property
-      ]
-        ? computedValue.value.config[field.property].trim()
-        : "";
+      computedValue.value[field.property] =
+        (computedValue.value[field.property] as (string | undefined | null))?.trim() ?? "";
     }
   }
   props.extraSanitizer();
-}
+};
 
 const validate = (configOnly: boolean = false) => {
-  if(!computedValue.value.name && !configOnly) {
-    return "Name is required"
+  if (!computedValue.value.name && !configOnly) {
+    return "Name is required";
   }
   for (const field of props.fields) {
-    if (field.required && !computedValue.value.config[field.property]) {
+    if (field.required && !computedValue.value[field.property]) {
       return `${field.label} is required`;
     }
   }
   return props.extraValidator();
-}
+};
 
 const test = () => {
   sanitize();
-  emit("test", computedValue.value)
-}
+  emit("test", computedValue.value);
+};
 
 const save = () => {
   sanitize();
@@ -108,9 +109,8 @@ const save = () => {
       variant: "danger",
       closable: false,
     });
-    return
+    return;
   }
-  emit("save", computedValue.value)
-}
-
+  emit("save", computedValue.value);
+};
 </script>

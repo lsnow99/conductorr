@@ -13,8 +13,8 @@ import (
 type Path struct {
 	ID            int    `json:"id,omitempty"`
 	Path          string `json:"path,omitempty"`
-	MoviesDefault bool   `json:"movies_default,omitempty"`
-	SeriesDefault bool   `json:"series_default,omitempty"`
+	MoviesDefault bool   `json:"moviesDefault,omitempty"`
+	SeriesDefault bool   `json:"seriesDefault,omitempty"`
 }
 
 func NewDBPathFromPath(path Path) dbstore.Path {

@@ -8,41 +8,32 @@
   </div>
 </template>
 
-<script>
+<script setup lang="ts">
 import { DateTime } from "luxon";
 import LogPane from "./LogPane.vue";
 import CSLEditor from "./CSLEditor.vue";
+import { ref } from "vue";
+import { LogMessage, Variant } from "./types";
 
-export default {
-  data() {
-    return {
-      code: `This is some code`,
-      logs: [
-        {
-          msg: "Hi",
-          variant: "danger",
-          timestamp: DateTime.now(),
-        },
-        {
-          msg: "Hi",
-          variant: "success",
-          timestamp: DateTime.now(),
-        },
-      ],
-    };
+const code = ref(`This is some code`)
+const logs = ref<LogMessage[]>([
+  {
+    msg: "Hi",
+    variant: Variant.DANGER,
+    timestamp: DateTime.now()
   },
-  components: {
-    LogPane,
-    CSLEditor,
-  },
-  methods: {
-    addLog() {
-      this.logs.push({
-        msg: "Hi",
-        variant: "success",
-        timestamp: DateTime.now(),
-      });
-    },
-  },
-};
+  {
+    msg: "Hi",
+    variant: Variant.SUCCESS,
+    timestamp: DateTime.now()
+  }
+])
+
+const addLog = () => {
+  logs.value.push({
+    msg: "Hi",
+    variant: Variant.SUCCESS,
+    timestamp: DateTime.now()
+  })
+}
 </script>

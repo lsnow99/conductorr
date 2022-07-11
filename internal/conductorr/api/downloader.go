@@ -13,16 +13,16 @@ import (
 
 type DownloaderInput struct {
 	Name           string                 `json:"name,omitempty"`
-	DownloaderType string                 `json:"downloader_type,omitempty"`
-	FileAction     string                 `json:"file_action,omitempty"`
+	DownloaderType string                 `json:"downloaderType,omitempty"`
+	FileAction     string                 `json:"fileAction,omitempty"`
 	Config         map[string]interface{} `json:"config,omitempty"`
 }
 
 type DownloaderResponse struct {
 	ID             int                    `json:"id,omitempty"`
 	Name           string                 `json:"name,omitempty"`
-	DownloaderType string                 `json:"downloader_type,omitempty"`
-	FileAction     string                 `json:"file_action,omitempty"`
+	DownloaderType string                 `json:"downloaderType,omitempty"`
+	FileAction     string                 `json:"fileAction,omitempty"`
 	Config         map[string]interface{} `json:"config,omitempty"`
 }
 

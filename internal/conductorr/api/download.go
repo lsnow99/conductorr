@@ -12,14 +12,14 @@ import (
 
 type DownloadResponse struct {
 	ID           int       `json:"id"`
-	MediaID      int       `json:"media_id"`
-	FriendlyName string    `json:"friendly_name"`
+	MediaID      int       `json:"mediaId"`
+	FriendlyName string    `json:"friendlyName"`
 	Identifier   string    `json:"identifier"`
-	FinalDir     string    `json:"final_dir"`
+	FinalDir     string    `json:"finalDir"`
 	Status       string    `json:"status"`
 	Started      time.Time `json:"started"`
-	BytesLeft    uint64    `json:"bytes_left"`
-	FullSize     uint64    `json:"full_size"`
+	BytesLeft    uint64    `json:"bytesLeft"`
+	FullSize     uint64    `json:"fullSize"`
 }
 
 func NewDownloadResponseFromManagedDownload(dl app.ManagedDownload) (dlr DownloadResponse) {

@@ -1,5 +1,5 @@
 <template>
-  <page-wrapper>
+  <PageWrapper>
     <section class="h-[29rem]">
       <h1 class="text-2xl">Recently Added to Library</h1>
       <div class="flex flex-wrap justify-between p-2">
@@ -7,7 +7,7 @@
           <template v-slot:arrow="props">
             <div
               v-if="props.hasPrev"
-              @click="$refs.carousel.prev"
+              @click="carousel?.prev"
               class="absolute w-10 h-10 -translate-y-1/2 bg-gray-600 rounded-full shadow-md cursor-pointer top-1/2 left-2"
             >
               <div class="relative w-full h-full">
@@ -19,7 +19,7 @@
             </div>
             <div
               v-if="props.hasNext"
-              @click="$refs.carousel.next"
+              @click="carousel?.next"
               class="absolute w-10 h-10 -translate-y-1/2 bg-gray-600 rounded-full shadow-md cursor-pointer top-1/2 right-2"
             >
               <div class="relative w-full h-full">
@@ -31,14 +31,21 @@
             </div>
           </template>
           <o-carousel-item v-for="media in recentMedia" :key="media.id">
-            <div class="flex flex-row justify-center py-4 md:justify-start md:px-16">
+            <div
+              class="flex flex-row justify-center py-4 md:justify-start md:px-16"
+            >
               <div class="flex flex-row justify-center flex-1">
                 <MediaCard :media="media" @click="gotoMedia"></MediaCard>
               </div>
               <div class="flex-col hidden p-4 md:flex">
-                <span class="text-3xl">{{media.title}}</span>
-                <span class="mt-8 text-lg">{{media.description}}</span>
-                <span class="self-end"><router-link :to="{name: 'media', params: {media_id: media.id}}"><o-button>Go to Media</o-button></router-link></span>
+                <span class="text-3xl">{{ media.title }}</span>
+                <span class="mt-8 text-lg">{{ media.description }}</span>
+                <span class="self-end"
+                  ><router-link
+                    :to="{ name: 'media', params: { media_id: media.id } }"
+                    ><o-button>Go to Media</o-button></router-link
+                  ></span
+                >
               </div>
             </div>
           </o-carousel-item>
@@ -48,7 +55,7 @@
     <section class="flex-1">
       <DownloadStatusViewer wrapperClass="h-96" />
     </section>
-  </page-wrapper>
+  </PageWrapper>
 </template>
 
 <script setup lang="ts">
@@ -60,17 +67,20 @@ import { onMounted, ref } from "vue";
 import { Media } from "@/types/api/media";
 import { useRouter } from "vue-router";
 
-const recentMedia = ref<Media[]>([])
+const recentMedia = ref<Media[]>([]);
+const carousel = ref<(Element & { prev: () => void; next: () => void }) | null>(
+  null
+);
 
 const router = useRouter();
 const gotoMedia = (media: Media) => {
-  router.push({name: "media", params: {media_id: media.id}})
-}
+  router.push({ name: "media", params: { media_id: media.id } });
+};
 
-onMounted(async() => {
+onMounted(async () => {
   try {
-    const media = await APIUtil.getRecentMedia()
+    const media = await APIUtil.getRecentMedia();
     recentMedia.value = media;
   } catch {}
-})
+});
 </script>

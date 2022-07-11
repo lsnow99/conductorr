@@ -44,5 +44,4 @@ import { Media } from '@/types/api/media';
 const props = defineProps<{
   media: Media
 }>()
-
 </script>

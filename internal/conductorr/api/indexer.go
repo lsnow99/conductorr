@@ -13,12 +13,12 @@ import (
 
 type IndexerInput struct {
 	Name         string `json:"name"`
-	UserID       int   `json:"user_id,omitempty"`
-	BaseUrl      string `json:"base_url,omitempty"`
-	ApiKey       string `json:"api_key,omitempty"`
-	ForMovies    bool   `json:"for_movies,omitempty"`
-	ForSeries    bool   `json:"for_series,omitempty"`
-	DownloadType string `json:"download_type,omitempty"`
+	UserID       int    `json:"userId,omitempty"`
+	BaseUrl      string `json:"baseUrl,omitempty"`
+	ApiKey       string `json:"apiKey,omitempty"`
+	ForMovies    bool   `json:"forMovies,omitempty"`
+	ForSeries    bool   `json:"forSeries,omitempty"`
+	DownloadType string `json:"downloadType,omitempty"`
 }
 
 type IndexerResponse struct {

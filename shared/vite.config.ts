@@ -1,13 +1,13 @@
-const path = require("path");
+import * as path from "path";
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ command, mode }) => {
+export default defineConfig(({ mode }) => {
 
   const LIB_MODE = {
     lib: {
-      entry: path.resolve(__dirname, "src/lib.js"),
+      entry: path.resolve(__dirname, "src/lib.ts"),
       name: "conductorr-lib",
       fileName: (format) => `conductorr-lib.${format}.js`,
     },
@@ -32,5 +32,10 @@ export default defineConfig(({ command, mode }) => {
     plugins: [vue()],
     base: "/",
     build: buildMode,
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
+      },
+    }
   };
 });

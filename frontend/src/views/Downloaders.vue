@@ -1,6 +1,6 @@
 <template>
   <section class="mt-3">
-    <div class="flex flex-col sm:flex-row justify-between">
+    <div class="flex flex-col justify-between sm:flex-row">
       <div class="flex justify-center">
         <o-button @click="showNewDownloader" variant="primary"
           >Add Downloader</o-button
@@ -33,7 +33,7 @@
     >
       <div class="flex flex-col">
         Configuration:
-        <code class="bg-gray-800 whitespace-pre p-2">
+        <code class="p-2 whitespace-pre bg-gray-800">
           {{ JSON.stringify(downloader.config, null, 4) }}
         </code>
       </div>
@@ -71,10 +71,10 @@
   </section>
 </template>
 
-<script>
+<script setup lang="ts">
 import NewDownloader from "../components/NewDownloader.vue";
 import EditService from "../components/EditService.vue";
-import APIUtil from "../util/APIUtil";
+import APIUtil from "@/util/APIUtil";
 import ConfigItem from "../components/ConfigItem.vue";
 import TabSaver from "../util/TabSaver";
 import RadioGroup from "../components/RadioGroup.vue";

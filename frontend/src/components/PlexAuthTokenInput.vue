@@ -35,7 +35,8 @@
 </template>
 
 <script setup lang="ts">
-import { useComputedValue } from "@/util";
+import { TestingMode } from "@/types/testing_mode";
+import { useComputedValue } from "conductorr-lib";
 import { inject, ref } from "vue";
 import APIUtil from "../util/APIUtil";
 import ActionButton from "./ActionButton.vue";
@@ -44,7 +45,7 @@ import Modal from "./Modal.vue";
 const oruga = inject("oruga");
 const plexUsername = ref("");
 const plexPassword = ref("");
-const fetchTestingMode = ref("");
+const fetchTestingMode = ref<TestingMode>(TestingMode.OFF);
 const showFetchAuthTokenModal = ref(false);
 
 const props = defineProps<{
@@ -58,7 +59,7 @@ const emit = defineEmits<{
 const computedValue = useComputedValue<string>(props, emit);
 
 const fetchPlexAuthToken = async () => {
-  fetchTestingMode.value = "loading";
+  fetchTestingMode.value = TestingMode.LOADING;
   try {
     const response = await APIUtil.getPlexAuthToken(
       plexUsername.value,
@@ -66,7 +67,7 @@ const fetchPlexAuthToken = async () => {
     );
     computedValue.value = response.token;
     showFetchAuthTokenModal.value = false;
-    fetchTestingMode.value = "";
+    fetchTestingMode.value = TestingMode.OFF;
     oruga.notification.open({
       duration: 5000,
       message: `Successfully fetched Plex auth token`,
@@ -75,7 +76,7 @@ const fetchPlexAuthToken = async () => {
       closable: false,
     });
   } catch (err) {
-    fetchTestingMode.value = "danger";
+    fetchTestingMode.value = TestingMode.DANGER;
     oruga.notification.open({
       duration: 5000,
       message: `Plex login failed: ${err}`,

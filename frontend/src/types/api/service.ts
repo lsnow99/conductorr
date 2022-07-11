@@ -1,4 +1,5 @@
 import { DownloadType } from "./download"
+import { Indexer } from "./indexer"
 
 export type ServiceIdentifier = string
 
@@ -9,17 +10,6 @@ export interface Service {
     value: ServiceIdentifier
 }
 
-export interface ConfigurableService {
-    name: string
-    config: any
-}
-
-export interface ConfigurableIndexer extends ConfigurableService {
-    config: {
-        userId: number
-        baseUrl: string
-        forMovies: boolean
-        forSeries: boolean
-        downloadType: DownloadType
-    }
+export type ConfigurableService = {
+    [key: symbol | string]: unknown
 }

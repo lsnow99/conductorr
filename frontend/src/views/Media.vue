@@ -19,7 +19,7 @@
         <div class="flex flex-row text-xl">
           <div
             class="w-1 h-full"
-            :class="media.path_ok ? 'bg-green-600' : 'bg-red-600'"
+            :class="media.pathOk ? 'bg-green-600' : 'bg-red-600'"
           />
           <span class="ml-2">{{ media.path }}</span>
         </div>
@@ -32,10 +32,10 @@
             </div>
             <div class="text-2xl text-gray-300 lg:mx-4">
               <o-icon class="text-lg" icon="star" />
-              {{`${media.imdb_rating}%`}}
+              {{`${media.imdbRating}%`}}
             </div>
             <a
-              :href="`https://www.imdb.com/title/${media.imdb_id}`"
+              :href="`https://www.imdb.com/title/${media.imdbId}`"
               target="_blank"
               class="inline-block pt-1 lg:mx-4"
               :aria-label="`Link to IMDB page for ${media.title}`"
@@ -104,14 +104,14 @@
                 <o-icon v-else icon="sync-alt" spin />
               </div>
             </o-tooltip>
-            <search-actions :mediaID="mediaID" size="large" />
+            <search-actions :mediaId="mediaId" size="large" />
           </div>
         </div>
         <p class="text-lg">{{ media.description }}</p>
       </div>
     </section>
     <section class="mt-4">
-      <DownloadStatusViewer wrapperClass="h-48" :mediaID="mediaID" />
+      <DownloadStatusViewer wrapperClass="h-48" :mediaId="mediaId" />
     </section>
     <section class="mt-4">
       <div
@@ -136,7 +136,7 @@
             {{ season.title }}
           </div>
           <div class="text-base" @click.prevent @click.stop>
-            <search-actions :mediaID="season.id" size="large" />
+            <search-actions :mediaId="season.id" size="large" />
           </div>
         </div>
         <transition name="fade">
@@ -207,7 +207,7 @@ import { useRouter, useRoute } from "vue-router";
 const route = useRoute();
 
 const media = ref<Media | null>(null);
-const mediaID = ref(parseInt(route.params.media_id as string));
+const mediaId = ref(parseInt(route.params.media_id as string));
 const loadingRefreshMetadata = ref(false);
 const loading = ref(true);
 const tooltipPosition = ref("bottom");
@@ -230,14 +230,12 @@ const closeEditMedia = () => {
   restoreFocus();
   showEditMediaModal.value = false;
 };
-const loadMedia = () => {
-  APIUtil.getMedia(mediaID.value)
-    .then((media) => {
-      media.value = media;
-    })
-    .finally(() => {
-      loading.value = false;
-    });
+const loadMedia = async() => {
+  try {
+    media.value = await APIUtil.getMedia(mediaId.value)
+  } finally {
+    loading.value  = false
+  }
 };
 const toggleMonitoring = (media: Media) => {
   APIUtil.setMonitoringMedia(media.id, !media.monitoring).then(() => {
@@ -255,19 +253,19 @@ const updateMedia = ({
   profileID: number;
   pathID: number;
 }) => {
-  APIUtil.updateMedia(mediaID.value, profileID, pathID).then(() => {
+  APIUtil.updateMedia(mediaId.value, profileID, pathID).then(() => {
     loadMedia();
     showEditMediaModal.value = false;
   });
 };
 const doDelete = () => {
-  APIUtil.deleteMedia(mediaID.value).then(() => {
+  APIUtil.deleteMedia(mediaId.value).then(() => {
     router.push({ name: "library" });
   });
 };
 const refreshMediaMetadata = () => {
   loadingRefreshMetadata.value = true;
-  APIUtil.refreshMediaMetadata(mediaID)
+  APIUtil.refreshMediaMetadata(mediaId)
     .then(() => {
       loadMedia();
     })

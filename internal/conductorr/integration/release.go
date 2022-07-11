@@ -16,25 +16,25 @@ type Release struct {
 	ID           string    `json:"id,omitempty"`
 	Title        string    `json:"title,omitempty"`
 	Description  string    `json:"description,omitempty"`
-	DownloadURL  string    `json:"download_url,omitempty"`
+	DownloadURL  string    `json:"downloadUrl,omitempty"`
 	Categories   []string  `json:"categories,omitempty"`
 	Size         int64     `json:"size,omitempty"`
 	Seeders      int64     `json:"seeders,omitempty"`
-	AirDate      time.Time `json:"air_date,omitempty"`
-	PubDate      time.Time `json:"pub_date,omitempty"`
+	AirDate      time.Time `json:"airDate,omitempty"`
+	PubDate      time.Time `json:"pubDate,omitempty"`
 	Age          int       `json:"age,omitempty"`
-	RipType      string    `json:"rip_type,omitempty"`
+	RipType      string    `json:"ripType,omitempty"`
 	Resolution   string    `json:"resolution,omitempty"`
 	Encoding     string    `json:"encoding,omitempty"`
-	DownloadType string    `json:"download_type,omitempty"`
+	DownloadType string    `json:"downloadType,omitempty"`
 	Indexer      string    `json:"indexer,omitempty"`
 	Warnings     []string  `json:"warnings,omitempty"`
-	IndexerID    int       `json:"indexer_id,omitempty"`
-	ImdbID       string    `json:"imdb_id,omitempty"`
-	ContentType  string    `json:"content_type,omitempty"`
+	IndexerID    int       `json:"indexerId,omitempty"`
+	ImdbID       string    `json:"imdbId,omitempty"`
+	ContentType  string    `json:"contentType,omitempty"`
 
 	// HighPriority whether to download with high priority
-	HighPriority bool `json:"high_priority,omitempty"`
+	HighPriority bool `json:"highPriority,omitempty"`
 }
 
 func NewRelease(id, title, description, downloadURL string, categories []string, size, seeders int64, airDate, pubDate time.Time, indexer *Xnab, imdbID, contentType string) Release {

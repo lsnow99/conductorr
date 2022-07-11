@@ -79,19 +79,10 @@ Import our router
 import router from "./router";
 
 /*
-Import our store
-*/
-import store from "./store";
-
-/*
 Import our own custom global components
 */
 import PlexAuthTokenInput from "./components/PlexAuthTokenInput.vue";
-
-/*
-Import VueX devtools fix from https://github.com/erdemefe07/vuex4-devtools-support
-*/
-import { addDevtools } from "./vuexdev";
+import { createPinia } from "pinia";
 
 const globalOptions = {
   debug: "info",
@@ -167,7 +158,7 @@ if (import.meta.env.DEV) {
   app.config.performance = true;
 }
 
-app.use(store);
+app.use(createPinia());
 app.use(router);
 app.use(Oruga, {
   iconPack: "fas",
@@ -177,7 +168,3 @@ app.use(Oruga, {
 app.component("vue-fontawesome", FontAwesomeIcon);
 app.component("PlexAuthTokenInput", PlexAuthTokenInput);
 app.mount("#app");
-
-if (import.meta.env.DEV) {
-  addDevtools(app, store);
-}

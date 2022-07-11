@@ -16,25 +16,25 @@ type MediaResponse struct {
 	ID            int        `json:"id,omitempty"`
 	Title         string     `json:"title,omitempty"`
 	Description   string     `json:"description,omitempty"`
-	ReleasedAt    time.Time  `json:"released_at,omitempty"`
-	EndedAt       *time.Time `json:"ended_at,omitempty"`
-	ContentType   string     `json:"content_type,omitempty"`
+	ReleasedAt    time.Time  `json:"releasedAt,omitempty"`
+	EndedAt       *time.Time `json:"endedAt,omitempty"`
+	ContentType   string     `json:"contentType,omitempty"`
 	Poster        string     `json:"poster,omitempty"`
-	ParentMediaID int        `json:"parent_media_id,omitempty"`
-	TmdbID        int        `json:"tmdb_id,omitempty"`
-	ImdbID        string     `json:"imdb_id,omitempty"`
-	TmdbRating    int        `json:"tmdb_rating,omitempty"`
-	ImdbRating    int        `json:"imdb_rating,omitempty"`
+	ParentMediaID int        `json:"parentMediaId,omitempty"`
+	TmdbID        int        `json:"tmdbId,omitempty"`
+	ImdbID        string     `json:"imdbId,omitempty"`
+	TmdbRating    int        `json:"tmdbRating,omitempty"`
+	ImdbRating    int        `json:"imdbRating,omitempty"`
 	Runtime       int        `json:"runtime,omitempty"`
-	ProfileID     int        `json:"profile_id,omitempty"`
-	PathID        int        `json:"path_id,omitempty"`
+	ProfileID     int        `json:"profileId,omitempty"`
+	PathID        int        `json:"pathId,omitempty"`
 	Number        int        `json:"number,omitempty"`
 	Monitoring    bool       `json:"monitoring"`
 	Path          string     `json:"path"`
-	PathOK        bool       `json:"path_ok"`
+	PathOK        bool       `json:"pathOk"`
 	Size          int64      `json:"size"`
 
-	SearchID string `json:"search_id,omitempty"`
+	SearchID string `json:"searchId,omitempty"`
 
 	Children []MediaResponse `json:"children,omitempty"`
 
@@ -94,8 +94,8 @@ func CheckMediaPath(path string) (bool, int64) {
 }
 
 type SearchResponse struct {
-	TotalResults int             `json:"total_results"`
-	PerPage      int             `json:"per_page"`
+	TotalResults int             `json:"totalResults"`
+	PerPage      int             `json:"perPage"`
 	Results      []MediaResponse `json:"results"`
 }
 

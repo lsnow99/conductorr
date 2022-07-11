@@ -135,7 +135,8 @@
                 v-model="releaseB"
               />
               <div class="text-xl">
-                Rendered code (you can assume that your script will be run like this):
+                Rendered code (you can assume that your script will be run like
+                this):
               </div>
               <div class="p-4">
                 <CSLEditor readonly v-model="renderedCode" />
@@ -222,303 +223,321 @@
 }
 </style>
 
-<script>
-import { nextTick } from "vue";
+<script setup lang="ts">
+import { computed, nextTick, onMounted, ref, watch, WritableComputedRef } from "vue";
 import APIUtil from "../util/APIUtil";
-import { CSLEditor, LogPane } from "conductorr-lib";
+import { CSLEditor, LogPane, Variant, LogMessage } from "conductorr-lib";
 import Split from "split.js";
 import "../util/wasm_exec.js";
 import { DateTime } from "luxon";
 import ReleaseBuilder from "../components/ReleaseBuilder.vue";
+import { Release } from "@/types/api/release";
+import { onBeforeRouteLeave, useRoute } from "vue-router";
 
-export default {
-  data() {
-    return {
-      split12: null,
-      split34: null,
-      split56: null,
-      profile: {},
-      uneditedProfile: {},
-      profileID: 0,
-      code: "",
-      outputs: [],
-      activeFunction: "filter",
-      releaseA: {},
-      releaseB: {},
-      editingName: false,
-      oldName: "",
-      currentTab: 1,
-      headerHeight: 0,
-    };
-  },
-  components: { CSLEditor, ReleaseBuilder, LogPane },
-  methods: {
-    pushOutput(msg, variant) {
-      const output = {
-        msg,
-        variant,
-        timestamp: DateTime.now(),
-      };
-      this.outputs.push(output);
-    },
-    loadSizes(name, defaultSizes = [50, 50]) {
-      let sizes = localStorage.getItem(name);
+enum ScriptFunction {
+  FILTER = "filter",
+  SORTER = "sorter",
+}
 
-      if (sizes) {
-        sizes = JSON.parse(sizes);
-      } else {
-        sizes = defaultSizes;
-      }
+enum TabOptions {
+  ONE = 1,
+  TWO = 2,
+}
 
-      return sizes;
-    },
-    initSplits(reset = false) {
-      // Initialize the split panels
-      if (this.split12) {
-        this.split12.destroy();
-        this.split12 = null;
-      }
-      if (this.split34) {
-        this.split34.destroy();
-        this.split34 = null;
-      }
-      if (this.split56) {
-        this.split56.destroy();
-        this.split56 = null;
-      }
+const split12 = ref<Split.Instance | null>(null);
+const split34 = ref<Split.Instance | null>(null);
+const split56 = ref<Split.Instance | null>(null);
+const profile = ref<Profile | null>(null);
+const uneditedProfile = ref<Profile | null>(null);
+const profileID = ref<number | null>(null);
+const code = ref("");
+const outputs = ref<LogMessage[]>();
+const activeFunction = ref<ScriptFunction>(ScriptFunction.FILTER);
+const releaseA = ref<Release | null>(null);
+const releaseB = ref<Release | null>(null);
+const editingName = ref(false);
+const oldName = ref("");
+const currentTab = ref<TabOptions>(1);
+const headerHeight = ref<number>(0);
+const outputScroller = ref<HTMLElement | null>(null);
+const header = ref<HTMLElement | null>(null);
 
-      this.split12 = Split(["#split1", "#split2"], {
-        sizes: reset ? undefined : this.loadSizes("split-sizes12"),
-        minSize: 200,
-        direction: "vertical",
-        onDragEnd: function (sizes) {
-          localStorage.setItem("split-sizes12", JSON.stringify(sizes));
-        },
-      });
 
-      this.split34 = Split(["#split3", "#split4"], {
-        sizes: reset ? [40, 60] : this.loadSizes("split-sizes34", [40, 60]),
-        minSize: 200,
-        onDragEnd: function (sizes) {
-          localStorage.setItem("split-sizes34", JSON.stringify(sizes));
-        },
-      });
+const route = useRoute();
+profileID.value = parseInt(route.params.profile_id as string);
 
-      this.split56 = Split(["#split5", "#split6"], {
-        direction: "vertical",
-        minSize: 200,
-        sizes: reset ? [70, 30] : this.loadSizes("split-sizes56", [70, 30]),
-        onDragEnd: function (sizes) {
-          localStorage.setItem("split-sizes56", JSON.stringify(sizes));
-        },
-      });
+const pushOutput = (msg: string, variant: Variant) => {
+  outputs.value?.push({
+    msg,
+    variant,
+    timestamp: DateTime.now(),
+  });
+};
 
-      if (reset) {
-        localStorage.setItem("split-sizes12", "");
-        localStorage.setItem("split-sizes34", "");
-        localStorage.setItem("split-sizes56", "");
-      }
-    },
-    validate() {
-      Validate(this.computedCode, (ok, err) => {
-        if (!ok) {
-          this.pushOutput("Validation error: " + err, "danger");
-        } else {
-          this.pushOutput("Validation succeeded", "success");
-        }
-      });
-    },
-    run() {
-      let env = {
-        a: this.releaseA,
-      };
-      if (this.activeFunction == "sorter") env.b = this.releaseB;
-      Run(this.computedCode, env, (ok, err, result) => {
-        if (!ok) {
-          this.pushOutput("Execution error: " + err, "danger");
-        } else if (result || result === 0 || result === false) {
-          console.log(result);
-          this.pushOutput(result, "success");
-        } else {
-          this.pushOutput("Script returned null", "warning");
-        }
-      });
-    },
-    scrollOutput() {
-      this.$refs.outputScroller.scrollTop =
-        this.$refs.outputScroller.scrollHeight;
-    },
-    renderedReleaseCode(release, indentAmount) {
-      let indent = "";
-      for (let i = 0; i < indentAmount; i++) {
-        indent += "  ";
-      }
-      let code = `{CSL_INDENT}(
-{CSL_INDENT}  "${release.title}" 
-{CSL_INDENT}  "${release.indexer}" 
-{CSL_INDENT}  "${release.download_type}" 
-{CSL_INDENT}  "${release.content_type}" 
-{CSL_INDENT}  "${release.rip_type}" 
-{CSL_INDENT}  "${release.resolution}" 
-{CSL_INDENT}  "${release.encoding}" 
-{CSL_INDENT}  ${release.seeders} 
-{CSL_INDENT}  ${release.age} 
-{CSL_INDENT}  ${release.size} 
-{CSL_INDENT}  ${release.runtime}
-{CSL_INDENT})`;
-      return code.replaceAll("{CSL_INDENT}", indent);
-    },
-    updateProfile() {
-      APIUtil.updateProfile(
-        this.profileID,
-        this.profile.name,
-        this.profile.filter,
-        this.profile.sorter
-      ).then(() => {
-        this.$oruga.notification.open({
-          duration: 3000,
-          message: `Saved successfully`,
-          position: "bottom-right",
-          variant: "success",
-          closable: false,
-        });
-        this.setUneditedProfile(
-          this.profile.name,
-          this.profile.filter,
-          this.profile.sorter
-        );
-      });
-    },
-    initCSL() {
-      let go = new Go();
+const loadSizes = (name: string, defaultSizes = [50, 50]) => {
+  const sizes = localStorage.getItem(name);
+  return sizes ? JSON.parse(sizes) : defaultSizes;
+};
 
-      WebAssembly.instantiateStreaming(fetch("/api/csl.wasm"), go.importObject)
-        .then(async (result) => {
-          await go.run(result.instance);
-          this.initCSL();
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+const initSplits = (reset = false) => {
+  if (split12.value) {
+    split12.value.destroy();
+    split12.value = null;
+  }
+  if (split34.value) {
+    split34.value.destroy();
+    split34.value = null;
+  }
+  if (split56.value) {
+    split56.value.destroy();
+    split56.value = null;
+  }
+
+  split12.value = Split(["#split1", "#split2"], {
+    sizes: reset ? undefined : loadSizes("split-sizes12"),
+    minSize: 200,
+    direction: "vertical",
+    onDragEnd: function (sizes) {
+      localStorage.setItem("split-sizes12", JSON.stringify(sizes));
     },
-    loadProfile() {
-      APIUtil.getProfile(this.profileID).then((profile) => {
-        this.profile = profile;
-        this.setUneditedProfile(profile.name, profile.filter, profile.sorter);
-      });
+  });
+
+  split34.value = Split(["#split3", "#split4"], {
+    sizes: reset ? [40, 60] : loadSizes("split-sizes34", [40, 60]),
+    minSize: 200,
+    onDragEnd: function (sizes) {
+      localStorage.setItem("split-sizes34", JSON.stringify(sizes));
     },
-    setUneditedProfile(name, filter, sorter) {
-      this.uneditedProfile.name = name;
-      this.uneditedProfile.filter = filter;
-      this.uneditedProfile.sorter = sorter;
+  });
+
+  split56.value = Split(["#split5", "#split6"], {
+    direction: "vertical",
+    minSize: 200,
+    sizes: reset ? [70, 30] : loadSizes("split-sizes56", [70, 30]),
+    onDragEnd: function (sizes) {
+      localStorage.setItem("split-sizes56", JSON.stringify(sizes));
     },
-    beforeWindowUnload(e) {
-      if (this.isProfileModified) {
-        e.preventDefault();
-        return "Profile has been modified, are you sure you want to leave without saving?";
-      }
-      return null;
-    },
-    onResize() {
-      this.headerHeight = this.$refs.header.clientHeight;
-    },
-    startEditingName() {
-      this.oldName = this.profile.name;
-      this.editingName = true;
-    },
-    resetEditingName() {
-      this.profile.name = this.oldName;
-      this.editingName = false;
-    },
-  },
-  created() {
-    this.profileID = parseInt(this.$route.params.profile_id);
-  },
-  beforeRouteLeave(to, from, next) {
-    if (this.isProfileModified) {
-      const answer = window.confirm(
-        "Profile has been modified, are you sure you want to leave without saving?"
-      );
-      if (answer) {
-        next();
-      } else {
-        next(false);
-      }
+  });
+
+  if (reset) {
+    localStorage.setItem("split-sizes12", "");
+    localStorage.setItem("split-sizes34", "");
+    localStorage.setItem("split-sizes56", "");
+  }
+};
+
+const validate = () => {
+  Validate(computedCode, (ok: boolean, err: string) => {
+    if (!ok) {
+      pushOutput(`Validation error: ${err}`, Variant.DANGER);
     } else {
+      pushOutput(`Validation succeeded`, Variant.SUCCESS);
+    }
+  });
+};
+
+const run = () => {
+  let env: any = {
+    a: releaseA.value,
+  };
+  if (activeFunction.value === ScriptFunction.SORTER) env.b = releaseB.value;
+  Run(computedCode, env, (ok: boolean, err: string | null, result: any) => {
+    if (!ok) {
+      pushOutput(`Execution error: ${err}`, Variant.DANGER);
+    } else if (result || result === 0 || result === false) {
+      console.log(result);
+      pushOutput(result, Variant.SUCCESS);
+    } else {
+      pushOutput("Script returned null", Variant.WARNING);
+    }
+  });
+};
+
+const scrollOutput = () => {
+  if (outputScroller.value)
+    outputScroller.value.scrollTop = outputScroller.value.scrollHeight;
+};
+
+const renderedReleaseCode = (release: Release | null, indentAmount: number) => {
+  let indent = "";
+  for (let i = 0; i < indentAmount; i++) {
+    indent += "  ";
+  }
+  let code = `{CSL_INDENT}(
+{CSL_INDENT}  "${release?.title}"
+{CSL_INDENT}  "${release?.indexer}"
+{CSL_INDENT}  "${release?.downloadType}"
+{CSL_INDENT}  "${release?.contentType}"
+{CSL_INDENT}  "${release?.ripType}"
+{CSL_INDENT}  "${release?.resolution}"
+{CSL_INDENT}  "${release?.encoding}"
+{CSL_INDENT}  ${release?.seeders}
+{CSL_INDENT}  ${release?.age}
+{CSL_INDENT}  ${release?.size}
+{CSL_INDENT}  ${release?.runtime}
+{CSL_INDENT})`;
+  return code.replaceAll("{CSL_INDENT}", indent);
+};
+
+const setUneditedProfile = (name: string, filter: string, sorter: string) => {
+  uneditedProfile.name = name;
+  uneditedProfile.filter = filter;
+  uneditedProfile.sorter = sorter;
+};
+
+const updateProfile = async () => {
+  try {
+    await APIUtil.updateProfile(
+      profileID.value,
+      profile.value.name,
+      profile.value.filter,
+      profile.value.sorter
+    );
+    oruga.notification.open({
+      duration: 3000,
+      message: `Saved successfully`,
+      position: "bottom-right",
+      variant: "success",
+      closable: false,
+    });
+    setUneditedProfile(
+      profile.value.name,
+      profile.value.filter,
+      profile.value.sorter
+    );
+  } catch {}
+};
+
+const initCSL = () => {
+  let go = new Go();
+
+  WebAssembly.instantiateStreaming(fetch("/api/csl.wasm"), go.importObject)
+    .then(async (result) => {
+      await go.run(result.instance);
+      initCSL();
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
+
+const loadProfile = async () => {
+  try {
+    const loadedProfile = await APIUtil.getProfile(profileID.value);
+    profile.value = loadProfile;
+    setUneditedProfile(
+      loadedProfile.name,
+      loadedProfile.filter,
+      loadedProfile.sorter
+    );
+  } catch {}
+};
+
+
+const onResize = () => (headerHeight.value = header.value?.clientHeight ?? 0);
+
+const startEditingName = () => {
+  oldName.value = profile.value.name;
+  editingName.value = true;
+};
+
+const resetEditingName = () => {
+  profile.name = oldName.value;
+  editingName.value = false;
+};
+
+
+const isProfileModified = computed(
+  () =>
+    profile.value.filter != uneditedProfile.value.filter ||
+    profile.value.sorter != uneditedProfile.value.sorter ||
+    profile.value.name != uneditedProfile.value.name
+);
+
+const ARE_YOU_SURE_MSG =
+  "Profile has been modified, are you sure you want to leave without saving?";
+  
+onBeforeRouteLeave((to, from, next) => {
+  if (isProfileModified.value) {
+    const answer = window.confirm(ARE_YOU_SURE_MSG);
+    if (answer) {
       next();
+    } else {
+      next(false);
+    }
+  } else {
+    next();
+  }
+});
+
+const beforeWindowUnload = (e: Event) => {
+  if (isProfileModified.value) {
+    e.preventDefault();
+    return ARE_YOU_SURE_MSG;
+  }
+  return null;
+};
+
+
+onMounted(() => {
+  loadProfile();
+  initSplits();
+  initCSL();
+  onResize();
+  window.addEventListener("beforeunload", beforeWindowUnload);
+  window.addEventListener("resize", onResize);
+});
+
+watch(
+  outputs,
+  () => {
+    nextTick(() => {
+      scrollOutput();
+    });
+  },
+  { deep: true }
+);
+
+watch(currentTab, (newVal) => {
+  if (newVal === 2) {
+    activeFunction.value = ScriptFunction.SORTER;
+  } else {
+    activeFunction.value = ScriptFunction.FILTER;
+  }
+});
+
+const renderedCode = computed(() => {
+  let code = `(import "profile:${activeFunction.value}:${profile.value.name}" fn)
+`;
+  if (activeFunction.value == "filter") {
+    code += `
+(fn
+${renderedReleaseCode(releaseA.value, 1)}
+)`;
+  } else if (activeFunction.value == "sorter") {
+    code += `
+(fn
+${renderedReleaseCode(releaseA.value, 1)}
+${renderedReleaseCode(releaseB.value, 1)}
+)`;
+  }
+  return code;
+});
+
+const computedCode: WritableComputedRef<string> = computed({
+  get() {
+    if (activeFunction.value === ScriptFunction.FILTER) {
+      return profile.value.filter
+    } else if (activeFunction.value === ScriptFunction.SORTER) {
+      return profile.value.sorter
     }
   },
-  mounted() {
-    this.loadProfile();
-    this.initSplits();
-    this.initCSL();
-    this.onResize();
-    window.addEventListener("beforeunload", this.beforeWindowUnload);
-    window.addEventListener("resize", this.onResize);
-  },
-  beforeUnmount() {
-    window.removeEventListener("resize", this.onResize);
-    window.removeEventListener("beforeunload", this.beforeWindowUnload);
-  },
-  watch: {
-    outputs: {
-      handler() {
-        nextTick(() => {
-          this.scrollOutput();
-        });
-      },
-      deep: true,
-    },
-    currentTab(newVal) {
-      console.log(newVal);
-      if (newVal === 2) {
-        this.activeFunction = "sorter";
-      } else {
-        this.activeFunction = "filter";
-      }
-    },
-  },
-  computed: {
-    renderedCode() {
-      let code = `(import "profile:${this.activeFunction}:${this.profile.name}" fn)
-`;
-      if (this.activeFunction == "filter") {
-        code += `
-(fn
-${this.renderedReleaseCode(this.releaseA, 1)}
-)`;
-      } else if (this.activeFunction == "sorter") {
-        code += `
-(fn
-${this.renderedReleaseCode(this.releaseA, 1)}
-${this.renderedReleaseCode(this.releaseB, 1)}
-)`;
-      }
-      return code;
-    },
-    isProfileModified() {
-      return (
-        this.profile.filter != this.uneditedProfile.filter ||
-        this.profile.sorter != this.uneditedProfile.sorter ||
-        this.profile.name != this.uneditedProfile.name
-      );
-    },
-    computedCode: {
-      get() {
-        if (this.activeFunction == "filter") {
-          return this.profile.filter;
-        } else if (this.activeFunction == "sorter") {
-          return this.profile.sorter;
-        }
-      },
-      set(val) {
-        if (this.activeFunction == "filter") {
-          this.profile.filter = val;
-        } else if (this.activeFunction == "sorter") {
-          this.profile.sorter = val;
-        }
-      },
-    },
-  },
-};
+  set(newVal: string) {
+    if (activeFunction.value === ScriptFunction.FILTER) {
+      profile.value.filter = newVal
+    } else if (activeFunction.value === ScriptFunction.SORTER) {
+      profile.value.sorter = newVal
+    }
+  }
+})
 </script>

@@ -24,18 +24,18 @@ type MediaInput struct {
 	ID            int        `json:"id,omitempty"`
 	Title         string     `json:"title,omitempty"`
 	Description   string     `json:"description,omitempty"`
-	ReleasedAt    time.Time  `json:"released_at,omitempty"`
-	EndedAt       *time.Time `json:"ended_at,omitempty"`
-	ContentType   string     `json:"content_type,omitempty"`
+	ReleasedAt    time.Time  `json:"releasedAt,omitempty"`
+	EndedAt       *time.Time `json:"endedAt,omitempty"`
+	ContentType   string     `json:"contentType,omitempty"`
 	Poster        string     `json:"poster,omitempty"`
-	ParentMediaID int        `json:"parent_media_id,omitempty"`
-	TmdbID        int        `json:"tmdb_id,omitempty"`
-	ImdbID        string     `json:"imdb_id,omitempty"`
-	TmdbRating    int        `json:"tmdb_rating,omitempty"`
-	ImdbRating    int        `json:"imdb_rating,omitempty"`
+	ParentMediaID int        `json:"parentMediaId,omitempty"`
+	TmdbID        int        `json:"tmdbId,omitempty"`
+	ImdbID        string     `json:"imdbId,omitempty"`
+	TmdbRating    int        `json:"tmdbRating,omitempty"`
+	ImdbRating    int        `json:"imdbRating,omitempty"`
 	Runtime       int        `json:"runtime,omitempty"`
-	ProfileID     int        `json:"profile_id,omitempty"`
-	PathID        int        `json:"path_id,omitempty"`
+	ProfileID     int        `json:"profileId,omitempty"`
+	PathID        int        `json:"pathId,omitempty"`
 }
 
 type MonitoringInput struct {
@@ -43,8 +43,8 @@ type MonitoringInput struct {
 }
 
 type AddMediaInput struct {
-	ProfileID  int  `json:"profile_id,omitempty"`
-	PathID     int  `json:"path_id,omitempty"`
+	ProfileID  int  `json:"profileId,omitempty"`
+	PathID     int  `json:"pathId,omitempty"`
 	Monitoring bool `json:"monitoring"`
 }
 
