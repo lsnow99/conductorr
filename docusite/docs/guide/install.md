@@ -1,6 +1,6 @@
 # Installation
 
-Follow the instructions below depending on your system and preferred installation method. For configuration instructions post-installation, check [here](/guide/configuration.html).
+Follow the instructions below depending on your system and preferred installation method. For configuration instructions post-installation, check here (LINK TODO).
 
 ## Manual Installation
 
@@ -16,7 +16,7 @@ Navigate to [http://localhost:6416/](http://localhost:6416/) and you should see 
 
 Create a `docker-compose.yml` file with the following contents:
 
-```yml
+```yaml
 version: "3.4"
 services:
   conductorr:

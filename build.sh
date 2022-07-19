@@ -128,10 +128,10 @@ if [ $buildwasm == 1 ]; then
     brotli -f dist/csl.wasm
     # Copy the corresponding wasm_exec.js file to the frontend app and docusite projects
     cp $(go env GOROOT)/misc/wasm/wasm_exec.js ./frontend/src/util
-    cp $(go env GOROOT)/misc/wasm/wasm_exec.js ./docusite/docs/.vuepress
+    cp $(go env GOROOT)/misc/wasm/wasm_exec.js ./docusite/docs/js
     # Copy the web assembly modules so that they are accessible for the docusite
-    cp ./dist/csl.wasm ./docusite/docs/.vuepress/public
-    cp ./dist/csl.wasm.br ./docusite/docs/.vuepress/public
+    cp ./dist/csl.wasm ./docusite/docs/js
+    cp ./dist/csl.wasm.br ./docusite/docs/js
 fi
 
 # Build web frontend

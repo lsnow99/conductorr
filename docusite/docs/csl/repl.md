@@ -6,7 +6,7 @@ Enter a CSL expression and press enter to evaluate it
     <div v-if="loadingMsg" class="absolute top-0 bottom-0 left-0 right-0 flex justify-center items-center bg-opacity-75 bg-gray-700 text-white text-2xl">
         {{ loadingMsg }}
     </div>
-    <div class="h-64 overflow-y-scroll" ref="logWrapper">
+    <div style="height: 16em; overflow-y: auto" ref="logWrapper">
         <LogPane :logs="logs" />
     </div>
     <input 
@@ -24,6 +24,7 @@ Enter a CSL expression and press enter to evaluate it
 </style>
 
 <script>
+import '../js/wasm_exec'
 import { DateTime } from "luxon";
 import { LogPane } from 'conductorr-lib'
 

@@ -6,7 +6,7 @@ title: Reference
 
 CSL specifically designed to allow for fine-tuned release processing. If you have a specific way that you want to filter or rank preference for releases, then chances are you can express it in CSL!
 
-It stands for {{ standsFor }} (<a @click="orDoesIt" href="javascript:void(0);">or does it?</a>).
+<StandsFor />
 
 CSL has a lisp-like syntax, with its own library of built in functions and module system. CSL is *not* Turing-Complete in such a way that looping mechanisms and recursion are impossible to implement. This keeps the language simple and safe to use. In cases where a function or loop might be desired, an imported module or built-in function is likely sufficient.
 
@@ -203,40 +203,6 @@ Note that you should only use this feature of importing external profile scripts
 - If a script fails to load, your execution environment may instead load the script from its cache. If your script is tagged with a version, it should only look for scripts tagged with that same version in the cache.
 - For any http request made by your execution environment to resolve dependencies, it will first attempt to use https, and depending on the environment configuration, http may be used as a fallback. By default insecure requests are disabled in all execution environments, except for the playground.
 
-<script>
-// In no particular order ;)
-const STANDS_FOR = new Set([
-  "Custom Scripting Language",
-  "Content Searching Language",
-  "Conductorr-Specific Language",
-  "Custom Sorting Language",
-  "Characteristic Searching Language",
-  "Custom Shitty Lisp",
-])
-
-const pickRandom = (current) => {
-  const toSubtract = new Set([current])
-  const remaining = new Set([...STANDS_FOR].filter(x => !toSubtract.has(x)))
-
-  if (remaining.size < 1) {
-    console.log('returning current', current)
-    return current
-  }
-  const pick = Array.from(remaining)[Math.floor(Math.random() * remaining.size)]
-  console.log('returning pick', pick)
-  return pick
-}
-
-export default {
-  data() {
-    return {
-      standsFor: pickRandom("")
-    }
-  },
-  methods: {
-    orDoesIt() {
-      this.standsFor = pickRandom(this.standsFor)
-    }
-  }
-}
+<script setup>
+import StandsFor from "../components/StandsFor.vue"
 </script>
