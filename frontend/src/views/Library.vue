@@ -63,77 +63,68 @@
   </page-wrapper>
 </template>
 
-<script>
+<script setup lang="ts">
 import MediaCard from "../components/MediaCard.vue";
 import PageWrapper from "../components/PageWrapper.vue";
 import NewMedia from "../components/NewMedia.vue";
 import APIUtil from "../util/APIUtil";
 import SearchMedia from "../components/SearchMedia.vue";
-import TabSaver from "../util/TabSaver";
+import { onMounted, ref } from "vue";
+import { ContentType, Media, MediaSearchResult } from "@/types/api/media";
+import { safeParseInt, useTabSaver } from "@/util";
+import { LocationQueryValue, useRoute, useRouter } from "vue-router";
 
-export default {
-  data() {
-    return {
-      query: "",
-      results: [],
-      totalResults: 0,
-      perPage: 0,
-      currentPage: 1,
-      contentType: "",
-      loading: false,
-      showNewSearchModal: false,
-    };
-  },
-  mixins: [TabSaver],
-  components: { PageWrapper, MediaCard, NewMedia, SearchMedia },
-  methods: {
-    search(query, contentType, page) {
-      this.$router.replace({
-        name: "library",
-        query: { q: query, content_type: contentType, page: page },
-      });
-      this.loading = true;
-      APIUtil.searchLibrary(query, contentType, page)
-        .then((data) => {
-          this.totalResults = data.total_results;
-          this.results = data.results;
-          this.perPage = data.per_page;
-        })
-        .catch(() => {
-          this.totalResults = 0;
-          this.results = [];
-        })
-        .finally(() => {
-          this.loading = false;
-        });
-    },
-    selectedMedia(media) {
-      this.$router.push({ name: "media", params: { media_id: media.id } });
-    },
-    addNew($event) {
-      this.showNewSearchModal = true;
-      this.lastButton = $event.currentTarget;
-    },
-    closeNewSearchModal() {
-      this.showNewSearchModal = false;
-      this.restoreFocus();
-    },
-  },
-  mounted() {
-    let q = this.$route.query.q;
-    let contentType = this.$route.query.content_type;
-    let page = parseInt(this.$route.query.page);
+const query = ref("")
+const results = ref<MediaSearchResult[]>([])
+const totalResults = ref(0)
+const perPage = ref(0)
+const currentPage = ref(1)
+const contentType = ref<ContentType | null>(null)
+const loading = ref(false)
+const showNewSearchModal = ref(false)
 
-    q = q?q:'';
-    contentType = contentType?contentType:'';
-    page = page?page:1;
-    
-    this.query = q;
-    this.contentType = contentType;
-    this.currentPage = page;
+const { lastButton, restoreFocus } = useTabSaver()
+const route = useRoute()
+const router = useRouter()
 
-    console.log('searching with', q, contentType, page)
-    this.search(q, contentType, page);
-  },
-};
+const search = async(q: string, content_type: ContentType | null, page: number) => {
+  router.replace({
+    name: "library",
+    query: {q, content_type, page}
+  })
+  loading.value = true
+  try {
+    const data = await APIUtil.searchLibrary(q, content_type, page)
+    totalResults.value = data.totalResults
+    results.value = data.results
+    perPage.value = data.per_page
+  } catch (error) {
+    totalResults.value = 0
+    results.value = []
+  } finally {
+    loading.value = false
+  }
+}
+
+const selectedMedia = (media: Media) => {
+  router.push({name: "media", params: {media_id: media.id}})
+}
+
+const addNew = ($event: Event) => {
+  showNewSearchModal.value = true;
+  lastButton.value = $event.currentTarget as HTMLElement
+}
+
+const closeNewSearchModal = () => {
+  showNewSearchModal.value = false;
+  restoreFocus()
+}
+
+onMounted(() => {
+  query.value = route.query.q as LocationQueryValue ?? '';
+  contentType.value = route.query.content_type === "" ? null : route.query.content_type as ContentType;
+  currentPage.value = safeParseInt(`${route.query.page}`) ?? 1;
+
+  search(query.value, contentType.value, currentPage.value);
+})
 </script>

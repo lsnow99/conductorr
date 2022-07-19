@@ -14,6 +14,12 @@ const niceSize = (size: number) => {
     return `${Math.round(size * 10)/10}${suffix}`
 }
 
-export default {
-    niceSize
+const safeParseInt = (str: string, radix?: number): number | null => {
+    const res = parseInt(str, radix)
+    return isNaN(res)? null : res
+}
+
+export {
+    niceSize,
+    safeParseInt
 }

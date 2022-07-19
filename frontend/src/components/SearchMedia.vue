@@ -61,7 +61,7 @@
 </template>
 
 <script setup lang="ts">
-import { Component, computed, nextTick, onMounted, ref, VueElement, watch, WritableComputedRef } from "vue";
+import { computed, nextTick, onMounted, ref, watch, WritableComputedRef } from "vue";
 import RadioGroup from "./RadioGroup.vue";
 import { ContentType, MediaSearchResult } from "@/types/api/media";
 
