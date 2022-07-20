@@ -1,9 +1,9 @@
 set export
 
-green := "tput setaf 2"
-blue := "tput setaf 4"
-cyan := "tput setaf 6"
-reset := "tput sgr0"
+green := "tty -s && tput setaf 2"
+blue := "tty -s && tput setaf 4"
+cyan := "tty -s && tput setaf 6"
+reset := "tty -s && tput sgr0"
 
 # Make sure an executable is available
 @check-installed executable:
@@ -56,7 +56,7 @@ reset := "tput sgr0"
     pnpm build
 
 # Build docusite
-@build-docusite: install-web build-csl-wasm
+@build-docusite: build-shared build-csl-wasm
     cd docusite && \
     pnpm build
 

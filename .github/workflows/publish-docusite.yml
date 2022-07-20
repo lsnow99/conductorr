@@ -6,6 +6,7 @@ on:
       - "cmd/cslwasm/**"
       - "cmd/corsproxy/**"
       - "shared/**"
+      - "justfile"
   workflow_dispatch:
 
 jobs:
