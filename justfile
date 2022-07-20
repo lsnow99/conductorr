@@ -33,6 +33,8 @@ reset := "tput sgr0"
 # Install web dependencies
 @install-web: check-pnpm
     pnpm install
+    cd frontend && pnpm install
+    cd docusite && pnpm install
 
 # Build CSL WASM module
 @build-csl-wasm: check-go check-brotli
