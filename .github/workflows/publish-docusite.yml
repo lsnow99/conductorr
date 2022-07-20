@@ -27,9 +27,6 @@ jobs:
         run: |
           just build-docusite
           just build-corsproxy
-          bash build.sh wasm && \
-          bash build.sh docusite && \
-          bash build.sh corsproxy && \
           pnpm i -g netlify-cli && \
           netlify deploy --prod \
             -a ${{ secrets.NETLIFY_AUTH_TOKEN }} \
