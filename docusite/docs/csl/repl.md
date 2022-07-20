@@ -3,7 +3,7 @@
 Enter a CSL expression and press enter to evaluate it
 
 <div class="relative">
-    <div v-if="loadingMsg" class="absolute top-0 bottom-0 left-0 right-0 flex justify-center items-center bg-opacity-75 bg-gray-700 text-white text-2xl">
+    <div v-if="loadingMsg" class="absolute top-0 bottom-0 left-0 right-0 flex items-center justify-center text-2xl text-white bg-gray-700 bg-opacity-75">
         {{ loadingMsg }}
     </div>
     <div style="height: 16em; overflow-y: auto" ref="logWrapper">
@@ -13,7 +13,7 @@ Enter a CSL expression and press enter to evaluate it
         type="text" 
         placeholder="Type something here" 
         v-model="replInput" 
-        class="bg-gray-700 w-full p-1 text-white text-lg border-0 outline-none" 
+        class="prompt" 
         @keydown.enter="execute"
         @keydown.up="upHistory"
         @keydown.down="downHistory" />
@@ -21,10 +21,17 @@ Enter a CSL expression and press enter to evaluate it
 
 <style>
 @import 'conductorr-lib/dist/style.css';
+
+.prompt {
+    @apply w-full p-1 text-lg text-white border-4 border-white !important;
+    border-bottom: 4px solid #bbb !important;
+}
+.prompt::placeholder {
+    @apply text-white;
+}
 </style>
 
 <script>
-import '../js/wasm_exec'
 import { DateTime } from "luxon";
 import { LogPane } from 'conductorr-lib'
 

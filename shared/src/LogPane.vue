@@ -21,7 +21,7 @@
       {{ formatTime(output.timestamp) }}
     </div>
     <div class="text-gray-100" :class="msgClass(output.decoration)">
-      {{ output.msg }}
+      {{ output.msg? output.msg : "<empty>" }}
     </div>
   </div>
 </template>
@@ -89,5 +89,5 @@ const msgClass = (decoration?: string) => {
 };
 
 const formatTime = (timestamp: DateTime) =>
-  timestamp.toLocaleString(DateTime.TIME_WITH_LONG_OFFSET);
+  timestamp.toLocaleString(DateTime.TIME_WITH_SECONDS);
 </script>

@@ -1,3 +1,9 @@
+@tailwind base;
+
+@tailwind components;
+
+@tailwind utilities;
+
 :root {
   --vp-c-brand: #f59e0b;
   --vp-c-brand-light: #fbbf24;
