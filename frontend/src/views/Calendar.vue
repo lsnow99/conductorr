@@ -126,7 +126,7 @@
       <div class="flex flex-row justify-between min-w-[400px]">
         <div></div>
         <div v-if="mediaEvent">
-          <SearchActions :mediaId="mediaEvent.mediaId" />
+          <SearchActions :mediaID="mediaEvent.mediaID" />
           <o-button @click="goToMediaEvent">{{ computedGoToBtnText }}</o-button>
         </div>
       </div>
@@ -224,8 +224,8 @@ const router = useRouter();
 const goToMediaEvent = () => {
   const id =
     mediaEvent.value?.contentType === ContentType.EPISODE
-      ? mediaEvent.value.seriesId
-      : mediaEvent.value?.mediaId;
+      ? mediaEvent.value.seriesID
+      : mediaEvent.value?.mediaID;
   if (id) router.push({ name: "media", params: { media_id: id } });
 };
 

@@ -1,9 +1,9 @@
 set export
 
 green := '\x1b[32m'
-blue := '\033[36m'
-cyan := '\033[36m'
-reset := '\033[0m'
+blue := '\x1b[34m'
+cyan := '\x1b[36m'
+reset := '\x1b[0m'
 
 # Make sure an executable is available
 @check-installed executable:
@@ -113,3 +113,7 @@ reset := '\033[0m'
 @run-shared: install-web
     cd shared && \
     pnpm dev
+
+# Run conductorr's backend
+@run-backend dbpath="":
+    CONDUCTORR_DEBUG=true DB_PATH=$dbpath go run ./cmd/conductorr

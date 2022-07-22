@@ -41,12 +41,12 @@
       <o-icon v-else icon="sync-alt" spin />
     </div>
   </o-tooltip>
-    <manual-search-results
+    <ManualSearchResults
       v-model:active="showManualReleasesModal"
       @close="closeManualReleases"
       :releases="releases"
       :loading="loadingManualSearch"
-      :mediaID="mediaId"
+      :mediaID="mediaID"
     />
 </template>
 
@@ -60,7 +60,7 @@ import { useTabSaver, useTooltip } from "@/util"
 const oruga = inject('oruga')
 
 const props = defineProps<{
-  mediaId: number,
+  mediaID: number,
   size?: string
 }>()
 
@@ -76,7 +76,7 @@ const { tooltipActive, resetTooltips } = useTooltip()
 const searchManual = async() => {
   loadingManualSearch.value = true
   try {
-    releases.value = await APIUtil.searchReleasesManual(props.mediaId)
+    releases.value = await APIUtil.searchReleasesManual(props.mediaID)
   } catch (re) {
     oruga.notification.open({
       duration: 3000,
@@ -94,7 +94,7 @@ const searchManual = async() => {
 const searchAuto = async() => {
   loadingAutoSearch.value = true;
   try {
-    const num = await APIUtil.searchReleasesAuto(props.mediaId)
+    const num = await APIUtil.searchReleasesAuto(props.mediaID)
     if (num > 0) {
       oruga.notification.open({
         duration: 3000,

@@ -104,14 +104,16 @@
 
 <script setup lang="ts">
 import { Release } from "@/types/api/release";
-import { useComputedActive } from "@/util";
+import { niceSize, useComputedActive } from "@/util";
 import APIUtil from "../util/APIUtil";
-import Helpers from "../util/Helpers";
 import Modal from "./Modal.vue";
 
+interface ReleaseWithSearch extends Release {
+  search?: "searching" | "done"
+}
 
 const props = defineProps<{
-  releases: Release[],
+  releases: ReleaseWithSearch[],
   mediaID: number,
   loading: boolean,
   active: boolean
@@ -124,19 +126,17 @@ const emit = defineEmits<{
 
 const computedActive = useComputedActive(props, emit)
 
-const niceSize = Helpers.niceSize
-
-const download = async(release: Release) => {
+const download = async(release: ReleaseWithSearch) => {
   let index = props.releases.findIndex(elem => elem.downloadUrl === release.downloadUrl)
   if (index >= 0) {
-    props.releases[index].search = 1;
+    props.releases[index].search = "searching";
     try {
       await APIUtil.downloadMediaRelease(props.mediaID, release)
     } finally {
       index = props.releases.findIndex(
         (elem) => elem.downloadUrl === release.downloadUrl
       )
-      props.releases[index].search = 2;
+      props.releases[index].search = "done";
     }
   }
 }

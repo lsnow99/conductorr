@@ -11,13 +11,16 @@ module.exports = {
       },
       colors: {
         darkgray: {
-          DEFAULT: "#22272e",
+          DEFAULT: "#242424",
         },
         colors: {
           green: colors.emerald,
           yellow: colors.amber,
           purple: colors.violet,
         },
+        gray: {
+          '600': '#1a1a1a'
+        }
       },
     },
   },

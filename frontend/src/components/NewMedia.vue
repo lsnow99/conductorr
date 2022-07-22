@@ -104,7 +104,7 @@ const addMedia = async ({
   }
   loadingNewMedia.value = true;
   try {
-    const id = await APIUtil.addMedia(media.value.searchId, profileID, pathID);
+    const id = await APIUtil.addMedia(media.value.searchID, profileID, pathID);
     router.push({ name: "media", params: { media_id: id } });
   } catch (err) {
     console.log(err);

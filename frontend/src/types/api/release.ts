@@ -11,4 +11,5 @@ export interface Release {
     ripType: string
     contentType: string
     resolution: string
+    downloadUrl: string
 }

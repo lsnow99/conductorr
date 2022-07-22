@@ -48,7 +48,7 @@ import { useTabSaver } from "@/util";
 import { Download } from "@/types/api/download";
 
 const props = defineProps<{
-  mediaId?: number,
+  mediaID?: number,
   wrapperClass: string
 }>()
 
@@ -64,11 +64,11 @@ const { lastButton, restoreFocus } = useTabSaver()
 const refreshDownloads = async() => {
   loadingDownloads.value = true;
   try {
-    const downloads = await APIUtil.getActiveDownloads(props.mediaId)
+    const downloads = await APIUtil.getActiveDownloads(props.mediaID)
     activeDownloads.value = downloads
   } catch {}
   try {
-    const downloads = await APIUtil.getFinishedDownloads(props.mediaId)
+    const downloads = await APIUtil.getFinishedDownloads(props.mediaID)
     activeDownloads.value = downloads
   } catch {}
 }

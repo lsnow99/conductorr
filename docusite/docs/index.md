@@ -7,7 +7,7 @@ titleTemplate: Media Library Management
 hero:
   name: Conductorr
   text: Manage your media in style
-  tagline: Simple, powerful, and performant. Meet the modern SSG framework you've always wanted.
+  tagline: Simple, powerful, and performant. Meet the modern PVR you've always wanted.
   actions:
     - theme: brand
       text: Get Started

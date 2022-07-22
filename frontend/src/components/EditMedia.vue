@@ -164,10 +164,10 @@ onMounted(() => {
 
 watch(() => props.media, (newVal: Media) => {
   if(newVal) {
-    profileID.value = newVal.profileId
+    profileID.value = newVal.profileID
 
     // Set the default path
-    if (!props.media.pathId) {
+    if (!props.media.pathID) {
       paths.value.forEach((elem: Path) => {
         if (
           (elem.moviesDefault && props.media.contentType == "movie") ||
@@ -177,7 +177,7 @@ watch(() => props.media, (newVal: Media) => {
         }
       })
     } else {
-      pathID.value = props.media.pathId
+      pathID.value = props.media.pathID
     }
   }
 }, {immediate: true})

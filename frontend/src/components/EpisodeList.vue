@@ -1,5 +1,11 @@
 <template>
-  <o-table v-if="load" :data="formattedEpisodes" narrowed hoverable :mobile-cards="true">
+  <o-table
+    v-if="load"
+    :data="formattedEpisodes"
+    narrowed
+    hoverable
+    :mobile-cards="true"
+  >
     <o-table-column field="monitoring" label="" v-slot="props" position="left">
       <monitoring-toggle
         :monitoring="props.row.monitoring"
@@ -47,7 +53,7 @@
       <div class="flex flex-row justify-between">
         <div />
         <div>
-          <search-actions size="small" :mediaID="props.row.id" />
+          <SearchActions size="small" :mediaID="props.row.id" />
         </div>
       </div>
     </o-table-column>
@@ -63,32 +69,32 @@ import { Media } from "@/types/api/media";
 import { computed } from "@vue/reactivity";
 
 const props = defineProps<{
-  episodes: Media[],
-  monitoringDisabled: boolean,
-  load: boolean
-}>()
+  episodes: Media[];
+  monitoringDisabled: boolean;
+  load: boolean;
+}>();
 
 const emit = defineEmits<{
-  (e: "reload"): void
-}>()
+  (e: "reload"): void;
+}>();
 
 const formatDate = (timestamp: string) => {
   return DateTime.fromJSDate(new Date(timestamp)).toLocaleString(
     DateTime.DATE_SHORT
-  )
-}
+  );
+};
 
 const formattedEpisodes = computed(() => {
-  return props.episodes.map(elem => {
-    elem.formattedDate = formatDate(elem.released_at)
-    return elem
-  })
-})
+  return props.episodes.map((elem) => ({
+    ...elem,
+    formattedDate: formatDate(elem.released_at),
+  }));
+});
 
-const toggleMonitoring = async(media: Media) => {
+const toggleMonitoring = async (media: Media) => {
   try {
-    await APIUtil.setMonitoringMedia(media.id, !media.monitoring)
-    emit("reload")
+    await APIUtil.setMonitoringMedia(media.id, !media.monitoring);
+    emit("reload");
   } catch {}
-}
+};
 </script>

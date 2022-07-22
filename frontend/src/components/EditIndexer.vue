@@ -75,7 +75,7 @@ const computedIndexer: WritableComputedRef<Indexer | null> = computed({
         name: "",
         baseUrl: "",
         apiKey: "",
-        userId: 0,
+        userID: 0,
         forMovies: false,
         forSeries: false,
         downloadType: DownloadType.NZB

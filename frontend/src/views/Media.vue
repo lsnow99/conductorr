@@ -35,7 +35,7 @@
               {{`${media.imdbRating}%`}}
             </div>
             <a
-              :href="`https://www.imdb.com/title/${media.imdbId}`"
+              :href="`https://www.imdb.com/title/${media.imdbID}`"
               target="_blank"
               class="inline-block pt-1 lg:mx-4"
               :aria-label="`Link to IMDB page for ${media.title}`"
@@ -104,14 +104,14 @@
                 <o-icon v-else icon="sync-alt" spin />
               </div>
             </o-tooltip>
-            <search-actions :mediaId="mediaId" size="large" />
+            <search-actions :mediaID="mediaID" size="large" />
           </div>
         </div>
         <p class="text-lg">{{ media.description }}</p>
       </div>
     </section>
     <section class="mt-4">
-      <DownloadStatusViewer wrapperClass="h-48" :mediaId="mediaId" />
+      <DownloadStatusViewer wrapperClass="h-48" :mediaID="mediaID" />
     </section>
     <section class="mt-4">
       <div
@@ -136,7 +136,7 @@
             {{ season.title }}
           </div>
           <div class="text-base" @click.prevent @click.stop>
-            <search-actions :mediaId="season.id" size="large" />
+            <search-actions :mediaID="season.id" size="large" />
           </div>
         </div>
         <transition name="fade">
@@ -207,7 +207,7 @@ import { useRouter, useRoute } from "vue-router";
 const route = useRoute();
 
 const media = ref<Media | null>(null);
-const mediaId = ref(parseInt(route.params.media_id as string));
+const mediaID = ref(parseInt(route.params.media_id as string));
 const loadingRefreshMetadata = ref(false);
 const loading = ref(true);
 const tooltipPosition = ref("bottom");
@@ -232,7 +232,7 @@ const closeEditMedia = () => {
 };
 const loadMedia = async() => {
   try {
-    media.value = await APIUtil.getMedia(mediaId.value)
+    media.value = await APIUtil.getMedia(mediaID.value)
   } finally {
     loading.value  = false
   }
@@ -253,19 +253,19 @@ const updateMedia = ({
   profileID: number;
   pathID: number;
 }) => {
-  APIUtil.updateMedia(mediaId.value, profileID, pathID).then(() => {
+  APIUtil.updateMedia(mediaID.value, profileID, pathID).then(() => {
     loadMedia();
     showEditMediaModal.value = false;
   });
 };
 const doDelete = () => {
-  APIUtil.deleteMedia(mediaId.value).then(() => {
+  APIUtil.deleteMedia(mediaID.value).then(() => {
     router.push({ name: "library" });
   });
 };
 const refreshMediaMetadata = () => {
   loadingRefreshMetadata.value = true;
-  APIUtil.refreshMediaMetadata(mediaId)
+  APIUtil.refreshMediaMetadata(mediaID)
     .then(() => {
       loadMedia();
     })
