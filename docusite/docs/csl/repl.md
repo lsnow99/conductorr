@@ -119,7 +119,9 @@ export default {
         },
     },
     mounted() {
-        this.initCSL();
+        import('../public/wasm_exec').then(() => {
+            this.initCSL();
+        })
     },
     watch: {
         logs: {
