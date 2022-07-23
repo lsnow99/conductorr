@@ -15,7 +15,6 @@
     "@fortawesome/free-regular-svg-icons": "^5.15.4",
     "@fortawesome/free-solid-svg-icons": "^5.15.4",
     "@oruga-ui/oruga-next": "^0.5.5",
-    "@vue/runtime-core": "^3.2.37",
     "conductorr-lib": "link:../shared",
     "luxon": "3.0.1",
     "pinia": "^2.0.14",
@@ -28,7 +27,6 @@
   "devDependencies": {
     "@fortawesome/vue-fontawesome": "^3.0.1",
     "@types/luxon": "^1.27.1",
-    "@vitejs/plugin-vue": "2.3.3",
     "@vue/compiler-sfc": "^3.2.37",
     "@vue/devtools-api": "^6.2.0",
     "autoprefixer": "^10.4.7",

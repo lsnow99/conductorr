@@ -23,7 +23,7 @@ type Media struct {
 	ParentMediaID sql.NullInt32
 	TmdbID        sql.NullInt32
 	ImdbID        sql.NullString
-	TvdbID		  sql.NullInt32
+	TvdbID        sql.NullInt32
 	TmdbRating    sql.NullInt32
 	ImdbRating    sql.NullInt32
 	Runtime       sql.NullInt32
@@ -32,9 +32,9 @@ type Media struct {
 	Size          sql.NullInt64
 	ProfileID     sql.NullInt32
 	PathID        sql.NullInt32
-	Number        sql.NullInt32
+	ItemNumber    sql.NullInt32
 	Monitoring    bool
-	Added		  time.Time
+	Added         time.Time
 }
 
 type Indexer struct {
@@ -53,7 +53,7 @@ type Downloader struct {
 	ID             int
 	Name           string
 	DownloaderType string
-	FileAction string
+	FileAction     string
 	Config         map[string]interface{}
 }
 
@@ -75,8 +75,8 @@ type Download struct {
 }
 
 type ReleaseHistory struct {
-	ID string
-	MediaID int
+	ID          string
+	MediaID     int
 	LastAttempt time.Time
 }
 

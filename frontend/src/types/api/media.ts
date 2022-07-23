@@ -16,14 +16,14 @@ export interface Media {
   pathOk: boolean;
   path: string;
   imdbRating: number;
-  imdbId: string;
+  imdbID: string;
   children: Media[];
-  pathId: number;
-  profileId: number;
+  pathID: number;
+  profileID: number;
 }
 
 export interface MediaSearchResult extends Media {
-  searchId: string;
+  searchID: string;
 }
 
 export interface MediaEvent
@@ -31,18 +31,18 @@ export interface MediaEvent
     Media,
     | "imdbRating"
     | "children"
-    | "pathId"
+    | "pathID"
     | "poster"
     | "id"
     | "released_at"
     | "path"
-    | "imdbId"
-    | "profileId"
+    | "imdbID"
+    | "profileID"
   > {
   timestamp: Date;
   seriesTitle?: string;
-  seriesId?: string;
+  seriesID?: string;
   seasonNum?: number;
   episodeNum?: number;
-  mediaId: number;
+  mediaID: number;
 }

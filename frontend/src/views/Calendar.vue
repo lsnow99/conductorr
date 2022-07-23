@@ -169,11 +169,11 @@
 <script setup lang="ts">
 import PageWrapper from "../components/PageWrapper.vue";
 import { DateTime } from "luxon";
-import APIUtil from "../util/APIUtil";
+import { getSchedule } from "../util/API";
 import SearchActions from "../components/SearchActions.vue";
 import RadioGroup from "../components/RadioGroup.vue";
 import Modal from "../components/Modal.vue";
-import { computed, onMounted, ref, WritableComputedRef } from "vue";
+import { computed, onMounted, ref, watch, WritableComputedRef } from "vue";
 import { useTabSaver } from "@/util";
 import { ContentType } from "@/types/api/media";
 import { useRouter } from "vue-router";
@@ -261,24 +261,19 @@ const eventTitle = (event: CalEvent | null): string => {
   return "";
 };
 
-onMounted(async () => {
-  const screenWidth = window.innerWidth;
-  if (screenWidth < 768) {
-    viewType.value = ViewType.DAILY;
-  } else if (screenWidth < 1024) {
-    viewType.value = ViewType.WEEKLY;
-  } else {
-    viewType.value = ViewType.MONTHLY;
-  }
+const doGetSchedule = async(dateFrom: DateTime, dateTo: DateTime) => {
+  const dateFromUnix = dateFrom.toSeconds()
+  const dateToUnix = dateTo.toSeconds()
   loading.value = true;
   try {
-    const events = await APIUtil.getSchedule();
+    const events = await getSchedule(dateFromUnix, dateToUnix);
     for (let i = 0; i < events.length; i++) {
       const calEvent : CalEvent = {
         ...events[i],
         timestamp: DateTime.fromJSDate(new Date(events[i].timestamp)),
-        time: events[i].timestamp.toLocaleString(DateTime.TIME_SIMPLE),
+        time: "",
       };
+      calEvent.time = calEvent.timestamp.toLocaleString(DateTime.TIME_SIMPLE)
       const dayStart = calEvent.timestamp.startOf("day").toISOTime();
       eventMap.value[dayStart] = eventMap.value[dayStart]
         ? [...eventMap.value[dayStart]!, calEvent]
@@ -287,7 +282,7 @@ onMounted(async () => {
   } finally {
     loading.value = false;
   }
-});
+}
 
 const isMediaEventSelected: WritableComputedRef<boolean> = computed({
   get: () => !!mediaEvent.value,
@@ -305,6 +300,44 @@ const mediaEventTitle = computed(() => {
   return `${eventTitle(mediaEvent.value)}${
     mediaEvent.value.contentType === ContentType.EPISODE && ` - ${mediaEvent.value.title}`
   }`;
+});
+
+const viewStart = computed(() => {
+  if (viewType.value === "monthly") {
+    return selectedDate.value.startOf("month")
+  } else if (viewType.value === "weekly") {
+    return selectedDate.value.startOf("week")
+  } else {
+    return selectedDate.value.startOf("day")
+  }
+})
+
+const viewEnd = computed(() => {
+  if (viewType.value === "monthly") {
+    return selectedDate.value.endOf("month")
+  } else if (viewType.value === "weekly") {
+    return selectedDate.value.endOf("week")
+  } else {
+    return selectedDate.value.endOf("day")
+  }
+})
+
+watch([viewStart, viewEnd], ([newViewStart, newViewEnd]) => {
+  doGetSchedule(newViewStart, newViewEnd)
+}, {
+  immediate: true
+})
+
+onMounted(async () => {
+  const screenWidth = window.innerWidth;
+  if (screenWidth < 768) {
+    viewType.value = ViewType.DAILY;
+  } else if (screenWidth < 1024) {
+    viewType.value = ViewType.WEEKLY;
+  } else {
+    viewType.value = ViewType.MONTHLY;
+  }
+  
 });
 
 const dates = computed(() => {

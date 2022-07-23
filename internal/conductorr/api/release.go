@@ -104,7 +104,7 @@ func getReleasesForMediaID(mediaID int) ([]integration.Release, []integration.Re
 			tvdbID = new(int)
 			*tvdbID = int(dbSeries.TvdbID.Int32)
 		}
-		nzbs, err := app.IM.SearchEpisode(int(dbSeason.Number.Int32), int(dbMedia.Number.Int32), dbSeries.Title.String, tvdbID, imdbID)
+		nzbs, err := app.IM.SearchEpisode(int(dbSeason.ItemNumber.Int32), int(dbMedia.ItemNumber.Int32), dbSeries.Title.String, tvdbID, imdbID)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -126,7 +126,7 @@ func getReleasesForMediaID(mediaID int) ([]integration.Release, []integration.Re
 			tvdbID = new(int)
 			*tvdbID = int(dbSeries.TvdbID.Int32)
 		}
-		nzbs, err := app.IM.SearchSeason(int(dbMedia.Number.Int32), dbSeries.Title.String, tvdbID, imdbID)
+		nzbs, err := app.IM.SearchSeason(int(dbMedia.ItemNumber.Int32), dbSeries.Title.String, tvdbID, imdbID)
 		if err != nil {
 			return nil, nil, err
 		}

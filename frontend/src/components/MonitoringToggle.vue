@@ -26,7 +26,7 @@ import { computed } from '@vue/reactivity';
 const props = defineProps<{
   class: string,
   monitoring: boolean,
-  disabled: boolean
+  disabled?: boolean
 }>()
 
 const emit = defineEmits<{

@@ -21,14 +21,20 @@ const oruga = inject("oruga")
 const { loggedIn, status } = storeToRefs(useAppStore())
 
 const getStatus = async() => {
-  if (loggedIn.value) {
+  try {
     status.value = await APIUtil.getStatus()
-  }
+  } catch {}
 }
 
 onMounted(async() => {
-  loggedIn.value = await APIUtil.checkAuth()
-  if (!loggedIn.value) {
+  try {
+    loggedIn.value = await APIUtil.checkAuth()
+    if (!loggedIn.value) {
+      router.push({name: "auth"})
+    }
+  } catch(err) {
+    loggedIn.value = false
+    console.log("error communicating with backend:", err)
     router.push({name: "auth"})
   }
 

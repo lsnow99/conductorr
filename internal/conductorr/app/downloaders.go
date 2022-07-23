@@ -348,8 +348,8 @@ func (dm *DownloaderManager) handleCompletedDownload(download ManagedDownload) {
 			// Rename to /path/Show Name (Year)/Season 0X/Episode Title - S0XE0Y
 			// (add extension later)
 			outputFile = fmt.Sprintf("%s (%d)", series.Title.String, series.ReleasedAt.Time.Year())
-			outputFile = filepath.Join(outputFile, fmt.Sprintf("Season %02d", season.Number.Int32))
-			outputFile = filepath.Join(outputFile, fmt.Sprintf("%s - S%02dE%02d", media.Title.String, season.Number.Int32, media.Number.Int32))
+			outputFile = filepath.Join(outputFile, fmt.Sprintf("Season %02d", season.ItemNumber.Int32))
+			outputFile = filepath.Join(outputFile, fmt.Sprintf("%s - S%02dE%02d", media.Title.String, season.ItemNumber.Int32, media.ItemNumber.Int32))
 		} else {
 			log.Error().
 				Int("media_id", download.MediaID).
@@ -452,7 +452,7 @@ func (dm *DownloaderManager) handleCompletedDownload(download ManagedDownload) {
 		updateDBStatus(download.Identifier, constant.StatusCError)
 		return
 	}
-	
+
 	log.Info().
 		Int("download_id", download.ID).
 		Msgf("successfully copied %s to %s", videoPath, destFilepath)

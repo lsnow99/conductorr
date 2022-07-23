@@ -29,8 +29,8 @@ type Release struct {
 	DownloadType string    `json:"downloadType,omitempty"`
 	Indexer      string    `json:"indexer,omitempty"`
 	Warnings     []string  `json:"warnings,omitempty"`
-	IndexerID    int       `json:"indexerId,omitempty"`
-	ImdbID       string    `json:"imdbId,omitempty"`
+	IndexerID    int       `json:"indexerID,omitempty"`
+	ImdbID       string    `json:"imdbID,omitempty"`
 	ContentType  string    `json:"contentType,omitempty"`
 
 	// HighPriority whether to download with high priority

@@ -1,39 +1,4 @@
-import AuthUtil from "./AuthUtil";
-import EventBus from "./EventBus";
-
-const doAPIReq = (url, options, errMsg = undefined) => {
-  return new Promise((resolve, reject) => {
-    fetch(url, options)
-      .then((re) => re.json())
-      .then((resp) => {
-        if (resp.success) {
-          if (resp.data !== undefined) {
-            resolve(resp.data);
-          } else {
-            resolve({});
-          }
-        } else {
-          // TODO: check this
-          if (resp.failed_auth) {
-            AuthUtil.logout();
-            EventBus.emit('forceLogout')
-          } else if (errMsg) {
-            EventBus.emit('notification', {
-              duration: 3000,
-              message: errMsg,
-              position: "bottom-right",
-              variant: "danger",
-              closable: false,
-            })
-          }
-          reject(resp.msg);
-        }
-      })
-      .catch((err) => {
-        reject(err);
-      });
-  });
-};
+import { doAPIReq } from "./API"
 
 const isFirstTime = () => {
   return doAPIReq(`/api/v1/firstTime`, {

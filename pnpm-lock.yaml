@@ -37,10 +37,8 @@ importers:
       '@fortawesome/vue-fontawesome': ^3.0.1
       '@oruga-ui/oruga-next': ^0.5.5
       '@types/luxon': ^1.27.1
-      '@vitejs/plugin-vue': 2.3.3
       '@vue/compiler-sfc': ^3.2.37
       '@vue/devtools-api': ^6.2.0
-      '@vue/runtime-core': ^3.2.37
       autoprefixer: ^10.4.7
       conductorr-lib: link:../shared
       luxon: 3.0.1
@@ -63,7 +61,6 @@ importers:
       '@fortawesome/free-regular-svg-icons': 5.15.4
       '@fortawesome/free-solid-svg-icons': 5.15.4
       '@oruga-ui/oruga-next': 0.5.5_vue@3.2.37
-      '@vue/runtime-core': 3.2.37
       conductorr-lib: link:../shared
       luxon: 3.0.1
       pinia: 2.0.14_typescript@4.7.4+vue@3.2.37
@@ -75,7 +72,6 @@ importers:
     devDependencies:
       '@fortawesome/vue-fontawesome': 3.0.1_a72b0d656d579dd320fd7704d8312620
       '@types/luxon': 1.27.1
-      '@vitejs/plugin-vue': 2.3.3_vite@3.0.2+vue@3.2.37
       '@vue/compiler-sfc': 3.2.37
       '@vue/devtools-api': 6.2.0
       autoprefixer: 10.4.7_postcss@8.4.14

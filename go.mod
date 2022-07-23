@@ -10,6 +10,7 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.15.1
 	github.com/gorilla/mux v1.8.0
 	github.com/hekmon/transmissionrpc v1.1.1-0.20210523080628-42bb8f04fdc8
+	github.com/huandu/go-sqlbuilder v1.14.1 // indirect
 	github.com/jackc/pgx/v4 v4.14.1
 	github.com/jackpal/bencode-go v1.0.0
 	github.com/l3uddz/go-qbittorrent v1.0.3

@@ -12,7 +12,7 @@ import (
 
 type DownloadResponse struct {
 	ID           int       `json:"id"`
-	MediaID      int       `json:"mediaId"`
+	MediaID      int       `json:"mediaID"`
 	FriendlyName string    `json:"friendlyName"`
 	Identifier   string    `json:"identifier"`
 	FinalDir     string    `json:"finalDir"`

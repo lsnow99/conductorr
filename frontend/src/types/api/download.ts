@@ -7,7 +7,7 @@ export enum DownloadType {
 
 export interface Download {
     id: number
-    mediaId: number
+    mediaID: number
     friendlyName: string
     identifier: string
     finalDir: string

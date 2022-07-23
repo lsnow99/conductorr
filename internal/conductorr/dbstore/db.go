@@ -17,6 +17,7 @@ import (
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/golang-migrate/migrate/v4/database/sqlite"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/huandu/go-sqlbuilder"
 	_ "github.com/jackc/pgx/v4"
 	"github.com/lsnow99/conductorr"
 	"github.com/lsnow99/conductorr/internal/conductorr/integration"
@@ -105,6 +106,8 @@ func Init() error {
 	if err != nil {
 		return err
 	}
+
+	sqlbuilder.DefaultFieldMapper = sqlbuilder.SnakeCaseMapper
 
 	pragmas := url.Values{}
 	pragmas.Add("_pragma", "foreign_keys = on")

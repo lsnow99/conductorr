@@ -13,7 +13,7 @@ import (
 
 type IndexerInput struct {
 	Name         string `json:"name"`
-	UserID       int    `json:"userId,omitempty"`
+	UserID       int    `json:"userID,omitempty"`
 	BaseUrl      string `json:"baseUrl,omitempty"`
 	ApiKey       string `json:"apiKey,omitempty"`
 	ForMovies    bool   `json:"forMovies,omitempty"`

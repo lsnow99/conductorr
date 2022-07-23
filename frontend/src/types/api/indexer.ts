@@ -5,7 +5,7 @@ export interface Indexer {
     name: string,
     baseUrl: string,
     apiKey: string,
-    userId: number,
+    userID: number,
     forMovies: boolean,
     forSeries: boolean,
     downloadType: DownloadType
