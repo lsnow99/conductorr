@@ -114,14 +114,14 @@ const getReleaseProfileCfg = () => {
   });
 };
 
-const addMedia = (search_id, profile_id, path_id) => {
+const addMedia = (searchID, profileID, pathID) => {
   return doAPIReq(
-    `/api/v1/add/${search_id}`,
+    `/api/v1/add/${searchID}`,
     {
       method: "POST",
       body: JSON.stringify({
-        profile_id,
-        path_id
+        profileID,
+        pathID
       })
     },
     `Error adding media`

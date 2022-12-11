@@ -11,7 +11,10 @@
       v-model:contentType="contentType"
       :results="results"
       :total-results="totalResults"
+      :loading="loading"
+      :per-page="perPage"
       results-wrapper-class="flex flex-row flex-wrap justify-center mt-10 gap-y-10 gap-x-10"
+      @search="search"
     >
       <template v-slot:empty class="flex justify-center">
         <div class="flex flex-col mt-24">
@@ -72,6 +75,7 @@ const emit = defineEmits<{
 }>();
 
 const search = async (q: string, ct: ContentType, p: number) => {
+  console.log('searching')
   loading.value = true;
   try {
     const data = await APIUtil.searchNew(q, ct, p);

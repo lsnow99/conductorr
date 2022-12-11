@@ -61,102 +61,119 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch, WritableComputedRef } from "vue";
+import {
+  computed,
+  nextTick,
+  onMounted,
+  ref,
+  watch,
+  WritableComputedRef,
+} from "vue";
 import RadioGroup from "./RadioGroup.vue";
 import { ContentType, MediaSearchResult } from "@/types/api/media";
 
-const page = ref(1)
-const lastSearchTime = ref<Date | null>(null)
-const searchbar = ref<Element | null>(null)
+const page = ref(1);
+const lastSearchTime = ref<Date | null>(null);
+const searchbar = ref<Element | null>(null);
 
-const props = withDefaults(defineProps<{
-  currentPage: number,
-  contentType: ContentType | null,
-  results: MediaSearchResult[],
-  loading: boolean,
-  totalResults: number,
-  perPage: number,
-  resultsWrapperClass: string,
-  query: string
-}>(), {
-  currentPage: 1
-})
+const props = withDefaults(
+  defineProps<{
+    currentPage: number;
+    contentType: ContentType | null;
+    results: MediaSearchResult[];
+    loading: boolean;
+    totalResults: number;
+    perPage: number;
+    resultsWrapperClass: string;
+    query: string;
+  }>(),
+  {
+    currentPage: 1,
+  }
+);
 
 const emit = defineEmits<{
-  (e: "close"): void
-  (e: "search", query: string, contentType: ContentType, page: number): void
-  (e: "update:query", query: string): void
-  (e: "update:currentPage", currentPage: number): void
-  (e: "update:contentType", contentType: ContentType | null): void
-}>()
+  (e: "close"): void;
+  (e: "search", query: string, contentType: ContentType, page: number): void;
+  (e: "update:query", query: string): void;
+  (e: "update:currentPage", currentPage: number): void;
+  (e: "update:contentType", contentType: ContentType | null): void;
+}>();
 
 const computedQuery: WritableComputedRef<string> = computed({
   get(): string {
-    return props.query
+    return props.query;
   },
   set(v: string) {
-    emit("update:query", v)
-  }
-})
+    emit("update:query", v);
+  },
+});
 
 const computedCurrentPage: WritableComputedRef<number> = computed({
   get() {
-    return props.currentPage
+    return props.currentPage;
   },
   set(v) {
-    emit("update:currentPage", v)
-  }
-})
+    emit("update:currentPage", v);
+  },
+});
 
 const computedContentType: WritableComputedRef<ContentType | null> = computed({
   get() {
-    return null
+    return props.contentType;
   },
   set(v: ContentType | null) {
-    emit("update:contentType", v)
-  }
-})
+    emit("update:contentType", v);
+  },
+});
 
 const search = (disableDebounce = false) => {
   const now = new Date();
-  if ((
-    !lastSearchTime.value || (now.getTime() - lastSearchTime.value.getTime() > 300) || disableDebounce) && computedContentType.value) {
-      emit("search", computedQuery.value, computedContentType.value, page.value)
-      lastSearchTime.value = now;
-    }
-}
+  console.log("calculating debounce");
+  if (
+    (!lastSearchTime.value ||
+      now.getTime() - lastSearchTime.value.getTime() > 300 ||
+      disableDebounce) &&
+    computedContentType.value
+  ) {
+    emit("search", computedQuery.value, computedContentType.value, page.value);
+    lastSearchTime.value = now;
+  } else {
+    console.log("failed calc");
+  }
+};
 
-const clear = () =>  {
+const clear = () => {
   computedQuery.value = "";
-  search()
-}
+  search();
+};
 
 const pageChanged = (nPage: number) => {
-  page.value = nPage
-  search()
-}
+  page.value = nPage;
+  search();
+};
 
 onMounted(() => {
   const screenWidth = window.innerWidth;
   if (screenWidth >= 768) {
     nextTick(() => {
       (searchbar.value?.firstChild as HTMLInputElement | undefined)?.focus();
-    })
+    });
   }
   search();
-})
+});
 
 watch(computedContentType, () => {
-  page.value = 1
-  computedCurrentPage.value = 1
+  page.value = 1;
+  computedCurrentPage.value = 1;
   search(true);
-})
+});
 
 watch(computedQuery, (newVal, oldVal) => {
-  page.value = 1
+  page.value = 1;
   computedCurrentPage.value = 1;
   if (newVal === "" && oldVal !== "") {
     search();
   }
-})
+});
 </script>
