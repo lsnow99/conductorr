@@ -66,7 +66,7 @@ import SearchActions from "./SearchActions.vue";
 import MonitoringToggle from "./MonitoringToggle.vue";
 import APIUtil from "../util/APIUtil";
 import { Media } from "@/types/api/media";
-import { computed } from "@vue/reactivity";
+import { computed } from "vue";
 
 const props = defineProps<{
   episodes: Media[];

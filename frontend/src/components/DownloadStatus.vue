@@ -23,7 +23,7 @@
 
 <script setup lang="ts">
 import { Download } from "@/types/api/download";
-import { computed } from "@vue/reactivity";
+import { computed } from "vue";
 
 const props = defineProps<{
   download: Download;

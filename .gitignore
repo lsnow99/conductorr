@@ -19,3 +19,4 @@ docusite/docs/public/csl.wasm
 .netlify
 **/.pnpm-debug.log
 /test/csl
+docusite/docs/js/wasm_exec.js
