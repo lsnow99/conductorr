@@ -23,7 +23,7 @@
           :to="{ name: route.name }"
         >
           <vue-fontawesome :icon="route.icon" />
-          {{ route.title }}
+          <span class="ml-2">{{ route.title }}</span>
         </router-link>
         <router-link
           :to="{ name: 'logout' }"
@@ -106,7 +106,7 @@
 }
 
 .menu {
-  @apply rounded-md flex flex-row lg:flex-row bg-gray-600 overflow-hidden sm:m-0 m-2;
+  @apply rounded-md flex flex-row lg:flex-row bg-gray-700 overflow-hidden sm:m-0 m-2;
 }
 
 .menu.expanded {

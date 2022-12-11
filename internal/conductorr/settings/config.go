@@ -76,16 +76,16 @@ func Init() {
 	pragmas.Add("_pragma", "cache = shared")
 	pragmas.Add("_pragma", "mode = rwc")
 
-	if dbPath, exists := os.LookupEnv("DB_PATH"); exists {
+	if dbPath, exists := os.LookupEnv("DB_PATH"); exists && dbPath != "" {
 		DBPath = "file:" + dbPath + "?" + pragmas.Encode()
 	} else {
 		DBPath = "file:./conductorr.db?" + pragmas.Encode()
 	}
 
-	if omdbKey, exists := os.LookupEnv("OMDB_API_KEY"); exists {
+	if omdbKey, exists := os.LookupEnv("OMDB_API_KEY"); exists && omdbKey != ""{
 		OmdbApiKey = omdbKey
 	}
-	if tmdbKey, exists := os.LookupEnv("TMDB_API_KEY"); exists {
+	if tmdbKey, exists := os.LookupEnv("TMDB_API_KEY"); exists && tmdbKey != ""{
 		TmdbAPIKey = tmdbKey
 	}
 

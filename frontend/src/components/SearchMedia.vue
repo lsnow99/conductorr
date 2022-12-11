@@ -140,7 +140,7 @@ onMounted(() => {
   const screenWidth = window.innerWidth;
   if (screenWidth >= 768) {
     nextTick(() => {
-      (searchbar.value?.firstChild as HTMLInputElement).focus();
+      (searchbar.value?.firstChild as HTMLInputElement | undefined)?.focus();
     })
   }
   search();

@@ -75,8 +75,8 @@
           </div>
           <div class="overflow-x-hidden overflow-y-auto height-full">
             <div
-              v-for="(event, index) in eventMap[date.dayStart.toISOTime()]"
-              :key="index"
+              v-for="[id, event] in Object.entries(eventMap[date.dayStart.toSeconds()] ?? {})"
+              :key="id"
               :class="eventClass(event)"
               @click="selectEvent(event, $event)"
               @keydown.enter="selectEvent(event, $event)"
@@ -194,9 +194,10 @@ const now = DateTime.now();
 
 const selectedDate = ref<DateTime>(now);
 const viewType = ref<ViewType>(ViewType.MONTHLY);
-const eventMap = ref<Partial<Record<string, CalEvent[]>>>({});
+const eventMap = ref<Partial<Record<number, Record<number, CalEvent>>>>({});
 const mediaEvent = ref<CalEvent | null>(null);
 const loading = ref(false);
+const memo = ref<Set<string>>(new Set())
 
 const { lastButton, restoreFocus } = useTabSaver();
 
@@ -264,23 +265,30 @@ const eventTitle = (event: CalEvent | null): string => {
 const doGetSchedule = async(dateFrom: DateTime, dateTo: DateTime) => {
   const dateFromUnix = dateFrom.toSeconds()
   const dateToUnix = dateTo.toSeconds()
+  const lookupKey = `${dateFromUnix}_${dateToUnix}`
+  if (memo.value.has(lookupKey)) {
+    return
+  }
+  console.log(false)
   loading.value = true;
   try {
     const events = await getSchedule(dateFromUnix, dateToUnix);
     for (let i = 0; i < events.length; i++) {
+      const timestamp = DateTime.fromJSDate(new Date(events[i].timestamp))
+      const time = timestamp.toLocaleString(DateTime.TIME_SIMPLE)
       const calEvent : CalEvent = {
         ...events[i],
-        timestamp: DateTime.fromJSDate(new Date(events[i].timestamp)),
-        time: "",
+        timestamp,
+        time,
       };
-      calEvent.time = calEvent.timestamp.toLocaleString(DateTime.TIME_SIMPLE)
-      const dayStart = calEvent.timestamp.startOf("day").toISOTime();
+      const dayStart = timestamp.startOf("day").toSeconds();
       eventMap.value[dayStart] = eventMap.value[dayStart]
-        ? [...eventMap.value[dayStart]!, calEvent]
-        : [calEvent];
+        ? {...eventMap.value[dayStart]!, [calEvent.mediaID]: calEvent}
+        : {[calEvent.mediaID]: calEvent};
     }
   } finally {
     loading.value = false;
+    memo.value.add(lookupKey)
   }
 }
 
@@ -337,7 +345,6 @@ onMounted(async () => {
   } else {
     viewType.value = ViewType.MONTHLY;
   }
-  
 });
 
 const dates = computed(() => {
@@ -426,7 +433,7 @@ const computedRangeType = computed(() => {
   switch (viewType.value) {
     case ViewType.MONTHLY:
       return "month";
-    case ViewType.WEEKLY:
+    case ViewType.WEEKLY: 
       return "week";
     case ViewType.DAILY:
       return "day";

@@ -11,16 +11,7 @@
         :loading="loading"
         @search="search"
         @selected-media="selectedMedia"
-        results-wrapper-class="
-          mt-10
-          flex
-          flex-row
-          flex-wrap
-          justify-center
-          gap-y-10
-          gap-x-10
-          pb-10
-        "
+        results-wrapper-class="flex flex-row flex-wrap justify-center pb-10 mt-10 gap-y-10 gap-x-10"
       >
         <template v-slot:empty class="flex justify-center">
           <div class="flex flex-col mt-24">
@@ -36,21 +27,21 @@
           >Search for New Media</o-button
         >
       </div>
-      <div class="flex flex-col md:flex-row text-lg mt-2">
+      <div class="flex flex-col mt-2 text-lg md:flex-row">
         <div class="flex flex-row items-center mx-4">
-          <div class="w-6 h-2 bg-green-600 mr-1" />
+          <div class="w-6 h-2 mr-1 bg-green-600" />
           Complete/All Monitored Available
         </div>
         <div class="flex flex-row items-center mx-4">
-          <div class="w-6 h-2 bg-purple-600 mr-1" />
+          <div class="w-6 h-2 mr-1 bg-purple-600" />
           Continuing/All Monitored Available
         </div>
         <div class="flex flex-row items-center mx-4">
-          <div class="w-6 h-2 bg-gray-500 mr-1" />
+          <div class="w-6 h-2 mr-1 bg-gray-500" />
           Unmonitored
         </div>
         <div class="flex flex-row items-center mx-4">
-          <div class="w-6 h-2 bg-red-600 mr-1" />
+          <div class="w-6 h-2 mr-1 bg-red-600" />
           Missing/Monitored
         </div>
       </div>
@@ -88,13 +79,14 @@ const route = useRoute()
 const router = useRouter()
 
 const search = async(q: string, content_type: ContentType | null, page: number) => {
+  const ct = content_type ?? ""
   router.replace({
     name: "library",
-    query: {q, content_type, page}
+    query: {q, content_type: ct, page}
   })
   loading.value = true
   try {
-    const data = await APIUtil.searchLibrary(q, content_type, page)
+    const data = await APIUtil.searchLibrary(q, ct, page)
     totalResults.value = data.totalResults
     results.value = data.results
     perPage.value = data.per_page
