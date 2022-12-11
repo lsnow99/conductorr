@@ -56,7 +56,7 @@
   />
 </template>
 
-<script>
+<script setup lang="ts">
 import NewMediaServer from "../components/NewMediaServer.vue";
 import ConfigItem from "../components/ConfigItem.vue";
 import APIUtil from "../util/APIUtil";
@@ -64,6 +64,7 @@ import TabSaver from "../util/TabSaver";
 import Modal from "../components/Modal.vue";
 import ActionButton from "../components/ActionButton.vue";
 import EditService from "../components/EditService.vue";
+import { ref } from "vue"
 
 const JELLYFIN_FIELDS = [
   {
@@ -94,6 +95,10 @@ const PLEX_FIELDS = [
     component: "PlexAuthTokenInput",
   },
 ];
+
+const showNewMediaServerModal = ref(false)
+const showEditMediaServerModal = ref(false)
+const editingMediaServer = ref<>({config: {}})
 
 export default {
   data() {
