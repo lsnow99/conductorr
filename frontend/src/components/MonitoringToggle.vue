@@ -21,29 +21,29 @@
 </style>
 
 <script setup lang="ts">
-import { computed } from '@vue/reactivity';
+import { computed } from "vue";
 
 const props = defineProps<{
-  class: string,
-  monitoring: boolean,
-  disabled?: boolean
-}>()
+  class: string;
+  monitoring: boolean;
+  disabled?: boolean;
+}>();
 
 const emit = defineEmits<{
-  (e: "toggle"): void
-}>()
+  (e: "toggle"): void;
+}>();
 
 const doToggle = () => {
   if (!props.disabled) {
-    emit("toggle")
+    emit("toggle");
   }
-}
+};
 
 const computedClass = computed(() => {
   let disabledClass = "";
   if (props.disabled) {
     disabledClass = "disabled";
   }
-  return props.class + " cursor-pointer " + disabledClass
-})
+  return props.class + " cursor-pointer " + disabledClass;
+});
 </script>

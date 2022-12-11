@@ -269,7 +269,6 @@ const doGetSchedule = async(dateFrom: DateTime, dateTo: DateTime) => {
   if (memo.value.has(lookupKey)) {
     return
   }
-  console.log(false)
   loading.value = true;
   try {
     const events = await getSchedule(dateFromUnix, dateToUnix);
@@ -331,6 +330,7 @@ const viewEnd = computed(() => {
 })
 
 watch([viewStart, viewEnd], ([newViewStart, newViewEnd]) => {
+  console.log('changed')
   doGetSchedule(newViewStart, newViewEnd)
 }, {
   immediate: true
