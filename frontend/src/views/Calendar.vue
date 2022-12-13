@@ -8,90 +8,59 @@
               <o-button variant="primary" @click="resetDate">Today</o-button>
             </div>
             <div class="table-cell">
-              <a href="#" class="ml-3"
-                ><o-button
-                  tabindex="-1"
-                  variant="primary"
-                  class="table-cell"
-                  icon-left="rss"
-                ></o-button
-              ></a>
+              <a href="#" class="ml-3"><o-button tabindex="-1" variant="primary" class="table-cell"
+                  icon-left="rss"></o-button></a>
             </div>
           </div>
-          <radio-group
-            v-model="viewType"
-            name="viewType"
-            :options="[
-              {
-                text: 'Monthly',
-                value: 'monthly',
-              },
-              {
-                text: 'Weekly',
-                value: 'weekly',
-              },
-              {
-                text: 'Daily',
-                value: 'daily',
-              },
-            ]"
-          />
+          <radio-group v-model="viewType" name="viewType" :options="[
+            {
+              text: 'Monthly',
+              value: ViewType.MONTHLY,
+            },
+            {
+              text: 'Weekly',
+              value: ViewType.WEEKLY,
+            },
+            {
+              text: 'Daily',
+              value: ViewType.DAILY,
+            },
+          ]" />
         </div>
         <div class="flex flex-row justify-between mt-4">
-          <o-button
-            variant="primary"
-            @click="goPages(-1)"
-            :aria-label="`Previous ${computedRangeType}`"
-          >
+          <o-button variant="primary" @click="goPages(-1)" :aria-label="`Previous ${computedRangeType}`">
             <vue-fontawesome icon="chevron-left" />
           </o-button>
           <div class="text-2xl font-semibold text-center">
             {{ niceDateRange }}
           </div>
-          <o-button
-            variant="primary"
-            @click="goPages(1)"
-            :aria-label="`Next ${computedRangeType}`"
-          >
+          <o-button variant="primary" @click="goPages(1)" :aria-label="`Next ${computedRangeType}`">
             <vue-fontawesome icon="chevron-right" />
           </o-button>
         </div>
       </div>
       <div :class="calWrapperClass" class="relative mt-4">
-        <div
-          v-for="(date, index) in dates"
-          :key="index"
-          class="flex flex-col overflow-hidden date"
-          :class="
-            (date.today ? 'date-today' : '') +
-            ' ' +
-            calDateClass +
-            ' ' +
-            (date.gray ? 'opacity-80' : '')
-          "
-        >
+        <div v-for="(date, index) in dates" :key="index" class="flex flex-col overflow-hidden date" :class="
+          (date.today ? 'date-today' : '') +
+          ' ' +
+          calDateClass +
+          ' ' +
+          (date.gray ? 'opacity-80' : '')
+        ">
           <div class="inline-block py-px text-center bg-gray-800 w-7">
             {{ date.day }}
           </div>
           <div class="overflow-x-hidden overflow-y-auto height-full">
-            <div
-              v-for="[id, event] in Object.entries(eventMap[date.dayStart.toSeconds()] ?? {})"
-              :key="id"
-              :class="eventClass(event)"
-              @click="selectEvent(event, $event)"
-              @keydown.enter="selectEvent(event, $event)"
-              @keydown.space="selectEvent(event, $event)"
-              role="button"
-              tabindex="0"
-              class="flex flex-col cursor-pointer focus:bg-opacity-30 focus:outline-white lg:block"
-            >
+            <div v-for="[id, event] in Object.entries(eventMap[date.dayStart.toSeconds()] ?? {})" :key="id"
+              :class="eventClass(event)" @click="selectEvent(event, $event)" @keydown.enter="selectEvent(event, $event)"
+              @keydown.space="selectEvent(event, $event)" role="button" tabindex="0"
+              class="flex flex-col cursor-pointer focus:bg-opacity-30 focus:outline-white lg:block">
               <span
-                class="flex-col flex-1 w-full min-h-full p-1 text-sm font-bold bg-gray-900 bg-opacity-30 lg:inline-block lg:w-4-5r"
-                >{{ event.time.slice(0, -3)
-                }}<span class="text-xs">{{ event.time.slice(-3) }}</span></span
-              >
+                class="flex-col flex-1 w-full min-h-full p-1 text-sm font-bold bg-gray-900 bg-opacity-30 lg:inline-block lg:w-4-5r">{{
+                    event.time.slice(0, -3)
+                }}<span class="text-xs">{{ event.time.slice(-3) }}</span></span>
               <span class="ml-2 text-sm font-semibold break-words">{{
-                eventTitle(event)
+                  eventTitle(event)
               }}</span>
             </div>
           </div>
@@ -101,28 +70,24 @@
       <div class="flex flex-col mt-2 text-lg md:flex-row">
         <div class="flex flex-row items-center mx-4">
           <div class="w-6 h-2 mr-1 bg-green-600" />
-          Available
+          <span class="ml-1">Available</span>
         </div>
         <div class="flex flex-row items-center mx-4">
           <div class="w-6 h-2 mr-1 bg-purple-600" />
-          Unaired/Monitored
+          <span class="ml-1">Unaired/Monitored</span>
         </div>
         <div class="flex flex-row items-center mx-4">
           <div class="w-6 h-2 mr-1 bg-gray-500" />
-          Unmonitored
+          <span class="ml-1">Unmonitored</span>
         </div>
         <div class="flex flex-row items-center mx-4">
           <div class="w-6 h-2 mr-1 bg-red-600" />
-          Missing/Monitored
+          <span class="ml-1">Missing/Monitored</span>
         </div>
       </div>
     </section>
 
-    <Modal
-      v-model="isMediaEventSelected"
-      :title="mediaEventTitle"
-      @close="closeMediaEventModal"
-    >
+    <Modal v-model="isMediaEventSelected" :title="mediaEventTitle" @close="closeMediaEventModal">
       <div class="flex flex-row justify-between min-w-[400px]">
         <div></div>
         <div v-if="mediaEvent">
@@ -173,11 +138,12 @@ import { getSchedule } from "../util/API";
 import SearchActions from "../components/SearchActions.vue";
 import RadioGroup from "../components/RadioGroup.vue";
 import Modal from "../components/Modal.vue";
-import { computed, onMounted, ref, watch, WritableComputedRef } from "vue";
+import { computed, onMounted, reactive, ref, watch, WritableComputedRef } from "vue";
 import { useTabSaver } from "@/util";
 import { ContentType } from "@/types/api/media";
 import { useRouter } from "vue-router";
 import { MediaEvent } from "@/types/api/media";
+import { IntervalNode } from "rangetree";
 
 enum ViewType {
   MONTHLY = "monthly",
@@ -197,7 +163,7 @@ const viewType = ref<ViewType>(ViewType.MONTHLY);
 const eventMap = ref<Partial<Record<number, Record<number, CalEvent>>>>({});
 const mediaEvent = ref<CalEvent | null>(null);
 const loading = ref(false);
-const memo = ref<Set<string>>(new Set())
+const rangeTree = reactive<IntervalNode>(new IntervalNode({a: 0, b: 0}))
 
 const { lastButton, restoreFocus } = useTabSaver();
 
@@ -213,8 +179,10 @@ const goPages = (pages: number) => {
       break;
     case ViewType.WEEKLY:
       selectedDate.value = selectedDate.value.plus({ weeks: pages });
+      break;
     case ViewType.DAILY:
       selectedDate.value = selectedDate.value.plus({ days: pages });
+      break;
     default:
       console.error(`unimplemented view type ${viewType.value}`);
   }
@@ -262,32 +230,32 @@ const eventTitle = (event: CalEvent | null): string => {
   return "";
 };
 
-const doGetSchedule = async(dateFrom: DateTime, dateTo: DateTime) => {
-  const dateFromUnix = dateFrom.toSeconds()
-  const dateToUnix = dateTo.toSeconds()
+const doGetSchedule = async (dateFrom: DateTime, dateTo: DateTime) => {
+  const dateFromUnix = Math.floor(dateFrom.toSeconds())
+  const dateToUnix = Math.floor(dateTo.toSeconds())
   const lookupKey = `${dateFromUnix}_${dateToUnix}`
-  if (memo.value.has(lookupKey)) {
+  const { gaps } = rangeTree.insert({a: dateFromUnix, b: dateToUnix})
+  if (gaps.length === 0){
     return
   }
   loading.value = true;
   try {
-    const events = await getSchedule(dateFromUnix, dateToUnix);
+    const events = await getSchedule(gaps);
     for (let i = 0; i < events.length; i++) {
       const timestamp = DateTime.fromJSDate(new Date(events[i].timestamp))
       const time = timestamp.toLocaleString(DateTime.TIME_SIMPLE)
-      const calEvent : CalEvent = {
+      const calEvent: CalEvent = {
         ...events[i],
         timestamp,
         time,
       };
       const dayStart = timestamp.startOf("day").toSeconds();
       eventMap.value[dayStart] = eventMap.value[dayStart]
-        ? {...eventMap.value[dayStart]!, [calEvent.mediaID]: calEvent}
-        : {[calEvent.mediaID]: calEvent};
+        ? { ...eventMap.value[dayStart]!, [calEvent.mediaID]: calEvent }
+        : { [calEvent.mediaID]: calEvent };
     }
   } finally {
     loading.value = false;
-    memo.value.add(lookupKey)
   }
 }
 
@@ -304,15 +272,14 @@ const mediaEventTitle = computed(() => {
   if (!mediaEvent.value) {
     return "";
   }
-  return `${eventTitle(mediaEvent.value)}${
-    mediaEvent.value.contentType === ContentType.EPISODE && ` - ${mediaEvent.value.title}`
-  }`;
+  return `${eventTitle(mediaEvent.value)}${mediaEvent.value.contentType === ContentType.EPISODE && ` - ${mediaEvent.value.title}`
+    }`;
 });
 
 const viewStart = computed(() => {
-  if (viewType.value === "monthly") {
+  if (viewType.value === ViewType.MONTHLY) {
     return selectedDate.value.startOf("month")
-  } else if (viewType.value === "weekly") {
+  } else if (viewType.value === ViewType.WEEKLY) {
     return selectedDate.value.startOf("week")
   } else {
     return selectedDate.value.startOf("day")
@@ -320,17 +287,16 @@ const viewStart = computed(() => {
 })
 
 const viewEnd = computed(() => {
-  if (viewType.value === "monthly") {
-    return selectedDate.value.endOf("month")
-  } else if (viewType.value === "weekly") {
-    return selectedDate.value.endOf("week")
+  if (viewType.value === ViewType.MONTHLY) {
+    return selectedDate.value.endOf("month").plus({seconds: 1})
+  } else if (viewType.value === ViewType.WEEKLY) {
+    return selectedDate.value.endOf("week").plus({seconds: 1})
   } else {
-    return selectedDate.value.endOf("day")
+    return selectedDate.value.endOf("day").plus({seconds: 1})
   }
 })
 
 watch([viewStart, viewEnd], ([newViewStart, newViewEnd]) => {
-  console.log('changed')
   doGetSchedule(newViewStart, newViewEnd)
 }, {
   immediate: true
@@ -349,7 +315,7 @@ onMounted(async () => {
 
 const dates = computed(() => {
   let dates = [];
-  if (viewType.value === "monthly") {
+  if (viewType.value === ViewType.MONTHLY) {
     const monthStart = selectedDate.value.startOf("month");
     const monthStartDoW = monthStart.weekday;
     const monthEnd = selectedDate.value.endOf("month");
@@ -383,7 +349,7 @@ const dates = computed(() => {
         today: curDate.toISODate() === DateTime.local().toISODate(),
       });
     }
-  } else if (viewType.value === "weekly") {
+  } else if (viewType.value === ViewType.WEEKLY) {
     const weekStart = selectedDate.value.startOf("week");
 
     for (let i = 0; i < 7; i++) {
@@ -395,7 +361,7 @@ const dates = computed(() => {
         today: curDate.toISODate() === DateTime.local().toISODate(),
       });
     }
-  } else if (viewType.value === "daily") {
+  } else if (viewType.value === ViewType.DAILY) {
     dates.push({
       day: selectedDate.value.day,
       dayStart: selectedDate.value.startOf("day"),
@@ -433,7 +399,7 @@ const computedRangeType = computed(() => {
   switch (viewType.value) {
     case ViewType.MONTHLY:
       return "month";
-    case ViewType.WEEKLY: 
+    case ViewType.WEEKLY:
       return "week";
     case ViewType.DAILY:
       return "day";

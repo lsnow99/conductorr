@@ -91,6 +91,10 @@
   @apply text-4xl;
 }
 
+.o-notification {
+  @apply bg-gray-700;
+}
+
 .o-notification--danger {
   @apply bg-red-500;
 }
@@ -185,7 +189,7 @@
 }
 
 .o-modal__content {
-  @apply dark:bg-gray-600;
+  @apply dark:bg-gray-700;
   @apply rounded-xl;
   @apply flex;
   @apply flex-col;

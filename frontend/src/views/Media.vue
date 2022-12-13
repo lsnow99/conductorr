@@ -198,7 +198,7 @@ import EpisodeList from "../components/EpisodeList.vue";
 import SearchActions from "../components/SearchActions.vue";
 import MonitoringToggle from "../components/MonitoringToggle.vue";
 import DownloadStatusViewer from "../components/DownloadStatusViewer.vue";
-import { nextTick, onMounted, ref } from "vue";
+import { nextTick, inject, onMounted, ref } from "vue";
 import { Media } from "@/types/api/media";
 import useTabSaver from "@/util/TabSaver";
 import useMediaUtil from "@/util/MediaUtil";
@@ -206,6 +206,7 @@ import { useRouter, useRoute } from "vue-router";
 
 const route = useRoute();
 
+const oruga = inject('oruga')
 const media = ref<Media | null>(null);
 const mediaID = ref(parseInt(route.params.media_id as string));
 const loadingRefreshMetadata = ref(false);
@@ -233,6 +234,14 @@ const closeEditMedia = () => {
 const loadMedia = async() => {
   try {
     media.value = await APIUtil.getMedia(mediaID.value)
+    if (media.value?.imdbID === "tt0141842") {
+      oruga.notification.open({
+        duration: 999000,
+        message: `Gabagool!`,
+        closable: false,
+        position: "bottom-right",
+      });
+    }
   } finally {
     loading.value  = false
   }
@@ -265,7 +274,7 @@ const doDelete = () => {
 };
 const refreshMediaMetadata = () => {
   loadingRefreshMetadata.value = true;
-  APIUtil.refreshMediaMetadata(mediaID)
+  APIUtil.refreshMediaMetadata(mediaID.value)
     .then(() => {
       loadMedia();
     })

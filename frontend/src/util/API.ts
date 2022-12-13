@@ -30,7 +30,7 @@ export const doAPIReq = async (
   }
 };
 
-export const getSchedule = (dateFrom: number, dateTo: number) =>
-  doAPIReq(`/api/v1/schedule?dateFrom=${Math.round(dateFrom)}&dateTo=${Math.round(dateTo)}`, {
+export const getSchedule = (intervals: { minVal: number, maxVal: number }[]) =>
+  doAPIReq(`/api/v1/schedule?intervals=${encodeURIComponent(JSON.stringify(intervals))}`, {
     method: "GET",
   });

@@ -39,7 +39,7 @@
     </main>
     <footer class="mt-auto">
       <div
-        class="container flex flex-row items-center justify-center mx-auto bg-gray-700 rounded-t-md h-14"
+        class="flex flex-row w-64 items-center justify-center mx-auto rounded-t-md h-14"
       >
         <o-tooltip variant="info">
           <a

@@ -1,9 +1,9 @@
 package api
 
 import (
+	"encoding/json"
 	"net/http"
 	"sort"
-	"strconv"
 	"time"
 
 	"github.com/lsnow99/conductorr/internal/conductorr/app"
@@ -24,23 +24,30 @@ type Event struct {
 	PathOK      bool      `json:"pathOk,omitempty"`
 }
 
+type Interval struct {
+	MinVal float64 `json:"minVal,omitempty"`
+	MaxVal float64 `json:"maxVal,omitempty"`
+}
+
 func GetSchedule(w http.ResponseWriter, r *http.Request) {
-	dateFromUnixStr := r.URL.Query().Get("dateFrom")
-	dateToUnixStr := r.URL.Query().Get("dateTo")
+	intervalsStr := r.URL.Query().Get("intervals")
 
-	dateFromUnix, err := strconv.ParseInt(dateFromUnixStr, 10, 64)
+	intervals := make([]Interval, 0)
+
+	err := json.Unmarshal([]byte(intervalsStr), &intervals)
 	if err != nil {
 		Respond(w, r, err, nil, true)
 	}
-	dateToUnix, err := strconv.ParseInt(dateToUnixStr, 10, 64)
-	if err != nil {
-		Respond(w, r, err, nil, true)
+
+	dateIntervals := make([]dbstore.DateInterval, 0, len(intervals))
+	for _, interval := range intervals {
+		dateIntervals = append(dateIntervals, dbstore.DateInterval{
+			DateFrom: time.Unix(int64(interval.MinVal), 0),
+			DateTo:   time.Unix(int64(interval.MaxVal), 0),
+		})
 	}
 
-	dateFrom := time.Unix(dateFromUnix, 0)
-	dateTo := time.Unix(dateToUnix, 0)
-
-	medias, err := dbstore.GetMediaInRange(r.Context(), dateFrom, dateTo)
+	medias, err := dbstore.GetMediaInIntervals(r.Context(), dateIntervals)
 	if err != nil {
 		Respond(w, r, err, nil, true)
 		return

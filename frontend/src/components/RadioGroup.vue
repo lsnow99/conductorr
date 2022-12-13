@@ -22,14 +22,14 @@ const props = defineProps<
     name: string;
     options: {
       text: string;
-      value: string | number;
+      value: unknown;
     }[];
     modelValue: string | null
   }
 >();
 
 const emit = defineEmits<{
-  (e: "update:modelValue", newVal: string | null): void
+  (e: "update:modelValue", newVal: unknown): void
 }>();
 
 const computedValue = useComputedValue<string | null>(props, emit);

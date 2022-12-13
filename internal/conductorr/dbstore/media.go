@@ -56,10 +56,10 @@ func SearchMedia(title string, contentType string, page int) ([]*Media, int, err
 	rows, err := db.Query(`
 		SELECT`+fullMediaCols+`
 		FROM media
-		WHERE UPPER(title) LIKE '%' || ? || '%' 
+		WHERE UPPER(title) LIKE '%' || ? || '%'
 		AND content_type LIKE '%' || ? || '%'
 		AND content_type NOT IN ('episode', 'season')
-		LIMIT 10 
+		LIMIT 10
 		OFFSET ?
 		`, title, contentType, (page-1)*10)
 
@@ -103,16 +103,26 @@ func GetAllMedia() ([]*Media, error) {
 	return medias, nil
 }
 
-// GetMediaInRange select an array of media within a date range. Includes all series and season medias
-func GetMediaInRange(ctx context.Context, dateFrom, dateTo time.Time) ([]Media, error) {
+type DateInterval struct {
+	DateFrom time.Time
+	DateTo   time.Time
+}
+
+// GetMediaInIntervals select an array of media within a date range. Includes all series and season medias
+func GetMediaInIntervals(ctx context.Context, dateIntervals []DateInterval) ([]Media, error) {
 	sb := mediaStruct.SelectFrom("media")
+
+	dateConditions := make([]string, 0, len(dateIntervals)+1)
+
+	for _, dateInterval := range dateIntervals {
+		dateConditions = append(dateConditions, sb.And(sb.GreaterEqualThan("released_at", dateInterval.DateFrom), sb.LessEqualThan("released_at", dateInterval.DateTo)))
+	}
+
+	dateConditions = append(dateConditions, sb.In("content_type", "series", "season"))
+
 	sb.Where(
 		sb.Or(
-			sb.In("content_type", "series", "season"),
-			sb.And(
-				sb.GreaterEqualThan("released_at", dateFrom),
-				sb.LessEqualThan("released_at", dateTo),
-			),
+			dateConditions...,
 		),
 	)
 
@@ -160,15 +170,15 @@ func UpsertMedia(title *string, description *string, releasedAt *time.Time, ende
 
 	row := tx.QueryRow(`
 		INSERT INTO media (title, description, released_at, ended_at, content_type,
-			parent_media_id, tmdb_id, imdb_id, tvdb_id, tmdb_rating, imdb_rating, runtime, 
+			parent_media_id, tmdb_id, imdb_id, tvdb_id, tmdb_rating, imdb_rating, runtime,
 			poster, profile_id, path_id, item_number, monitoring)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		ON CONFLICT DO UPDATE
-			SET title=EXCLUDED.title, description=EXCLUDED.description, 
+			SET title=EXCLUDED.title, description=EXCLUDED.description,
 				released_at=EXCLUDED.released_at, ended_at=EXCLUDED.ended_at,
 				content_type=EXCLUDED.content_type,
 				tmdb_id=EXCLUDED.tmdb_id, imdb_id=EXCLUDED.imdb_id, tvdb_id=EXCLUDED.tvdb_id,
-				tmdb_rating=EXCLUDED.tmdb_rating, imdb_rating=EXCLUDED.imdb_rating, 
+				tmdb_rating=EXCLUDED.tmdb_rating, imdb_rating=EXCLUDED.imdb_rating,
 				runtime=EXCLUDED.runtime, poster=EXCLUDED.poster
 		RETURNING id
 		`, ptrToNullString(title), ptrToNullString(description), released,
@@ -278,7 +288,7 @@ func GetMonitoringMedia() (*[]Media, error) {
 		FROM media AS m
 		WHERE (monitoring = true AND content_type = 'movie')
 		OR (monitoring = true AND content_type = 'episode'
-			AND (SELECT monitoring FROM media AS g WHERE id = 
+			AND (SELECT monitoring FROM media AS g WHERE id =
 				(SELECT parent_media_id FROM media AS p WHERE id = m.parent_media_id)
 			)
 		   )
@@ -359,7 +369,7 @@ func RestoreMedias(tx *sql.Tx, medias []*Media) error {
 	for _, media := range medias {
 		_, err := tx.Exec(`
 		INSERT INTO media (id, title, description, released_at, ended_at, content_type,
-			parent_media_id, tmdb_id, imdb_id, tvdb_id, tmdb_rating, imdb_rating, runtime, 
+			parent_media_id, tmdb_id, imdb_id, tvdb_id, tmdb_rating, imdb_rating, runtime,
 			poster, profile_id, path_id, item_number, monitoring, added)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		`, media.ID, media.Title, media.Description, media.ReleasedAt, media.EndedAt,

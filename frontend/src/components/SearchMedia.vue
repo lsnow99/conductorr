@@ -22,15 +22,15 @@
         :options="[
           {
             text: 'All',
-            value: '',
+            value: null,
           },
           {
             text: 'Movies',
-            value: 'movie',
+            value: ContentType.MOVIE,
           },
           {
             text: 'TV Series',
-            value: 'series',
+            value: ContentType.SERIES,
           },
         ]"
       />

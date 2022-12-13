@@ -19,6 +19,7 @@
     "luxon": "3.0.1",
     "pinia": "^2.0.14",
     "prismjs": "^1.28.0",
+    "rangetree": "github:lsnow99/rangetree#master",
     "split.js": "^1.6.5",
     "vue": "^3.2.37",
     "vue-prism-editor": "^2.0.0-alpha.2",
