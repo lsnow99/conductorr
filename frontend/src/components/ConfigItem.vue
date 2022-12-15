@@ -44,7 +44,7 @@ const props = defineProps<{
   title: string;
   collapsible: boolean;
   deleteMessage: string;
-  expanded: boolean;
+  expanded: boolean | undefined;
 }>();
 
 const emit = defineEmits<{
@@ -77,12 +77,10 @@ const doExpand = () => {
 
 watch(
   () => props.expanded,
-  (v: boolean) => {
+  (v: boolean | undefined) => {
     isExpanded.value = v;
   }
 );
 
-const ariaLabel = computed(() => {
-  isExpanded.value ? "Collapse" : "Expand";
-});
+const ariaLabel = computed(() => isExpanded.value ? "Collapse" : "Expand");
 </script>

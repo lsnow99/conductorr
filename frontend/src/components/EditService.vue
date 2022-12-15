@@ -38,7 +38,7 @@ import Modal from "./Modal.vue";
 import ActionButton from "./ActionButton.vue";
 import { ConfigurableService } from "@/types/api/service";
 import { useComputedActive } from "@/util";
-import { inject } from "vue";
+import { inject, onMounted, computed } from "vue";
 import { TestingMode } from "@/types/testing_mode";
 import { useComputedValue } from "conductorr-lib"
 
@@ -50,8 +50,8 @@ const props = withDefaults(
     active: boolean;
     fields: any[];
     title: string;
-    extraSanitizer: () => void;
-    extraValidator: () => string | null;
+    extraSanitizer?: () => void;
+    extraValidator?: () => string | null;
     testingMode: TestingMode;
   }>(),
   {
@@ -68,8 +68,16 @@ const emit = defineEmits<{
   (e: "close"): void;
 }>();
 
-const computedValue = useComputedValue<ConfigurableService>(props, emit);
 const computedActive = useComputedActive(props, emit);
+
+const computedValue: WritableComputedRef<ConfigurableService> = computed({
+  get() {
+    return props.modelValue ?? {}
+  },
+  set(v) {
+    emit("update:modelValue", v)
+    }
+    })
 
 const sanitize = () => {
   for (const field of props.fields) {

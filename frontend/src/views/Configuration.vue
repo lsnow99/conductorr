@@ -10,7 +10,7 @@
             >
           </span>
         </template>
-        <release-profiles />
+        <ReleaseProfiles />
       </o-tab-item>
       <o-tab-item>
         <template v-slot:header>
@@ -19,7 +19,7 @@
             ><span style="white-space: nowrap" class="flex ml-2">Indexers</span>
           </span>
         </template>
-        <indexers />
+        <Indexers />
       </o-tab-item>
       <o-tab-item>
         <template v-slot:header>
@@ -30,7 +30,8 @@
             >
           </span>
         </template>
-        <downloaders />
+        <!--<downloaders />-->
+        <div></div>
       </o-tab-item>
       <o-tab-item>
         <template v-slot:header>
@@ -41,7 +42,8 @@
             >
           </span>
         </template>
-        <post-processing />
+        <!--<post-processing />-->
+        <div></div>
       </o-tab-item>
       <o-tab-item>
         <template v-slot:header>
@@ -52,7 +54,8 @@
             >
           </span>
         </template>
-        <media-servers />
+        <!--<media-servers />-->
+        <div></div>
       </o-tab-item>
     </o-tabs>
   </page-wrapper>
@@ -67,7 +70,7 @@
 <script setup lang="ts">
 import Indexers from "./Indexers.vue";
 import PageWrapper from "../components/PageWrapper.vue";
-// import ReleaseProfiles from "./ReleaseProfiles.vue";
+import ReleaseProfiles from "./ReleaseProfiles.vue";
 // import Downloaders from "./Downloaders.vue";
 // import PostProcessing from "./PostProcessing.vue";
 // import MediaServers from "./MediaServers.vue";
@@ -96,7 +99,8 @@ const tabs = ref<any | null>(null);
 
 const tabsChanged = (newTab: TabOptions) => {
   if (mounted.value) {
-    tabs.value?.childItems[newTab - 1].scrollIntoView();
+    tabs.value?.childItems[newTab - 1].$el.scrollIntoView();
+    mounted.value = false;
   }
 };
 

@@ -158,16 +158,16 @@ const searchReleasesAuto = (id) => {
   })
 }
 
-const testIndexer = (name, base_url, api_key, for_movies, for_series, download_type) => {
+const testIndexer = (name, baseUrl, apiKey, forMovies, forSeries, downloadType) => {
   return doAPIReq(`/api/v1/testIndexer`, {
     method: "POST",
     body: JSON.stringify({
       name,
-      base_url,
-      api_key,
-      for_movies,
-      for_series,
-      download_type
+      baseUrl,
+      apiKey,
+      forMovies,
+      forSeries,
+      downloadType
     })
   })
 }

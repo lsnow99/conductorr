@@ -164,7 +164,7 @@ import {
   WritableComputedRef,
 } from "vue";
 import APIUtil from "../util/APIUtil";
-import { RESOLUTION_TYPES, RIP_TYPES, ENCODING_TYPES } from "../util/Constants";
+import { RESOLUTION_TYPES, RIP_TYPES, ENCODING_TYPES } from "@/util/Constants";
 import { TooltipPosition } from "@/types/tooltip";
 import { Release } from "@/types/api/release";
 import { Indexer } from "@/types/api/indexer";

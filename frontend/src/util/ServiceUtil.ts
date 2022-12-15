@@ -1,7 +1,7 @@
 import { computed, Ref, ref, WritableComputedRef } from "vue";
 import { ConfigurableService, EditServiceMode } from "@/types/api/service";
 
-export default function <T>(
+export default function <T extends ConfigurableService>(
   lastButton: Ref<HTMLElement | null>,
   restoreFocus: () => void,
   newServiceCallback: (service: T) => Promise<void>,
@@ -10,46 +10,22 @@ export default function <T>(
   const editingService = ref<T | null>(null) as Ref<T | null>;
   const mode = ref<EditServiceMode>("");
 
-  const showNewServiceModal: WritableComputedRef<boolean> = computed({
-    get() {
-      return mode.value === "new";
-    },
-    set(v) {
-      if (v) {
-        mode.value = "new";
-      } else {
-        mode.value = "";
-      }
-    },
-  });
-
-  const showEditServiceModal: WritableComputedRef<boolean> = computed({
-    get() {
-      return mode.value === "edit";
-    },
-    set(v) {
-      if (v) {
-        mode.value = "edit";
-      } else {
-        mode.value = "";
-      }
-    },
-  });
-
   const closeModal = () => {
     mode.value = "";
     editingService.value = null;
     restoreFocus();
   };
 
+  const showModal = computed(() => mode.value !== "")
+
   const openNewServiceModal = ($event: Event) => {
     lastButton.value = $event.currentTarget as HTMLElement;
-    showNewServiceModal.value = true;
+    mode.value = "new"
   };
 
   const openEditServiceModal = ($event: Event) => {
     lastButton.value = $event.currentTarget as HTMLElement;
-    showEditServiceModal.value = true;
+    mode.value = "edit"
   };
 
   const editService = (service: T, $event: Event) => {
@@ -61,10 +37,10 @@ export default function <T>(
     try {
         if (mode.value === "new") {
           await newServiceCallback(service as T);
-          showNewServiceModal.value = false
+          mode.value = ""
         } else if (mode.value === "edit") {
           await editServiceCallback(service as T);
-          showEditServiceModal.value = false
+          mode.value = ""
         }
     } catch {
 
@@ -72,13 +48,13 @@ export default function <T>(
   };
 
   return {
-    showNewServiceModal,
-    showEditServiceModal,
+    showModal,
     closeModal,
     openNewServiceModal,
     openEditServiceModal,
     editingService,
     editService,
     onSubmit,
+    mode
   };
 }
