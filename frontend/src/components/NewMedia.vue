@@ -53,7 +53,7 @@ import { useRouter } from "vue-router";
 const results = ref([]);
 const totalResults = ref(0);
 const perPage = ref(0);
-const contentType = ref<ContentType | null>(null);
+const contentType = ref<ContentType>(ContentType.ALL);
 const currentPage = ref(1);
 const loading = ref(false);
 const query = ref("");

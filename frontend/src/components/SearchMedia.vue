@@ -22,7 +22,7 @@
         :options="[
           {
             text: 'All',
-            value: null,
+            value: ContentType.ALL,
           },
           {
             text: 'Movies',
@@ -79,7 +79,7 @@ const searchbar = ref<Element | null>(null);
 const props = withDefaults(
   defineProps<{
     currentPage: number;
-    contentType: ContentType | null;
+    contentType: ContentType;
     results: MediaSearchResult[];
     loading: boolean;
     totalResults: number;
@@ -118,11 +118,11 @@ const computedCurrentPage: WritableComputedRef<number> = computed({
   },
 });
 
-const computedContentType: WritableComputedRef<ContentType | null> = computed({
+const computedContentType: WritableComputedRef<ContentType> = computed({
   get() {
     return props.contentType;
   },
-  set(v: ContentType | null) {
+  set(v: ContentType) {
     emit("update:contentType", v);
   },
 });

@@ -3,6 +3,7 @@ export enum ContentType {
   SERIES = "series",
   SEASON = "season",
   EPISODE = "episode",
+  ALL = "all"
 }
 
 export interface Media {
@@ -28,16 +29,16 @@ export interface MediaSearchResult extends Media {
 
 export interface MediaEvent
   extends Omit<
-    Media,
-    | "imdbRating"
-    | "children"
-    | "pathID"
-    | "poster"
-    | "id"
-    | "released_at"
-    | "path"
-    | "imdbID"
-    | "profileID"
+  Media,
+  | "imdbRating"
+  | "children"
+  | "pathID"
+  | "poster"
+  | "id"
+  | "released_at"
+  | "path"
+  | "imdbID"
+  | "profileID"
   > {
   timestamp: Date;
   seriesTitle?: string;

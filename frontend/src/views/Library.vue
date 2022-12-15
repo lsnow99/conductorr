@@ -1,7 +1,7 @@
 <template>
   <page-wrapper>
     <section>
-      <search-media
+      <SearchMedia
         v-model:query="query"
         v-model:currentPage="currentPage"
         v-model:contentType="contentType"
@@ -21,7 +21,7 @@
         <template v-slot:result="{ media }">
           <media-card :media="media" @click="selectedMedia" />
         </template>
-      </search-media>
+      </SearchMedia>
       <div class="flex flex-row justify-center mt-2">
         <o-button variant="primary" @click="addNew"
           >Search for New Media</o-button
@@ -70,7 +70,7 @@ const results = ref<MediaSearchResult[]>([])
 const totalResults = ref(0)
 const perPage = ref(0)
 const currentPage = ref(1)
-const contentType = ref<ContentType | null>(null)
+const contentType = ref<ContentType>(ContentType.ALL)
 const loading = ref(false)
 const showNewSearchModal = ref(false)
 
@@ -114,7 +114,7 @@ const closeNewSearchModal = () => {
 
 onMounted(() => {
   query.value = route.query.q as LocationQueryValue ?? '';
-  contentType.value = route.query.content_type === "" ? null : route.query.content_type as ContentType;
+  contentType.value = route.query.content_type === "" ? ContentType.ALL : route.query.content_type as ContentType;
   currentPage.value = safeParseInt(`${route.query.page}`) ?? 1;
 
   search(query.value, contentType.value, currentPage.value);

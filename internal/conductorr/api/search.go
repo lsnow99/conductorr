@@ -180,6 +180,9 @@ func SearchNewByTitle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+  if contentType == "all" {
+    contentType = ""
+  }
 	searchResults, err := search.SearchByTitle(query, contentType, page)
 	if err != nil {
 		Respond(w, r, err, nil, true)
@@ -216,10 +219,7 @@ func SearchLibraryByTitle(w http.ResponseWriter, r *http.Request) {
 
 	results := make([]MediaResponse, 0)
 	for _, media := range medias {
-		if media == nil {
-			continue
-		}
-		results = append(results, NewMediaResponseFromDB(*media))
+		results = append(results, NewMediaResponseFromDB(media))
 	}
 
 	resp := SearchResponse{

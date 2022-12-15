@@ -3,7 +3,6 @@ package dbstore
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"strings"
 	"time"
 
@@ -28,15 +27,47 @@ func SelectAllCols(sb *sqlbuilder.SelectBuilder) *sqlbuilder.SelectBuilder {
 		"added")
 }
 
-func SearchMedia(title string, contentType string, page int) ([]*Media, int, error) {
-	title = strings.ToUpper(title)
-	row := db.QueryRow(`
-		SELECT COUNT(id)
-		FROM media
-		WHERE UPPER(title) LIKE '%' || ? || '%'
-		AND content_type LIKE '%' || ? || '%'
-		AND content_type NOT IN ('episode', 'season')
-		`, title, contentType)
+func scanAll(rows *sql.Rows) ([]Media, error) {
+	medias := make([]Media, 0)
+	for rows.Next() {
+		media := Media{}
+		err := rows.Scan(mediaStruct.Addr(&media)...)
+		if err != nil {
+			return nil, err
+		}
+		medias = append(medias, media)
+	}
+  return medias, nil
+}
+
+func filterContentTypes(sb *sqlbuilder.SelectBuilder, contentType string) string {
+  conditions := make([]string, 0)
+  if contentType == "series" || contentType == "all" {
+    conditions = append(conditions, sb.Equal("content_type", "series"))
+  }
+  if contentType == "movie" || contentType == "all" {
+    conditions = append(conditions, sb.Equal("content_type", "movie"))
+  }
+  if len(conditions) == 0 {
+    return "true"
+  }
+  return sb.Or(conditions...)
+}
+
+func filterTitle(sb *sqlbuilder.SelectBuilder, title string) string{
+  return sb.Like("UPPER(title)", "%" + strings.ToLower(title) + "%")
+}
+
+func filterSearch(sb *sqlbuilder.SelectBuilder, title, contentType string) *sqlbuilder.SelectBuilder {
+  return sb.Where(sb.And(filterContentTypes(sb, contentType), filterTitle(sb, title)))
+}
+
+func SearchMedia(title string, contentType string, page int) ([]Media, int, error) {
+  sb := sqlbuilder.Select("COUNT(id)").From("media")
+  sb = filterSearch(sb, title, contentType)
+
+  stmt, args := sb.Build()
+	row := db.QueryRow(stmt, args...)
 
 	var count int
 
@@ -44,40 +75,22 @@ func SearchMedia(title string, contentType string, page int) ([]*Media, int, err
 		return nil, 0, err
 	}
 
-	/*
+	sb = mediaStruct.SelectFrom("media")
+  sb = filterSearch(sb, title, contentType)
+  sb = sb.Limit(10)
+  sb = sb.Offset((page - 1) * 10)
 
-		CASE content_type
-			WHEN 'series'
-				THEN (SELECT COUNT(id) FROM media WHERE )
-
-		END
-	*/
-
-	rows, err := db.Query(`
-		SELECT`+fullMediaCols+`
-		FROM media
-		WHERE UPPER(title) LIKE '%' || ? || '%'
-		AND content_type LIKE '%' || ? || '%'
-		AND content_type NOT IN ('episode', 'season')
-		LIMIT 10
-		OFFSET ?
-		`, title, contentType, (page-1)*10)
+  stmt, args = sb.Build()
+	rows, err := db.Query(stmt, args...)
 
 	if err != nil && err != sql.ErrNoRows {
 		return nil, 0, err
 	}
 	defer rows.Close()
 
-	medias := make([]*Media, 0, 10)
-	for rows.Next() {
-		media, err := scanFullMedia(rows)
-		if err != nil {
-			return nil, 0, err
-		}
-		medias = append(medias, &media)
-	}
+  medias, err := scanAll(rows)
 
-	return medias, count, nil
+	return medias, count, err
 }
 
 func GetAllMedia() ([]*Media, error) {
@@ -132,8 +145,6 @@ func GetMediaInIntervals(ctx context.Context, dateIntervals []DateInterval) ([]M
 		return nil, err
 	}
 	defer rows.Close()
-
-	fmt.Println(sb.String())
 
 	medias := make([]Media, 0)
 	for rows.Next() {
