@@ -18,17 +18,17 @@ export default function <T extends ConfigurableService>(
 
   const showModal = computed(() => mode.value !== "")
 
-  const openNewServiceModal = ($event: Event) => {
-    lastButton.value = $event.currentTarget as HTMLElement;
+  const openNewServiceModal = ($event?: Event) => {
+    lastButton.value = $event?.currentTarget as HTMLElement | undefined ?? null;
     mode.value = "new"
   };
 
-  const openEditServiceModal = ($event: Event) => {
-    lastButton.value = $event.currentTarget as HTMLElement;
+  const openEditServiceModal = ($event?: Event) => {
+    lastButton.value = $event?.currentTarget as HTMLElement | undefined ?? null;
     mode.value = "edit"
   };
 
-  const editService = (service: T, $event: Event) => {
+  const editService = (service: T, $event?: Event) => {
     editingService.value = service;
     openEditServiceModal($event);
   };
@@ -51,7 +51,6 @@ export default function <T extends ConfigurableService>(
     showModal,
     closeModal,
     openNewServiceModal,
-    openEditServiceModal,
     editingService,
     editService,
     onSubmit,

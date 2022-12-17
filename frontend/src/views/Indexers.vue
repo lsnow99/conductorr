@@ -162,7 +162,6 @@ const {
   showModal,
   closeModal,
   openNewServiceModal,
-  openEditServiceModal,
   editService,
   editingService,
   onSubmit,

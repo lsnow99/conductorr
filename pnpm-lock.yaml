@@ -35,7 +35,7 @@ importers:
       '@fortawesome/free-regular-svg-icons': ^5.15.4
       '@fortawesome/free-solid-svg-icons': ^5.15.4
       '@fortawesome/vue-fontawesome': ^3.0.1
-      '@oruga-ui/oruga-next': ^0.5.5
+      '@oruga-ui/oruga-next': ^0.5.9
       '@types/luxon': ^1.27.1
       '@vue/compiler-sfc': ^3.2.37
       '@vue/devtools-api': ^6.2.0
@@ -61,7 +61,7 @@ importers:
       '@fortawesome/free-brands-svg-icons': 5.15.4
       '@fortawesome/free-regular-svg-icons': 5.15.4
       '@fortawesome/free-solid-svg-icons': 5.15.4
-      '@oruga-ui/oruga-next': 0.5.5_vue@3.2.37
+      '@oruga-ui/oruga-next': 0.5.9_vue@3.2.37
       conductorr-lib: link:../shared
       luxon: 3.0.1
       pinia: 2.0.14_j6bzmzd4ujpabbp5objtwxyjp4
@@ -363,8 +363,8 @@ packages:
       fastq: 1.13.0
     dev: true
 
-  /@oruga-ui/oruga-next/0.5.5_vue@3.2.37:
-    resolution: {integrity: sha512-LmieX0fo0hbhJQRaKf4rfUlyDUwGVYkjGmSNfbontRKfKrEmmr1w1mxraF2Orxc894gkwi64NQh/SRSm4pIE5g==}
+  /@oruga-ui/oruga-next/0.5.9_vue@3.2.37:
+    resolution: {integrity: sha512-51T9mcJ4qQKxXJrB5EHr8T8zmGMBicZpXKeIRw4KzRhL/A2pSdi7303d0wtzMS3vKgb00mNzvUT3KbBbnjB0Gw==}
     peerDependencies:
       vue: ^3.0.0
     dependencies:

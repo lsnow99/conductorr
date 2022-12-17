@@ -60,7 +60,7 @@ func NewTransmission(username, password, baseUrl string) (*Transmission, error) 
 func NewTransmissionFromConfig(configuration map[string]interface{}) (*Transmission, error) {
 	username, uOK := configuration["username"].(string)
 	password, pOK := configuration["password"].(string)
-	baseUrl, bOK := configuration["base_url"].(string)
+	baseUrl, bOK := configuration["baseUrl"].(string)
 	if !uOK || !pOK || !bOK {
 		return nil, errors.New("failed to parse transmission configuration")
 	}
@@ -144,7 +144,7 @@ func (t *Transmission) PollDownloads(identifiers []string) ([]Download, error) {
 	for _, torrent := range torrents {
 		d := Download{}
 
-		if torrent.Status == nil || torrent.LeftUntilDone == nil || torrent.Name == nil || torrent.HashString == nil || 
+		if torrent.Status == nil || torrent.LeftUntilDone == nil || torrent.Name == nil || torrent.HashString == nil ||
 			torrent.DownloadDir == nil || torrent.TotalSize == nil {
 			// Warning
 			continue

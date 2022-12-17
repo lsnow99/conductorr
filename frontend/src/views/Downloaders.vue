@@ -2,35 +2,18 @@
   <section class="mt-3">
     <div class="flex flex-col justify-between sm:flex-row">
       <div class="flex justify-center">
-        <o-button @click="showNewDownloader" variant="primary"
-          >Add Downloader</o-button
-        >
+        <o-button @click="showNewDownloader" variant="primary">Add Downloader</o-button>
       </div>
       <div class="flex justify-center mt-4 sm:mt-0">
-        <o-button
-          variant="primary"
-          icon-left="plus-square"
-          @click="setExpanded(true)"
-          class="mr-3"
-          >Expand All</o-button
-        ><o-button
-          variant="primary"
-          icon-left="minus-square"
-          @click="setExpanded(false)"
-          >Collapse All</o-button
-        >
+        <o-button variant="primary" icon-left="plus-square" @click="setExpanded(true)" class="mr-3">Expand
+          All</o-button><o-button variant="primary" icon-left="minus-square" @click="setExpanded(false)">Collapse
+          All</o-button>
       </div>
     </div>
-    <config-item
-      @edit="editDownloader(downloader, $event)"
-      @delete="deleteDownloader(downloader)"
-      v-model:expanded="downloader.expanded"
-      collapsible
-      :title="downloader.name"
+    <config-item @edit="editService(downloader, $event)" @delete="deleteDownloader(downloader)"
+      v-model:expanded="downloader.expanded" collapsible :title="downloader.name"
       :delete-message="`Are you sure you want to delete downloader '${downloader.name}'?`"
-      v-for="downloader in downloaders"
-      :key="downloader.id"
-    >
+      v-for="downloader in downloaders" :key="downloader.id">
       <div class="flex flex-col">
         Configuration:
         <code class="p-2 whitespace-pre bg-gray-800">
@@ -38,36 +21,10 @@
         </code>
       </div>
     </config-item>
-    <new-downloader
-      v-model:active="showNewDownloaderModal"
-      @close="closeNewDownloaderModal"
-      @selected="selectedDownloader"
-    />
-    <EditService
-      v-model:active="showEditDownloaderModal"
-      v-model="editingDownloader"
-      :title="computedTitle"
-      :fields="computedFields"
-      :downloader-type="downloaderType"
-      :extra-validator="validate"
-      :testingMode="testingMode"
-      @close="closeEditDownloaderModal"
-      @test="testDownloader"
-      @save="submittedDownloader"
-    >
-      <o-field label="Post-Processing Action">
-        <div class="flex flex-row justify-center mt-1">
-          <radio-group
-            name="fileAction"
-            v-model="editingDownloader.file_action"
-            :options="[
-              { text: 'MOVE', value: 'move' },
-              { text: 'COPY', value: 'copy' },
-            ]"
-          />
-        </div>
-      </o-field>
-    </EditService>
+    <NewDownloader v-model:active="showNewDownloaderModal" @close="closeNewDownloaderModal"
+      @selected="selectDownloaderType" />
+    <EditService v-model:active="showModal" v-model="editingService" :title="computedTitle" :fields="computedFields"
+      :testingMode="testingMode" @close="closeModalWrapper" @test="testDownloader" @save="onSubmit" />
   </section>
 </template>
 
@@ -75,16 +32,20 @@
 import NewDownloader from "../components/NewDownloader.vue";
 import EditService from "../components/EditService.vue";
 import APIUtil from "@/util/APIUtil";
+import { Downloader, FlatDownloader, DownloaderType } from "@/types/api/downloader";
 import ConfigItem from "../components/ConfigItem.vue";
-import TabSaver from "../util/TabSaver";
 import RadioGroup from "../components/RadioGroup.vue";
+import { ref, inject, onMounted, computed, warn } from "vue";
+import { TestingMode } from "@/types/testing_mode";
+import { useTabSaver, useServiceUtil } from "@/util";
+import { ConfigurableService } from "@/types/api/service";
 
 const NZBGET_FIELDS = [
   {
     type: "text",
     label: "Base URL",
     placeholder: "http://localhost:6789",
-    property: "base_url",
+    property: "baseUrl",
     required: true,
     trim: true,
   },
@@ -111,7 +72,7 @@ const TRANSMISSION_FIELDS = [
     type: "text",
     label: "Base URL",
     placeholder: "http://localhost:9091",
-    property: "base_url",
+    property: "baseUrl",
     required: true,
     trim: true,
   },
@@ -133,178 +94,195 @@ const TRANSMISSION_FIELDS = [
   },
 ];
 
-export default {
-  data() {
-    return {
-      showNewDownloaderModal: false,
-      showEditDownloaderModal: false,
-      downloaders: [],
-      downloaderType: "",
-      mode: "edit",
-      editingDownloader: {
-        config: {},
-      },
-      editingFileAction: "",
-      testingMode: "",
-    };
+const COMMON_FIELDS = [
+  {
+    type: "radio",
+    label: "Post-Processing Action",
+    property: "fileAction",
+    options: [
+      { text: "MOVE", value: "move" },
+      { text: "COPY", value: "copy" },
+    ],
   },
-  components: {
-    NewDownloader,
-    ConfigItem,
-    EditService,
-    RadioGroup,
-  },
-  mixins: [TabSaver],
-  methods: {
-    setExpanded(expanded) {
-      this.downloaders.forEach((element) => {
-        element.expanded = expanded;
-      });
-    },
-    selectedDownloader(downloaderType) {
-      this.mode = "new";
-      this.downloaderType = downloaderType;
-      this.showEditDownloaderModal = true;
-      this.showNewDownloaderModal = false;
-    },
-    closeNewDownloaderModal() {
-      this.showNewDownloaderModal = false;
-      this.restoreFocus();
-    },
-    closeEditDownloaderModal() {
-      this.showEditDownloaderModal = false;
-      this.mode = "";
-      this.downloaderType = "";
-      this.editingDownloader = {
-        config: {},
-      };
-      this.restoreFocus();
-    },
-    submittedDownloader(downloader) {
-      if (this.mode == "new") {
-        APIUtil.newDownloader(
-          this.downloaderType,
-          downloader.name,
-          downloader.file_action,
-          downloader.config
-        ).then(() => {
-          this.$oruga.notification.open({
-            duration: 3000,
-            message: `Created successfully`,
-            position: "bottom-right",
-            variant: "success",
-            closable: false,
-          });
-          this.closeEditDownloaderModal();
-          this.loadDownloaders();
-        });
-      } else if (this.mode == "edit") {
-        APIUtil.updateDownloader(
-          downloader.id,
-          downloader.name,
-          downloader.file_action,
-          downloader.config
-        ).then(() => {
-          this.$oruga.notification.open({
-            duration: 3000,
-            message: `Updated successfully`,
-            position: "bottom-right",
-            variant: "success",
-            closable: false,
-          });
-          this.closeEditDownloaderModal();
-          this.loadDownloaders();
-        });
-      }
-    },
-    testDownloader(downloader) {
-      this.testingMode = "loading";
-      APIUtil.testDownloader(this.downloaderType, downloader.config)
-        .then((resp) => {
-          this.$oruga.notification.open({
-            duration: 5000,
-            message: `Connected successfully`,
-            position: "bottom-right",
-            variant: "success",
-            closable: false,
-          });
-          this.testingMode = "success";
-        })
-        .catch((err) => {
-          this.$oruga.notification.open({
-            duration: 5000,
-            message: `Test failedf: ${err}`,
-            position: "bottom-right",
-            variant: "danger",
-            closable: false,
-          });
-          this.testingMode = "danger";
-        })
-        .finally(() => {
-          setTimeout(() => {
-            this.testingMode = "";
-          }, 5000);
-        });
-    },
-    loadDownloaders() {
-      APIUtil.getDownloaders().then((downloaders) => {
-        this.downloaders = downloaders;
-      });
-    },
-    editDownloader(downloader, $event) {
-      this.mode = "edit";
-      this.showEditDownloaderModal = true;
-      this.downloaderType = downloader.downloader_type;
-      Object.assign(this.editingDownloader, downloader);
-      this.lastButton = $event.currentTarget;
-    },
-    deleteDownloader(downloader) {
-      APIUtil.deleteDownloader(downloader.id).then(() => {
-        this.$oruga.notification.open({
-          duration: 3000,
-          message: `Deleted successfully`,
-          position: "bottom-right",
-          variant: "success",
-          closable: false,
-        });
-        this.loadDownloaders();
-      });
-    },
-    showNewDownloader($event) {
-      this.lastButton = $event.currentTarget;
-      this.editingName = "";
-      this.showNewDownloaderModal = true;
-    },
-    validate() {
-      if (!this.editingDownloader.file_action) {
-        return "File Action is required";
-      }
-    },
-  },
-  mounted() {
-    this.loadDownloaders();
-  },
-  computed: {
-    computedFields() {
-      switch (this.downloaderType) {
-        case "transmission":
-          return TRANSMISSION_FIELDS;
-        case "nzbget":
-          return NZBGET_FIELDS;
-        default:
-          return [];
-      }
-    },
-    computedTitle() {
-      switch (this.downloaderType) {
-        case "transmission":
-          return "Configure Transmission";
-        case "nzbget":
-          return "Configure NZBGet";
-        default:
-          return "";
-      }
-    },
-  },
+];
+
+const oruga = inject("oruga");
+
+const testingMode = ref<TestingMode>(TestingMode.OFF);
+const downloaders = ref<(Downloader & { expanded?: boolean })[]>([]);
+const showNewDownloaderModal = ref(false);
+const selectedDownloaderType = ref<DownloaderType | null>(null);
+
+const { lastButton, restoreFocus } = useTabSaver();
+
+const editDownloader = async (downloader: FlatDownloader) => {
+  void (await APIUtil.updateDownloader(
+    downloader.id,
+    downloader.name,
+    downloader.baseUrl,
+    downloader.username,
+    downloader.password
+  ));
+  oruga.notification.open({
+    duration: 3000,
+    message: "Saved successfully",
+    position: "bottom-right",
+    variant: "success",
+    closable: false,
+  });
+  loadDownloaders();
 };
+
+const x = async () => {
+  console.log("x");
+};
+
+const createDownloader = async (downloader: Downloader) => {
+  void (await APIUtil.newDownloader(
+    downloader.name,
+    downloader.baseUrl,
+    downloader.username,
+    downloader.password
+  ));
+  oruga.notification.open({
+    duration: 3000,
+    message: `Saved successfully`,
+    position: "bottom-right",
+    variant: "success",
+    closable: false,
+  });
+  loadDownloaders();
+};
+
+const {
+  showModal,
+  closeModal,
+  openNewServiceModal,
+  editService,
+  editingService,
+  onSubmit,
+  mode,
+} = useServiceUtil<Downloader>(
+  lastButton,
+  restoreFocus,
+  createDownloader,
+  editDownloader
+);
+
+const closeModalWrapper = () => {
+  selectedDownloaderType.value = null;
+  closeModal();
+};
+
+const selectDownloaderType = (downloaderType: DownloaderType) => {
+  selectedDownloaderType.value = downloaderType;
+  closeNewDownloaderModal();
+  openNewServiceModal();
+};
+
+const closeNewDownloaderModal = () => {
+  showNewDownloaderModal.value = false;
+  restoreFocus();
+};
+
+const showNewDownloader = ($event: Event) => {
+  lastButton.value = $event.target as HTMLElement;
+  showNewDownloaderModal.value = true;
+  selectedDownloaderType.value = false;
+};
+
+const loadDownloaders = async () => {
+  try {
+    const data = await APIUtil.getDownloaders();
+    downloaders.value = data;
+  } catch { }
+};
+
+const testDownloader = async (downloaderService: ConfigurableService) => {
+  const downloader = downloaderService as FlatDownloader;
+  testingMode.value = TestingMode.LOADING;
+  let testResult;
+  try {
+    const downloaderType =
+      selectedDownloaderType.value ?? downloader.downloaderType;
+    let config;
+    if (downloaderType === DownloaderType.nzbget) {
+      config = {
+        baseUrl: downloader.baseUrl,
+        username: downloader.username,
+        password: downloader.password,
+      };
+    } else if (downloaderType === DownloaderType.transmission) {
+      config = {
+        baseUrl: downloader.baseUrl,
+        username: downloader.username,
+        password: downloader.password,
+      };
+    }
+    testResult = await APIUtil.testDownloader(
+      selectedDownloaderType.value ?? downloader.downloaderType,
+      config
+    );
+  } catch (err) {
+    testResult = {
+      success: false,
+      msg: `${err}`,
+    };
+  } finally {
+    if (testResult.success) {
+      oruga.notification.open({
+        duration: 5000,
+        message: `Connected successfully`,
+        position: "bottom-right",
+        variant: "success",
+        closable: false,
+      });
+      testingMode.value = TestingMode.SUCCESS;
+    } else {
+      oruga.notification.open({
+        duration: 5000,
+        message: `Test failed: ${testResult.msg}`,
+        position: "bottom-right",
+        variant: "danger",
+        closable: false,
+      });
+      testingMode.value = TestingMode.DANGER;
+    }
+    setTimeout(() => {
+      testingMode.value = TestingMode.OFF;
+    }, 5000);
+  }
+};
+
+const setExpanded = (expanded: boolean) => {
+  downloaders.value.forEach((elem) => {
+    elem.expanded = expanded;
+  });
+};
+
+const deleteDownloader = async (downloader: Downloader) => {
+  await APIUtil.deleteDownloader(downloader.id);
+  loadDownloaders();
+};
+
+const computedTitle = computed(() =>
+  mode.value === "edit" ? "Edit Downloader" : "New Downloader"
+);
+
+const computedFields = computed(() => {
+  console.log(editingService.value);
+  if (
+    editingService.value?.downloaderType ??
+    selectedDownloaderType.value === DownloaderType.nzbget
+  ) {
+    return [...NZBGET_FIELDS, ...COMMON_FIELDS];
+  } else if (
+    editingService.value?.downloaderType ??
+    selectedDownloaderType.value === DownloaderType.transmission
+  ) {
+    return [...TRANSMISSION_FIELDS, ...COMMON_FIELDS];
+  }
+});
+
+onMounted(loadDownloaders);
 </script>

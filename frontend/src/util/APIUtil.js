@@ -172,16 +172,16 @@ const testIndexer = (name, baseUrl, apiKey, forMovies, forSeries, downloadType) 
   })
 }
 
-const newIndexer = (name, base_url, api_key, for_movies, for_series, download_type) => {
+const newIndexer = (name, baseUrl, apiKey, forMovies, forSeries, downloadType) => {
   return doAPIReq(`/api/v1/indexer`, {
     method: "POST",
     body: JSON.stringify({
       name,
-      base_url,
-      api_key,
-      for_movies,
-      for_series,
-      download_type
+      baseUrl,
+      apiKey,
+      forMovies,
+      forSeries,
+      downloadType
     })
   })
 }
@@ -250,11 +250,11 @@ const updateMedia = (id, profile_id, path_id) => {
   })
 }
 
-const testDownloader = (downloader_type, config) => {
+const testDownloader = (downloaderType, config) => {
   return doAPIReq(`/api/v1/testDownloader`, {
     method: "POST",
     body: JSON.stringify({
-      downloader_type,
+      downloaderType,
       config,
     })
   })

@@ -30,7 +30,7 @@
             >
           </span>
         </template>
-        <!--<downloaders />-->
+        <Downloaders />
         <div></div>
       </o-tab-item>
       <o-tab-item>
@@ -71,7 +71,7 @@
 import Indexers from "./Indexers.vue";
 import PageWrapper from "../components/PageWrapper.vue";
 import ReleaseProfiles from "./ReleaseProfiles.vue";
-// import Downloaders from "./Downloaders.vue";
+import Downloaders from "./Downloaders.vue";
 // import PostProcessing from "./PostProcessing.vue";
 // import MediaServers from "./MediaServers.vue";
 import { onMounted, ref, watch } from "vue";
