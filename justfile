@@ -117,3 +117,12 @@ reset := '\033[0m'
 # Run conductorr's backend
 @run-backend dbpath="":
     CONDUCTORR_DEBUG=true DB_PATH=$dbpath go run ./cmd/conductorr
+
+@new-migration name:
+    go run ./cmd/migrate create $name
+
+@migrate-up dbpath="conductorr.db":
+    go run ./cmd/migrate -database $dbpath up
+
+@migrate-down dbpath="conductorr.db":
+    go run ./cmd/migrate -database $dbpath down

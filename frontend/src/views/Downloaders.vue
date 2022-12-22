@@ -2,29 +2,57 @@
   <section class="mt-3">
     <div class="flex flex-col justify-between sm:flex-row">
       <div class="flex justify-center">
-        <o-button @click="showNewDownloader" variant="primary">Add Downloader</o-button>
+        <o-button @click="showNewDownloader" variant="primary"
+          >Add Downloader</o-button
+        >
       </div>
       <div class="flex justify-center mt-4 sm:mt-0">
-        <o-button variant="primary" icon-left="plus-square" @click="setExpanded(true)" class="mr-3">Expand
-          All</o-button><o-button variant="primary" icon-left="minus-square" @click="setExpanded(false)">Collapse
-          All</o-button>
+        <o-button
+          variant="primary"
+          icon-left="plus-square"
+          @click="setExpanded(true)"
+          class="mr-3"
+          >Expand All</o-button
+        ><o-button
+          variant="primary"
+          icon-left="minus-square"
+          @click="setExpanded(false)"
+          >Collapse All</o-button
+        >
       </div>
     </div>
-    <config-item @edit="editService(downloader, $event)" @delete="deleteDownloader(downloader)"
-      v-model:expanded="downloader.expanded" collapsible :title="downloader.name"
+    <config-item
+      @edit="editService(downloader, $event)"
+      @delete="deleteDownloader(downloader)"
+      v-model:expanded="downloader.expanded"
+      collapsible
+      :title="downloader.name"
       :delete-message="`Are you sure you want to delete downloader '${downloader.name}'?`"
-      v-for="downloader in downloaders" :key="downloader.id">
+      v-for="downloader in downloaders"
+      :key="downloader.id"
+    >
       <div class="flex flex-col">
         Configuration:
         <code class="p-2 whitespace-pre bg-gray-800">
-          {{ JSON.stringify(downloader.config, null, 4) }}
+          {{ JSON.stringify(getConfig(downloader).config, null, 4) }}
         </code>
       </div>
     </config-item>
-    <NewDownloader v-model:active="showNewDownloaderModal" @close="closeNewDownloaderModal"
-      @selected="selectDownloaderType" />
-    <EditService v-model:active="showModal" v-model="editingService" :title="computedTitle" :fields="computedFields"
-      :testingMode="testingMode" @close="closeModalWrapper" @test="testDownloader" @save="onSubmit" />
+    <NewDownloader
+      v-model:active="showNewDownloaderModal"
+      @close="closeNewDownloaderModal"
+      @selected="selectDownloaderType"
+    />
+    <EditService
+      v-model:active="showModal"
+      v-model="editingService"
+      :title="computedTitle"
+      :fields="computedFields"
+      :testingMode="testingMode"
+      @close="closeModalWrapper"
+      @test="testDownloader"
+      @save="onSubmit"
+    />
   </section>
 </template>
 
@@ -32,7 +60,11 @@
 import NewDownloader from "../components/NewDownloader.vue";
 import EditService from "../components/EditService.vue";
 import APIUtil from "@/util/APIUtil";
-import { Downloader, FlatDownloader, DownloaderType } from "@/types/api/downloader";
+import {
+  Downloader,
+  FlatDownloader,
+  DownloaderType,
+} from "@/types/api/downloader";
 import ConfigItem from "../components/ConfigItem.vue";
 import RadioGroup from "../components/RadioGroup.vue";
 import { ref, inject, onMounted, computed, warn } from "vue";
@@ -109,19 +141,42 @@ const COMMON_FIELDS = [
 const oruga = inject("oruga");
 
 const testingMode = ref<TestingMode>(TestingMode.OFF);
-const downloaders = ref<(Downloader & { expanded?: boolean })[]>([]);
+const downloaders = ref<(FlatDownloader & { expanded?: boolean })[]>([]);
 const showNewDownloaderModal = ref(false);
 const selectedDownloaderType = ref<DownloaderType | null>(null);
 
 const { lastButton, restoreFocus } = useTabSaver();
 
+const getConfig = (downloader: FlatDownloader) => {
+  const downloaderType =
+    selectedDownloaderType.value ?? downloader.downloaderType;
+  if (!downloaderType) {
+    throw "downloader type not supplied"
+  }
+  let config;
+  if (downloaderType === DownloaderType.nzbget) {
+    config = {
+      baseUrl: downloader.baseUrl,
+      username: downloader.username,
+      password: downloader.password,
+    };
+  } else if (downloaderType === DownloaderType.transmission) {
+    config = {
+      baseUrl: downloader.baseUrl,
+      username: downloader.username,
+      password: downloader.password,
+    };
+  }
+  return {config, downloaderType};
+};
+
 const editDownloader = async (downloader: FlatDownloader) => {
+  const {config} = getConfig(downloader)
   void (await APIUtil.updateDownloader(
     downloader.id,
     downloader.name,
-    downloader.baseUrl,
-    downloader.username,
-    downloader.password
+    downloader.fileAction,
+    config
   ));
   oruga.notification.open({
     duration: 3000,
@@ -133,16 +188,13 @@ const editDownloader = async (downloader: FlatDownloader) => {
   loadDownloaders();
 };
 
-const x = async () => {
-  console.log("x");
-};
-
-const createDownloader = async (downloader: Downloader) => {
+const createDownloader = async (downloader: FlatDownloader) => {
+  const {config, downloaderType} = getConfig(downloader)
   void (await APIUtil.newDownloader(
+    downloaderType,
     downloader.name,
-    downloader.baseUrl,
-    downloader.username,
-    downloader.password
+    downloader.fileAction,
+    config
   ));
   oruga.notification.open({
     duration: 3000,
@@ -162,7 +214,7 @@ const {
   editingService,
   onSubmit,
   mode,
-} = useServiceUtil<Downloader>(
+} = useServiceUtil<FlatDownloader>(
   lastButton,
   restoreFocus,
   createDownloader,
@@ -188,39 +240,23 @@ const closeNewDownloaderModal = () => {
 const showNewDownloader = ($event: Event) => {
   lastButton.value = $event.target as HTMLElement;
   showNewDownloaderModal.value = true;
-  selectedDownloaderType.value = false;
+  selectedDownloaderType.value = null;
 };
 
 const loadDownloaders = async () => {
-  try {
-    const data = await APIUtil.getDownloaders();
-    downloaders.value = data;
-  } catch { }
+  const data = await APIUtil.getDownloaders();
+  const flatDownloaders: FlatDownloader[] = data.map((downloader) => ({...downloader, ...downloader.config}))
+  downloaders.value = flatDownloaders;
 };
 
 const testDownloader = async (downloaderService: ConfigurableService) => {
   const downloader = downloaderService as FlatDownloader;
   testingMode.value = TestingMode.LOADING;
   let testResult;
+  const {config, downloaderType} = getConfig(downloader)
   try {
-    const downloaderType =
-      selectedDownloaderType.value ?? downloader.downloaderType;
-    let config;
-    if (downloaderType === DownloaderType.nzbget) {
-      config = {
-        baseUrl: downloader.baseUrl,
-        username: downloader.username,
-        password: downloader.password,
-      };
-    } else if (downloaderType === DownloaderType.transmission) {
-      config = {
-        baseUrl: downloader.baseUrl,
-        username: downloader.username,
-        password: downloader.password,
-      };
-    }
     testResult = await APIUtil.testDownloader(
-      selectedDownloaderType.value ?? downloader.downloaderType,
+      downloaderType,
       config
     );
   } catch (err) {
@@ -260,7 +296,7 @@ const setExpanded = (expanded: boolean) => {
   });
 };
 
-const deleteDownloader = async (downloader: Downloader) => {
+const deleteDownloader = async (downloader: FlatDownloader) => {
   await APIUtil.deleteDownloader(downloader.id);
   loadDownloaders();
 };
@@ -270,7 +306,6 @@ const computedTitle = computed(() =>
 );
 
 const computedFields = computed(() => {
-  console.log(editingService.value);
   if (
     editingService.value?.downloaderType ??
     selectedDownloaderType.value === DownloaderType.nzbget
@@ -282,6 +317,7 @@ const computedFields = computed(() => {
   ) {
     return [...TRANSMISSION_FIELDS, ...COMMON_FIELDS];
   }
+  else throw 'unknown downloader type'
 });
 
 onMounted(loadDownloaders);

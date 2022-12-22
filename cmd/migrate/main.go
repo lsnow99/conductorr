@@ -40,6 +40,38 @@ func main() {
 			log.Fatal(err)
 		}
 		return
+  case "up":
+    migrater, migraterErr := migrate.New(*sourcePtr, *databasePtr)
+    defer func() {
+      if migraterErr == nil {
+        if _, err := migrater.Close(); err != nil {
+          log.Println(err)
+        }
+      }
+    }()
+    if migraterErr == nil {
+      if err := upCmd(migrater, 1); err != nil {
+        log.Println(err)
+      }
+    } else {
+      log.Fatal(migraterErr)
+    }
+  case "down":
+    migrater, migraterErr := migrate.New(*sourcePtr, *databasePtr)
+    defer func() {
+      if migraterErr == nil {
+        if _, err := migrater.Close(); err != nil {
+          log.Println(err)
+        }
+      }
+    }()
+    if migraterErr == nil {
+      if err := downCmd(migrater, 1); err != nil {
+        log.Println(err)
+      }
+    } else {
+      log.Fatal(migraterErr)
+    }
 	case "force":
 		if flag.NArg() == 1 {
 			log.Fatal("error: please specify version argument V")

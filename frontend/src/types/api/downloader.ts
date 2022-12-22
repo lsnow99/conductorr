@@ -23,4 +23,5 @@ export type BaseDownloader = {
 
 export type Downloader = BaseDownloader & ({ downloaderType: DownloaderType.transmission, config: TransmissionConfig } | { downloaderType: DownloaderType.nzbget, config: NZBGetConfig })
 
-export type FlatDownloader = BaseDownloader & (NZBGetConfig | TransmissionConfig)
+export type FlatDownloader = BaseDownloader & (NZBGetConfig | TransmissionConfig) & {downloaderType?: DownloaderType}
+

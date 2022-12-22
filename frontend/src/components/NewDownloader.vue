@@ -45,7 +45,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: "close"): void,
-  (e: "selected", downloader: string): void,
+  (e: "selected", downloaderType: DownloaderType): void,
   (e: "update:active", active: boolean): void
 }>()
 
