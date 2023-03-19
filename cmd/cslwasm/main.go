@@ -130,17 +130,17 @@ func buildRelease(release js.Value) (csllib.List, error) {
 	if indexer == nil {
 		return csllib.List{}, fmt.Errorf("indexer is nil")
 	}
-	downloadType := strOrNil(release.Get("download_type"))
+	downloadType := strOrNil(release.Get("downloadType"))
 	if downloadType == nil {
-		return csllib.List{}, fmt.Errorf("download_type is nil")
+		return csllib.List{}, fmt.Errorf("downloadType is nil")
 	}
-	contentType := strOrNil(release.Get("content_type"))
+	contentType := strOrNil(release.Get("contentType"))
 	if contentType == nil {
-		return csllib.List{}, fmt.Errorf("content_type is nil")
+		return csllib.List{}, fmt.Errorf("contentType is nil")
 	}
-	ripType := strOrNil(release.Get("rip_type"))
+	ripType := strOrNil(release.Get("ripType"))
 	if ripType == nil {
-		return csllib.List{}, fmt.Errorf("rip_type is nil")
+		return csllib.List{}, fmt.Errorf("ripType is nil")
 	}
 	resolution := strOrNil(release.Get("resolution"))
 	if resolution == nil {

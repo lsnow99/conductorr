@@ -125,8 +125,6 @@ func Init() error {
 		return err
 	}
 
-  log.Println("migrations ran without Error", migrationPath)
-
 	// cleanup temporary directory if created
 	if settings.BuildMode == "binary" {
 		if err := os.RemoveAll(migrationPath); err != nil {

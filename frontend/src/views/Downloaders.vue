@@ -126,7 +126,19 @@ const TRANSMISSION_FIELDS = [
   },
 ];
 
-const COMMON_FIELDS = [
+const COMMON_FIELDS_BEGINNING = [
+  {
+    type: "text",
+    label: "Name",
+    placeholder: "Name",
+    property: "name",
+    required: true,
+    trim: true
+  },
+
+]
+
+const COMMON_FIELDS_END = [
   {
     type: "radio",
     label: "Post-Processing Action",
@@ -310,11 +322,11 @@ const computedFields = computed(() => {
   if (
     downloaderType === DownloaderType.nzbget
   ) {
-    return [...NZBGET_FIELDS, ...COMMON_FIELDS];
+    return [...COMMON_FIELDS_BEGINNING, ...NZBGET_FIELDS, ...COMMON_FIELDS_END];
   } else if (
     downloaderType === DownloaderType.transmission
   ) {
-    return [...TRANSMISSION_FIELDS, ...COMMON_FIELDS];
+    return [...COMMON_FIELDS_BEGINNING, ...TRANSMISSION_FIELDS, ...COMMON_FIELDS_END];
   } else if (!downloaderType) {
     return [];
   }

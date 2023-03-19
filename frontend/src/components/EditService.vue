@@ -1,9 +1,6 @@
 <template>
 	<Modal :title="title" v-model="computedActive" @close="emit('close')">
 		<div>
-			<o-field label="Name">
-				<o-input type="text" v-model="computedValue.name" placeholder="Name" />
-			</o-field>
 			<template v-for="field in fields" :key="field.property">
 				<template v-if="field.component">
 					<component :is="field.component" v-model="computedValue[field.property]" />
@@ -94,10 +91,7 @@ const sanitize = () => {
 	props.extraSanitizer();
 };
 
-const validate = (configOnly: boolean = false) => {
-	if (!computedValue.value.name && !configOnly) {
-		return "Name is required";
-	}
+const validate = () => {
 	for (const field of props.fields) {
 		if (field.required && !computedValue.value[field.property]) {
 			return `${field.label} is required`;

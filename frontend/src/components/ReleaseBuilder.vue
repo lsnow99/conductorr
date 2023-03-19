@@ -234,7 +234,7 @@ const computedRelease: WritableComputedRef<Release | null> = computed({
     }
     let sizes = ["B", "KB", "MB", "GB", "TB"];
     if (release?.size == 0 || !release?.size || isNaN(release.size)) {
-      return release;
+      return release ?? {} as unknown as Release;
     }
     let i = Math.floor(Math.log(release.size) / Math.log(1024));
     size.value = Math.round(release.size / Math.pow(1024, i));

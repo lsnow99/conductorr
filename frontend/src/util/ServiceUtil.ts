@@ -37,6 +37,7 @@ export default function <T extends ConfigurableService>(
     try {
         if (mode.value === "new") {
           await newServiceCallback(service as T);
+          console.log('done')
           mode.value = ""
         } else if (mode.value === "edit") {
           await editServiceCallback(service as T);

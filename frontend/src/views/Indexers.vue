@@ -45,6 +45,14 @@ import { ConfigurableService } from "@/types/api/service";
 const XNAB_FIELDS = [
   {
     type: "text",
+    label: "Name",
+    placeholder: "Name",
+    property: "name",
+    required: true,
+    trim: true
+  },
+  {
+    type: "text",
     label: "Base URL",
     placeholder: "Base URL",
     property: "baseUrl",
