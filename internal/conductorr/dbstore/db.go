@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"fmt"
 	"io"
+	"log"
 	"math/big"
 	"net/url"
 	"os"
@@ -102,6 +103,8 @@ func Init() error {
 		migrationPath = path
 	}
 
+  log.Println("running migrations")
+
 	migrationPath, err = CreateMigrationsFor(sqliteKey, migrationPath)
 	if err != nil {
 		return err
@@ -121,6 +124,8 @@ func Init() error {
 	if err != nil && err != migrate.ErrNoChange {
 		return err
 	}
+
+  log.Println("migrations ran without Error", migrationPath)
 
 	// cleanup temporary directory if created
 	if settings.BuildMode == "binary" {

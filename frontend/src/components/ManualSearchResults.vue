@@ -8,19 +8,19 @@
       mobile-cards
     >
       <o-table-column
-        field="download_type"
+        field="downloadType"
         label="Type"
         v-slot="props"
         position="centered"
       >
         <div
-          v-if="props.row.download_type == 'torrent'"
+          v-if="props.row.downloadType == 'torrent'"
           class="font-bold bg-green-500"
         >
           torrent
         </div>
         <div
-          v-if="props.row.download_type == 'nzb'"
+          v-if="props.row.downloadType == 'nzb'"
           class="font-bold bg-blue-500"
         >
           nzb
@@ -35,8 +35,8 @@
         {{ props.row.resolution }}
       </o-table-column>
 
-      <o-table-column field="rip_type" label="Rip Type" v-slot="props">
-        {{ props.row.rip_type }}
+      <o-table-column field="ripType" label="Rip Type" v-slot="props">
+        {{ props.row.ripType }}
       </o-table-column>
 
       <o-table-column field="encoding" label="Encoding" v-slot="props">

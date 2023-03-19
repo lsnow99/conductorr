@@ -306,18 +306,19 @@ const computedTitle = computed(() =>
 );
 
 const computedFields = computed(() => {
+  const downloaderType = editingService.value?.downloaderType ?? selectedDownloaderType.value
   if (
-    editingService.value?.downloaderType ??
-    selectedDownloaderType.value === DownloaderType.nzbget
+    downloaderType === DownloaderType.nzbget
   ) {
     return [...NZBGET_FIELDS, ...COMMON_FIELDS];
   } else if (
-    editingService.value?.downloaderType ??
-    selectedDownloaderType.value === DownloaderType.transmission
+    downloaderType === DownloaderType.transmission
   ) {
     return [...TRANSMISSION_FIELDS, ...COMMON_FIELDS];
+  } else if (!downloaderType) {
+    return [];
   }
-  else throw 'unknown downloader type'
+  else throw `unknown downloader type ${downloaderType}`
 });
 
 onMounted(loadDownloaders);

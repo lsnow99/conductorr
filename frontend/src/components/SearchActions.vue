@@ -77,6 +77,7 @@ const searchManual = async() => {
   loadingManualSearch.value = true
   try {
     releases.value = await APIUtil.searchReleasesManual(props.mediaID)
+    showManualReleasesModal.value = true
   } catch (re) {
     oruga.notification.open({
       duration: 3000,
