@@ -35,6 +35,10 @@ const downloaderTypes = ref([
     name: "NZBGet",
     value: "nzbget",
   },
+  {
+    name: "qBittorrent",
+    value: "qbittorrent"
+  }
 ])
 
 const selectedDownloader = ref<DownloaderType | null>(null)

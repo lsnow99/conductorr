@@ -20,6 +20,7 @@ RUN cp $(go env GOROOT)/misc/wasm/wasm_exec.js .
 
 # Build the frontend web UI
 FROM node:lts-alpine AS vue-build-env
+RUN apk add --no-cache git
 WORKDIR /build
 RUN npm install -g pnpm
 # Build the shared library

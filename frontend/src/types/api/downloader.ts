@@ -1,6 +1,7 @@
 export enum DownloaderType {
   nzbget = "nzbget",
-  transmission = "transmission"
+  transmission = "transmission",
+  qbittorrent = "qbittorrent"
 }
 
 export enum FileAction {

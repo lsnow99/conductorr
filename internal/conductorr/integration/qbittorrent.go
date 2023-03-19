@@ -27,9 +27,9 @@ func NewQBittorrent(username, password, baseUrl string) (*QBittorrent, error) {
 func NewQBittorrentFromConfig(configuration map[string]interface{}) (*QBittorrent, error) {
 	username, uOK := configuration["username"].(string)
 	password, pOK := configuration["password"].(string)
-	baseUrl, bOK := configuration["base_url"].(string)
+	baseUrl, bOK := configuration["baseUrl"].(string)
 	if !uOK || !pOK || !bOK {
-		return nil, fmt.Errorf("failed to parse transmission configuration")
+		return nil, fmt.Errorf("failed to parse qbittorrent configuration")
 	}
 
 	return NewQBittorrent(username, password, baseUrl)

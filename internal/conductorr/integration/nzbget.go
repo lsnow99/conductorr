@@ -104,7 +104,7 @@ func NewNZBGet(username, password, baseUrl string) (*NZBGet, error) {
 func NewNZBGetFromConfig(configuration map[string]interface{}) (*NZBGet, error) {
 	username, uOK := configuration["username"].(string)
 	password, pOK := configuration["password"].(string)
-	baseUrl, bOK := configuration["base_url"].(string)
+	baseUrl, bOK := configuration["baseUrl"].(string)
 	if !uOK || !pOK || !bOK {
 		return nil, errors.New("failed to parse nzbget configuration")
 	}
@@ -234,7 +234,7 @@ func (n *NZBGet) PollDownloads(names []string) ([]Download, error) {
 
 		downloads = append(downloads, d)
 	}
-	
+
 	return downloads, nil
 }
 

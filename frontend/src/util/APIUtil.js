@@ -260,12 +260,12 @@ const testDownloader = (downloaderType, config) => {
   })
 }
 
-const newDownloader = (downloader_type, name, file_action, config) => {
+const newDownloader = (downloaderType, name, file_action, config) => {
   return doAPIReq(`/api/v1/downloader`, {
     method: "POST",
     body: JSON.stringify({
       name,
-      downloader_type,
+      downloaderType,
       file_action,
       config
     })
@@ -278,13 +278,13 @@ const getDownloaders = () => {
   })
 }
 
-const updateDownloader = (id, name, file_action, config) => {
-  console.log('id', id, 'name', name, 'file_action', file_action, 'config', config)
+const updateDownloader = (id, name, fileAction, config) => {
+  console.log('id', id, 'name', name, 'file_action', fileAction, 'config', config)
   return doAPIReq(`/api/v1/downloader/${id}`, {
     method: "PUT",
     body: JSON.stringify({
       name,
-      file_action,
+      fileAction,
       config
     })
   })
@@ -296,8 +296,8 @@ const deleteDownloader = (id) => {
   })
 }
 
-const downloadMediaRelease = (media_id, release) => {
-  return doAPIReq(`/api/v1/media/${media_id}/download`, {
+const downloadMediaRelease = (mediaId, release) => {
+  return doAPIReq(`/api/v1/media/${mediaId}/download`, {
     method: "POST",
     body: JSON.stringify(release)
   })
@@ -315,24 +315,24 @@ const getLogs = () => {
   })
 }
 
-const createNewPath = (path, movies_default, series_default) => {
+const createNewPath = (path, moviesDefault, seriesDefault) => {
   return doAPIReq(`/api/v1/path`, {
     method: "POST",
     body: JSON.stringify({
       path,
-      movies_default,
-      series_default
+      moviesDefault,
+      seriesDefault
     })
   })
 }
 
-const updatePath = (id, path, movies_default, series_default) => {
+const updatePath = (id, path, moviesDefault, seriesDefault) => {
   return doAPIReq(`/api/v1/path/${id}`, {
     method: "PUT",
     body: JSON.stringify({
       path,
-      movies_default,
-      series_default
+      moviesDefault,
+      seriesDefault
     })
   })
 }
@@ -386,22 +386,22 @@ const getPlexAuthToken = (username, password) => {
   })
 }
 
-const testMediaServer = (media_server_type, config) => {
+const testMediaServer = (mediaServerType, config) => {
   return doAPIReq(`/api/v1/testMediaServer`, {
     method: "POST",
     body: JSON.stringify({
-      media_server_type,
+      mediaServerType,
       config,
     })
   })
 }
 
-const newMediaServer = (media_server_type, name, config) => {
+const newMediaServer = (mediaServerType, name, config) => {
   return doAPIReq(`/api/v1/mediaServer`, {
     method: "POST",
     body: JSON.stringify({
       name,
-      media_server_type,
+      mediaServerType,
       config
     })
   })

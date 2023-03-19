@@ -99,6 +99,33 @@ const NZBGET_FIELDS = [
   },
 ];
 
+const QBITTORRENT_FIELDS = [
+  {
+    type: "text",
+    label: "Base URL",
+    placeholder: "http://localhost:6881",
+    property: "baseUrl",
+    required: true,
+    trim: true,
+  },
+  {
+    type: "text",
+    label: "Username",
+    placeholder: "admin",
+    property: "username",
+    required: true,
+    trim: true,
+  },
+  {
+    type: "password",
+    label: "Password",
+    placeholder: "adminadmin",
+    property: "password",
+    required: true,
+    trim: true,
+  },
+];
+
 const TRANSMISSION_FIELDS = [
   {
     type: "text",
@@ -166,13 +193,7 @@ const getConfig = (downloader: FlatDownloader) => {
     throw "downloader type not supplied"
   }
   let config;
-  if (downloaderType === DownloaderType.nzbget) {
-    config = {
-      baseUrl: downloader.baseUrl,
-      username: downloader.username,
-      password: downloader.password,
-    };
-  } else if (downloaderType === DownloaderType.transmission) {
+  if (downloaderType === DownloaderType.nzbget || downloaderType === DownloaderType.transmission || downloaderType === DownloaderType.qbittorrent) {
     config = {
       baseUrl: downloader.baseUrl,
       username: downloader.username,
@@ -327,6 +348,8 @@ const computedFields = computed(() => {
     downloaderType === DownloaderType.transmission
   ) {
     return [...COMMON_FIELDS_BEGINNING, ...TRANSMISSION_FIELDS, ...COMMON_FIELDS_END];
+  } else if (downloaderType === DownloaderType.qbittorrent) {
+    return [...COMMON_FIELDS_BEGINNING, ...QBITTORRENT_FIELDS, ...COMMON_FIELDS_END];
   } else if (!downloaderType) {
     return [];
   }

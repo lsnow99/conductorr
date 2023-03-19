@@ -42,7 +42,7 @@
             >
           </span>
         </template>
-        <PostProcessingNew />
+        <PostProcessing />
         <div></div>
       </o-tab-item>
       <o-tab-item>
@@ -72,7 +72,7 @@ import Indexers from "./Indexers.vue";
 import PageWrapper from "../components/PageWrapper.vue";
 import ReleaseProfiles from "./ReleaseProfiles.vue";
 import Downloaders from "./Downloaders.vue";
-import PostProcessingNew from "./PostProcessingNew.vue";
+import PostProcessing from "./PostProcessing.vue";
 // import MediaServers from "./MediaServers.vue";
 import { onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
