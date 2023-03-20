@@ -31,7 +31,7 @@
     </o-table-column>
 
     <o-table-column
-      field="released_at"
+      field="releasedAt"
       label="Air Date"
       v-slot="props"
       position="right"
@@ -87,7 +87,7 @@ const formatDate = (timestamp: string) => {
 const formattedEpisodes = computed(() => {
   return props.episodes.map((elem) => ({
     ...elem,
-    formattedDate: formatDate(elem.released_at),
+    formattedDate: formatDate(elem.releasedAt),
   }));
 });
 

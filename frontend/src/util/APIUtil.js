@@ -192,16 +192,16 @@ const getIndexers = () => {
   })
 }
 
-const updateIndexer = (id, name, base_url, api_key, for_movies, for_series, download_type) => {
+const updateIndexer = (id, name, baseUrl, apiKey, forMovies, forSeries, downloadType) => {
   return doAPIReq(`/api/v1/indexer/${id}`, {
     method: "PUT",
     body: JSON.stringify({
       name,
-      base_url,
-      api_key,
-      for_movies,
-      for_series,
-      download_type
+      baseUrl,
+      apiKey,
+      forMovies,
+      forSeries,
+      downloadType
     })
   })
 }
@@ -240,12 +240,12 @@ const deletePath = (id) => {
   })
 }
 
-const updateMedia = (id, profile_id, path_id) => {
+const updateMedia = (id, profileId, pathId) => {
   return doAPIReq(`/api/v1/media/${id}`, {
     method: "PUT",
     body: JSON.stringify({
-      profile_id,
-      path_id
+      profileId,
+      pathId
     })
   })
 }
@@ -260,13 +260,13 @@ const testDownloader = (downloaderType, config) => {
   })
 }
 
-const newDownloader = (downloaderType, name, file_action, config) => {
+const newDownloader = (downloaderType, name, fileAction, config) => {
   return doAPIReq(`/api/v1/downloader`, {
     method: "POST",
     body: JSON.stringify({
       name,
       downloaderType,
-      file_action,
+      fileAction,
       config
     })
   })
@@ -279,7 +279,7 @@ const getDownloaders = () => {
 }
 
 const updateDownloader = (id, name, fileAction, config) => {
-  console.log('id', id, 'name', name, 'file_action', fileAction, 'config', config)
+  console.log('id', id, 'name', name, 'fileAction', fileAction, 'config', config)
   return doAPIReq(`/api/v1/downloader/${id}`, {
     method: "PUT",
     body: JSON.stringify({

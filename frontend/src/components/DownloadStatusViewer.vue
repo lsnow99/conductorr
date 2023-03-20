@@ -94,7 +94,7 @@ const confirmDelete = ($event: Event, identifier: string) => {
 
 onMounted(() => {
   refreshDownloads()
-  refreshInterval.value = setInterval(refreshDownloads, 8000)
+  //refreshInterval.value = setInterval(refreshDownloads, 8000)
 })
 
 onUnmounted(() => {

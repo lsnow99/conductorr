@@ -11,7 +11,7 @@ export interface Media {
   title: string;
   description: string;
   poster: string;
-  released_at: string;
+  releasedAt: string;
   contentType: ContentType;
   monitoring: boolean;
   pathOk: boolean;
@@ -35,7 +35,7 @@ export interface MediaEvent
   | "pathID"
   | "poster"
   | "id"
-  | "released_at"
+  | "releasedAt"
   | "path"
   | "imdbID"
   | "profileID"
