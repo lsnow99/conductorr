@@ -107,6 +107,7 @@ var (
 	DownloaderTypes = map[string]string{
 		"transmission": "torrent",
 		"nzbget": "nzb",
+    "qbittorrent": "torrent",
 	}
 )
 
