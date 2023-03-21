@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/lsnow99/conductorr/pkg/constant"
+	"github.com/rs/zerolog/log"
 	"github.com/zeebo/bencode"
 )
 
@@ -147,6 +148,8 @@ func (q *QBittorrent) AddRelease(release Release) (string, error) {
 	if resp.StatusCode != 200 {
 		return "", fmt.Errorf("non 200 status code %d", resp.StatusCode)
 	}
+
+  log.Debug().Msg(fmt.Sprintf("Sent successfully to qbittorrent %v %v", release, string(data)))
 
 	h := sha1.Sum(tm.Info)
 	hashStr := hex.EncodeToString(h[:])
