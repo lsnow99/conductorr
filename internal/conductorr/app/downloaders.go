@@ -148,6 +148,7 @@ func (dm *DownloaderManager) Download(mediaID int, release integration.Release, 
 	var hadError bool
 	for _, downloader := range downloaders {
 		dlType, ok := constant.DownloaderTypes[downloader.DownloaderType]
+    log.Debug().Str(dlType, release.DownloadType)
 		if !ok {
 			return errors.New("internal error. Downloader has no registered type")
 		}
