@@ -9,14 +9,14 @@ import (
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
+	"net/http/cookiejar"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
-  "net/http/cookiejar"
 
-	"github.com/jackpal/bencode-go"
 	"github.com/lsnow99/conductorr/pkg/constant"
+	"github.com/zeebo/bencode"
 )
 
 type QBittorrent struct {
@@ -41,7 +41,7 @@ func NewQBittorrent(username, password, baseUrl string) (*QBittorrent, error) {
 	if err != nil {
 		return nil, fmt.Errorf("bad url %s", baseUrl)
 	}
-	q.client = &http.Client{Timeout: time.Duration(1) * time.Second}
+	q.client = &http.Client{Timeout: time.Duration(6) * time.Second}
 
 	vals := url.Values{
 		"username": []string{username},
@@ -69,10 +69,10 @@ func NewQBittorrent(username, password, baseUrl string) (*QBittorrent, error) {
 		return nil, fmt.Errorf("received no cookies")
 	}
 
-  q.client.Jar, err = cookiejar.New(nil)
-  if err != nil {
-    return nil, err
-  }
+	q.client.Jar, err = cookiejar.New(nil)
+	if err != nil {
+		return nil, err
+	}
 	q.client.Jar.SetCookies(loginUrl, cookies)
 
 	return q, err
@@ -90,8 +90,7 @@ func NewQBittorrentFromConfig(configuration map[string]interface{}) (*QBittorren
 }
 
 type TorrentMetadata struct {
-	Announce string `bencode:"announce"`
-	Info     []byte `bencode:"info"`
+	Info bencode.RawMessage `bencode:"info"`
 }
 
 func (q *QBittorrent) AddRelease(release Release) (string, error) {
@@ -112,21 +111,32 @@ func (q *QBittorrent) AddRelease(release Release) (string, error) {
 
 	tm := TorrentMetadata{}
 
-	err = bencode.Unmarshal(bytes.NewBuffer(data), &tm)
+	err = bencode.NewDecoder(bytes.NewBuffer(data)).Decode(&tm)
 	if err != nil {
 		return "", err
 	}
 
-	buf := bytes.NewBuffer(data)
-	writer := multipart.NewWriter(buf)
+	var buf bytes.Buffer
+	formWriter := multipart.NewWriter(&buf)
 
-	req, err := http.NewRequest(http.MethodPost, addUrl.String(), buf)
+	fieldWriter, err := formWriter.CreateFormFile("torrents", release.Title)
+	if err != nil {
+		return "", err
+	}
+	_, err = fieldWriter.Write(data)
+	if err != nil {
+		return "", err
+	}
+
+	formWriter.Close()
+
+	req, err := http.NewRequest(http.MethodPost, addUrl.String(), &buf)
 
 	if err != nil {
 		return "", nil
 	}
 
-	req.Header.Set("Content-Type", writer.FormDataContentType())
+	req.Header.Set("Content-Type", formWriter.FormDataContentType())
 
 	resp, err = q.client.Do(req)
 	if err != nil {
