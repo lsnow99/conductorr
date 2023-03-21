@@ -41,8 +41,16 @@ import { TestingMode } from "@/types/testing_mode";
 import { useTabSaver, useServiceUtil } from "@/util";
 import { Indexer } from "@/types/api/indexer";
 import { ConfigurableService } from "@/types/api/service";
+import { DownloadType } from "@/types/api/download";
 
 const XNAB_FIELDS = [
+  {
+    type: "radio",
+    label: "Indexer Type",
+    property: "downloadType",
+    options: [{text: "TORZNAB", value: DownloadType.TORRENT}, {text: "NEWZNAB", value: DownloadType.NZB}],
+    required: true
+  },
   {
     type: "text",
     label: "Name",
@@ -67,6 +75,16 @@ const XNAB_FIELDS = [
     required: false,
     trim: true,
   },
+  {
+    type: "switch",
+    label: "Use for Movies",
+    property: "forMovies",
+  },
+  {
+    type: "switch",
+    label: "Use for Series",
+    property: "forSeries"
+  }
 ];
 
 const oruga = inject("oruga");
