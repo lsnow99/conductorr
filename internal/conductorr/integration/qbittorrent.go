@@ -200,6 +200,8 @@ func (q *QBittorrent) PollDownloads(identifiers []string) ([]Download, error) {
 		return nil, err
 	}
 
+  log.Debug().Msg(fmt.Sprintf("got torrents %v", torrents))
+
 	downloads := make([]Download, 0, len(torrents))
 
 	for _, torrent := range torrents {
@@ -239,6 +241,8 @@ func (q *QBittorrent) PollDownloads(identifiers []string) ([]Download, error) {
 		d.Identifier = torrent.Hash
 		downloads = append(downloads, d)
 	}
+
+  log.Debug().Msg(fmt.Sprintf("downloads %v", downloads))
 
 	return downloads, nil
 }
