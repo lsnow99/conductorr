@@ -110,6 +110,7 @@ func (dm *DownloaderManager) RegisterDownloader(id int, downloaderType, name str
 	if !added {
 		dm.downloaders = append(dm.downloaders, md)
 	}
+  log.Info().Msg(fmt.Sprintf("added downloader %v", dm.downloaders))
 	return nil
 }
 
@@ -148,7 +149,7 @@ func (dm *DownloaderManager) Download(mediaID int, release integration.Release, 
 	var hadError bool
 	for _, downloader := range downloaders {
 		dlType, ok := constant.DownloaderTypes[downloader.DownloaderType]
-    log.Debug().Str(dlType, release.DownloadType)
+    log.Debug().Str(dlType, release.DownloadType).Msg("jkfdsl")
 		if !ok {
 			return errors.New("internal error. Downloader has no registered type")
 		}
