@@ -149,8 +149,6 @@ func (q *QBittorrent) AddRelease(release Release) (string, error) {
 		return "", fmt.Errorf("non 200 status code %d", resp.StatusCode)
 	}
 
-  log.Debug().Msg(fmt.Sprintf("Sent successfully to qbittorrent %v %v", release, string(data)))
-
 	h := sha1.Sum(tm.Info)
 	hashStr := hex.EncodeToString(h[:])
 	return hashStr, err
