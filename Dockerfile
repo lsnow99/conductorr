@@ -33,8 +33,9 @@ COPY pnpm-lock.yaml .
 COPY pnpm-workspace.yaml .
 # Copy the exact wasm_exec.js file from the installation of Go that built the wasm module
 COPY --from=csl-build-env /build/wasm_exec.js ./frontend/src/util
+ARG VERSION=NULL
 RUN cd frontend && pnpm install
-RUN cd frontend && pnpm build
+RUN cd frontend && VITE_CONDUCTORR_VERSION=${VERSION} pnpm build
 
 # Build the full binary
 FROM golang:1.17-alpine AS svr-build-env

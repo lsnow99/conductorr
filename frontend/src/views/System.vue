@@ -2,6 +2,7 @@
   <page-wrapper>
     <section>
       <h2 class="text-xl">System Health</h2>
+      <span>Version: {{VERSION}}</span>
       <div class="overflow-hidden rounded-md">
         <SystemStatus :status="status['downloader']" system="Downloaders" />
         <SystemStatus :status="status['indexer']" system="Indexers" />
@@ -128,6 +129,8 @@ const backupDocUrl = <Readonly<string>>`${DOCUMENTATION_URL}backups`;
 
 const { lastButton, restoreFocus } = useTabSaver();
 
+const VERSION = import.meta.env.VITE_CONDUCTORR_VERSION
+
 const oruga = inject("oruga");
 
 const createBackup = async () => {
@@ -168,7 +171,7 @@ const stopRestoreBackup = () => {
 };
 
 const doRestore = () => {
-  
+
 }
 
 onMounted(async () => {
