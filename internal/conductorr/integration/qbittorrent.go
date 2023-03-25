@@ -213,11 +213,11 @@ func (q *QBittorrent) PollDownloads(identifiers []string) ([]Download, error) {
 			d.Status = constant.StatusWaiting
 		}
 
-		if torrent.State == "moving" || torrent.State == "checkingUp" {
+		if torrent.State == "moving" || torrent.State == "checkingUP" {
 			d.Status = constant.StatusProcessing
 		}
 
-		if torrent.State == "forcedUp" || torrent.State == "stalledUp" || torrent.State == "pausedUp" || torrent.State == "queuedUp" || torrent.State == "uploading" {
+		if torrent.State == "forcedUP" || torrent.State == "stalledUP" || torrent.State == "pausedUP" || torrent.State == "queuedUP" || torrent.State == "uploading" {
 			d.Status = constant.StatusComplete
 		}
 
@@ -232,6 +232,10 @@ func (q *QBittorrent) PollDownloads(identifiers []string) ([]Download, error) {
 		if d.Status == constant.StatusComplete {
 			d.FinalDir = torrent.ContentPath
 		}
+
+    if d.Status == "" {
+      return nil, fmt.Errorf("unknown torrent state '%s'", torrent.State)
+    }
 
 		d.BytesLeft = uint64(torrent.AmountLeft)
 		d.FullSize = uint64(torrent.TotalSize)
