@@ -26,4 +26,4 @@ jobs:
           push: true
           tags: logansnow/conductorr-pre:${{ github.ref_name }}
           build-args: |
-            VERSION="${{ github.ref_name }}#${{ github.sha }}"
+            VERSION=${{ github.ref_name }}#${{ github.sha }}
