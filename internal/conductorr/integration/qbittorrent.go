@@ -1,3 +1,4 @@
+  q.baseUrl = *baseUrlPtr
 package integration
 
 import (
@@ -22,7 +23,7 @@ import (
 
 type QBittorrent struct {
 	client  *http.Client
-	baseUrl *url.URL
+	baseUrl url.URL
 }
 
 // Non exhaustive struct
@@ -38,10 +39,11 @@ type QBittorrentTorrent struct {
 func NewQBittorrent(username, password, baseUrl string) (*QBittorrent, error) {
 	q := new(QBittorrent)
 	var err error
-	q.baseUrl, err = url.Parse(baseUrl)
+  baseUrlPtr, err := url.Parse(baseUrl)
 	if err != nil {
 		return nil, fmt.Errorf("bad url %s", baseUrl)
 	}
+  q.baseUrl = *baseUrlPtr
 	q.client = &http.Client{Timeout: time.Duration(6) * time.Second}
 
 	vals := url.Values{
@@ -95,7 +97,7 @@ type TorrentMetadata struct {
 }
 
 func (q *QBittorrent) AddRelease(release Release) (string, error) {
-	addUrl := *q.baseUrl
+	addUrl := q.baseUrl
 	addUrl.Path = "api/v2/torrents/add"
 
 	resp, err := http.Get(release.DownloadURL)
@@ -157,7 +159,7 @@ func (q *QBittorrent) AddRelease(release Release) (string, error) {
 }
 
 func (q *QBittorrent) DeleteDownload(identifier string) error {
-	deleteUrl := *q.baseUrl
+	deleteUrl := q.baseUrl
 	deleteUrl.Path = "api/v2/torrents/delete"
 
 	vals := url.Values{
@@ -178,7 +180,7 @@ func (q *QBittorrent) DeleteDownload(identifier string) error {
 }
 
 func (q *QBittorrent) PollDownloads(identifiers []string) ([]Download, error) {
-	listUrl := *q.baseUrl
+	listUrl := q.baseUrl
 	listUrl.Path = "api/v2/torrents/info"
 
 	vals := url.Values{
@@ -252,7 +254,7 @@ func (q *QBittorrent) PollDownloads(identifiers []string) ([]Download, error) {
 }
 
 func (q *QBittorrent) TestConnection() error {
-	infoUrl := *q.baseUrl
+	infoUrl := q.baseUrl
 	infoUrl.Path = "api/v2/transfer/info"
 
 	resp, err := q.client.Get(infoUrl.String())
