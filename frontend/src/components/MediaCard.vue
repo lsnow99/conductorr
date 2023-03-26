@@ -12,7 +12,7 @@
     <img :src="media.poster" :alt="`Banner image for movie ${media.title}`" />
 
     <!--Status bar-->
-    <div class="absolute top-0 z-10 h-3 bg-red-500" :style="`width: ${progressPercent}%`"></div>
+    <div class="absolute top-0 z-10 h-3 bg-red-500" :class="computedStatusBarClass" :style="`width: ${progressPercent}%`"></div>
 
     <!--Gradient overlay-->
     <div class="absolute top-0 bottom-0 left-0 right-0 overlay">
@@ -89,6 +89,7 @@
 import useMediaUtil from "@/util/MediaUtil"
 import { Media } from "@/types/api/media"
 import { computed } from "vue";
+import { ContentType } from "@/types/api/media";
 
 const props = defineProps<{
   media: Media
@@ -98,11 +99,18 @@ const { mediaYear } = useMediaUtil()
 
 const year = computed(() => mediaYear(props.media))
 const progressPercent = computed(() => {
-  if (props.media.content_type === 'movie') {
+  if (props.media.contentType === ContentType.MOVIE) {
     return 100
-  } else if (props.media.content_type === 'series') {
-    return 57
+  } else if (props.media.contentType === ContentType.SERIES) {
+    return 0
   }
+})
+
+const computedStatusBarClass = computed(() => {
+  if (props.media.contentType === ContentType.MOVIE) {
+    return props.media.pathOk ? "bg-green-500" : "bg-red-500"
+  }
+  return ""
 })
 
 const emit = defineEmits<{
