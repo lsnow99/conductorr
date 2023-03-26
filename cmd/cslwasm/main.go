@@ -31,8 +31,6 @@ var AppFetcher = func(is csllib.ImportableScript, importPath string, allowInsecu
 		return "", handleError(fmt.Errorf("cannot resolve import from file"))
 	}
 
-  fmt.Println("hello")
-
 	u := url.URL{}
 	u.Path = "/api/v1/fetchScript"
 	q := u.Query()
