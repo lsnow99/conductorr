@@ -78,15 +78,14 @@ const { lastButton, restoreFocus } = useTabSaver()
 const route = useRoute()
 const router = useRouter()
 
-const search = async(q: string, content_type: ContentType | null, page: number) => {
-  const ct = content_type ?? ""
+const search = async(q: string, contentType: ContentType, page: number) => {
   router.replace({
     name: "library",
-    query: {q, content_type: ct, page}
+    query: {q, content_type: contentType, page}
   })
   loading.value = true
   try {
-    const data = await APIUtil.searchLibrary(q, ct, page)
+    const data = await APIUtil.searchLibrary(q, contentType, page)
     totalResults.value = data.totalResults
     results.value = data.results
     perPage.value = data.per_page

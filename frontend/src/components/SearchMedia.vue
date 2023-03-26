@@ -75,6 +75,7 @@ import { ContentType, MediaSearchResult } from "@/types/api/media";
 const page = ref(1);
 const lastSearchTime = ref<Date | null>(null);
 const searchbar = ref<Element | null>(null);
+const lastSearchId = ref<string>("");
 
 const props = withDefaults(
   defineProps<{
@@ -139,7 +140,13 @@ const search = (disableDebounce = false) => {
     emit("search", computedQuery.value, computedContentType.value, page.value);
     lastSearchTime.value = now;
   } else {
-    console.log("failed calc");
+    const currentId = crypto.randomUUID()
+    lastSearchId.value = currentId
+    setTimeout(() => {
+      if(lastSearchId.value === currentId) {
+        search(true)
+      }
+    }, 300)
   }
 };
 

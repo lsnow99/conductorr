@@ -37,15 +37,10 @@
               <div class="flex flex-row justify-center flex-1">
                 <MediaCard :media="media" @click="gotoMedia"></MediaCard>
               </div>
-              <div class="flex-col hidden p-4 md:flex">
+              <div class="flex-col p-4 md:flex max-h-[22rem] overflow-hidden relative">
                 <span class="text-3xl">{{ media.title }}</span>
                 <span class="mt-8 text-lg">{{ media.description }}</span>
-                <span class="self-end"
-                  ><router-link
-                    :to="{ name: 'media', params: { media_id: media.id } }"
-                    ><o-button>Go to Media</o-button></router-link
-                  ></span
-                >
+                <div class="absolute bottom-0 h-10 left-0 right-0 bg-darkgray from-current to-transparent"></div>
               </div>
             </div>
           </o-carousel-item>
