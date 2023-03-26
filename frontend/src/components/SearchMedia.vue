@@ -130,7 +130,6 @@ const computedContentType: WritableComputedRef<ContentType> = computed({
 
 const search = (disableDebounce = false) => {
   const now = new Date();
-  console.log("calculating debounce");
   if (
     (!lastSearchTime.value ||
       now.getTime() - lastSearchTime.value.getTime() > 300 ||
@@ -139,7 +138,7 @@ const search = (disableDebounce = false) => {
   ) {
     emit("search", computedQuery.value, computedContentType.value, page.value);
     lastSearchTime.value = now;
-  } else {
+  } else if !disableDebounce {
     const currentId = crypto.randomUUID()
     lastSearchId.value = currentId
     setTimeout(() => {
