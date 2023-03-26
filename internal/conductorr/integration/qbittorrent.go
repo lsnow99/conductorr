@@ -95,7 +95,7 @@ type TorrentMetadata struct {
 }
 
 func (q *QBittorrent) AddRelease(release Release) (string, error) {
-	addUrl := q.baseUrl
+	addUrl := *q.baseUrl
 	addUrl.Path = "api/v2/torrents/add"
 
 	resp, err := http.Get(release.DownloadURL)
@@ -110,6 +110,7 @@ func (q *QBittorrent) AddRelease(release Release) (string, error) {
 		return "", err
 	}
 
+
 	tm := TorrentMetadata{}
 
 	err = bencode.NewDecoder(bytes.NewBuffer(data)).Decode(&tm)
@@ -120,7 +121,7 @@ func (q *QBittorrent) AddRelease(release Release) (string, error) {
 	var buf bytes.Buffer
 	formWriter := multipart.NewWriter(&buf)
 
-	fieldWriter, err := formWriter.CreateFormFile("torrents", release.Title)
+	fieldWriter, err := formWriter.CreateFormFile("torrents", fmt.Sprintf("%s.torrent", release.Title))
 	if err != nil {
 		return "", err
 	}
@@ -134,7 +135,7 @@ func (q *QBittorrent) AddRelease(release Release) (string, error) {
 	req, err := http.NewRequest(http.MethodPost, addUrl.String(), &buf)
 
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 
 	req.Header.Set("Content-Type", formWriter.FormDataContentType())
@@ -143,6 +144,7 @@ func (q *QBittorrent) AddRelease(release Release) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	resp.Body.Close()
 
 	if resp.StatusCode != 200 {
@@ -155,7 +157,7 @@ func (q *QBittorrent) AddRelease(release Release) (string, error) {
 }
 
 func (q *QBittorrent) DeleteDownload(identifier string) error {
-	deleteUrl := q.baseUrl
+	deleteUrl := *q.baseUrl
 	deleteUrl.Path = "api/v2/torrents/delete"
 
 	vals := url.Values{
@@ -176,7 +178,7 @@ func (q *QBittorrent) DeleteDownload(identifier string) error {
 }
 
 func (q *QBittorrent) PollDownloads(identifiers []string) ([]Download, error) {
-	listUrl := q.baseUrl
+	listUrl := *q.baseUrl
 	listUrl.Path = "api/v2/torrents/info"
 
 	vals := url.Values{
@@ -250,7 +252,7 @@ func (q *QBittorrent) PollDownloads(identifiers []string) ([]Download, error) {
 }
 
 func (q *QBittorrent) TestConnection() error {
-	infoUrl := q.baseUrl
+	infoUrl := *q.baseUrl
 	infoUrl.Path = "api/v2/transfer/info"
 
 	resp, err := q.client.Get(infoUrl.String())
