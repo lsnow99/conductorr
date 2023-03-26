@@ -1,4 +1,3 @@
-  q.baseUrl = *baseUrlPtr
 package integration
 
 import (
@@ -76,7 +75,7 @@ func NewQBittorrent(username, password, baseUrl string) (*QBittorrent, error) {
 	if err != nil {
 		return nil, err
 	}
-	q.client.Jar.SetCookies(loginUrl, cookies)
+	q.client.Jar.SetCookies(&loginUrl, cookies)
 
 	return q, err
 }
