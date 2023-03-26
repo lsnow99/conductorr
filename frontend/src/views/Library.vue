@@ -113,7 +113,8 @@ const closeNewSearchModal = () => {
 
 onMounted(() => {
   query.value = route.query.q as LocationQueryValue ?? '';
-  contentType.value = route.query.content_type === "" ? ContentType.ALL : route.query.content_type as ContentType;
+  const queryContentType = (route.query.content_type as ContentType | undefined) ?? ContentType.ALL
+  contentType.value = queryContentType
   currentPage.value = safeParseInt(`${route.query.page}`) ?? 1;
 
   search(query.value, contentType.value, currentPage.value);
