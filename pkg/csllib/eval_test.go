@@ -885,6 +885,22 @@ func TestAppendLeftMultiple(t *testing.T) {
 	checkResult(t, expected, env["l"], trace)
 }
 
+func TestExtend(t *testing.T) {
+	csl := NewCSL(true)
+	original := List{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)}
+	env := make(map[string]interface{})
+	env["a"] = original
+	exprs, err := csl.Parse(`
+  (extend a (2 3))
+  `)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, trace := csl.Eval(exprs, env)
+	expected := append(original, int64(2), int64(3))
+	checkResult(t, expected, env["a"], trace)
+}
+
 func TestPop(t *testing.T) {
 	csl := NewCSL(true)
 	original := List{int64(1), int64(1), int64(2), int64(3), int64(5), int64(8)}
@@ -1179,7 +1195,7 @@ func TestEscapeString(t *testing.T) {
 func TestMatches(t *testing.T) {
 	csl := NewCSL(true)
 	expr, err := csl.Parse(`
-	(matches "a(x*)b" "-axxb-ab-")
+	(findallsubmatch "a(x*)b" "-axxb-ab-")
 	`)
 	if err != nil {
 		t.Fatal(err)
