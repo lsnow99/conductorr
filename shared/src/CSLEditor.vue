@@ -79,10 +79,10 @@ const enterPressed = ($event: Event) => {
   emit("submit");
 };
 
-const editor = ref<Element>();
+const editor = ref<typeof PrismEditor>();
 const focusEditor = () => {
-  Array.from(editor.value?.getElementsByTagName("textarea")).forEach(
-    (elem) => elem.focus()
+  Array.from(editor.value?.$el.getElementsByTagName("textarea")).forEach(
+    (elem) => (elem as HTMLTextAreaElement).focus()
   );
 };
 

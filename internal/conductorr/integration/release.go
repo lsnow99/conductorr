@@ -126,26 +126,20 @@ func FilterReleases(releases []Release, filter string, runtime *int64) ([]Releas
 		if trace.Err != nil {
 			return nil, nil, trace.Err
 		}
-		include, ok := val.(bool)
-		if !ok {
-			str, ok := val.(string)
-			if ok {
-				release.Warnings = append(release.Warnings, str)
-			} else if l, ok := val.(csllib.List); ok {
-				warnings := make([]string, 0, len(l))
-				for _, elem := range l {
-					if s, ok := elem.(string); ok {
-						warnings = append(warnings, s)
-					} else {
-						return nil, nil, fmt.Errorf("csl script returned non boolean value %v", val)
-					}
-				}
-				release.Warnings = append(release.Warnings, warnings...)
-			} else {
-				return nil, nil, fmt.Errorf("csl script returned non boolean value %v", val)
-			}
-		}
-		if include {
+    errors, ok := val.(csllib.List)
+    if !ok {
+      return nil, nil, fmt.Errorf("csl script returned non-list value %v for filter", val)
+    }
+    errorMsgs := make([]string, 0, len(errors))
+    for _, elem := range errors {
+      if msg, ok := elem.(string); ok {
+        errorMsgs = append(errorMsgs, msg)
+      } else {
+        return nil, nil, fmt.Errorf("non-string value '%v' in list returned from filter", elem)
+      }
+    }
+    release.Warnings = append(release.Warnings, errorMsgs...)
+		if len(errors) == 0 {
 			included = append(included, release)
 		} else {
 			excluded = append(excluded, release)

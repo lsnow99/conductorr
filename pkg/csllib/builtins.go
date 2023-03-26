@@ -696,6 +696,47 @@ func (csl *CSL) RegisterDefaults() {
 		env[x] = l
 		return nil, trace
 	})
+  csl.RegisterFunction("extend", true, true, nil,func(env map[string]interface{}, args []*SExpr, trace Trace) (interface{}, Trace) {
+    // Accepts two arguments
+    if len(args) != 2 {
+      trace.Err = buildError("extend", ErrNumOperands, args)
+      return nil, trace
+    }
+
+    if args[0].L == nil || !args[0].L.isAtom() {
+      trace.Err = buildError("extend", ErrMismatchOperandTypes, args)
+      return nil, trace
+    }
+    atom := args[0].L
+    x, ok := atom.varName()
+    if !ok {
+      trace.Err = buildError("extend", ErrMismatchOperandTypes, args)
+      return nil, trace
+    }
+    av, ok := env[x]
+    if !ok {
+      av = List{}
+    }
+    a, ok := av.(List)
+    if !ok {
+      trace.Err = buildError("extend", ErrMismatchOperandTypes, args)
+      return nil, trace
+    }
+
+    bv, trace := csl.EvalSExpr(args[1], env, trace)
+    if trace.Err != nil {
+      return nil, trace
+    }
+
+    b, ok := bv.(List)
+    if !ok {
+      trace.Err = buildError("extend", ErrMismatchOperandTypes, args)
+      return nil, trace
+    }
+    a = append(a, b...)
+    env[x] = a
+    return nil, trace
+  })
 	csl.RegisterFunction("pop", true, true, nil, func(env map[string]interface{}, args []*SExpr, trace Trace) (interface{}, Trace) {
 		if len(args) != 1 {
 			trace.Err = buildError("pop", ErrNumOperands, args)

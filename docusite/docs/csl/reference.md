@@ -48,7 +48,7 @@ The full list of available suffixes is below:
 
 #### Strings
 
-String literals must be enclosed in double quotes (`"`). To represent a double quote inside of your string literal, use `\"`. For example, `("The boy said, \"Hello, world\"")` evaluates to `The boy said, "Hello, world"`. 
+String literals must be enclosed in double quotes (`"`). To represent a double quote inside of your string literal, use `\"`. For example, `("The boy said, \"Hello, world\"")` evaluates to `The boy said, "Hello, world"`.
 
 All escape patterns:
 - `\n` - A newline
@@ -89,13 +89,14 @@ Lists are implicitly defined any time expressions are joined within parentheses 
 - `(define x expr)` Defines a variable `x` initialized with the result of `expr`
 - `(in v l)` Returns true if the value of `v` appears in list `l`
 - `(contains s1 s2)` Returns true iff `s1` contains `s2`
-- `(nth i l)` Returns the `i`th value in list `l` or error if out of bounds 
+- `(nth i l)` Returns the `i`th value in list `l` or error if out of bounds
 - `(nthstr i s)` Returns the `i`th character in the string `s`
 - `(len l)` Returns the length of list `l`
 - `(lenstr s)` Returns the length of string `s`
 - `(substr s i j=lenstr(s))` Returns the substring `s[i:j]`. If `j` is ommitted, it will default to the length of string `s`
 - `(append l v ...)` Appends `v` and all subsequent arguments in order to the right end of list `l`. If the list `l` does not yet exist, then it is initialized
 - `(appendleft l v ...)` Appends `v` and all subsequent arguments in order to the left end of list `l`. If the list `l` does not yet exist, then it is initialized
+- `(extend a b)` Appends all the elements from list `b` appended to the end of list `a`.
 - `(pop l ...)` Removes the rightmost element in list `l`, returning the removed element
 - `(popleft l ...)` Removes the leftmost element in list `l`, returning the removed element
 - `(if p expr1 expr2)` Returns the result of `expr1` if `p` evaluates to `true`, and returns the result of `expr2` otherwise
@@ -120,16 +121,16 @@ A `release` type is just a list defined like so:
 ```lisp
 (define a
   (
-    "Manos.The.Hands.of.Fate.1966.THEATRiCAL.1080p.BluRay.x264-SADPANDA" 
-    "TorrentLeech" 
-    "torrent" 
-    "movie" 
-    "BDRip" 
-    "1080p" 
-    "x264" 
-    32 
-    794 
-    10737418240 
+    "Manos.The.Hands.of.Fate.1966.THEATRiCAL.1080p.BluRay.x264-SADPANDA"
+    "TorrentLeech"
+    "torrent"
+    "movie"
+    "BDRip"
+    "1080p"
+    "x264"
+    32
+    794
+    10737418240
     288
   )
 )
@@ -157,7 +158,7 @@ The following functions are defined on `release` types:
 - `r-size` Retrieves size of release in bytes
 - `r-runtime` Retrieves the runtime of the release in minutes
 - `r-riptype-order` Returns a number designating the order of how preferrable a riptype is (`CAM < TELESYNC < SCR < HDTV < DVDRip < HDRip < WEBCap < WEBRip < WEBDL < BDRip`)
-- `r-resolution-order` Returns a number designating the order of how preferrable a resolution is (`352p < 360p < 480i < 480p < 576i < 576p < 720p < 1080p < 2160p`) 
+- `r-resolution-order` Returns a number designating the order of how preferrable a resolution is (`352p < 360p < 480i < 480p < 576i < 576p < 720p < 1080p < 2160p`)
 - `r-encoding-order` Returns a number designating the order of how preferrable an encodign is (`Xvid < x264 < x265 < VP9`)
 
 To call use one of these functions, do the following:
