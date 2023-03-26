@@ -214,6 +214,10 @@ func SearchLibraryByTitle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+  if contentType == "" {
+    contentType = "all"
+  }
+
 	// Search our own library
 	medias, total, err := dbstore.SearchMedia(query, contentType, page)
 
