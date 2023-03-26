@@ -22,7 +22,7 @@ import (
 
 type QBittorrent struct {
 	client  *http.Client
-	baseUrl *url.URL
+	baseUrl url.URL
 }
 
 // Non exhaustive struct
@@ -38,10 +38,11 @@ type QBittorrentTorrent struct {
 func NewQBittorrent(username, password, baseUrl string) (*QBittorrent, error) {
 	q := new(QBittorrent)
 	var err error
-	q.baseUrl, err = url.Parse(baseUrl)
+  baseUrlPtr, err := url.Parse(baseUrl)
 	if err != nil {
 		return nil, fmt.Errorf("bad url %s", baseUrl)
 	}
+  q.baseUrl = *baseUrlPtr
 	q.client = &http.Client{Timeout: time.Duration(6) * time.Second}
 
 	vals := url.Values{
@@ -74,7 +75,7 @@ func NewQBittorrent(username, password, baseUrl string) (*QBittorrent, error) {
 	if err != nil {
 		return nil, err
 	}
-	q.client.Jar.SetCookies(loginUrl, cookies)
+	q.client.Jar.SetCookies(&loginUrl, cookies)
 
 	return q, err
 }
@@ -110,6 +111,7 @@ func (q *QBittorrent) AddRelease(release Release) (string, error) {
 		return "", err
 	}
 
+
 	tm := TorrentMetadata{}
 
 	err = bencode.NewDecoder(bytes.NewBuffer(data)).Decode(&tm)
@@ -120,7 +122,7 @@ func (q *QBittorrent) AddRelease(release Release) (string, error) {
 	var buf bytes.Buffer
 	formWriter := multipart.NewWriter(&buf)
 
-	fieldWriter, err := formWriter.CreateFormFile("torrents", release.Title)
+	fieldWriter, err := formWriter.CreateFormFile("torrents", fmt.Sprintf("%s.torrent", release.Title))
 	if err != nil {
 		return "", err
 	}
@@ -134,7 +136,7 @@ func (q *QBittorrent) AddRelease(release Release) (string, error) {
 	req, err := http.NewRequest(http.MethodPost, addUrl.String(), &buf)
 
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 
 	req.Header.Set("Content-Type", formWriter.FormDataContentType())
@@ -143,6 +145,7 @@ func (q *QBittorrent) AddRelease(release Release) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	resp.Body.Close()
 
 	if resp.StatusCode != 200 {
