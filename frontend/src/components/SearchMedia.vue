@@ -138,7 +138,7 @@ const search = (disableDebounce = false) => {
   ) {
     emit("search", computedQuery.value, computedContentType.value, page.value);
     lastSearchTime.value = now;
-  } else if !disableDebounce {
+  } else if (!disableDebounce) {
     const currentId = crypto.randomUUID()
     lastSearchId.value = currentId
     setTimeout(() => {
