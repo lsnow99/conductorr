@@ -3,7 +3,6 @@ package app
 import (
 	"errors"
 	"fmt"
-	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -419,105 +418,81 @@ func (dm *DownloaderManager) handleCompletedDownload(download ManagedDownload) {
 		updateDBStatus(download.Identifier, constant.StatusCError)
 		return
 	}
-	destFile, err := os.OpenFile(destFilepath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0777)
-	if err != nil {
-		log.Error().
-			Err(err).
-			Str("dest_filepath", destFilepath).
-			Str("dest_filedir", destFiledir).
-			Int("download_id", download.ID).
-			Msg("could not open output file")
+  callback := func(err error) {
 
-		updateDBStatus(download.Identifier, constant.StatusCError)
-		return
-	}
-	srcFile, err := os.OpenFile(videoPath, os.O_RDONLY, os.ModePerm)
-	if err != nil {
-		log.Error().
-			Err(err).
-			Str("video_path", videoPath).
-			Int("download_id", download.ID).
-			Msg("could not open source file")
+    if err != nil {
+      updateDBStatus(download.Identifier, constant.StatusCError)
+      return
+    }
 
-		updateDBStatus(download.Identifier, constant.StatusCError)
-		return
-	}
-	n, err := io.Copy(destFile, srcFile)
-	if err != nil {
-		log.Error().
-			Err(err).
-			Int("download_id", download.ID).
-			Msgf("got error after copying %d bytes", n)
+    log.Info().
+      Int("download_id", download.ID).
+      Msgf("successfully copied %s to %s", videoPath, destFilepath)
 
-		updateDBStatus(download.Identifier, constant.StatusCError)
-		return
-	}
+    dm.Lock()
 
-	log.Info().
-		Int("download_id", download.ID).
-		Msgf("successfully copied %s to %s", videoPath, destFilepath)
+    for i, dmdl := range dm.downloads {
+      if download.Identifier == dmdl.Identifier {
+        dm.downloads = append(dm.downloads[:i], dm.downloads[i+1:]...)
+        break
+      }
+    }
 
-	dm.Lock()
+    dm.Unlock()
 
-	for i, dmdl := range dm.downloads {
-		if download.Identifier == dmdl.Identifier {
-			dm.downloads = append(dm.downloads[:i], dm.downloads[i+1:]...)
-			break
-		}
-	}
+    updateDBStatus(download.Identifier, constant.StatusDone)
 
-	dm.Unlock()
+    err = MSM.ImportMedia(destFiledir)
+    if err != nil {
+      log.Error().
+        Stack().
+        Err(err).
+        Int("download_id", download.ID).
+        Msg("error importing completed download into media server")
+    }
 
-	err = dbstore.UpdateDownloadStatusByIdentifier(download.Identifier, constant.StatusDone)
-	if err != nil {
-		log.Error().
-			Stack().
-			Err(err).
-			Int("download_id", download.ID).
-			Msg("error updating download status")
-	}
+    if series.ID > 0 {
+      err = dbstore.SetMediaPath(series.ID, filepath.Dir(destFiledir))
+      if err != nil {
+        log.Error().
+          Stack().
+          Err(err).
+          Int("download_id", download.ID).
+          Str("path", destFiledir).
+          Int("media_id", series.ID).
+          Msg("failed to set series media path")
+      }
+      err = dbstore.SetMediaPath(season.ID, destFiledir)
+      if err != nil {
+        log.Error().
+          Stack().
+          Err(err).
+          Int("download_id", download.ID).
+          Str("path", destFiledir).
+          Int("media_id", season.ID).
+          Msg("failed to set season media path")
+      }
+    }
+    err = dbstore.SetMediaPath(media.ID, destFilepath)
+    if err != nil {
+      log.Error().
+        Stack().
+        Err(err).
+        Int("download_id", download.ID).
+        Str("path", destFiledir).
+        Int("media_id", media.ID).
+        Msg("failed to set media path")
+    }
+  }
 
-	err = MSM.ImportMedia(destFiledir)
-	if err != nil {
-		log.Error().
-			Stack().
-			Err(err).
-			Int("download_id", download.ID).
-			Msg("error importing completed download into media server")
-	}
-
-	if series.ID > 0 {
-		err = dbstore.SetMediaPath(series.ID, filepath.Dir(destFiledir))
-		if err != nil {
-			log.Error().
-				Stack().
-				Err(err).
-				Int("download_id", download.ID).
-				Str("path", destFiledir).
-				Int("media_id", series.ID).
-				Msg("failed to set series media path")
-		}
-		err = dbstore.SetMediaPath(season.ID, destFiledir)
-		if err != nil {
-			log.Error().
-				Stack().
-				Err(err).
-				Int("download_id", download.ID).
-				Str("path", destFiledir).
-				Int("media_id", season.ID).
-				Msg("failed to set season media path")
-		}
-	}
-	err = dbstore.SetMediaPath(media.ID, destFilepath)
-	if err != nil {
-		log.Error().
-			Stack().
-			Err(err).
-			Int("download_id", download.ID).
-			Str("path", destFiledir).
-			Int("media_id", media.ID).
-			Msg("failed to set media path")
-	}
+  job := ProcessingJob{
+    fromPath: videoPath,
+    toPath: destFilepath,
+    copy: true,
+    callback: callback,
+    downloadId: download.ID,
+  }
+  Processor.AddJob(job)
 }
 
 // getDownloadsToMonitor convert a slice of downloads to a slice of identifiers
