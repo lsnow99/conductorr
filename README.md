@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./frontend/public/logo-rect.svg" alt="Conductorr logo image" width="200px" /> 
+  <img src="./frontend/public/logo-rect.svg" alt="Conductorr logo image" width="200px" />
 </p>
 
 # Conductorr
@@ -19,7 +19,7 @@ Conductorr is a PVR for BitTorrent and Usenet that aims to strike a balance betw
 ### Status of Support for External Services:
 - [NZBGet](https://github.com/nzbget/nzbget) - **YES**
 - [Transmission](https://github.com/transmission/transmission) - **YES**
-- [qBittorrent](https://github.com/qbittorrent/qBittorrent) - **NO/PLANNED**
+- [qBittorrent](https://github.com/qbittorrent/qBittorrent) - **YES**
 - [rTorrent/ruTorrent](https://github.com/rakshasa/rtorrent) - **NO/PLANNED**
 - [Deluge](https://github.com/deluge-torrent/deluge) - **NO/PLANNED**
 - [Plex](https://plex.tv) - **YES**
