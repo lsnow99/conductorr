@@ -104,7 +104,7 @@ func getWatchingMediaIDs(mediaIDStr string) ([]int, error) {
 	if err != nil {
 		return nil, err
 	}
-	mr := NewMediaResponseFromDB(media)
+	mr := NewMediaResponseFromDB(media, false)
 	err = mr.Expand()
 	if err != nil {
 		return nil, err

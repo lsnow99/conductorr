@@ -221,7 +221,7 @@ func GetMedia(w http.ResponseWriter, r *http.Request) {
 		Respond(w, r, err, nil, true)
 		return
 	}
-	mr := NewMediaResponseFromDB(media)
+	mr := NewMediaResponseFromDB(media, true)
 	err = mr.Expand()
 	if err != nil {
 		Respond(w, r, err, nil, true)
@@ -309,7 +309,7 @@ func GetRecentMedia(w http.ResponseWriter, r *http.Request) {
 
 	mediasResponse := make([]MediaResponse, 0, len(medias))
 	for _, media := range medias {
-		mr := NewMediaResponseFromDB(media)
+		mr := NewMediaResponseFromDB(media, true)
 		mediasResponse = append(mediasResponse, mr)
 	}
 

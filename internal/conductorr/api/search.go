@@ -68,7 +68,7 @@ func (mr *MediaResponse) Expand() error {
 		if child == nil {
 			continue
 		}
-		media := NewMediaResponseFromDB(*child)
+		media := NewMediaResponseFromDB(*child, false)
 		medias = append(medias, media)
 	}
 	for _, media := range medias {
@@ -99,7 +99,7 @@ type SearchResponse struct {
 	Results      []MediaResponse `json:"results"`
 }
 
-func NewMediaResponseFromDB(media dbstore.Media) (m MediaResponse) {
+func NewMediaResponseFromDB(media dbstore.Media, checkPath bool) (m MediaResponse) {
 	m.ID = media.ID
 	if media.Title.Valid {
 		m.Title = media.Title.String
@@ -143,6 +143,9 @@ func NewMediaResponseFromDB(media dbstore.Media) (m MediaResponse) {
 	}
 	if media.Path.Valid {
 		m.Path = media.Path.String
+    if checkPath {
+      m.PathOK, m.Size = CheckMediaPath(m.Path)
+    }
 	}
 	m.Monitoring = media.Monitoring
 	return m
@@ -223,7 +226,7 @@ func SearchLibraryByTitle(w http.ResponseWriter, r *http.Request) {
 
 	results := make([]MediaResponse, 0)
 	for _, media := range medias {
-		results = append(results, NewMediaResponseFromDB(media))
+		results = append(results, NewMediaResponseFromDB(media, true))
 	}
 
 	resp := SearchResponse{
