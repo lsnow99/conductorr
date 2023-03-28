@@ -12,7 +12,7 @@
     <img :src="media.poster" :alt="`Banner image for movie ${media.title}`" />
 
     <!--Status bar-->
-    <div class="absolute top-0 z-10 h-3 bg-red-500" :class="computedStatusBarClass" :style="`width: ${progressPercent}%`"></div>
+    <div class="absolute top-0 z-10 h-3" :class="computedStatusBarClass" :style="`width: ${progressPercent}%`"></div>
 
     <!--Gradient overlay-->
     <div class="absolute top-0 bottom-0 left-0 right-0 overlay">
@@ -107,6 +107,7 @@ const progressPercent = computed(() => {
 })
 
 const computedStatusBarClass = computed(() => {
+  console.log(props.media.pathOk)
   if (props.media.contentType === ContentType.MOVIE) {
     return props.media.pathOk ? "bg-green-500" : "bg-red-500"
   }
