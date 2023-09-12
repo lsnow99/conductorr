@@ -16,7 +16,7 @@
     "@fortawesome/free-solid-svg-icons": "^5.15.4",
     "@oruga-ui/oruga-next": "^0.5.9",
     "conductorr-lib": "link:../shared",
-    "luxon": "3.0.1",
+    "luxon": "2.5.2",
     "pinia": "^2.0.14",
     "prismjs": "^1.28.0",
     "rangetree": "github:lsnow99/rangetree#master",
