@@ -23,7 +23,7 @@
       <o-button @click="$emit('close')">Cancel</o-button>
       <div>
         <o-button variant="primary" @click="submit"
-          ><ActionButton :mode="loading ? 'loading' : ''"
+          ><ActionButton :mode="loading ? 'loading' : 'off'"
             >Submit</ActionButton
           ></o-button
         >
