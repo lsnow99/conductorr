@@ -282,7 +282,11 @@ func (t *TmdbAPI) SearchByTitle(title, contentType string, page int) (*SearchRes
 		u.Path += "multi"
 	}
 	q := u.Query()
-	q.Set("api_key", settings.TmdbAPIKey)
+	if (settings.TmdbAPIKey == "") {
+		return nil, fmt.Errorf("No API key has been configured")
+	} else {
+		q.Set("api_key", settings.TmdbAPIKey)
+	}
 	q.Set("query", title)
 	q.Set("include_adult", "true")
 	q.Set("page", strconv.Itoa(page))
