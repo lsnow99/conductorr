@@ -24,7 +24,7 @@
       <o-select
         expanded
         v-model="pathID"
-        :placeholder="`/media/library/${media.content_type}`"
+        :placeholder="`/media/library/${media.contentType}`"
       >
         <option
           v-for="pathOption in paths"
@@ -40,12 +40,12 @@
       <o-button @click="$emit('close')">Cancel</o-button>
       <div>
         <o-button variant="primary" @click="save">
-          <action-button :mode="loading ? 'loading' : ''">Save</action-button>
+          <action-button :mode="loading ? 'loading' : 'off'">Save</action-button>
         </o-button>
       </div>
     </template>
   </modal>
-  <new-profile
+  <NewProfile
     v-model:active="showNewProfileModal"
     @close="closeNewProfile"
     @submitted="newProfileSubmitted"
