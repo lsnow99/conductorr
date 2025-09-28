@@ -20,3 +20,4 @@ docusite/docs/public/csl.wasm
 **/.pnpm-debug.log
 /test/csl
 docusite/docs/js/wasm_exec.js
+.direnv
