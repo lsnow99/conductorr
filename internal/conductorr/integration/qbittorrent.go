@@ -6,7 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"mime/multipart"
 	"net/http"
 	"net/http/cookiejar"
@@ -38,11 +38,11 @@ type QBittorrentTorrent struct {
 func NewQBittorrent(username, password, baseUrl string) (*QBittorrent, error) {
 	q := new(QBittorrent)
 	var err error
-  baseUrlPtr, err := url.Parse(baseUrl)
+	baseUrlPtr, err := url.Parse(baseUrl)
 	if err != nil {
 		return nil, fmt.Errorf("bad url %s", baseUrl)
 	}
-  q.baseUrl = *baseUrlPtr
+	q.baseUrl = *baseUrlPtr
 	q.client = &http.Client{Timeout: time.Duration(6) * time.Second}
 
 	vals := url.Values{
@@ -95,43 +95,99 @@ type TorrentMetadata struct {
 	Info bencode.RawMessage `bencode:"info"`
 }
 
+/*
+ * Populate the form to queue a release based on the downloadURL.
+ * We expect that the downloadURL contains a torrent file or a redirect to a
+ * magnet link.
+ */
+func writeQueueDownloadForm(release Release, formWriter *multipart.Writer) (string, error) {
+	nextURL, err := url.Parse(release.DownloadURL)
+	if err != nil {
+		return "", err
+	}
+
+	// override default http redirect follow behavior
+	client := &http.Client{}
+	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		return http.ErrUseLastResponse
+	}
+
+	// perform redirect following manually. stop on magnet url.
+	var resp *http.Response
+	maxFollows := 100
+	for i := 0; i < maxFollows; i++ {
+		if nextURL.Scheme == "magnet" {
+			break
+		}
+
+		if nextURL.Scheme != "http" && nextURL.Scheme != "https" {
+			return "", fmt.Errorf("Unknown protocol '%s' while following redirect", nextURL.Scheme)
+		}
+
+		resp, err = client.Get(nextURL.String())
+		if err != nil {
+			return "", err
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode != 301 {
+			break
+		}
+
+		nextURL, err = url.Parse(resp.Header.Get("Location"))
+		if err != nil {
+			return "", err
+		}
+	}
+
+	if nextURL.Scheme == "magnet" {
+		fieldWriter, err := formWriter.CreateFormField("urls")
+		if err != nil {
+			return "", err
+		}
+		_, err = fieldWriter.Write([]byte(nextURL.String()))
+		if err != nil {
+			return "", err
+		}
+
+		exactTopic := nextURL.Query().Get("xt")
+		parts := strings.Split(exactTopic, ":")
+		if len(parts) != 3 {
+			return "", fmt.Errorf("Unexpected xt format '%s'", exactTopic)
+		}
+		btih := parts[2]
+		return btih, nil
+	} else {
+		tm := TorrentMetadata{}
+		data, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return "", err
+		}
+
+		// Followed http(s) to completion
+		err = bencode.NewDecoder(bytes.NewBuffer(data)).Decode(&tm)
+		if err != nil {
+			return "", err
+		}
+		fieldWriter, err := formWriter.CreateFormFile("torrents", fmt.Sprintf("%s.torrent", release.Title))
+		fieldWriter.Write(data)
+
+		h := sha1.Sum(tm.Info)
+		hashStr := hex.EncodeToString(h[:])
+		return hashStr, nil
+	}
+}
+
 func (q *QBittorrent) AddRelease(release Release) (string, error) {
 	addUrl := q.baseUrl
 	addUrl.Path = "api/v2/torrents/add"
 
-	resp, err := http.Get(release.DownloadURL)
-	if err != nil {
-		return "", err
-	}
-
-	defer resp.Body.Close()
-
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-
-
-	tm := TorrentMetadata{}
-
-	err = bencode.NewDecoder(bytes.NewBuffer(data)).Decode(&tm)
-	if err != nil {
-		return "", err
-	}
-
 	var buf bytes.Buffer
 	formWriter := multipart.NewWriter(&buf)
-
-	fieldWriter, err := formWriter.CreateFormFile("torrents", fmt.Sprintf("%s.torrent", release.Title))
+	defer formWriter.Close()
+	hashStr, err := writeQueueDownloadForm(release, formWriter)
 	if err != nil {
-		return "", err
+		return "", nil
 	}
-	_, err = fieldWriter.Write(data)
-	if err != nil {
-		return "", err
-	}
-
-	formWriter.Close()
 
 	req, err := http.NewRequest(http.MethodPost, addUrl.String(), &buf)
 
@@ -141,7 +197,7 @@ func (q *QBittorrent) AddRelease(release Release) (string, error) {
 
 	req.Header.Set("Content-Type", formWriter.FormDataContentType())
 
-	resp, err = q.client.Do(req)
+	resp, err := q.client.Do(req)
 	if err != nil {
 		return "", err
 	}
@@ -152,8 +208,6 @@ func (q *QBittorrent) AddRelease(release Release) (string, error) {
 		return "", fmt.Errorf("non 200 status code %d", resp.StatusCode)
 	}
 
-	h := sha1.Sum(tm.Info)
-	hashStr := hex.EncodeToString(h[:])
 	return hashStr, err
 }
 
@@ -201,7 +255,7 @@ func (q *QBittorrent) PollDownloads(identifiers []string) ([]Download, error) {
 		return nil, err
 	}
 
-  log.Debug().Msg(fmt.Sprintf("got torrents %v", torrents))
+	log.Debug().Msg(fmt.Sprintf("got torrents %v", torrents))
 
 	downloads := make([]Download, 0, len(torrents))
 
@@ -236,9 +290,9 @@ func (q *QBittorrent) PollDownloads(identifiers []string) ([]Download, error) {
 			d.FinalDir = torrent.ContentPath
 		}
 
-    if d.Status == "" {
-      return nil, fmt.Errorf("unknown torrent state '%s'", torrent.State)
-    }
+		if d.Status == "" {
+			return nil, fmt.Errorf("unknown torrent state '%s'", torrent.State)
+		}
 
 		d.BytesLeft = uint64(torrent.AmountLeft)
 		d.FullSize = uint64(torrent.TotalSize)
@@ -247,7 +301,7 @@ func (q *QBittorrent) PollDownloads(identifiers []string) ([]Download, error) {
 		downloads = append(downloads, d)
 	}
 
-  log.Debug().Msg(fmt.Sprintf("downloads %v", downloads))
+	log.Debug().Msg(fmt.Sprintf("downloads %v", downloads))
 
 	return downloads, nil
 }
@@ -262,7 +316,7 @@ func (q *QBittorrent) TestConnection() error {
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 
 	if err != nil {
 		return err
