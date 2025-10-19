@@ -151,7 +151,7 @@ func writeQueueDownloadForm(release Release, formWriter *multipart.Writer) (stri
 
 		exactTopic := nextURL.Query().Get("xt")
 		parts := strings.Split(exactTopic, ":")
-		if len(parts) != 3 {
+		if len(parts) != 3 || parts[0] != "urn" || parts[1] != "btih" {
 			return "", fmt.Errorf("Unexpected xt format '%s'", exactTopic)
 		}
 		btih := parts[2]
