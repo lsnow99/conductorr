@@ -89,7 +89,7 @@ func (t *Transmission) AddRelease(release Release) (string, error) {
 		return "", nil
 	}
 
-	err = FollowDownloadURL(nextURL, &dataBuf)
+	err = FollowDownloadURL(&nextURL, &dataBuf)
 
 	if err != nil {
 		return "", nil
@@ -100,6 +100,7 @@ func (t *Transmission) AddRelease(release Release) (string, error) {
 	if nextURL.Scheme == "magnet" {
 		filename = nextURL.String()
 		addPayload.Filename = &filename
+		addPayload.Paused = &falseVal
 	} else {
 		torrentContent = base64.StdEncoding.EncodeToString(dataBuf)
 		addPayload.MetaInfo = &torrentContent

@@ -108,7 +108,7 @@ func writeQueueDownloadForm(release Release, formWriter *multipart.Writer) (stri
 		return "", nil
 	}
 
-	err = FollowDownloadURL(nextURL, &dataBuf)
+	err = FollowDownloadURL(&nextURL, &dataBuf)
 
 	if err != nil {
 		return "", nil
