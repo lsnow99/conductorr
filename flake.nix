@@ -5,7 +5,7 @@
 
   outputs = inputs:
     let
-      goVersion = 25;
+      goVersion = 23;
 
       supportedSystems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
       forEachSupportedSystem = f: inputs.nixpkgs.lib.genAttrs supportedSystems (system: f {
@@ -36,6 +36,7 @@
             nodePackages.pnpm
             brotli
             just
+            entr
           ];
         };
       });

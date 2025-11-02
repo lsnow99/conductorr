@@ -7,7 +7,7 @@
 
 # Build the CSL WebAssembly module
 # This stage of the build also copies the wasm_exec.js script to the frontend source folder
-FROM golang:1.25 AS csl-build-env
+FROM golang:1.23 AS csl-build-env
 WORKDIR /build
 RUN apt-get update && apt-get install -y brotli
 COPY ./pkg ./pkg
@@ -16,7 +16,7 @@ COPY ./internal/csl ./internal/csl
 COPY [ "go.mod", "go.sum", "./" ]
 RUN GOOS=js GOARCH=wasm go build -o dist/csl.wasm ./cmd/cslwasm
 RUN brotli -f dist/csl.wasm
-RUN cp $(go env GOROOT)/lib/wasm/wasm_exec.js .
+RUN cp $(go env GOROOT)/misc/wasm/wasm_exec.js .
 
 # Build the frontend web UI
 FROM node:lts-alpine AS vue-build-env
@@ -38,7 +38,7 @@ RUN cd frontend && pnpm install
 RUN cd frontend && VITE_CONDUCTORR_VERSION=${VERSION} pnpm build
 
 # Build the full binary
-FROM golang:1.25-alpine AS svr-build-env
+FROM golang:1.23-alpine AS svr-build-env
 RUN apk add build-base
 RUN apk add git
 RUN mkdir /src

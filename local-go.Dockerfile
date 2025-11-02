@@ -3,13 +3,12 @@
 # Author Logan Snow
 ###
 
-FROM golang:1.25
+FROM golang:1.23
 
 WORKDIR /app
 
-RUN go install github.com/air-verse/air@latest
+RUN apt update && \
+    apt install -y \
+      entr
 
-COPY go.mod go.sum ./
-RUN go mod download
-
-CMD air -c .air.toml
+CMD find . -type f -regex ".*\.go" | entr -nr go run ./cmd/conductorr
