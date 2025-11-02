@@ -53,6 +53,7 @@ func GetRouter() http.Handler {
 	r.HandleFunc("/api/v1/firstTime", FirstTime).Methods("GET")
 	r.HandleFunc("/api/v1/checkAuth", CheckAuth).Methods("GET")
 	r.HandleFunc("/api/v1/logout", InvalidateAuthCookie).Methods("GET")
+	r.HandleFunc("/api/v1/interop/radarr/api/v3/system/status", GetRadarrSystemStatus).Methods("GET")
 
 	// Authenticated routes
 	r.HandleFunc("/api/v1/releaseProfileCfg", GetReleaseProfileCfg).Methods("GET")
