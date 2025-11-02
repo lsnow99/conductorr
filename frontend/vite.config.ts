@@ -4,6 +4,8 @@ import viteCompression from "vite-plugin-compression";
 import tsconfigPaths from 'vite-tsconfig-paths'
 import * as path from "path"
 
+const backendHost = process.env.BACKEND_HOST || "localhost"
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
@@ -19,7 +21,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "http://localhost:8282",
+        target: `http://${backendHost}:8282`,
         changeOrigin: false,
         secure: false,
         ws: true,
