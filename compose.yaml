@@ -28,7 +28,6 @@ services:
       - prowlarr_data:/config
     ports:
       - 9696:9696
-    restart: unless-stopped
 
   transmission-openvpn:
     image: haugene/transmission-openvpn
