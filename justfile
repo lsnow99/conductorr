@@ -118,6 +118,20 @@ reset := '\033[0m'
 @run-backend dbpath="":
     CONDUCTORR_DEBUG=true DB_PATH=$dbpath go run ./cmd/conductorr
 
+@run-dev-docker extra-profiles="":
+  #!/usr/bin/env bash
+  set -euo pipefail
+  profiles_args=(--profile=development)
+  for profile in $(tr ',' '\n' <<< "{{extra-profiles}}"); do
+    profiles_args+=(--profile="$profile")
+  done
+  docker compose \
+    "${profiles_args[@]}" \
+    up -d
+
+@stop-dev-docker:
+  docker compose --profile "*" down
+
 @new-migration name:
     go run ./cmd/migrate create $name
 
