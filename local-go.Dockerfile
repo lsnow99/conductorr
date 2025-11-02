@@ -7,4 +7,8 @@ FROM golang:1.23
 
 WORKDIR /app
 
-CMD go run ./cmd/conductorr
+RUN apt update && \
+    apt install -y \
+      entr
+
+CMD find . -type f -regex ".*\.go" | entr -nr go run ./cmd/conductorr
