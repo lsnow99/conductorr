@@ -3,8 +3,6 @@ package integration
 import (
 	"encoding/base64"
 	"errors"
-	"io/ioutil"
-	"net/http"
 	"net/url"
 	"path/filepath"
 	"strconv"
@@ -14,10 +12,10 @@ import (
 )
 
 type Transmission struct {
-	username  string
-	password  string
-	baseUrl   string
-	client    *transmissionrpc.Client
+	username string
+	password string
+	baseUrl  string
+	client   *transmissionrpc.Client
 }
 
 func NewTransmission(username, password, baseUrl string) (*Transmission, error) {
@@ -80,24 +78,35 @@ func (t *Transmission) TestConnection() error {
 }
 
 func (t *Transmission) AddRelease(release Release) (string, error) {
+	var dataBuf []byte
+	var filename string
+	var torrentContent string
+
 	falseVal := false
 
-	resp, err := http.Get(release.DownloadURL)
+	nextURL, err := url.Parse(release.DownloadURL)
 	if err != nil {
-		return "", err
+		return "", nil
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	err = FollowDownloadURL(&nextURL, &dataBuf)
+
 	if err != nil {
-		return "", err
+		return "", nil
 	}
 
-	torrentContent := base64.StdEncoding.EncodeToString(body)
+	addPayload := transmissionrpc.TorrentAddPayload{}
 
-	addPayload := transmissionrpc.TorrentAddPayload{
-		MetaInfo: &torrentContent,
-		Paused:   &falseVal,
+	if nextURL.Scheme == "magnet" {
+		filename = nextURL.String()
+		addPayload.Filename = &filename
+		addPayload.Paused = &falseVal
+	} else {
+		torrentContent = base64.StdEncoding.EncodeToString(dataBuf)
+		addPayload.MetaInfo = &torrentContent
+		addPayload.Paused = &falseVal
 	}
+
 	torrent, err := t.client.TorrentAdd(&addPayload)
 	if err != nil {
 		return "", err
@@ -117,7 +126,7 @@ func (t *Transmission) DeleteDownload(identifier string) error {
 	}
 
 	payload := transmissionrpc.TorrentRemovePayload{
-		IDs: []int64{id},
+		IDs:             []int64{id},
 		DeleteLocalData: true,
 	}
 	return t.client.TorrentRemove(&payload)
@@ -178,7 +187,7 @@ func (t *Transmission) PollDownloads(identifiers []string) ([]Download, error) {
 		}
 
 		d.BytesLeft = uint64(*torrent.LeftUntilDone)
-		d.FullSize = uint64(*torrent.TotalSize)/8
+		d.FullSize = uint64(*torrent.TotalSize) / 8
 		d.FriendlyName = *torrent.Name
 		d.Identifier = strconv.FormatInt(*torrent.ID, 10)
 		downloads = append(downloads, d)

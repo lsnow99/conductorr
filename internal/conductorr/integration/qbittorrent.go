@@ -101,42 +101,17 @@ type TorrentMetadata struct {
  * magnet link.
  */
 func writeQueueDownloadForm(release Release, formWriter *multipart.Writer) (string, error) {
-	nextURL, err := url.Parse(release.DownloadURL)
+	var dataBuf []byte
+
+	nextURL, err  := url.Parse(release.DownloadURL)
 	if err != nil {
-		return "", err
+		return "", nil
 	}
 
-	// override default http redirect follow behavior
-	client := &http.Client{}
-	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-		return http.ErrUseLastResponse
-	}
+	err = FollowDownloadURL(&nextURL, &dataBuf)
 
-	// perform redirect following manually. stop on magnet url.
-	var resp *http.Response
-	maxFollows := 100
-	for i := 0; i < maxFollows; i++ {
-		if nextURL.Scheme == "magnet" {
-			break
-		}
-
-		if nextURL.Scheme != "http" && nextURL.Scheme != "https" {
-			return "", fmt.Errorf("Unknown protocol '%s' while following redirect", nextURL.Scheme)
-		}
-
-		resp, err = client.Get(nextURL.String())
-		if err != nil {
-			return "", err
-		}
-		defer resp.Body.Close()
-		if resp.StatusCode != 301 {
-			break
-		}
-
-		nextURL, err = url.Parse(resp.Header.Get("Location"))
-		if err != nil {
-			return "", err
-		}
+	if err != nil {
+		return "", nil
 	}
 
 	if nextURL.Scheme == "magnet" {
@@ -158,18 +133,16 @@ func writeQueueDownloadForm(release Release, formWriter *multipart.Writer) (stri
 		return btih, nil
 	} else {
 		tm := TorrentMetadata{}
-		data, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return "", err
-		}
-
-		// Followed http(s) to completion
-		err = bencode.NewDecoder(bytes.NewBuffer(data)).Decode(&tm)
+		err = bencode.NewDecoder(bytes.NewBuffer(dataBuf)).Decode(&tm)
 		if err != nil {
 			return "", err
 		}
 		fieldWriter, err := formWriter.CreateFormFile("torrents", fmt.Sprintf("%s.torrent", release.Title))
-		fieldWriter.Write(data)
+		if err != nil {
+			return "", err
+		}
+
+		fieldWriter.Write(dataBuf)
 
 		h := sha1.Sum(tm.Info)
 		hashStr := hex.EncodeToString(h[:])
