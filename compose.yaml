@@ -1,0 +1,173 @@
+volumes:
+  media:
+  conductorr_db:
+  pg_data:
+  prowlarr_data:
+  qbittorrent_data:
+  qbittorrent_config:
+  transmission_data:
+  transmission_config:
+  jellyseerr_config:
+  jellyfin_config:
+
+networks:
+  default:
+
+services:
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:2.1.3-nightly
+    container_name: conductorr-prowlarr
+    networks: [default]
+    profiles: [development]
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Vancouver
+    volumes:
+      - prowlarr_data:/config
+    ports:
+      - 9696:9696
+    restart: unless-stopped
+
+  transmission-openvpn:
+    image: haugene/transmission-openvpn
+    container_name: conductorr-transmission-openvpn
+    networks: [default]
+    profiles: [transmission]
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - transmission_data:/data
+      - transmission_config:/config
+      - media:/mnt/media
+    environment:
+      OPENVPN_PROVIDER: SURFSHARK
+      OPENVPN_CONFIG_URL: ${OPENVPN_CONFIG_URL:-https://raw.githubusercontent.com/haugene/vpn-configs-contrib/refs/heads/main/openvpn/surfshark/us-lax.prod.surfshark.com_udp.ovpn}
+      OPENVPN_USERNAME: ${OPENVPN_USERNAME}
+      OPENVPN_PASSWORD: ${OPENVPN_PASSWORD}
+      OPENVPN_OPTS: --inactive 3600 --ping 10 --ping-exit 60
+      TZ: America/Vancouver
+      LOCAL_NETWORK: 192.168.0.0/16
+    ports:
+      - 9091:9091
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: conductorr-qbittorrent
+    networks: [default]
+    profiles: [qbittorrent]
+    environment:
+      PUID: '1000'
+      PGID: '1000'
+      TZ: America/Vancouver
+      WEBUI_PORT: '8080'
+      TORRENTING_PORT: '6881'
+    volumes:
+      - qbittorrent_config:/config
+      - qbittorrent_data:/downloads
+      - media:/mnt/media
+    ports:
+      - 8080:8080
+      - 6881:6881
+      - 6881:6881/udp
+
+  jellyseerr:
+    image: fallenbagel/jellyseerr:latest
+    container_name: conductorr-jellyseerr
+    profiles: [servarr-development]
+    networks: [default]
+    environment:
+      - LOG_LEVEL=debug
+      - TZ=America/Vancouver
+    ports:
+      - 5055:5055
+    volumes:
+      - jellyseerr_config:/app/config
+
+  jellyfin:
+    image: jellyfin/jellyfin
+    container_name: conductorr-jellyfin
+    profiles: [servarr-development]
+    networks: [default]
+    ports:
+      - 8096:8096/tcp
+      - 7359:7359/udp
+    volumes:
+      - jellyfin_config:/config
+      - media:/mnt/media
+
+  backend:
+    container_name: conductorr-backend
+    build:
+      context: .
+      dockerfile: local-go.Dockerfile
+    init: true
+    volumes:
+      - ./:/app:rw,cached
+      - conductorr_db:/conductorr_db
+      - media:/mnt/media
+    profiles: [development]
+    networks: [default]
+    depends_on: [prowlarr]
+    ports:
+      - 8282:8282
+    environment:
+      CONDUCTORR_DEBUG: 'true'
+      TMDB_API_KEY: "${TMDB_API_KEY:?tmdb api key required}"
+      DB_PATH: "/conductorr_db/db.sqlite"
+
+  frontend:
+    container_name: conductorr-frontend
+    build:
+      context: .
+      dockerfile: local-node.Dockerfile
+    init: true
+    volumes:
+      - ./:/app:rw,cached
+    profiles: [development]
+    networks: [default]
+    depends_on: [backend]
+    ports:
+      - 5173:5173
+    environment:
+      BACKEND_HOST: conductorr-backend
+    command:
+      - /bin/sh
+      - "-c"
+      - cd frontend && pnpm dev --host
+
+  shared:
+    container_name: conductorr-shared
+    build:
+      context: .
+      dockerfile: local-node.Dockerfile
+    init: true
+    volumes:
+      - ./:/app:rw,cached
+    profiles: [development]
+    networks: [default]
+    ports:
+      - 5174:5173
+    command:
+      - /bin/sh
+      - "-c"
+      - cd shared && pnpm dev --host
+
+  docusite:
+    container_name: conductorr-docusite
+    build:
+      context: .
+      dockerfile: local-node.Dockerfile
+    init: true
+    volumes:
+      - ./:/app:rw,cached
+    profiles: [development]
+    networks: [default]
+    ports:
+      - 5175:5173
+    command:
+      - /bin/sh
+      - "-c"
+      - cd docusite && pnpm dev --host
+

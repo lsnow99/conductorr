@@ -28,6 +28,7 @@
   "devDependencies": {
     "@fortawesome/vue-fontawesome": "^3.0.1",
     "@types/luxon": "^1.27.1",
+    "@types/node": "^24.9.2",
     "@vue/compiler-sfc": "^3.2.37",
     "@vue/devtools-api": "^6.2.0",
     "autoprefixer": "^10.4.7",
