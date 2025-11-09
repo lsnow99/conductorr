@@ -32,7 +32,7 @@ var driver database.Driver
 func Init() error {
 	var err error
 	if settings.UsePG {
-		connStr := fmt.Sprintf("postgres://%s:%s@%s:%s", settings.PGUser, settings.PGPass, settings.PGHost, settings.PGPort)
+		connStr := url.QueryEscape(fmt.Sprintf("postgres://%s:%s@%s:%s", settings.PGUser, settings.PGPass, settings.PGHost, settings.PGPort))
 		if settings.PGSSL {
 			connStr += "?sslmode=enable"
 		} else {
