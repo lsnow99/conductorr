@@ -143,9 +143,9 @@ func NewMediaResponseFromDB(media dbstore.Media, checkPath bool) (m MediaRespons
 	}
 	if media.Path.Valid {
 		m.Path = media.Path.String
-    if checkPath {
-      m.PathOK, m.Size = CheckMediaPath(m.Path)
-    }
+		if checkPath {
+			m.PathOK, m.Size = CheckMediaPath(m.Path)
+		}
 	}
 	m.Monitoring = media.Monitoring
 	return m
@@ -183,10 +183,7 @@ func SearchNewByTitle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-  if contentType == "all" {
-    contentType = ""
-  }
-	searchResults, err := search.SearchByTitle(query, contentType, page)
+	searchResults, err := search.SearchFuzzy(query, contentType, page)
 	if err != nil {
 		Respond(w, r, err, nil, true)
 		return
@@ -217,9 +214,9 @@ func SearchLibraryByTitle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-  if contentType == "" {
-    contentType = "all"
-  }
+	if contentType == "" {
+		contentType = "all"
+	}
 
 	// Search our own library
 	medias, total, err := dbstore.SearchMedia(query, contentType, page)

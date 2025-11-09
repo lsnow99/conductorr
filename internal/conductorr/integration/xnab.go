@@ -173,7 +173,7 @@ func (x *Xnab) SearchMovie(movieTitle string, year int, imdbID *string) ([]Relea
 	}
 
 	if len(allResults) == 0 {
-		nzbs, err := x.client.SearchWithQuery([]int{newznab.CategoryMovieAll}, fmt.Sprintf("%s %d", movieTitle, year), "moviesearch")
+		nzbs, err := x.client.SearchWithQuery([]int{newznab.CategoryMovieAll}, fmt.Sprintf("%s %d", movieTitle, year), "movie")
 		if err != nil {
 			return nil, err
 		}

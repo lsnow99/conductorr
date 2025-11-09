@@ -53,7 +53,12 @@ func GetRouter() http.Handler {
 	r.HandleFunc("/api/v1/firstTime", FirstTime).Methods("GET")
 	r.HandleFunc("/api/v1/checkAuth", CheckAuth).Methods("GET")
 	r.HandleFunc("/api/v1/logout", InvalidateAuthCookie).Methods("GET")
+	// Radarr interop routes
 	r.HandleFunc("/api/v1/interop/radarr/api/v3/system/status", GetRadarrSystemStatus).Methods("GET")
+	r.HandleFunc("/api/v1/interop/radarr/api/v3/qualityProfile", GetRadarrQualityProfiles).Methods("GET")
+	r.HandleFunc("/api/v1/interop/radarr/api/v3/rootfolder", GetRadarrRootFolder).Methods("GET")
+	r.HandleFunc("/api/v1/interop/radarr/api/v3/tag", GetRadarrTags).Methods("GET")
+	r.HandleFunc("/api/v1/interop/radarr/api/v3/movie/lookup", GetRadarrMovieLookup).Methods("GET")
 
 	// Authenticated routes
 	r.HandleFunc("/api/v1/releaseProfileCfg", GetReleaseProfileCfg).Methods("GET")

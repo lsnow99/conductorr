@@ -9,6 +9,7 @@ import (
 
 type SearchAPI interface {
 	SearchByTitle(string, string, int) (*SearchResults, error)
+	SearchFuzzy(string, string, int) (*SearchResults, error)
 	SearchByID(string) (*IndividualResult, error)
 	SearchByImdbID(string) (*IndividualResult, error)
 }
@@ -67,6 +68,10 @@ func init() {
 
 func SearchByTitle(title, contentType string, page int) (*SearchResults, error) {
 	return searchAPI.SearchByTitle(title, contentType, page)
+}
+
+func SearchFuzzy(query string, contentType string, page int) (*SearchResults, error) {
+	return searchAPI.SearchFuzzy(query, contentType, page)
 }
 
 func GetResultByID(id string) (*IndividualResult, error) {

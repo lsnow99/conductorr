@@ -48,8 +48,10 @@ package api
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net"
 	"net/http"
+	"path"
 	"strings"
 	"time"
 
@@ -65,7 +67,11 @@ var whitelistPaths = []string{
 	"/api/v1/checkAuth",
 	"/api/csl.wasm",
 	"/api/v1/logout",
-	"/api/v1/interop/radarr/api/v3/system/status",
+
+	// *arr interop
+	"/api/v1/interop/radarr/api/v3/*",
+	"/api/v1/interop/radarr/api/v3/movie",
+	"/api/v1/interop/radarr/api/v3/movie/*",
 	// Also whitelisted are any paths not beginning with /api
 }
 
@@ -164,8 +170,11 @@ func GenerateIDToken() (string, error) {
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var shouldAuth = true
-		for _, path := range whitelistPaths {
-			if path == r.URL.Path {
+		for _, whitelistPath := range whitelistPaths {
+			match, err := path.Match(whitelistPath, r.URL.Path)
+			if err != nil {
+				log.Warn().Msg(fmt.Sprintf("invalid path pattern %s", whitelistPath))
+			} else if match {
 				shouldAuth = false
 			}
 		}

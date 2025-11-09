@@ -1,12 +1,13 @@
 package settings
 
 import (
-	"github.com/rs/zerolog/log"
 	"net"
 	"net/url"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/rs/zerolog/log"
 )
 
 // Injected at build time
@@ -82,10 +83,10 @@ func Init() {
 		DBPath = "file:./conductorr.db?" + pragmas.Encode()
 	}
 
-	if omdbKey, exists := os.LookupEnv("OMDB_API_KEY"); exists && omdbKey != ""{
+	if omdbKey, exists := os.LookupEnv("OMDB_API_KEY"); exists && omdbKey != "" {
 		OmdbApiKey = omdbKey
 	}
-	if tmdbKey, exists := os.LookupEnv("TMDB_API_KEY"); exists && tmdbKey != ""{
+	if tmdbKey, exists := os.LookupEnv("TMDB_API_KEY"); exists && tmdbKey != "" {
 		TmdbAPIKey = tmdbKey
 	}
 

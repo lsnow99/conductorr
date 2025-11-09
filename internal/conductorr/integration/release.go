@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/lsnow99/conductorr/internal/conductorr/settings"
+	"github.com/lsnow99/conductorr/internal/csl"
 	"github.com/lsnow99/conductorr/pkg/constant"
 	"github.com/lsnow99/conductorr/pkg/csllib"
-	"github.com/lsnow99/conductorr/internal/csl"
-	"github.com/lsnow99/conductorr/internal/conductorr/settings"
 )
 
 type Release struct {
@@ -126,19 +126,19 @@ func FilterReleases(releases []Release, filter string, runtime *int64) ([]Releas
 		if trace.Err != nil {
 			return nil, nil, trace.Err
 		}
-    errors, ok := val.(csllib.List)
-    if !ok {
-      return nil, nil, fmt.Errorf("csl script returned non-list value %v for filter", val)
-    }
-    errorMsgs := make([]string, 0, len(errors))
-    for _, elem := range errors {
-      if msg, ok := elem.(string); ok {
-        errorMsgs = append(errorMsgs, msg)
-      } else {
-        return nil, nil, fmt.Errorf("non-string value '%v' in list returned from filter", elem)
-      }
-    }
-    release.Warnings = append(release.Warnings, errorMsgs...)
+		errors, ok := val.(csllib.List)
+		if !ok {
+			return nil, nil, fmt.Errorf("csl script returned non-list value %v for filter", val)
+		}
+		errorMsgs := make([]string, 0, len(errors))
+		for _, elem := range errors {
+			if msg, ok := elem.(string); ok {
+				errorMsgs = append(errorMsgs, msg)
+			} else {
+				return nil, nil, fmt.Errorf("non-string value '%v' in list returned from filter", elem)
+			}
+		}
+		release.Warnings = append(release.Warnings, errorMsgs...)
 		if len(errors) == 0 {
 			included = append(included, release)
 		} else {

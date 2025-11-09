@@ -32,7 +32,7 @@ var driver database.Driver
 func Init() error {
 	var err error
 	if settings.UsePG {
-		connStr := url.QueryEscape(fmt.Sprintf("postgres://%s:%s@%s:%s", settings.PGUser, settings.PGPass, settings.PGHost, settings.PGPort))
+		connStr := fmt.Sprintf("postgres://%s:%s@%s:%s", settings.PGUser, settings.PGPass, settings.PGHost, settings.PGPort)
 		if settings.PGSSL {
 			connStr += "?sslmode=enable"
 		} else {
@@ -103,7 +103,7 @@ func Init() error {
 		migrationPath = path
 	}
 
-  log.Println("running migrations")
+	log.Println("running migrations")
 
 	migrationPath, err = CreateMigrationsFor(sqliteKey, migrationPath)
 	if err != nil {
