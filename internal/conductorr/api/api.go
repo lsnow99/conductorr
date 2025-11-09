@@ -2,45 +2,45 @@
 //
 // This package provides an API for communicating with the Conductorr backend.
 //
-//     Schemes: http, https
-//     BasePath: /v1
-//     Version: 1.0.0
-//     License: GPL-3.0 https://www.gnu.org/licenses/gpl-3.0.html
+//	    Schemes: http, https
+//	    BasePath: /v1
+//	    Version: 1.0.0
+//	    License: GPL-3.0 https://www.gnu.org/licenses/gpl-3.0.html
 //
-//     Consumes:
-//     - application/json
+//	    Consumes:
+//	    - application/json
 //
-//     Produces:
-//     - application/json
+//	    Produces:
+//	    - application/json
 //
-//     Security:
-//     - api_key:
-//	   - auth_token:
+//	    Security:
+//	    - api_key:
+//		   - auth_token:
 //
-//     SecurityDefinitions:
-//     api_key:
-//          type: apiKey
-//          name: x-token
-//          in: header
-//	   auth_token:
-//			type:
-//     oauth2:
-//         type: oauth2
-//         authorizationUrl: /oauth2/auth
-//         tokenUrl: /oauth2/token
-//         in: header
-//         scopes:
-//           bar: foo
-//         flow: accessCode
+//	    SecurityDefinitions:
+//	    api_key:
+//	         type: apiKey
+//	         name: x-token
+//	         in: header
+//		   auth_token:
+//				type:
+//	    oauth2:
+//	        type: oauth2
+//	        authorizationUrl: /oauth2/auth
+//	        tokenUrl: /oauth2/token
+//	        in: header
+//	        scopes:
+//	          bar: foo
+//	        flow: accessCode
 //
-//     Extensions:
-//     x-meta-value: value
-//     x-meta-array:
-//       - value1
-//       - value2
-//     x-meta-array-obj:
-//       - name: obj
-//         value: field
+//	    Extensions:
+//	    x-meta-value: value
+//	    x-meta-array:
+//	      - value1
+//	      - value2
+//	    x-meta-array-obj:
+//	      - name: obj
+//	        value: field
 //
 // swagger:meta
 package api
@@ -48,15 +48,17 @@ package api
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net"
 	"net/http"
+	"path"
 	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt"
 	"github.com/lsnow99/conductorr/internal/conductorr/dbstore"
-	"github.com/rs/zerolog/log"
 	"github.com/lsnow99/conductorr/internal/conductorr/settings"
+	"github.com/rs/zerolog/log"
 )
 
 var whitelistPaths = []string{
@@ -65,6 +67,11 @@ var whitelistPaths = []string{
 	"/api/v1/checkAuth",
 	"/api/csl.wasm",
 	"/api/v1/logout",
+
+	// *arr interop
+	"/api/v1/interop/radarr/api/v3/*",
+	"/api/v1/interop/radarr/api/v3/movie",
+	"/api/v1/interop/radarr/api/v3/movie/*",
 	// Also whitelisted are any paths not beginning with /api
 }
 
@@ -77,6 +84,15 @@ type response struct {
 	Data       interface{} `json:"data"`
 	Msg        string      `json:"msg"`
 	FailedAuth bool        `json:"failedAuth"`
+}
+
+func RespondRaw(w http.ResponseWriter, req *http.Request, err error, data interface{}) {
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		log.Error().
+			Err(err).
+			Bool("internal", true).
+			Msg("error encoding json api response")
+	}
 }
 
 func Respond(w http.ResponseWriter, req *http.Request, err error, data interface{}, authorize bool) {
@@ -154,8 +170,11 @@ func GenerateIDToken() (string, error) {
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var shouldAuth = true
-		for _, path := range whitelistPaths {
-			if path == r.URL.Path {
+		for _, whitelistPath := range whitelistPaths {
+			match, err := path.Match(whitelistPath, r.URL.Path)
+			if err != nil {
+				log.Warn().Msg(fmt.Sprintf("invalid path pattern %s", whitelistPath))
+			} else if match {
 				shouldAuth = false
 			}
 		}

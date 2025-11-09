@@ -282,7 +282,7 @@ func (t *TmdbAPI) SearchByTitle(title, contentType string, page int) (*SearchRes
 		u.Path += "multi"
 	}
 	q := u.Query()
-	if (settings.TmdbAPIKey == "") {
+	if settings.TmdbAPIKey == "" {
 		return nil, fmt.Errorf("No API key has been configured")
 	} else {
 		q.Set("api_key", settings.TmdbAPIKey)
@@ -345,6 +345,43 @@ func (t *TmdbAPI) SearchByTitle(title, contentType string, page int) (*SearchRes
 		searchResults.Results = append(searchResults.Results, sr)
 	}
 	return &searchResults, nil
+}
+
+func (t *TmdbAPI) SearchFuzzy(query string, contentType string, page int) (*SearchResults, error) {
+	searchResults := SearchResults{}
+
+	split := strings.Split(query, ":")
+	if len(split) == 2 {
+		switch split[0] {
+		case "tmdb":
+			searchResults.Results = make([]SearchResult, 0, 2)
+
+			if contentType == "movie" || contentType == "all" {
+				movieResult, movieErr := t.SearchByID(fmt.Sprintf("movie:%s", split[1]))
+				if movieErr == nil {
+					searchResults.Results = append(searchResults.Results, movieResult.SearchResult)
+				}
+			}
+			if contentType == "tv" || contentType == "all" {
+				tvResult, tvErr := t.SearchByID(fmt.Sprintf("tv:%s", split[1]))
+				if tvErr == nil {
+					searchResults.Results = append(searchResults.Results, tvResult.SearchResult)
+				}
+			}
+			searchResults.TotalResults = len(searchResults.Results)
+			searchResults.PerPage = 2
+		}
+		return &searchResults, nil
+	} else {
+		if contentType == "all" {
+			contentType = ""
+		}
+		searchResults, err := t.SearchByTitle(query, contentType, page)
+		if err != nil {
+			return nil, err
+		}
+		return searchResults, nil
+	}
 }
 
 func (t *TmdbAPI) SearchByID(id string) (*IndividualResult, error) {
@@ -461,6 +498,7 @@ func (t *TmdbAPI) SearchByID(id string) (*IndividualResult, error) {
 			}
 		}
 	}
+	ir.ID = id
 
 	return ir, nil
 }

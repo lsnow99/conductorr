@@ -3,6 +3,7 @@ volumes:
   conductorr_db:
   pg_data:
   prowlarr_data:
+  radarr_data:
   qbittorrent_data:
   qbittorrent_config:
   transmission_data:
@@ -28,6 +29,23 @@ services:
       - prowlarr_data:/config
     ports:
       - 9696:9696
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    networks: [default]
+    profiles: [servarr-development]
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Vancouver
+    volumes:
+      - radarr_data:/config
+      - media:/mnt/media
+      - transmission_data:/downloads/transmission
+      - qbittorrent_data:/downloads/qbittorrent
+    ports:
+      - 7878:7878
     restart: unless-stopped
 
   transmission-openvpn:
@@ -104,7 +122,7 @@ services:
       dockerfile: local-go.Dockerfile
     init: true
     volumes:
-      - ./:/app:rw,cached
+      - ./:/app:rw
       - conductorr_db:/conductorr_db
       - media:/mnt/media
     profiles: [development]

@@ -262,7 +262,8 @@ func (q *QBittorrent) PollDownloads(identifiers []string) ([]Download, error) {
 	for _, torrent := range torrents {
 		d := Download{}
 
-		if torrent.State == "error" || torrent.State == "missingFiles" || torrent.State == "unknown" {
+		// TODO: Handle stoppedDL
+		if torrent.State == "error" || torrent.State == "missingFiles" || torrent.State == "unknown" || torrent.State == "stoppedDL" {
 			d.Status = constant.StatusError
 		}
 

@@ -103,7 +103,7 @@ func Init() error {
 		migrationPath = path
 	}
 
-  log.Println("running migrations")
+	log.Println("running migrations")
 
 	migrationPath, err = CreateMigrationsFor(sqliteKey, migrationPath)
 	if err != nil {
