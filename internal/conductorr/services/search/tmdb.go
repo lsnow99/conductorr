@@ -431,6 +431,7 @@ func (t *TmdbAPI) SearchByID(id string) (*IndividualResult, error) {
 	ir.Poster = getPoster(config, result.PosterPath)
 	ir.Rating = float32(result.VoteAverage)
 	ir.Plot = result.Overview
+	ir.TmdbID = result.ID
 
 	for _, genre := range result.Genres {
 		ir.Genres = append(ir.Genres, genre.Name)

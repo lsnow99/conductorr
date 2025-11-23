@@ -2,6 +2,7 @@ package api
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/lsnow99/conductorr/internal/conductorr/dbstore"
 	"github.com/lsnow99/conductorr/internal/conductorr/services/search"
+	"github.com/rs/zerolog/log"
 )
 
 type RadarrSystemResource struct {
@@ -67,7 +69,7 @@ type RadarrTag struct {
 }
 
 type RadarrMovie struct {
-	Id               int    `json:"id"`
+	Id               int    `json:"id,omitempty"`
 	Title            string `json:"title"`
 	IsAvailable      bool   `json:"isAvailable"`
 	Monitored        bool   `json:"monitored"`
@@ -113,6 +115,12 @@ type RadarrMovie struct {
 		OriginalFilePath    string `json:"originalFilePath,omitempty"`
 		QualityCutoffNotMet bool   `json:"qualityCutoffNotMet"`
 	} `json:"movieFile,omitempty"`
+}
+
+type RadarrCommand struct {
+	Name        string `json:"name"`
+	CommandName string `json:"commandName"`
+	MovieIds    []int  `json:"movieIds"`
 }
 
 func GetRadarrSystemStatus(w http.ResponseWriter, r *http.Request) {
@@ -197,6 +205,38 @@ func GetRadarrTags(w http.ResponseWriter, r *http.Request) {
 	RespondRaw(w, r, nil, resp)
 }
 
+func GetRadarrMovies(w http.ResponseWriter, r *http.Request) {
+	medias, err := dbstore.GetRecentlyAddedMedia(100)
+	if err != nil {
+		RespondRaw(w, r, err, nil)
+		return
+	}
+
+	resp := make([]RadarrMovie, 0, len(medias))
+	for _, result := range medias {
+		if result.ContentType.Valid && result.ContentType.String == "movie" {
+			movie := RadarrMovie{
+				Id: result.ID,
+			}
+			if result.Title.Valid {
+				movie.Title = result.Title.String
+			}
+			resp = append(resp, movie)
+		}
+	}
+	RespondRaw(w, r, nil, resp)
+}
+
+func UpsertRadarrMovie(w http.ResponseWriter, r *http.Request) {
+	movie := RadarrMovie{}
+	err := json.NewDecoder(r.Body).Decode(&movie)
+	if err != nil {
+		RespondRaw(w, r, err, nil)
+		return
+	}
+	RespondRaw(w, r, fmt.Errorf("not implemented"), nil)
+}
+
 func GetRadarrMovieLookup(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	term := query.Get("term")
@@ -206,6 +246,32 @@ func GetRadarrMovieLookup(w http.ResponseWriter, r *http.Request) {
 		RespondRaw(w, r, err, nil)
 		return
 	}
+
+	// Get media that already exists
+	tmdbIDs := make([]int, 0, len(results.Results))
+	for _, result := range results.Results {
+		split := strings.Split(result.ID, ":")
+		if len(split) != 2 {
+			continue
+		}
+		id, err := strconv.Atoi(split[1])
+		if err != nil {
+			continue
+		}
+		tmdbIDs = append(tmdbIDs, id)
+	}
+	existingMedias, err := dbstore.GetMediaByTmdbIDs(tmdbIDs)
+	if err != nil {
+		RespondRaw(w, r, err, nil)
+		return
+	}
+	tmdbIDToMedia := make(map[int]*dbstore.Media)
+	for _, media := range existingMedias {
+		if media.TmdbID.Valid {
+			tmdbIDToMedia[int(media.TmdbID.Int32)] = media
+		}
+	}
+
 	resp := make([]RadarrMovie, 0, len(results.Results))
 	for _, result := range results.Results {
 		// ugh, this is jank.
@@ -218,19 +284,44 @@ func GetRadarrMovieLookup(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
+		movie := RadarrMovie{
+			Title:       result.Title,
+			IsAvailable: true,
+			TmdbId:      id,
+			ImdbId:      "na",
+			Tags:        []int{},
+			TitleSlug:   fmt.Sprintf("%d", id),
+		}
+		if media, ok := tmdbIDToMedia[id]; ok {
+			movie.Id = media.ID
+			movie.Monitored = true
+		}
+
 		resp = append(
 			resp,
-			RadarrMovie{
-				Id:    id,
-				Title: result.Title,
-				IsAvailable: true,
-				// Monitored:   false,
-				TmdbId:    id,
-				ImdbId:    "na",
-				Tags:      []int{},
-				TitleSlug: fmt.Sprintf("%d", id),
-			},
+			movie,
 		)
 	}
 	RespondRaw(w, r, nil, resp)
+}
+
+func RunRadarrCommand(w http.ResponseWriter, r *http.Request) {
+	command := RadarrCommand{}
+	err := json.NewDecoder(r.Body).Decode(&command)
+	if err != nil {
+		RespondRaw(w, r, err, nil)
+		return
+	}
+	switch command.CommandName {
+	case "MoviesSearch":
+		RespondRaw(w, r, fmt.Errorf("not implemented"), nil)
+		return
+	default:
+		log.Warn().Msg(fmt.Sprintf("unknown radarr command %s", command.CommandName))
+	}
+	RespondRaw(w, r, nil, command)
+}
+
+func RedirectRadarrMovie(w http.ResponseWriter, r *http.Request) {
+	RespondRaw(w, r, fmt.Errorf("Not implemented"), nil)
 }

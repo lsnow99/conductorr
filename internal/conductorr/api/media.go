@@ -131,7 +131,7 @@ func doAddMedia(result *search.IndividualResult, profileID *int, pathID *int, mo
 			return id, err
 		}
 		id, err = dbstore.UpsertMedia(&result.Title, &result.Plot, &result.ReleasedAt, &result.EndedAt,
-			&result.ContentType, nil, nil, &result.ImdbID, result.TvdbID, nil, &imdbRating, &result.Runtime,
+			&result.ContentType, nil, &result.TmdbID, &result.ImdbID, result.TvdbID, nil, &imdbRating, &result.Runtime,
 			&poster, result.Genres, profileID, pathID, nil, monitor)
 		if err != nil {
 			return id, err
@@ -159,7 +159,7 @@ func doAddMedia(result *search.IndividualResult, profileID *int, pathID *int, mo
 		}
 	} else {
 		id, err = dbstore.UpsertMedia(&result.Title, &result.Plot, &result.ReleasedAt, &result.EndedAt,
-			&result.ContentType, nil, nil, &result.ImdbID, result.TvdbID, nil, &imdbRating, &result.Runtime,
+			&result.ContentType, nil, &result.TmdbID, &result.ImdbID, result.TvdbID, nil, &imdbRating, &result.Runtime,
 			&poster, result.Genres, profileID, pathID, nil, monitor)
 		if err != nil {
 			return id, err

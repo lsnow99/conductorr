@@ -58,7 +58,12 @@ func GetRouter() http.Handler {
 	r.HandleFunc("/api/v1/interop/radarr/api/v3/qualityProfile", GetRadarrQualityProfiles).Methods("GET")
 	r.HandleFunc("/api/v1/interop/radarr/api/v3/rootfolder", GetRadarrRootFolder).Methods("GET")
 	r.HandleFunc("/api/v1/interop/radarr/api/v3/tag", GetRadarrTags).Methods("GET")
+	r.HandleFunc("/api/v1/interop/radarr/api/v3/movie", GetRadarrMovies).Methods("GET")
+	r.HandleFunc("/api/v1/interop/radarr/api/v3/movie", UpsertRadarrMovie).Methods("POST")
+	r.HandleFunc("/api/v1/interop/radarr/api/v3/movie", UpsertRadarrMovie).Methods("PUT")
 	r.HandleFunc("/api/v1/interop/radarr/api/v3/movie/lookup", GetRadarrMovieLookup).Methods("GET")
+	r.HandleFunc("/api/v1/interop/radarr/api/v3/command", RunRadarrCommand).Methods("POST")
+	r.HandleFunc("/api/v1/interop/radarr/movie/{movie_id}", RedirectRadarrMovie).Methods("GET")
 
 	// Authenticated routes
 	r.HandleFunc("/api/v1/releaseProfileCfg", GetReleaseProfileCfg).Methods("GET")

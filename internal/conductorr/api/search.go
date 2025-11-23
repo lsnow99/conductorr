@@ -160,6 +160,7 @@ func NewMediaResponseFromIndividual(media search.IndividualResult) (m MediaRespo
 	m.Poster = media.Poster
 	m.ImdbID = media.ImdbID
 	m.ImdbRating = int(media.Rating * 10)
+	m.TmdbID = media.TmdbID
 	return m
 }
 
