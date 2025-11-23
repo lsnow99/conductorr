@@ -3,6 +3,7 @@ package dbstore
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"strings"
 	"time"
 
@@ -37,36 +38,36 @@ func scanAll(rows *sql.Rows) ([]Media, error) {
 		}
 		medias = append(medias, media)
 	}
-  return medias, nil
+	return medias, nil
 }
 
 func filterContentTypes(sb *sqlbuilder.SelectBuilder, contentType string) string {
-  conditions := make([]string, 0)
-  if contentType == "series" || contentType == "all" {
-    conditions = append(conditions, sb.Equal("content_type", "series"))
-  }
-  if contentType == "movie" || contentType == "all" {
-    conditions = append(conditions, sb.Equal("content_type", "movie"))
-  }
-  if len(conditions) == 0 {
-    return "true"
-  }
-  return sb.Or(conditions...)
+	conditions := make([]string, 0)
+	if contentType == "series" || contentType == "all" {
+		conditions = append(conditions, sb.Equal("content_type", "series"))
+	}
+	if contentType == "movie" || contentType == "all" {
+		conditions = append(conditions, sb.Equal("content_type", "movie"))
+	}
+	if len(conditions) == 0 {
+		return "true"
+	}
+	return sb.Or(conditions...)
 }
 
-func filterTitle(sb *sqlbuilder.SelectBuilder, title string) string{
-  return sb.Like("UPPER(title)", "%" + strings.ToLower(title) + "%")
+func filterTitle(sb *sqlbuilder.SelectBuilder, title string) string {
+	return sb.Like("UPPER(title)", "%"+strings.ToLower(title)+"%")
 }
 
 func filterSearch(sb *sqlbuilder.SelectBuilder, title, contentType string) *sqlbuilder.SelectBuilder {
-  return sb.Where(sb.And(filterContentTypes(sb, contentType), filterTitle(sb, title)))
+	return sb.Where(sb.And(filterContentTypes(sb, contentType), filterTitle(sb, title)))
 }
 
 func SearchMedia(title string, contentType string, page int) ([]Media, int, error) {
-  sb := sqlbuilder.Select("COUNT(id)").From("media")
-  sb = filterSearch(sb, title, contentType)
+	sb := sqlbuilder.Select("COUNT(id)").From("media")
+	sb = filterSearch(sb, title, contentType)
 
-  stmt, args := sb.Build()
+	stmt, args := sb.Build()
 	row := db.QueryRow(stmt, args...)
 
 	var count int
@@ -76,11 +77,11 @@ func SearchMedia(title string, contentType string, page int) ([]Media, int, erro
 	}
 
 	sb = mediaStruct.SelectFrom("media")
-  sb = filterSearch(sb, title, contentType)
-  sb = sb.Limit(10)
-  sb = sb.Offset((page - 1) * 10)
+	sb = filterSearch(sb, title, contentType)
+	sb = sb.Limit(10)
+	sb = sb.Offset((page - 1) * 10)
 
-  stmt, args = sb.Build()
+	stmt, args = sb.Build()
 	rows, err := db.Query(stmt, args...)
 
 	if err != nil && err != sql.ErrNoRows {
@@ -88,7 +89,7 @@ func SearchMedia(title string, contentType string, page int) ([]Media, int, erro
 	}
 	defer rows.Close()
 
-  medias, err := scanAll(rows)
+	medias, err := scanAll(rows)
 
 	return medias, count, err
 }
@@ -158,7 +159,9 @@ func GetMediaInIntervals(ctx context.Context, dateIntervals []DateInterval) ([]M
 	return medias, nil
 }
 
-/* UpsertMedia inserts the new media described by the parameters, and on a conflict of the item_number
+/*
+	UpsertMedia inserts the new media described by the parameters, and on a conflict of the item_number
+
 and parent_media_id, it will only update the metadata
 */
 func UpsertMedia(title *string, description *string, releasedAt *time.Time, endedAt *time.Time,
@@ -215,6 +218,37 @@ func GetMediaByImdbID(imdbID string) (Media, error) {
 		`, imdbID)
 
 	return scanFullMedia(row)
+}
+
+func GetMediaByTmdbIDs(tmdbIDs []int) ([]*Media, error) {
+	placeholders := make([]string, len(tmdbIDs))
+	args := make([]interface{}, len(tmdbIDs))
+	for i, id := range tmdbIDs {
+		placeholders[i] = "?"
+		args[i] = id
+	}
+	query := fmt.Sprintf(`
+		SELECT`+fullMediaCols+`
+		FROM media
+		WHERE tmdb_id IN (%s)
+		`,
+		strings.Join(placeholders, ","),
+	)
+	rows, err := db.Query(query, args...)
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+	defer rows.Close()
+
+	medias := make([]*Media, 0, 10)
+	for rows.Next() {
+		media, err := scanFullMedia(rows)
+		if err != nil {
+			return nil, err
+		}
+		medias = append(medias, &media)
+	}
+	return medias, nil
 }
 
 func GetPoster(mediaID int) (poster []byte, err error) {

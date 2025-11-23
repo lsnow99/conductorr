@@ -38,6 +38,7 @@ type IndividualResult struct {
 	EndedAt                time.Time
 	Genres                 []string
 	ImdbID                 string
+	TmdbID                 int
 	TvdbID                 *int
 }
 
